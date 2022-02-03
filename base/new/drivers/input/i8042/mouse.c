@@ -1,11 +1,14 @@
 
-
+// mouse.c
 
 #include <kernel.h>  
 
-// quando tem uma interrupção de mouse eu desligo o teclado e espero por ack
-// mas quando tem uma interrupção de teclado, então eu desligo o mouse mas não espero o ack.
+// Quando tem uma interrupção de mouse eu 
+// desligo o teclado e espero por ack
+// mas quando tem uma interrupção de teclado, 
+// então eu desligo o mouse mas não espero o ack.
 
+// ps/2 mouse handler.
 __VOID_IRQ 
 irq12_MOUSE (void)
 {

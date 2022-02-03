@@ -238,7 +238,6 @@ camera (
 int projection_initialize(void)
 {
 
-
     CurrentProjection = (void *) malloc ( sizeof( struct gr_projection_d ) );
     
     if ( (void*) CurrentProjection == NULL ){

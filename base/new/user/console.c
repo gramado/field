@@ -1251,6 +1251,7 @@ int consoleCompareStrings(void)
 // 'ps2'
 // Testing the full initialization of ps2 interface.
 // This is a work in progress.
+// See: drivers/input/i8042/i8042.c
     if ( strncmp( prompt, "ps2", 3 ) == 0 )
     {
         printf("[Test]: Full ps2 initialization!\n");

@@ -2267,6 +2267,7 @@ fail:
 
 //test
 //plot a point
+// #todo: Change color to 'int'.
 int 
 gws_plot0 (
     int fd,
@@ -2280,15 +2281,15 @@ gws_plot0 (
 
 
     if (fd<0){
-        return -1;
+        return (-1);
     }
 
-    // Request
+// Request
     __gws_plot0_request ( fd, x, y, z, color );
     rtl_set_file_sync ( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );    
 
-    // Response
-    // Waiting to read the response.
+// Response
+// Waiting to read the response.
     while (1){
         Value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
         if (Value == ACTION_REPLY ) { break; }
@@ -2318,16 +2319,16 @@ gws_plotcube (
         return -1;
     }
 
-    // Request
-    // Enviamos um request e 
-    // sinalizamos que tem um request no socket.
+// Request
+// Enviamos um request e 
+// sinalizamos que tem um request no socket.
 
     __gws_plotcube_request (fd, (struct gr_cube_d *) cube );
     rtl_set_file_sync ( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
 
+// Response
+// Waiting to read the response.
 
-    // Response
-    // Waiting to read the response.
     while (1){
         Value = rtl_get_file_sync ( fd, SYNC_REQUEST_GET_ACTION );
         if (Value == ACTION_REPLY ) { break; }
@@ -2362,12 +2363,12 @@ gws_plotrectangle (
         return -1;
     }
 
-    // Request
+// Request
     __gws_plotrectangle_request ( fd, (struct gr_rectangle_d *) rect );
     rtl_set_file_sync ( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST ); 
 
-    // Response
-    // Waiting to read the response.
+// Response
+// Waiting to read the response.
     while (TRUE){
         Value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
         if (Value == ACTION_REPLY ) { break; }
@@ -2378,7 +2379,6 @@ gws_plotrectangle (
 
     return 0;
 }
-
 
 
 // Draw char.
@@ -2404,8 +2404,7 @@ gws_draw_char (
         return -1;
     }
 
-
-    // Request
+// Request
     gws_debug_print("gws_draw_char: request\n");
     __gws_drawchar_request (
         (int) fd,             // fd
@@ -2437,6 +2436,7 @@ gws_draw_char (
 
 
 // Draw text.
+// #todo: Change color to 'int'.
 int 
 gws_draw_text (
     int fd, 
@@ -2464,8 +2464,8 @@ gws_draw_text (
     gws_debug_print("gws_draw_text: request\n");
 
 
-    // Request
-    // IN: fd, window, x, y, color, string
+// Request
+// IN: fd, window, x, y, color, string
     __gws_drawtext_request (
         (int) fd,
         (int) window,
@@ -2475,9 +2475,8 @@ gws_draw_text (
         (char *) string );
     rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
 
-
-    // Response
-    // Waiting to read the response.
+// Response
+// Waiting to read the response.
     gws_debug_print("gws_draw_text: response\n");
     while (1){
         Value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
@@ -2487,7 +2486,7 @@ gws_draw_text (
         //gws_yield();
     };
 
-    response = __gws_drawtext_response ((int) fd);  
+    response = __gws_drawtext_response ((int) fd);
 
     gws_debug_print("gws_draw_text: done\n");
 
@@ -2513,9 +2512,9 @@ void *gws_services (
 
     gws_debug_print("gws_services: [TODO]\n");
 
-    if (service<0)
+    if (service<0){
         return NULL;
-
+    }
 
     switch (service)
     {
@@ -2590,11 +2589,11 @@ gws_send_message_to_thread (
 {
     unsigned long message_buffer[8];
 
+
     if ( tid<0 ){
         gws_debug_print ("gws_send_message_to_thread: [FAIL] tid\n");
         return (int) (-1);
     }
-
 
     message_buffer[0] = (unsigned long) window;
     message_buffer[1] = (unsigned long) message;
@@ -2626,14 +2625,11 @@ gws_send_message_to_thread (
 void gws_reboot (void)
 {
     gws_debug_print ("gws_reboot: [FIXME]\n");
-
     rtl_reboot();
-
 //fail:
     gws_debug_print ("gws_reboot: unexpected return\n");
     while (1){ asm("pause"); };
 }
-
 
 
 // Load a file using a pathname as an argument.
@@ -2646,27 +2642,22 @@ gws_load_path (
     int status = -1;
 
 
+// Arguments.
     if ( (void*) path == NULL ){
         return -1;
     }
-
-
     if ( *path == 0 ){
          return -1;
     }
-
-
     if ( buffer == 0 ){
         return -1;
     }
-
-
     if ( buffer_len == 0 ){
         return -1;
     }
 
-    // #todo
-    // Chame a rtl e não uma syscall.
+// #todo
+// Chame a rtl e não uma syscall.
 
     status = (int) gws_system_call ( 
                        4004, 
@@ -2693,20 +2684,21 @@ gws_change_window_position (
 
     int Value=0;
 
+// Arguments
     if (fd<0){
         return -1;
     }
-
     if (window<0){
         return -1;
     }
 
-    // Request
+
+// Request
     __gws_change_window_position_request(fd,window,x,y);
     rtl_set_file_sync ( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );    
 
-    // Response
-    // Waiting to read the response.
+// Response
+// Waiting to read the response.
     while (1){
         Value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
         if (Value == ACTION_REPLY ) { break; }
@@ -2731,20 +2723,21 @@ gws_resize_window(
 
     int Value=0;
 
+// Arguments
     if (fd<0){
         return -1;
     }
-
     if (window<0){
         return -1;
     }
 
-    // request
+
+// request
     __gws_resize_window_request(fd,window,w,h);
-    rtl_set_file_sync ( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );    
-    
-    // response
-    // Waiting to read the response.
+    rtl_set_file_sync ( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
+
+// response
+// Waiting to read the response.
     while (1){
         Value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
         if (Value == ACTION_REPLY ) { break; }
@@ -2752,7 +2745,6 @@ gws_resize_window(
         //gws_yield();
     };
     __gws_resize_window_reponse(fd);
-
 
     return 0;
 }
@@ -2768,24 +2760,23 @@ gws_redraw_window (
 {
     int value=0;
 
-
+// Arguments.
     if (fd<0){
         return -1;
     }
-
     if (window<0){
         return -1;
     }
 
-    // #todo
-    // check the return values.
+// #todo
+// check the return values.
 
-    // Request
+// Request
     __gws_redraw_window_request (fd,window,flags);
     rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
 
-    // Response
-    // Waiting to read the response.
+// Response
+// Waiting to read the response.
     while (1){
         value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
         if (value == ACTION_REPLY ) { break; }
@@ -2815,8 +2806,8 @@ struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
     __gws_get_next_event_request (fd);
     rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
 
-    // Response
-    // Waiting to read the response.
+// Response
+// Waiting to read the response.
     while (1){
         value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
         if (value == ACTION_REPLY ) { break; }
@@ -2828,12 +2819,12 @@ struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
     };
     e = (struct gws_event_d *) __gws_get_next_event_response (fd,event);
 
-    if( (void*) e == NULL )
+    if ( (void*) e == NULL ){
         debug_print("gws_get_next_event: fail\n");
+    }
 
     return (struct gws_event_d *) e;
 }
-
 
 
 /*
@@ -2848,18 +2839,18 @@ struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
 
 int gws_refresh_window (int fd, int window )
 {
+    int value=0;
 
-    if (fd<0)    {  return -1;  }
-    if (window<0){  return -1;  }
+// Arguments
+    if (fd<0)    { return -1; }
+    if (window<0){ return -1; }
 
 // Request
     __gws_refresh_window_request(fd,window);
     rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
 
-
 // Response
-    // Waiting to read the response.
-    int value=0;
+// Waiting to read the response.
     while (TRUE){
         value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
         if (value == ACTION_REPLY ) { break; }
@@ -2872,8 +2863,7 @@ int gws_refresh_window (int fd, int window )
 }
 
 
-
-// atualiza o retângulo da surface da thread.
+// Atualiza o retângulo da surface da thread.
 void 
 setup_surface_retangle ( 
     unsigned long left, 
@@ -2887,7 +2877,7 @@ setup_surface_retangle (
     Buffer[1] = (unsigned long) top;
     Buffer[2] = (unsigned long) (width  & 0xFFFF);
     Buffer[3] = (unsigned long) (height & 0xFFFF);
-    Buffer[4] = 0; 
+    Buffer[4] = 0;
 
     gramado_system_call ( 
         892, (unsigned long) &Buffer[0], 0, 0 );
@@ -2898,8 +2888,6 @@ void invalidate_surface_retangle (void)
 {
     gramado_system_call ( 893, 0, 0, 0 );
 }
-
-
 
 
 /*
@@ -2991,41 +2979,35 @@ void gws_yield (void)
     sc82(265,0,0,0);
 }
 
-// refresh the background and yield the current thread
+
+// Refresh the background and yield the current thread
 void gws_refresh_yield (int fd)
 {
-    if (fd<0){  return;  }
-
-    // refresh background
-    // ?? parameters ?
-    gws_refresh_window (fd, -4); 
-
+    if (fd<0){ return; }
+    gws_refresh_window (fd, -4);  //??: fd,window
     gws_yield();
 }
 
 
-// refresh a given window and yield the current thread
+// Refresh a given window and yield the current thread.
 void gws_refresh_yield2 (int fd, int window)
 {
-
-    if (fd<0)    {  return;  }
-    if (window<0){  return;  }
-
+    if (fd<0)    { return; }
+    if (window<0){ return; }
     gws_refresh_window (fd, window);
-
     gws_yield();
 }
+
 
 void gws_yield_n_times (unsigned long n)
 {
     int i=0;
 
-
-    if (n == 0){
-        n=1;
+    if (n == 0){ 
+        n=1; 
     }
 
-    for (i=0; i<n; i++){  gws_yield();  };
+    for (i=0; i<n; i++){ gws_yield(); };
 }
 
 
@@ -3083,7 +3065,7 @@ void *gws_create_thread (
 
 
 /*
- ****************************************************************
+ *****************************
  * gws_start_thread:
  *     Coloca no estado standby para executar pela primeira vez
  */
@@ -3554,13 +3536,8 @@ gws_async_command (
 // We can use this to broadcast.
 void gws_send_wm_magic ( int fd, int pid )
 {
-
-    if(fd<0)
-        return;
-
-    if(pid<0)
-        return;
-
+    if(fd<0) { return; }
+    if(pid<0){ return; }
     gws_async_command(fd,7,0,pid);
 }
 
@@ -3861,13 +3838,8 @@ gws_default_procedure (
     return 0;
 }
 
+
 //
 // End.
 //
-
-
-
-
-
-
 

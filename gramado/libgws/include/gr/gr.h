@@ -1,7 +1,6 @@
 /*
  * File: gr.h
- * 
- *     3D graphics support for libgws.
+ *     Client-side 3D graphics support for libgws.
  *     This header should be included by including "gws.h".
  */
 

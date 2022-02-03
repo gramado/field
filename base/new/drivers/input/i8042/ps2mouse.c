@@ -1,5 +1,5 @@
 
-
+// ps2mouse.c
 
 #include <kernel.h>  
 
@@ -130,6 +130,7 @@ quit:
 
 
 // local worker
+// #todo: Explain it better.
 void __ps2mouse_parse_data_packet (void)
 {
     unsigned char Flags=0;
@@ -141,18 +142,23 @@ void __ps2mouse_parse_data_packet (void)
     Flags = mouse_packet_data;     // Para uso interno.
 
 // == Posicionamento ====
+// #todo
+// Explain it better.
 
     saved_mouse_x = mouse_x;
     saved_mouse_y = mouse_y;
-    __update_mouse (); 
-
+    __update_mouse(); 
 
 // Agora vamos manipular os valores atualizados.
 
     mouse_x = (mouse_x & 0x000003FF );
     mouse_y = (mouse_y & 0x000003FF );
 
-    // screen limits
+// Screen limits.
+// #todo
+// Precisamos de variáveis globais que
+// nos diga as dimensões da tela.
+
     if ( mouse_x < 1 ){ mouse_x = 1; }
     if ( mouse_y < 1 ){ mouse_y = 1; }
     //if ( mouse_x > (SavedX-16) ){ mouse_x = (SavedX-16); }
@@ -161,7 +167,7 @@ void __ps2mouse_parse_data_packet (void)
     if ( mouse_x > 300 ){ mouse_x = 300; }
     if ( mouse_y > 150 ){ mouse_y = 150; }
 
-// Cursor movement
+// Cursor movement.
 // Comparando o novo com o antigo, pra saber se o mouse se moveu.
 // #obs: Pra quem mandaremos a mensagem de moving ??
 
@@ -173,6 +179,7 @@ void __ps2mouse_parse_data_packet (void)
         // se o botão estiver pressionado então temos um drag (carregar.)
         // um release cancela o carregar.
         ps2_mouse_moving = TRUE;
+
        // Apaga o antigo.
        // + Copia no LFB um retângulo do backbuffer 
        // para apagar o ponteiro antigo.
@@ -185,16 +192,21 @@ void __ps2mouse_parse_data_packet (void)
        
        // #bugbug: Essa rotina pode estar falhando na maquina real.
        // por problemas na inicializaçao de variaveis
-       //drawDataRectangle( mouse_x, mouse_y, 10, 10, COLOR_BLACK, 0 );
        
+       //drawDataRectangle( 
+       //    mouse_x, mouse_y, 
+       //    10, 10, COLOR_RED, 0 );
+
        // IN: color, x, y, 0, rop_flags
        backbuffer_putpixel ( 
            COLOR_BLACK,  // color 
            mouse_x,      // x
            mouse_y,      // y
            0 );          // rop_flags
+
        refresh_rectangle ( mouse_x, mouse_y, 10, 10 );
        
+       //#debug
        //printf("[%d,%d] ",mouse_x,mouse_y);
        //refresh_screen();
        
@@ -393,13 +405,12 @@ void ps2mouse_initialize_device (void)
 
 
 
-
+// Called by irq12_MOUSE in mouse.c.
 void DeviceInterface_PS2Mouse(void)
 {
     int posX = 0;
     int posY = 0;
     char *_byte;
-
 
 
 // Not initialized.
@@ -408,86 +419,77 @@ void DeviceInterface_PS2Mouse(void)
         return;
     }
 
+// Get one byte in the controler.
+// #todo
+// Temos que checar se o primeiro byte é um ack ou um resend.
+// isso acontece logo apos a inicialização.
+// #define ACKNOWLEDGE         0xFA
+// #define RESEND              0xFE
 
     *_byte = (char) zzz_mouse_read();
 
-    // #todo
-    // Temos que checar se o primeiro byte é um ack ou um resend.
-    // isso acontece logo apos a inicialização.
-    // #define ACKNOWLEDGE         0xFA
-    // #define RESEND              0xFE
     if ( *_byte == 0xFA ){
-        printf ("DeviceInterface_PS2Mouse: [test.first_byte] ack\n");
+        printf ("DeviceInterface_PS2Mouse: ack\n");
         refresh_screen();
     }
     if ( *_byte == 0xFE ){
-        printf ("DeviceInterface_PS2Mouse: [test.first_byte] resend\n");
+        printf ("DeviceInterface_PS2Mouse: resend\n");
         refresh_screen();
     }
 
+// #todo
+// O bit 6 indica que é o primeir byte do pacote.
+// Synchronize
 
-    // #todo
-    // O bit 6 indica que é o primeir byte do pacote.
-    // Synchronize
     //if(( *_byte & 64)==64) { count_mouse=0; };
-
 
 // Counter
     switch (count_mouse){
-
-        case 0:
-            buffer_mouse[0] = (char) *_byte;
-            if (*_byte & MOUSE_FLAGS_ALWAYS_1){  count_mouse++;  }
-            break;
-
-        case 1:
-            buffer_mouse[1] = (char) *_byte;
-            count_mouse++;
-            break;
-
-        case 2:
-            buffer_mouse[2] = (char) *_byte;
-            count_mouse = 0;
-            
-            if( (*_byte & 0x80) || (*_byte & 0x40) == 0 ) 
-            {
-                __ps2mouse_parse_data_packet();  //LOCAL WORKER
-            }
-            
-            //old_mouse_buttom_1 = mouse_buttom_1;
-            //old_mouse_buttom_2 = mouse_buttom_2;
-            //old_mouse_buttom_3 = mouse_buttom_3;
-            break;
-
-        default:
-            in8(0x60);
-            count_mouse = 0;
-            //old_mouse_buttom_1 = 0;
-            //old_mouse_buttom_2 = 0;
-            //old_mouse_buttom_3 = 0;
-            //mouse_buttom_1 = 0;
-            //mouse_buttom_2 = 0;
-            //mouse_buttom_3 = 0;
-            break;
+    case 0:
+        buffer_mouse[0] = (char) *_byte;
+        if (*_byte & MOUSE_FLAGS_ALWAYS_1){ count_mouse++; }
+        break;
+    case 1:
+        buffer_mouse[1] = (char) *_byte;
+        count_mouse++;
+        break;
+    case 2:
+        buffer_mouse[2] = (char) *_byte;
+        count_mouse = 0;
+        if( (*_byte & 0x80) || (*_byte & 0x40) == 0 ) 
+        {
+            __ps2mouse_parse_data_packet();  //LOCAL WORKER
+        }
+        //old_mouse_buttom_1 = mouse_buttom_1;
+        //old_mouse_buttom_2 = mouse_buttom_2;
+        //old_mouse_buttom_3 = mouse_buttom_3;
+        break;
+    default:
+        in8(0x60);
+        count_mouse = 0;
+        //old_mouse_buttom_1 = 0;
+        //old_mouse_buttom_2 = 0;
+        //old_mouse_buttom_3 = 0;
+        //mouse_buttom_1 = 0;
+        //mouse_buttom_2 = 0;
+        //mouse_buttom_3 = 0;
+        break;
     };
 
-
-    //#debug
+//#debug
     //printf("$\n");
     //refresh_screen();
 }
 
 
-
-
-
-// Esta função será usada para escrever dados do mouse na porta 0x60, fora do IRQ12
+// Esta função será usada para escrever dados 
+// do mouse na porta 0x60, fora do IRQ12
 void zzz_mouse_write(unsigned char data)
 {
-	kbdc_wait(1);
-	out8(0x64,0xD4);
-	kbdc_wait(1);
-	out8(0x60,data);
+    kbdc_wait(1);
+    out8(0x64,0xD4);
+    kbdc_wait(1);
+    out8(0x60,data);
 }
 
 
@@ -500,7 +502,6 @@ void zzz_mouse_write(unsigned char data)
 unsigned char zzz_mouse_read (void)
 {
     prepare_for_input();
-    
     return (unsigned char) in8(0x60);
 }
 

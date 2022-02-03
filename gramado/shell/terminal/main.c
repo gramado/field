@@ -113,11 +113,19 @@ void clear_terminal_client_window(int fd)
     cursor_y = Terminal.top;
 }
 
+
+// Compare the string typed into the terminal.
+// Remember, we have an embedded command interpreter.
 void compareStrings(int fd)
 {
+
+    if(fd<0)
+        return;
+
     //printf("\n");
 
-    // help/test ...
+// =============
+// 'help'
     if ( strncmp(prompt,"help",4) == 0 )
     {
         cursor_y++;
@@ -152,15 +160,47 @@ void compareStrings(int fd)
         goto exit_cmp;
     }
 
+// =============
+// 'reboot'
     if ( strncmp(prompt,"reboot",6) == 0 ){
         rtl_reboot();
         goto exit_cmp;
     }
 
+// =============
+// 'cls'
     if ( strncmp(prompt,"cls",3) == 0 ){
         clear_terminal_client_window(fd);
         goto exit_cmp;
     }
+
+
+// =============
+// 't1'
+    if ( strncmp(prompt,"t1",2) == 0 )
+    {
+        // pixel: ok
+        gws_plot0(fd, 20, 20, 0, COLOR_RED );
+        gws_plot0(fd, 30, 30, 0, COLOR_GREEN );
+        gws_plot0(fd, 40, 40, 0, COLOR_BLUE );
+
+        // char: #testing
+        //gws_draw_char ( 
+        //    fd, 
+        //    Terminal.client_window_id, 
+        //    (cursor_x*8), 
+        //    (cursor_y*8), 
+        //    fg_color, 
+        //    '/' ); 
+        
+        goto exit_cmp;
+    }
+
+
+//
+// Not a reserved word.
+//
+
 
 // Empty buffer
    if( *prompt == 0 )

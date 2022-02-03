@@ -98,7 +98,7 @@
 // Read and write from socket.
 #include "io/rw.h"
 
-// 3d graphics support.
+// Client-side 3D graphics support.
 #include "gr/gr.h"
 
 // ...
