@@ -1066,7 +1066,7 @@ xxxKeyEvent (
     int tid, 
     unsigned char raw_byte );
 
-
+int xxxMouseEvent(long x, long y);
 
 #endif    
 

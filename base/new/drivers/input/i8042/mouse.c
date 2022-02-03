@@ -50,8 +50,9 @@ irq12_MOUSE (void)
     // E se isso falhar?
     wait_then_write (0x64,0xAE);    // Reanable keyboard.
     //keyboard_expect_ack();
-}
 
+    debug_print ("irq12_MOUSE: Done\n");
+}
 
 
 

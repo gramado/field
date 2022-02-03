@@ -65,8 +65,8 @@ void ps2kbd_initialize_device (void)
 
 // PUT SCANCODE
 
-void DeviceInterface_PS2Keyboard(void){
-
+void DeviceInterface_PS2Keyboard(void)
+{
     // Usado nos testes
     struct process_d *p;
 
@@ -179,7 +179,6 @@ sc_again:
        goto done;
        break;
 
-    
     ScancodeOrPrefix:
     default:
         goto CheckByte;
@@ -188,7 +187,6 @@ sc_again:
 
 // ===========================================
 //--
-
 
 
 CheckByte:
@@ -211,8 +209,8 @@ CheckByte:
 
 
 // Check prefix for extended keyboard sequence
-     if ( __raw == 0xE0 ){ __has_e0_prefix = 1; goto done;  }
-     if ( __raw == 0xE1 ){ __has_e1_prefix = 1; goto done;  }
+    if ( __raw == 0xE0 ){ __has_e0_prefix = 1; goto done; }
+    if ( __raw == 0xE1 ){ __has_e1_prefix = 1; goto done; }
 
 
 // Process the normal byte
@@ -235,12 +233,12 @@ NormalByte:
 //
 
 // Valid foreground thread.
+// Handler for keyboard input.
+// See: kgwm.c
 
     if ( foreground_thread >= 0 && 
          foreground_thread < THREAD_COUNT_MAX )
     {
-
-       // Handler for keyboard input.
        xxxKeyEvent(
            (int) foreground_thread,
            (unsigned char) __raw );

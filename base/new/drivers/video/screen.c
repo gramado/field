@@ -225,7 +225,7 @@ int screenInit (void){
     screen_is_dirty = FALSE;
 
 
-    // Configura globais com base nos valores passados pelo Boot Loader.
+// Configura globais com base nos valores passados pelo Boot Loader.
 
     screenSetSize ( (unsigned long) SavedX, (unsigned long) SavedY );
     

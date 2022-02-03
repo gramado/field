@@ -566,6 +566,8 @@ fail:
  * foco de entrada.
  */
 
+// Called by DeviceInterface_PS2Keyboard in ps2kbd.c
+
 // Pega um scancode, transforma em caractere e envia 
 // na forma de mensagem para a thread de controle associada 
 // com a janela que tem o foco de entrada.
@@ -1004,9 +1006,7 @@ xxxKeyEvent (
         
     } // FI
 
-
 // == Dispatch =======================================================
-
 
 // Done.
 // Para finalizar, vamos enviar a mensagem para fila certa.
@@ -1018,16 +1018,13 @@ done:
     Event_LongRawByte = (unsigned long) ( Keyboard_RawByte & 0x000000FF );
 
 
-
 // Não tem virtual key '0'.
 
     if ( Event_LongASCIICode == 0 )
         return -1;
 
-
 // #todo
 // Check 'control + alt + del'.
-
 
 // Teclas de digitação.
 // Manda para o window server.
@@ -1094,9 +1091,42 @@ done:
     return 0;
 }
 
-
 //==========
 
+
+int xxxMouseEvent(long x, long y)
+{
+
+    unsigned long deviceWidth  = (unsigned long) screenGetWidth();
+    unsigned long deviceHeight = (unsigned long) screenGetHeight();
+
+    deviceWidth  = (deviceWidth & 0xFFFF);
+    deviceHeight = (deviceHeight & 0xFFFF);
+
+    if ( x < 1 ){ x = 1; }
+    if ( y < 1 ){ y = 1; }
+    //if ( x > (SavedX-16) ){ x = (SavedX-16); }
+    //if ( y > (SavedY-16) ){ y = (SavedY-16); }
+
+    if ( x > (deviceWidth-1)  ){ x = (deviceWidth-1);  }
+    if ( y > (deviceHeight-1) ){ y = (deviceHeight-1); }
+
+    //drawDataRectangle( 
+    //    x, y, 
+    //    10, 10, COLOR_RED, 0 );
+
+    // IN: color, x, y, 0, rop_flags
+    backbuffer_putpixel ( 
+        COLOR_BLACK,  // color 
+        x,      // x
+        y,      // y
+        0 );          // rop_flags
+
+    refresh_rectangle ( x, y, 10, 10 );
+
+
+    return 0;
+}
 
 
 // called by I_init()

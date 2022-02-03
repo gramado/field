@@ -17,7 +17,7 @@ irq1_KEYBOARD (void)
 {
     //#debug
 
-    debug_print ("\n");
+    //debug_print ("\n");
     debug_print ("irq1_KEYBOARD: [TODO]\n");
 
 
@@ -45,19 +45,19 @@ irq1_KEYBOARD (void)
 
     DeviceInterface_PS2Keyboard();
 
-    // #bugbug
-    // Se estivermos usando uma inicialização reduzida,
-    // onde habilitamos somente a porta do teclado,
-    // não podemos habilitar a porta do mouse, sem a 
-    // devida inicialização.
+// #bugbug
+// Se estivermos usando uma inicialização reduzida,
+// onde habilitamos somente a porta do teclado,
+// não podemos habilitar a porta do mouse, sem a 
+// devida inicialização.
 
-    // Só reabilitaremos se a configuração de ps2 
-    // nos disser que o segundo dispositivo esta em uso.
-    
-    // Reabilitando a porta de um dispositivo que
-    // ja foi devidamente inicializado.
+// Só reabilitaremos se a configuração de ps2 
+// nos disser que o segundo dispositivo esta em uso.
 
-    // Reenable the mouse port.
+// Reabilitando a porta de um dispositivo que
+// ja foi devidamente inicializado.
+
+// Reenable the mouse port.
 
 done:
 
@@ -68,7 +68,10 @@ done:
             //mouse_expect_ack();
         }
     }
+
+    debug_print ("irq1_KEYBOARD: Done\n");
 }
+
 
 
 

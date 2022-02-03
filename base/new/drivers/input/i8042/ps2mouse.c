@@ -159,13 +159,14 @@ void __ps2mouse_parse_data_packet (void)
 // Precisamos de variáveis globais que
 // nos diga as dimensões da tela.
 
-    if ( mouse_x < 1 ){ mouse_x = 1; }
-    if ( mouse_y < 1 ){ mouse_y = 1; }
+    //#todo: Esse filtro agora é feito na rotina de 
+    //tratamento de evento, que é chamada logo abaixo.
+    //if ( mouse_x < 1 ){ mouse_x = 1; }
+    //if ( mouse_y < 1 ){ mouse_y = 1; }
     //if ( mouse_x > (SavedX-16) ){ mouse_x = (SavedX-16); }
     //if ( mouse_y > (SavedY-16) ){ mouse_y = (SavedY-16); }
-
-    if ( mouse_x > 300 ){ mouse_x = 300; }
-    if ( mouse_y > 150 ){ mouse_y = 150; }
+    //if ( mouse_x > 300 ){ mouse_x = 300; }
+    //if ( mouse_y > 150 ){ mouse_y = 150; }
 
 // Cursor movement.
 // Comparando o novo com o antigo, pra saber se o mouse se moveu.
@@ -198,24 +199,25 @@ void __ps2mouse_parse_data_packet (void)
        //    10, 10, COLOR_RED, 0 );
 
        // IN: color, x, y, 0, rop_flags
-       backbuffer_putpixel ( 
-           COLOR_BLACK,  // color 
-           mouse_x,      // x
-           mouse_y,      // y
-           0 );          // rop_flags
+       //backbuffer_putpixel ( 
+       //    COLOR_BLACK,  // color 
+       //    mouse_x,      // x
+       //    mouse_y,      // y
+       //    0 );          // rop_flags
 
-       refresh_rectangle ( mouse_x, mouse_y, 10, 10 );
+       //refresh_rectangle ( mouse_x, mouse_y, 10, 10 );
        
        //#debug
        //printf("[%d,%d] ",mouse_x,mouse_y);
        //refresh_screen();
        
+       // See: kgwm.c
+       xxxMouseEvent(mouse_x,mouse_y);
+
     }else{
         // Não redesenhamos quando o evento for um click, sem movimento.
         ps2_mouse_moving = FALSE;
-    }; 
-    
-    
+    };
 }
 
 
@@ -458,7 +460,9 @@ void DeviceInterface_PS2Mouse(void)
         count_mouse = 0;
         if( (*_byte & 0x80) || (*_byte & 0x40) == 0 ) 
         {
-            __ps2mouse_parse_data_packet();  //LOCAL WORKER
+            // LOCAL WORKER
+            // Action after mouse event.
+            __ps2mouse_parse_data_packet();
         }
         //old_mouse_buttom_1 = mouse_buttom_1;
         //old_mouse_buttom_2 = mouse_buttom_2;
