@@ -153,37 +153,33 @@ void __ps2mouse_parse_data_packet (void)
     saved_mouse_y = mouse_y;
     //__update_mouse(); 
 
+
     int x_overflow=FALSE; 
-    if(mouse_packet_data & 0x40)
-        x_overflow=TRUE;
-
     int y_overflow=FALSE;
-    if(mouse_packet_data & 0x80)
-        y_overflow=TRUE;
-
     int x_sign=FALSE;
-    if(mouse_packet_data & 0x10)
-        x_sign = TRUE;
-
     int y_sign=FALSE;
-    if(mouse_packet_data & 0x20)
-        y_sign = TRUE;
 
-// deltas
+    if(mouse_packet_data & 0x10){ x_sign=TRUE; }
+    if(mouse_packet_data & 0x20){ y_sign=TRUE; }
+    if(mouse_packet_data & 0x40){ x_overflow=TRUE; }
+    if(mouse_packet_data & 0x80){ y_overflow=TRUE; }
 
-    if ( mouse_packet_x && x_sign )
-        mouse_packet_x -= 0x100;
-
-    if (mouse_packet_y && y_sign)
-        mouse_packet_y -= 0x100;
+// deltas (256)
+    if (mouse_packet_x && x_sign){ mouse_packet_x -= 0x100; }
+    if (mouse_packet_y && y_sign){ mouse_packet_y -= 0x100; }
 
 // Deltas de ouve overflow
-    if (x_overflow || y_overflow) {
+    if (x_overflow || y_overflow){
         mouse_packet_x = 0;
         mouse_packet_y = 0;
     }
 
+// #todo
+// Podemos usar um 'acelerador'
+// na forma de multiplicador do delta.
+// Multiplica ou adiciona ao delta.
 
+// It is relative.
     mouse_x += mouse_packet_x;
     mouse_y -= mouse_packet_y;
 
@@ -191,7 +187,15 @@ void __ps2mouse_parse_data_packet (void)
     mouse_x = (mouse_x & 0x000003FF );
     mouse_y = (mouse_y & 0x000003FF );
 
-
+/*
+ #todo
+// buttons
+  mouse_buttons[0] =  mouse_buf[0] & 1;
+  mouse_buttons[1] = (mouse_buf[0] & 2) >> 1;
+  mouse_buttons[2] = (mouse_buf[0] & 4) >> 2;
+  mouse_buttons[3] = (mouse_buf[3] & 0x10) >> 4;
+  mouse_buttons[4] = (mouse_buf[3] & 0x20) >> 5;
+*/
 
 
 // Screen limits.
@@ -259,8 +263,9 @@ void __ps2mouse_parse_data_packet (void)
         ps2_mouse_moving = FALSE;
     };
 
-
-    xxxMouseEvent(mouse_x,mouse_y);
+// event
+    //if( !x_overflow && !y_overflow )
+        xxxMouseEvent(mouse_x,mouse_y);
 
     debug_print ("__ps2mouse_parse_data_packet: Done\n");
 }
