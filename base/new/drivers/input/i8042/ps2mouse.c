@@ -177,6 +177,7 @@ void __ps2mouse_parse_data_packet (void)
     if (mouse_packet_y && y_sign)
         mouse_packet_y -= 0x100;
 
+// Deltas de ouve overflow
     if (x_overflow || y_overflow) {
         mouse_packet_x = 0;
         mouse_packet_y = 0;
@@ -189,6 +190,9 @@ void __ps2mouse_parse_data_packet (void)
 // Agora vamos manipular os valores atualizados.
     mouse_x = (mouse_x & 0x000003FF );
     mouse_y = (mouse_y & 0x000003FF );
+
+
+
 
 // Screen limits.
 // #todo
@@ -248,12 +252,15 @@ void __ps2mouse_parse_data_packet (void)
        //refresh_screen();
        
        // See: kgwm.c
-       xxxMouseEvent(mouse_x,mouse_y);
+       //xxxMouseEvent(mouse_x,mouse_y);
 
     }else{
         // Não redesenhamos quando o evento for um click, sem movimento.
         ps2_mouse_moving = FALSE;
     };
+
+
+    xxxMouseEvent(mouse_x,mouse_y);
 
     debug_print ("__ps2mouse_parse_data_packet: Done\n");
 }
