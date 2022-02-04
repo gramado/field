@@ -12,6 +12,7 @@ static long mouse_x = 0;
 static long mouse_y = 0;
 
 static int ps2_mouse_moving=0;
+static int ps2_mouse_has_wheel=0;
 
 static unsigned char mouse_packet_data = 0;   // várias flags;
 static char mouse_packet_x = 0;      // delta x
@@ -150,10 +151,42 @@ void __ps2mouse_parse_data_packet (void)
 
     saved_mouse_x = mouse_x;
     saved_mouse_y = mouse_y;
-    __update_mouse(); 
+    //__update_mouse(); 
+
+    int x_overflow=FALSE; 
+    if(mouse_packet_data & 0x40)
+        x_overflow=TRUE;
+
+    int y_overflow=FALSE;
+    if(mouse_packet_data & 0x80)
+        y_overflow=TRUE;
+
+    int x_sign=FALSE;
+    if(mouse_packet_data & 0x10)
+        x_sign = TRUE;
+
+    int y_sign=FALSE;
+    if(mouse_packet_data & 0x20)
+        y_sign = TRUE;
+
+// deltas
+
+    if ( mouse_packet_x && x_sign )
+        mouse_packet_x -= 0x100;
+
+    if (mouse_packet_y && y_sign)
+        mouse_packet_y -= 0x100;
+
+    if (x_overflow || y_overflow) {
+        mouse_packet_x = 0;
+        mouse_packet_y = 0;
+    }
+
+
+    mouse_x += mouse_packet_x;
+    mouse_y -= mouse_packet_y;
 
 // Agora vamos manipular os valores atualizados.
-
     mouse_x = (mouse_x & 0x000003FF );
     mouse_y = (mouse_y & 0x000003FF );
 
@@ -341,6 +374,8 @@ void ps2mouse_initialize_device (void)
 //++
 //=================================================
 
+    ps2_mouse_has_wheel = FALSE;
+
 /*
 //__enable_wheel:    
   
@@ -491,30 +526,50 @@ void DeviceInterface_PS2Mouse(void)
 
 // Counter
     switch (count_mouse){
+    //flags
     case 0:
         debug_print ("[0]:\n");
         buffer_mouse[0] = (char) _byte;
-        if (_byte & MOUSE_FLAGS_ALWAYS_1){ count_mouse++; }
+        if (!(_byte & MOUSE_FLAGS_ALWAYS_1)){
+            debug_print ("[0]: Stream out of sync.\n");
+            break;
+        }
+        count_mouse++;
         break;
+    //x
     case 1:
         debug_print ("[1]:\n");
         buffer_mouse[1] = (char) _byte;
         count_mouse++;
         break;
+    //y
     case 2:
         debug_print ("[2]:\n");
         buffer_mouse[2] = (char) _byte;
-        count_mouse = 0;
-        if( (_byte & 0x80) || (_byte & 0x40) == 0 ) 
+        // Se tem wheel, então tem mais um bytes.
+        if( ps2_mouse_has_wheel == TRUE )
         {
+            count_mouse++;
+            break;
+        }
+        count_mouse = 0;
+        //if( (_byte & 0x80) || (_byte & 0x40) == 0 ) 
+        //{
             // LOCAL WORKER
             // Action after mouse event.
             __ps2mouse_parse_data_packet();
-        }
+        //}
         //old_mouse_buttom_1 = mouse_buttom_1;
         //old_mouse_buttom_2 = mouse_buttom_2;
         //old_mouse_buttom_3 = mouse_buttom_3;
         break;
+    //Se tiver 'wheel'.
+    case 3:
+        count_mouse = 0;
+        __ps2mouse_parse_data_packet();
+        break;
+    
+    //error
     default:
         debug_print ("[default]:\n");
         in8(0x60);
