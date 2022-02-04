@@ -27,9 +27,11 @@ irq12_MOUSE (void)
         return;
     }
 
-    wait_then_write (0x64,0xAD);    // Disable keyboard.
+    // Disable keyboard port.
+    wait_then_write (0x64,0xAD);    
     //keyboard_expect_ack();
-    
+
+
 //
 // #todo
 //
@@ -45,10 +47,10 @@ irq12_MOUSE (void)
     //#debug
     //printf("$\n");
     //refresh_screen();
-    
-    // #bugbug
-    // E se isso falhar?
-    wait_then_write (0x64,0xAE);    // Reanable keyboard.
+
+
+// Reanable keyboard port.
+    wait_then_write (0x64,0xAE);
     //keyboard_expect_ack();
 
     debug_print ("irq12_MOUSE: Done\n");

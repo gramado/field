@@ -135,6 +135,9 @@ void __ps2mouse_parse_data_packet (void)
 {
     unsigned char Flags=0;
 
+
+    debug_print ("__ps2mouse_parse_data_packet:\n");
+
     mouse_packet_data = buffer_mouse[0];    // Primeiro char
     mouse_packet_x    = buffer_mouse[1];    // Segundo char.
     mouse_packet_y    = buffer_mouse[2];    // Terceiro char.
@@ -218,6 +221,8 @@ void __ps2mouse_parse_data_packet (void)
         // Não redesenhamos quando o evento for um click, sem movimento.
         ps2_mouse_moving = FALSE;
     };
+
+    debug_print ("__ps2mouse_parse_data_packet: Done\n");
 }
 
 
@@ -410,10 +415,14 @@ void ps2mouse_initialize_device (void)
 // Called by irq12_MOUSE in mouse.c.
 void DeviceInterface_PS2Mouse(void)
 {
+    unsigned char _byte=0;
+
     int posX = 0;
     int posY = 0;
-    char *_byte;
 
+
+
+    debug_print ("DeviceInterface_PS2Mouse:\n");
 
 // Not initialized.
     if ( PS2.mouse_initialized != TRUE )
@@ -428,15 +437,50 @@ void DeviceInterface_PS2Mouse(void)
 // #define ACKNOWLEDGE         0xFA
 // #define RESEND              0xFE
 
-    *_byte = (char) zzz_mouse_read();
 
-    if ( *_byte == 0xFA ){
-        printf ("DeviceInterface_PS2Mouse: ack\n");
-        refresh_screen();
+
+// == bytes =================================
+// #todo
+// Read this to understand the bytes.
+// https://wiki.osdev.org/Mouse_Input
+
+/*
+ One of the biggest problems with streaming 
+ mode is "alignment" -- the packets were never defined 
+ to have an obvious boundary. This means that it is 
+ very easy to lose track of which mouse byte is 
+ supposed to be the first byte of the next packet. 
+ This problem is completely avoided if you specifically 
+ request single packets (instead of using streaming mode) 
+ because every packet begins with an ACK (0xFA), 
+ which is easily recognizable.
+*/
+
+
+
+    debug_print ("[Get byte]: #bugbug PF\n");
+    _byte = (unsigned char) zzz_mouse_read();
+    
+    // ACK: 
+    // Significa início do pacote quando no modo
+    // 'request single packets'.
+    if ( _byte == 0xFA ){
+        debug_print ("[0xFA]: ACK\n");
+        //printf ("DeviceInterface_PS2Mouse: ack\n");
+        //refresh_screen();
+        //in8(0x60);
+        count_mouse = 0;
+        return;
     }
-    if ( *_byte == 0xFE ){
-        printf ("DeviceInterface_PS2Mouse: resend\n");
-        refresh_screen();
+    
+    // RESEND: 
+    if ( _byte == 0xFE ){
+        debug_print ("[0xFE]: RESEND\n");
+        //printf ("DeviceInterface_PS2Mouse: resend\n");
+        //refresh_screen();
+        //in8(0x60);
+        count_mouse = 0;
+        return;
     }
 
 // #todo
@@ -448,17 +492,20 @@ void DeviceInterface_PS2Mouse(void)
 // Counter
     switch (count_mouse){
     case 0:
-        buffer_mouse[0] = (char) *_byte;
-        if (*_byte & MOUSE_FLAGS_ALWAYS_1){ count_mouse++; }
+        debug_print ("[0]:\n");
+        buffer_mouse[0] = (char) _byte;
+        if (_byte & MOUSE_FLAGS_ALWAYS_1){ count_mouse++; }
         break;
     case 1:
-        buffer_mouse[1] = (char) *_byte;
+        debug_print ("[1]:\n");
+        buffer_mouse[1] = (char) _byte;
         count_mouse++;
         break;
     case 2:
-        buffer_mouse[2] = (char) *_byte;
+        debug_print ("[2]:\n");
+        buffer_mouse[2] = (char) _byte;
         count_mouse = 0;
-        if( (*_byte & 0x80) || (*_byte & 0x40) == 0 ) 
+        if( (_byte & 0x80) || (_byte & 0x40) == 0 ) 
         {
             // LOCAL WORKER
             // Action after mouse event.
@@ -469,6 +516,7 @@ void DeviceInterface_PS2Mouse(void)
         //old_mouse_buttom_3 = mouse_buttom_3;
         break;
     default:
+        debug_print ("[default]:\n");
         in8(0x60);
         count_mouse = 0;
         //old_mouse_buttom_1 = 0;
@@ -483,6 +531,8 @@ void DeviceInterface_PS2Mouse(void)
 //#debug
     //printf("$\n");
     //refresh_screen();
+
+    debug_print ("DeviceInterface_PS2Mouse: Done\n");
 }
 
 
@@ -505,8 +555,18 @@ void zzz_mouse_write(unsigned char data)
 
 unsigned char zzz_mouse_read (void)
 {
+    unsigned char Value=0;
+
+    debug_print ("zzz_mouse_read:\n");
+
+    debug_print ("[1]:\n");
     prepare_for_input();
-    return (unsigned char) in8(0x60);
+
+    debug_print ("[2]:\n");
+    Value = (unsigned char) in8(0x60);
+
+    debug_print ("zzz_mouse_read: Done\n");
+    return (unsigned char) Value;
 }
 
 

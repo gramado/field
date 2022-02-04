@@ -1100,6 +1100,9 @@ int xxxMouseEvent(long x, long y)
     unsigned long deviceWidth  = (unsigned long) screenGetWidth();
     unsigned long deviceHeight = (unsigned long) screenGetHeight();
 
+
+    debug_print ("xxxMouseEvent:\n");
+
     deviceWidth  = (deviceWidth & 0xFFFF);
     deviceHeight = (deviceHeight & 0xFFFF);
 
@@ -1124,6 +1127,8 @@ int xxxMouseEvent(long x, long y)
 
     refresh_rectangle ( x, y, 10, 10 );
 
+
+    debug_print ("xxxMouseEvent: Done\n");
 
     return 0;
 }

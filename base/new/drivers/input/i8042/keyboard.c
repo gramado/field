@@ -57,9 +57,9 @@ irq1_KEYBOARD (void)
 // Reabilitando a porta de um dispositivo que
 // ja foi devidamente inicializado.
 
-// Reenable the mouse port.
-
 done:
+
+// Reenable the mouse port.
 
     if ( PS2.used == TRUE )
     {
