@@ -164,9 +164,17 @@ void __ps2mouse_parse_data_packet (void)
     if(mouse_packet_data & 0x40){ x_overflow=TRUE; }
     if(mouse_packet_data & 0x80){ y_overflow=TRUE; }
 
-// deltas (256)
-    if (mouse_packet_x && x_sign){ mouse_packet_x -= 0x100; }
-    if (mouse_packet_y && y_sign){ mouse_packet_y -= 0x100; }
+// deltas
+    if (mouse_packet_x && x_sign)
+    { 
+        //mouse_packet_x -= 0x100; 
+        mouse_packet_x = (char) (mouse_packet_x - 0xFF - 0x01);
+    }
+    if (mouse_packet_y && y_sign)
+    { 
+        //mouse_packet_y -= 0x100; 
+        mouse_packet_y = (char) (mouse_packet_y - 0xFF - 0x01);
+    }
 
 // Deltas de ouve overflow
     if (x_overflow || y_overflow){
@@ -180,8 +188,11 @@ void __ps2mouse_parse_data_packet (void)
 // Multiplica ou adiciona ao delta.
 
 // It is relative.
-    mouse_x += mouse_packet_x;
-    mouse_y -= mouse_packet_y;
+    //mouse_x += mouse_packet_x;
+    //mouse_y -= mouse_packet_y;
+    mouse_x = (long) (mouse_x + mouse_packet_x);
+    mouse_y = (long) (mouse_y - mouse_packet_y);
+
 
 // Agora vamos manipular os valores atualizados.
     mouse_x = (mouse_x & 0x000003FF );
