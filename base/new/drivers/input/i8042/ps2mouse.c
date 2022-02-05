@@ -170,20 +170,40 @@ void __ps2mouse_parse_data_packet (void)
 // deltas
     if (mouse_packet_x && x_sign)
     { 
-        //mouse_packet_x -= 0x100; 
         mouse_packet_x = (char) (mouse_packet_x - 0xFF - 0x01);
     }
     if (mouse_packet_y && y_sign)
     { 
-        //mouse_packet_y -= 0x100; 
         mouse_packet_y = (char) (mouse_packet_y - 0xFF - 0x01);
     }
 
-// Deltas de ouve overflow
-    if (x_overflow || y_overflow){
+
+/*
+    if (x_overflow || y_overflow)
+    {
         mouse_packet_x = 0;
         mouse_packet_y = 0;
     }
+*/
+
+// Limitando o delta no caso overflow de x.
+    if (x_overflow)
+    {
+        if (mouse_packet_x && x_sign)
+            mouse_packet_x = 0x00; //max neg delta
+        if (mouse_packet_x && !x_sign)
+            mouse_packet_x = 0xFF; //max pos delta
+    }
+
+// Limitando o delta no caso overflow de y.
+    if (y_overflow)
+    {
+        if (mouse_packet_y && y_sign)
+            mouse_packet_y = 0x00; //max neg delta
+        if (mouse_packet_y && !y_sign)
+            mouse_packet_y = 0xFF; //max pos delta
+    }
+
 
 // #todo
 // Podemos usar um 'acelerador'
