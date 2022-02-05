@@ -63,9 +63,12 @@ static char buffer_mouse[3];
 
 
 
+// #deprecated!
 // local worker
 void __update_mouse (void)
 {
+
+// #deprecated!
 
 // O primeiro byte comtém um monte de flags.
 // O segundo byte comtém o delta x
@@ -515,10 +518,37 @@ void DeviceInterface_PS2Mouse(void)
 */
 
 
+// =============================================
+// #test
+
+#define I8042_STATUS 0x64
+#define I8042_WHICH_BUFFER 0x20
+#define I8042_BUFFER_FULL 0x01
+#define I8042_MOUSE_BUFFER 0x20
+#define I8042_KEYBOARD_BUFFER 0x00
+
+// #test
+// buffer full?
+    unsigned char status = in8(I8042_STATUS);
+    if (!(status & I8042_BUFFER_FULL))
+        return;
+
+// which device?
+    int is_mouse_device = 
+        ((status & I8042_WHICH_BUFFER) == I8042_MOUSE_BUFFER) 
+        ? TRUE 
+        : FALSE;
+
+    //No it is not a mouse.
+    if ( is_mouse_device == FALSE )
+        return;
+// =============================================
+
 
     debug_print ("[Get byte]: #bugbug PF\n");
-    _byte = (unsigned char) zzz_mouse_read();
-    
+    //_byte = (unsigned char) zzz_mouse_read();
+    _byte = (unsigned char) in8(0x60);
+
     // ACK: 
     // Significa início do pacote quando no modo
     // 'request single packets'.

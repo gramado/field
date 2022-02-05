@@ -100,8 +100,6 @@ void DeviceInterface_PS2Keyboard(void)
         return;
 // =============================================
 
-
-
     //não precisamos perguntar para o controlador se
     //podemos ler, porque foi uma interrupção que nos trouxe aqui.
     // #obs:
