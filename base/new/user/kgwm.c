@@ -1114,16 +1114,29 @@ int xxxMouseEvent(long x, long y)
     if ( x > (deviceWidth-1)  ){ x = (deviceWidth-1);  }
     if ( y > (deviceHeight-1) ){ y = (deviceHeight-1); }
 
-    //drawDataRectangle( 
-    //    x, y, 
-    //    10, 10, COLOR_RED, 0 );
 
-    // IN: color, x, y, 0, rop_flags
-    backbuffer_putpixel ( 
-        COLOR_BLACK,  // color 
-        x,      // x
-        y,      // y
-        0 );          // rop_flags
+// #test
+// Draw rectangle.
+// #todo #bugbug
+// Isso está falhando ...
+// Existe algum problema na rotina de retângulo
+// que gera PF. Provavelmente é alguma coisa na
+// tipagem de algumas variáveis ... pois esse
+// é um código portado da arquitetura de 32bit 
+// para a arquitetura de 64bit.
+
+    drawDataRectangle( 
+        x, y, 
+        10, 10, COLOR_RED, 0 );
+
+// Draw a pixel.
+// IN: color, x, y, 0, rop_flags
+
+    //backbuffer_putpixel ( 
+    //    COLOR_BLACK,  // color 
+    //    x,      // x
+    //    y,      // y
+    //    0 );          // rop_flags
 
     refresh_rectangle ( x, y, 10, 10 );
 

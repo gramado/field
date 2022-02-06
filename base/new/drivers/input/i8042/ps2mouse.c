@@ -335,37 +335,41 @@ void ps2mouse_initialize_device (void)
 // ========================================
 // Enable the interrupts
 
-    // Dizemos para o controlador entrar no modo leitura.
-    // Esperamos para ler e lemos.
-    // 0x20 Read Command Byte
-    // I8042_READ = 0x20
+// Dizemos para o controlador entrar no modo leitura.
+// Esperamos para ler e lemos.
+// 0x20 Read Command Byte
+// I8042_READ = 0x20
+
     wait_then_write(0x64,I8042_READ);
     status = wait_then_read(0x60) | 2;
 
-    // Dizemos para o controlador entrar no modo escrita.
-    // Esperamos para escrever e escrevemos.
-    // Enable the PS/2 mouse IRQ (12).
-    // The keyboard uses IRQ 1 (and is enabled by bit 0 in this register).
-    // 0x60 Write Command Byte
+// Dizemos para o controlador entrar no modo escrita.
+// Esperamos para escrever e escrevemos.
+// Enable the PS/2 mouse IRQ (12).
+// The keyboard uses IRQ 1 (and is enabled by bit 0 in this register).
+// 0x60 Write Command Byte
+
     wait_then_write (0x64,I8042_WRITE);   // I8042_WRITE = 0x60
     wait_then_write (0x60,status);   
     
+
 // ========================================
 // Activate mouse port. (2nd port)
 
-    // 0x64 <<< 0xA8 ?? enable aux
-    // 0x64 <<< 0xA9 ?? check for mouse
-    // #todo: See i8042.h for the commands used in the initialization.
+// 0x64 <<< 0xA8 ?? enable aux
+// 0x64 <<< 0xA9 ?? check for mouse
+// #todo: See i8042.h for the commands used in the initialization.
 
-    // #test
-    // Habilitando o dispositivo secundario na forma bruta.
-    // Reenable mouse port.
-    // #bugbug: a rotina de inicializaçao da controladora ps2,
-    // esta fazendo isso ao fim da rotina. nao precisamos fazer isso aqui.
-    // Talvez atrapalhe a inicializaçao.
-    // 0xA8 Enable Mouse
-    // 0xA7 Disable Mouse
-    // 0xA9 Check Mouse InterfaceReturns 0, if OK
+// #test
+// Habilitando o dispositivo secundario na forma bruta.
+// Reenable mouse port.
+// #bugbug: 
+// a rotina de inicializaçao da controladora ps2,
+// esta fazendo isso ao fim da rotina. nao precisamos fazer isso aqui.
+// Talvez atrapalhe a inicializaçao.
+// 0xA8 Enable Mouse
+// 0xA7 Disable Mouse
+// 0xA9 Check Mouse InterfaceReturns 0, if OK
 
     // Enable mouse.
     wait_then_write(0x64,0xA8);
@@ -373,44 +377,55 @@ void ps2mouse_initialize_device (void)
 
 // ========================================
 // Reset
-//  Isso reseta o controlador inteiro ?
 
-    // Essa rotina avisa que vai escrever na porta do mouse
-    // antes de escrever.
-    // Então reseta somente o mouse e não o teclado.
+// #bugbug: Isso reseta o controlador ps2 inteiro?
+// Essa rotina avisa que vai escrever na porta do mouse
+// antes de escrever.
+// Então reseta somente o mouse e não o teclado.
+
     zzz_mouse_write(0xFF); 
     mouse_expect_ack();
 
 // ========================================
 // Default
 
-    // 0xF6 Set default settings.
+// 0xF6 Set default settings.
+
     zzz_mouse_write (__PS2MOUSE_SET_DEFAULTS);
     mouse_expect_ack();
 
-// --------------------------------------
-	// set sample rate
-	zzz_mouse_write(0xF3);
-	mouse_expect_ack(); // ACK
-	
-	zzz_mouse_write(200);
-	mouse_expect_ack(); // ACK
+// ========================================
+// set sample rate
+// Sampling Rate: Packets the mouse can send per second.
 
-	// set resolution
-	zzz_mouse_write(__PS2MOUSE_SET_RESOLUTION);
-	mouse_expect_ack(); // ACK
-	
-	zzz_mouse_write(3);
-	mouse_expect_ack(); // ACK
+    zzz_mouse_write(0xF3);
+    mouse_expect_ack(); // ACK
+    zzz_mouse_write(200);   // #todo: Create a global variable.
+    //zzz_mouse_write(100);
+    mouse_expect_ack(); // ACK
 
-	
-	//set scaling 1:1
-	zzz_mouse_write(0xE6);
-	mouse_expect_ack(); // ACK
+// ========================================
+// set resolution
+// Resolution: DeltaX or DeltaY for each millimeter of mouse movement.
 
-	// Enable the mouse
-	zzz_mouse_write(0xF4);
-	mouse_expect_ack(); // ACK
+    zzz_mouse_write(__PS2MOUSE_SET_RESOLUTION);
+    mouse_expect_ack(); // ACK
+    zzz_mouse_write(3);   // #todo: Create a global variable.
+    //zzz_mouse_write(1);
+    mouse_expect_ack(); // ACK
+
+
+// ========================================
+//set scaling 1:1
+// Scaling: Apply a simple non-linear distortion to mouse movement.
+    zzz_mouse_write(0xE6);
+    mouse_expect_ack(); // ACK
+
+// ========================================
+// Enable the mouse
+    zzz_mouse_write(0xF4);
+    mouse_expect_ack(); // ACK
+
 
 //
 // #test
