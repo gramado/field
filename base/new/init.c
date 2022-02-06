@@ -650,10 +650,10 @@ int kernel_main(int arch_type)
     //draw_string(80,80,COLOR_YELLOW,"Gramado X");
     
     //ok
-    //my_buffer_horizontal_line( 100, 100, 200, COLOR_GREEN );
+    //backbuffer_draw_horizontal_line( 100, 100, 200, COLOR_GREEN );
 
     //ok
-    //my_buffer_horizontal_line( 100, 100, 200, COLOR_GREEN );
+    //backbuffer_draw_horizontal_line( 100, 100, 200, COLOR_GREEN );
     //refresh_rectangle(100,100,200,4);
     //while(1){}
 

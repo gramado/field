@@ -1,6 +1,8 @@
 
-#include <kernel.h>
+// dtext.c
 
+
+#include <kernel.h>
 
 
 /* 
@@ -63,7 +65,7 @@ draw_string (
 void x_panic( char *string )
 {
     drawDataRectangle( 0, 0, 200, 28, COLOR_RED, 0 );
-    my_buffer_horizontal_line( 0, 28, 200, COLOR_YELLOW, 0 );
+    backbuffer_draw_horizontal_line( 0, 28, 200, COLOR_YELLOW, 0 );
 
 // string 1
     draw_string(8,8,COLOR_WHITE,"x_panic: ");
@@ -83,7 +85,7 @@ void xxxDrawString( char *string )
 {
 /*
     drawDataRectangle( 0, 0, 200, 28, COLOR_RED );
-    my_buffer_horizontal_line( 0, 28, 200, COLOR_YELLOW );
+    backbuffer_draw_horizontal_line( 0, 28, 200, COLOR_YELLOW );
 
     // string 1
     draw_string(8,8,COLOR_WHITE,"string: ");

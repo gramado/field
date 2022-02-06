@@ -1,4 +1,6 @@
 
+// bg.c
+
 
 #include <kernel.h>
 
@@ -39,7 +41,7 @@ void backgroundDraw (unsigned int color)
     }
 
     for ( i=0; i<SavedY; i++ ){
-        my_buffer_horizontal_line ( 0, i, SavedX, color );
+        backbuffer_draw_horizontal_line ( 0, i, SavedX, color );
     };
     
     */

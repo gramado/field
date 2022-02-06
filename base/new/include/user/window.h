@@ -917,11 +917,28 @@ struct gui_d  *gui;
 //
 
 void 
+putpixel0 ( 
+    unsigned int  _color,
+    unsigned long _x, 
+    unsigned long _y, 
+    unsigned long _rop_flags,
+    unsigned long buffer_va );
+
+void 
 backbuffer_putpixel ( 
     unsigned int  _color,
     unsigned long _x, 
     unsigned long _y, 
     unsigned long _rop_flags );
+
+
+void 
+frontbuffer_putpixel ( 
+    unsigned int  _color,
+    unsigned long _x, 
+    unsigned long _y, 
+    unsigned long _rop_flags );
+
 
 //
 // char
@@ -972,17 +989,53 @@ void xxxDrawString( char *string );
 //
 
 void 
-my_buffer_horizontal_line ( 
+backbuffer_draw_horizontal_line ( 
     unsigned long x1,
     unsigned long y, 
     unsigned long x2, 
     unsigned int color,
     unsigned long rop_flags );
 
+void 
+frontbuffer_draw_horizontal_line ( 
+    unsigned long x1,
+    unsigned long y, 
+    unsigned long x2, 
+    unsigned int color,
+    unsigned long rop_flags );
 
 //
 // Draw rectangle into the backbuffer.
 //
+
+void 
+drawrectangle0( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags,
+    int back_or_front );
+
+void 
+backbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags );
+
+void 
+frontbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags );
+
 
 void 
 drawDataRectangle ( 
@@ -993,6 +1046,16 @@ drawDataRectangle (
     unsigned int color,
     unsigned long rop_flags );
 
+
+void 
+refresh_rectangle0 ( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height,
+    unsigned long buffer_dest,
+    unsigned long buffer_src );
+
 void 
 refresh_rectangle ( 
     unsigned long x, 
@@ -1001,14 +1064,7 @@ refresh_rectangle (
     unsigned long height );
 
 
-void 
-refresh_rectangle2 ( 
-    unsigned long x, 
-    unsigned long y, 
-    unsigned long width, 
-    unsigned long height,
-    unsigned long buffer1,
-    unsigned long buffer2 );
+
 
 void scroll_screen_rect (void);
 

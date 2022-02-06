@@ -15,13 +15,13 @@ extern unsigned long SavedBPP;
 
 /*
  *****************************************
- * my_buffer_horizontal_line:
+ * backbuffer_draw_horizontal_line:
  *     Draw a horizontal line on backbuffer. 
  */
 
 
 void 
-my_buffer_horizontal_line ( 
+backbuffer_draw_horizontal_line ( 
     unsigned long x1,
     unsigned long y, 
     unsigned long x2, 
@@ -38,16 +38,40 @@ my_buffer_horizontal_line (
 
     while (x1 < x2)
     {
+        // IN: color, x, y, rop flags.
         backbuffer_putpixel ( 
-            color,        // color
-            x1,           // x
-            y,            // y
-            rop_flags );  // rop flags
-        
+            color, x1, y, rop_flags ); 
+
         x1++;
     };
 }
 
+
+void 
+frontbuffer_draw_horizontal_line ( 
+    unsigned long x1,
+    unsigned long y, 
+    unsigned long x2, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+// #todo
+// Maybe we need checking some limits here.
+
+    if (x1 > x2){
+        return;
+    }
+
+    while (x1 < x2)
+    {
+        // IN: color, x, y, rop flags.
+        frontbuffer_putpixel ( 
+            color, x1, y, rop_flags ); 
+
+        x1++;
+    };
+}
 
 
 

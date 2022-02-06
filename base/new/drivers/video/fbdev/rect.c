@@ -1,5 +1,5 @@
 
-
+// rect.c
 
 
 #include <kernel.h>
@@ -17,18 +17,22 @@
 // de lfb mapeados e de apenas 2 mb de backbuffer mapeados.
 // Pois nao queremos escrever em area nao mapeada.
 
+// IN:
+// 1=backbuffer
+// 2=frontbuffer
 
 void 
-drawDataRectangle ( 
+drawrectangle0( 
     unsigned long x, 
     unsigned long y, 
     unsigned long width, 
     unsigned long height, 
     unsigned int color,
-    unsigned long rop_flags )
+    unsigned long rop_flags,
+    int back_or_front )
 {
 
-    debug_print("drawDataRectangle: r0 :)\n");
+    debug_print("drawrectangle0: r0 :)\n");
 
 // Copy.
 
@@ -37,6 +41,15 @@ drawDataRectangle (
     unsigned long Width  = (width  & 0xFFFF); 
     unsigned long Height = (height & 0xFFFF);
     unsigned int Color   = color;
+
+
+// Invalid argument
+    if (back_or_front != 1 && 
+        back_or_front != 2 )
+    {
+         panic("drawrectangle0: back_or_front\n");
+    }
+
 
     //loop
     unsigned long internal_height = (unsigned long) Height;
@@ -59,8 +72,8 @@ drawDataRectangle (
     
     if ( deviceWidth == 0 || deviceHeight == 0 )
     {
-        debug_print ("drawDataRectangle: [PANIC] w h\n");
-        //panic       ("drawDataRectangle: [PANIC] w h\n");
+        debug_print ("drawrectangle0: [PANIC] w h\n");
+        //panic       ("drawrectangle0: [PANIC] w h\n");
         return;
     }
 
@@ -87,17 +100,17 @@ drawDataRectangle (
 // Provisório
 
     if ( ClippingRect.width > 800 )
-       panic("drawDataRectangle: width");
+       panic("drawrectangle0: width");
 
     if ( ClippingRect.height > 600 )
-       panic("drawDataRectangle: height");
+       panic("drawrectangle0: height");
 
 
     if ( ClippingRect.right > 800 )
-       panic("drawDataRectangle: right");
+       panic("drawrectangle0: right");
 
     if ( ClippingRect.bottom > 600 )
-       panic("drawDataRectangle: bottom");
+       panic("drawrectangle0: bottom");
 
 
 //
@@ -149,7 +162,7 @@ drawDataRectangle (
     // Draw lines on backbuffer.
 
     if ( internal_height > 600 )
-       panic("drawDataRectangle: internal_height");
+       panic("drawrectangle0: internal_height");
 
 //
 // Paint
@@ -157,12 +170,27 @@ drawDataRectangle (
 
 // Paint lines.
 // Incrementa a linha a ser pintada.
+// See: line.c
+
+// IN:
+// 1=backbuffer
+// 2=frontbuffer
 
     while (1)
     {
-        my_buffer_horizontal_line ( 
-            Rect.left, Y, Rect.right, Rect.bg_color, rop_flags );
- 
+
+        // 1=backbuffer
+        if( back_or_front == 1 ){
+            backbuffer_draw_horizontal_line ( 
+                Rect.left, Y, Rect.right, Rect.bg_color, rop_flags );
+        }
+
+        // 2=backbuffer
+        if( back_or_front == 2 ){
+            frontbuffer_draw_horizontal_line ( 
+                Rect.left, Y, Rect.right, Rect.bg_color, rop_flags );
+        }
+
         Y++;
         
         // #??
@@ -189,14 +217,82 @@ drawDataRectangle (
 
     Rect.dirty = TRUE;
 
-    debug_print("drawDataRectangle: Done\n");
+    debug_print("drawrectangle0: Done\n");
 }
 
 
 
+void 
+backbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+// 1=backbuffer
+// 2=frontbuffer
+
+    drawrectangle0(
+        x,
+        y,
+        width,
+        height,
+        color,
+        rop_flags,
+        1 );      // back or front.
+}
+
+void 
+frontbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+// 1=backbuffer
+// 2=frontbuffer
+
+    drawrectangle0(
+        x,
+        y,
+        width,
+        height,
+        color,
+        rop_flags,
+        2 );      // back or front.
+}
+
+
+void 
+drawDataRectangle ( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+
+// Draw into the backbuffer.
+    backbuffer_draw_rectangle( 
+        x,
+        y,
+        width,
+        height,
+        color,
+        rop_flags );
+}
+
+
 
 /*
- ***********************************************************
  * refresh_rectangle:
  *     Copiar um retângulo do backbuffer para o frontbuffer. 
  * 
@@ -223,17 +319,23 @@ drawDataRectangle (
 // Pois nao queremos escrever em area nao mapeada.
 
 void 
-refresh_rectangle ( 
+refresh_rectangle0 ( 
     unsigned long x, 
     unsigned long y, 
     unsigned long width, 
-    unsigned long height )
+    unsigned long height,
+    unsigned long buffer_dest,
+    unsigned long buffer_src )
 {
 
     debug_print("refresh_rectangle: r0 :)\n");
 
-    void *dest       = (void *)      FRONTBUFFER_ADDRESS;
-    const void *src  = (const void*) BACKBUFFER_ADDRESS;
+
+    //void *dest       = (void *)      FRONTBUFFER_ADDRESS;
+    //const void *src  = (const void*) BACKBUFFER_ADDRESS;
+    void *dest       = (void *)      buffer_dest;
+    const void *src  = (const void*) buffer_src;
+
 
     // loop
     register unsigned int i=0;
@@ -241,17 +343,12 @@ refresh_rectangle (
     unsigned int line_size=0; 
     register int count=0; 
 
-
-
     // Screen pitch.
     // screen line size in pixels * bytes per pixel.
     unsigned int screen_pitch=0;  
     // Rectangle pitch
     // rectangle line size in pixels * bytes per pixel.
     unsigned int rectangle_pitch=0;  
-
-
-
 
     unsigned int offset=0;
 
@@ -265,7 +362,8 @@ refresh_rectangle (
     int UseClipping = TRUE;
 
 
-    // dc
+//==========
+// dc
     unsigned long deviceWidth  = (unsigned long) screenGetWidth();
     unsigned long deviceHeight = (unsigned long) screenGetHeight();
 
@@ -328,9 +426,6 @@ refresh_rectangle (
     //if ( UseVSync == TRUE){
         //vsync();
     //}
-
-
-
 
 // ================================
 // Se for divisível por 8.
@@ -408,109 +503,38 @@ refresh_rectangle (
 // ?? Not tested yet
 
 void 
-refresh_rectangle2 ( 
+refresh_rectangle ( 
     unsigned long x, 
     unsigned long y, 
     unsigned long width, 
-    unsigned long height,
-    unsigned long buffer1,
-    unsigned long buffer2 )
+    unsigned long height )
 {
 
-	// #todo
-	// Fazer a mesma otimizaçao que fizemos na outra rotina de refresh rectangle.
 
-
-    void *p       = (void *)       buffer1;  // destino.
-    const void *q = (const void *) buffer2;  // origem.
-
-
-    register unsigned int i=0;
-    register unsigned int lines=0;
-    unsigned int line_size=0; 
-    register int count=0; 
-
-    unsigned int offset=0;
-
-	// = 3; //24bpp
-    int bytes_count;
-
-	unsigned long Width = (unsigned long) screenGetWidth();
-	unsigned long Height = (unsigned long) screenGetHeight();
-
-
-
-
-//
-// Internal
-//
-
-    unsigned long X = (unsigned long) (x & 0xFFFF);
-    unsigned long Y = (unsigned long) (y & 0xFFFF);
-
-    line_size = (unsigned int) (width  & 0xFFFF); 
-    lines     = (unsigned int) (height & 0xFFFF);
-
-
-    switch (SavedBPP)
+// == FLASH ========
+    // #todo: Create a global variable for this.
+    //int RefreshFlash=TRUE;
+    int RefreshFlash=FALSE;
+    
+    if(RefreshFlash==TRUE)
     {
-		case 32:  bytes_count = 4;  break;
-		case 24:  bytes_count = 3;  break;
-		//#todo: default
-    };
-
-
-	//offset = (unsigned int) BUFFER_PIXEL_OFFSET( x, y );
-	offset = (unsigned int) ( (bytes_count*SavedX*(Y)) + (bytes_count*(X)) );
-
-	p = (void *)       (p + offset);
-	q = (const void *) (q + offset);
-
-    //if( use_vsync)
-    //vsync ();
-
-	
-	//(line_size * 3) é o número de bytes por linha. 
-	
-	//se for divisível por 4.
-    if ( ((line_size * 3) % 4) == 0 )
-    {
-        count = ((line_size * 3) / 4);  	
-
-	    for ( i=0; i < lines; i++ )
-	    {
-		    //copia uma linha ou um pouco mais caso não seja divisível por 
-		    memcpy32 ( p, q, count );
-		    
-			q += (Width * 3);
-	 	    p += (Width * 3);
-	    };
+        frontbuffer_draw_rectangle( 
+            x, y, 
+            width, height, COLOR_YELLOW, 0 );
     }
+// =====================
 
-	//se não for divisível por 4.
-    if ( ((line_size * 3) % 4) != 0 )
-    {
 
-        //count = (line_size * 3); 
-	
-	    for ( i=0; i < lines; i++ )
-	    {
-		    memcpy ( (void *) p, (const void *) q, (line_size * 3) );
-		    q += (Width * 3);
-		    p += (Width * 3);
-	    };
-    }
 
-	/*
-	
-	for ( i=0; i < lines; i++ )
-	{
-		memcpy( p, q, (line_size * 3) );
-		q += (Width * 3);
-		p += (Width * 3);
-	};	
-	*/
+    refresh_rectangle0(
+        x,
+        y,
+        width,
+        height,
+        FRONTBUFFER_ADDRESS,   // dest
+        BACKBUFFER_ADDRESS );  // src
 }
+
 
 /*
  ************************* 

@@ -1,5 +1,5 @@
 
-// pixel.c
+// xpixel.c
 // Presentation: Put a pixel into the backbuffer.
 
 //D - Destination bitmap
@@ -18,9 +18,9 @@
 
 /*
  *********************************
- * backbuffer_putpixel:
+ * putpixel0:
  *     Ok. 
- *     O servidor kgws pode acessar um backbuffer. Mas não tem acesso
+ *     O servidor kgws pode acessar um buffer. Mas não tem acesso
  * ao frontbuffer. Para isso ele precisa usasr o diálogo do driver 
  * de vídeo.
  * IN: 
@@ -32,14 +32,17 @@
 // + Create a parameter for the address of the buffer.
 
 void 
-backbuffer_putpixel ( 
+putpixel0 ( 
     unsigned int  _color,
     unsigned long _x, 
     unsigned long _y, 
-    unsigned long _rop_flags )
+    unsigned long _rop_flags,
+    unsigned long buffer_va )
 {
-    unsigned char *where = (unsigned char *) BACKBUFFER_VA;
 
+    //unsigned char *where = (unsigned char *) BACKBUFFER_VA;
+    unsigned char *where = (unsigned char *) buffer_va;
+    
     unsigned int Color = (unsigned int) (_color & 0xFFFFFFFF);
 
 // A cor passada via argumento.
@@ -65,6 +68,13 @@ backbuffer_putpixel (
 
     int bytes_count=0;
 
+
+// Buffer address validation.
+
+    if(buffer_va == 0){
+        panic("putpixel0: buffer_va\n");
+    }
+
 //
 // bpp
 //
@@ -73,27 +83,22 @@ backbuffer_putpixel (
 // This is a global variable.
 // Esse valor foi herdado do bootloader.
 
-
     switch (SavedBPP){
-
-        case 32:  bytes_count = 4;  break;
-        case 24:  bytes_count = 3;  break;
-
-		//#testando
-		//case 16:
-		//	bytes_count = 2;
-		//	break;
-		
-		//case 8:
-		//	bytes_count = 1;
-		//	break;
-
-        default:
-            //#todo: Do we have panic ar this moment?
-            //panic ("backbuffer_putpixel: SavedBPP\n");
-            debug_print_string("backbuffer_putpixel: SavedBPP\n");
-            while(1){}
-            break;
+    case 32:  bytes_count=4;  break;
+    case 24:  bytes_count=3;  break;
+    //#testando
+    //case 16:
+    //    bytes_count = 2;
+    //    break;
+    //case 8:
+    //    bytes_count = 1;
+    //    break;
+    default:
+        //#todo: Do we have panic ar this moment?
+        //panic ("putpixel0: SavedBPP\n");
+        debug_print_string("putpixel0: SavedBPP\n");
+        while(1){}
+        break;
     };
 
 // #importante
@@ -107,17 +112,19 @@ backbuffer_putpixel (
     int offset=0;
     //int offset = (int) ( (bytes_count*width*y) + (bytes_count*x) );
 
-    // 32bpp
+// Offset.
+
+// 32bpp
     if (bytes_count==4){
         offset = (int) ( ((width<<2)*y) + (x<<2) );
     }
 
-    // 24bpp
+// 24bpp
     if (bytes_count==3){
         offset = (int) ( (bytes_count*width*y) + (bytes_count*x) );
     }
 
-    // 16bpp
+// 16bpp
     //if (bytes_count==2){
     //    offset = (int) ( ((width<<1)*y) + (x<<1) );
     //}
@@ -254,18 +261,64 @@ backbuffer_putpixel (
 
 
 //
-// == Register =============================================
+// == Register =====================
 // 
 
-
-//
 // BGR and A
-//
 
     where[offset]    = b3;
     where[offset +1] = g3;
     where[offset +2] = r3;
     if ( SavedBPP == 32 ){ where[offset +3] = a3; };
-
 }
+
+
+void 
+backbuffer_putpixel ( 
+    unsigned int  _color,
+    unsigned long _x, 
+    unsigned long _y, 
+    unsigned long _rop_flags )
+{
+
+
+// Putpixel at the given buffer address.
+    putpixel0(
+        _color,
+        _x,
+        _y,
+        _rop_flags,
+        BACKBUFFER_VA );
+}
+
+
+// #todo: Not tested yet.
+void 
+frontbuffer_putpixel ( 
+    unsigned int  _color,
+    unsigned long _x, 
+    unsigned long _y, 
+    unsigned long _rop_flags )
+{
+
+// Putpixel at the given buffer address.
+    putpixel0(
+        _color,
+        _x,
+        _y,
+        _rop_flags,
+        FRONTBUFFER_VA );
+}
+
+
+
+
+
+
+
+
+
+
+
+
 

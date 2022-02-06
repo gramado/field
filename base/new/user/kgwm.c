@@ -1125,9 +1125,13 @@ int xxxMouseEvent(long x, long y)
 // é um código portado da arquitetura de 32bit 
 // para a arquitetura de 64bit.
 
-    drawDataRectangle( 
+    backbuffer_draw_rectangle( 
         x, y, 
         10, 10, COLOR_RED, 0 );
+
+    //frontbuffer_draw_rectangle( 
+    //    x, y, 
+    //    10, 10, COLOR_RED, 0 );
 
 // Draw a pixel.
 // IN: color, x, y, 0, rop_flags

@@ -1099,7 +1099,7 @@ void *sci0 (
 
         // 8 @todo: BugBug, aqui precisamos de 4 par�metros.
         case SYS_BUFFER_DRAWLINE:
-            my_buffer_horizontal_line ( 
+            backbuffer_draw_horizontal_line ( 
                 (unsigned long) a2, 
                 (unsigned long) a3, 
                 (unsigned long) a4, 
