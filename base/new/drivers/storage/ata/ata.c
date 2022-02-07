@@ -97,6 +97,7 @@ void ata_delay (void)
 // #bugbug
 // Lê o status de um disco determinado, se os valores na estrutura 
 // estiverem certos.
+// #todo: return type.
 
 unsigned char ata_status_read (void)
 {
@@ -342,9 +343,8 @@ int ata_initialize ( int ataflag )
     __breaker_ata1_initialized = FALSE;
     __breaker_ata2_initialized = FALSE;
 
-
 //
-// ===============================================================
+// ======================================
 //
 
 // #importante 
@@ -357,12 +357,11 @@ int ata_initialize ( int ataflag )
 
     ata_set_boottime_ide_port_index(__IDE_PORT);
 
-
-    // Configumos o atual como sendo o mesmo
-    // usado durante o boot.
-    // #todo
-    // Poderemos mudar o atual conforme nossa intenção
-    // de acessarmos outros discos.
+// Configumos o atual como sendo o mesmo
+// usado durante o boot.
+// #todo
+// Poderemos mudar o atual conforme nossa intenção
+// de acessarmos outros discos.
 
     ata_set_current_ide_port_index(__IDE_PORT);
 
@@ -370,16 +369,14 @@ int ata_initialize ( int ataflag )
 // ===============================================================
 //
 
-
 // Configurando flags do driver.
 // FORCEPIO = 1234
 
     ATAFlag = (int) ataflag;
 
-
-	//
-	// Messages
-	//
+//
+// Messages
+//
 
 #ifdef KERNEL_VERBOSE
     printf ("ata_initialize:\n");
@@ -426,12 +423,11 @@ int ata_initialize ( int ataflag )
 // Vamos saber mais sobre o dispositivo encontrado. 
 //
 
-    // #bugbug: 
-    // Esse retorno é só um código de erro.
+// #bugbug: 
+// Esse retorno é só um código de erro.
 
     Ret = (unsigned long) diskATAPCIConfigurationSpace(PCIDeviceATA);
 
-// Fail
     if ( Ret == PCI_MSG_ERROR )
     {
         printk ("ata_initialize: Error Driver [%x]\n", Ret );
@@ -439,7 +435,6 @@ int ata_initialize ( int ataflag )
         panic("ata_initialize: Error Driver");
         //goto fail;  
     }
-
 
 // Explicando:
 // Aqui estamos pegando nas BARs o número das portas.
@@ -456,7 +451,6 @@ int ata_initialize ( int ataflag )
 // BAR4 is the start of 8 I/O ports controls the primary channel's Bus Master IDE.
 // BAR4 + 8 is the Base of 8 I/O ports controls secondary channel's Bus Master IDE.
 
-
     ATA_BAR0_PRIMARY_COMMAND_PORT   = ( PCIDeviceATA->BAR0 & ~7 ) + ATA_IDE_BAR0_PRIMARY_COMMAND   * ( !PCIDeviceATA->BAR0 );
     ATA_BAR1_PRIMARY_CONTROL_PORT   = ( PCIDeviceATA->BAR1 & ~3 ) + ATA_IDE_BAR1_PRIMARY_CONTROL   * ( !PCIDeviceATA->BAR1 );       
     ATA_BAR2_SECONDARY_COMMAND_PORT = ( PCIDeviceATA->BAR2 & ~7 ) + ATA_IDE_BAR2_SECONDARY_COMMAND * ( !PCIDeviceATA->BAR2 );
@@ -472,17 +466,15 @@ int ata_initialize ( int ataflag )
     ide_ports[1].base_port = (unsigned short) (ATA_BAR1_PRIMARY_CONTROL_PORT   & 0xFFFF);
     ide_ports[2].base_port = (unsigned short) (ATA_BAR2_SECONDARY_COMMAND_PORT & 0xFFFF);
     ide_ports[3].base_port = (unsigned short) (ATA_BAR3_SECONDARY_CONTROL_PORT & 0xFFFF);
-	//tem ainda a porta do dma na bar4
+    //tem ainda a porta do dma na bar4
 
 
 //
 // De acordo com o tipo.
 //
 
-
 // ==============================================
 // Se for IDE.
-//
 
     // Type
     if ( ata.chip_control_type == ATA_IDE_CONTROLLER )
@@ -508,7 +500,6 @@ int ata_initialize ( int ataflag )
         // ??
         ata_record_dev     = 0xff;
         ata_record_channel = 0xff;
-
 
 //#ifdef KERNEL_VERBOSE
         printf ("Initializing IDE Mass Storage device ...\n");
@@ -590,8 +581,8 @@ int ata_initialize ( int ataflag )
 
 done:
 
-    // Setup interrupt breaker.
-    // Só liberamos se a inicialização fncionou.
+// Setup interrupt breaker.
+// Só liberamos se a inicialização fncionou.
 
     if ( Status == 0 ){
         debug_print("ata_initialize: Turn off interrupt breaker\n");
@@ -625,19 +616,17 @@ int ide_identify_device ( uint8_t nport )
 
     __ata_assert_dever(nport);
 
-    // ??
-    // Ponto flutuante
-    // Sem unidade conectada ao barramento
-
-    // #todo
-    // Precisamos de uma mensagem aqui.
+// ??
+// Ponto flutuante
+// Sem unidade conectada ao barramento
+// #todo
+// Precisamos de uma mensagem aqui.
 
     if ( ata_status_read() == 0xFF )
     {
         //debug_print(...);
         return (int) -1;
     }
-
 
 // #bugbug
 // O que é isso?
@@ -666,11 +655,11 @@ int ide_identify_device ( uint8_t nport )
 
 
     // ata_wait_irq();
-    // Nunca espere por um IRQ aqui
-    // Devido unidades ATAPI, ao menos que pesquisamos pelo Bit ERROR
-    // Melhor seria fazermos polling
 
-    //Sem unidade no canal
+// Nunca espere por um IRQ aqui
+// Devido unidades ATAPI, ao menos que pesquisamos pelo Bit ERROR
+// Melhor seria fazermos polling
+// Sem unidade no canal.
 
     ata_wait (400);
     
@@ -681,26 +670,24 @@ int ide_identify_device ( uint8_t nport )
         return (int) -1;
     }
 
+// #todo
+// Use esses registradores para pegar mais informações.
+// See:
+// hal/dev/blkdev/ata.h
+// See
+// https://wiki.osdev.org/ATA_PIO_Mode
+// https://wiki.osdev.org/PCI_IDE_Controller
 
-    // #todo
-    // Use esses registradores para pegar mais informações.
-    // See:
-    // hal/dev/blkdev/ata.h
-
-    // See
-    // https://wiki.osdev.org/ATA_PIO_Mode
-    // https://wiki.osdev.org/PCI_IDE_Controller
-    
     /*
     // #exemplo:
     // get the "signature bytes" 
     unsigned cl=inb(ctrl->base + REG_CYL_LO);	
-	unsigned ch=inb(ctrl->base + REG_CYL_HI);
-	differentiate ATA, ATAPI, SATA and SATAPI 
-	if (cl==0x14 && ch==0xEB) return ATADEV_PATAPI;
-	if (cl==0x69 && ch==0x96) return ATADEV_SATAPI;
-	if (cl==0 && ch == 0) return ATADEV_PATA;
-	if (cl==0x3c && ch==0xc3) return ATADEV_SATA;
+    unsigned ch=inb(ctrl->base + REG_CYL_HI);
+    differentiate ATA, ATAPI, SATA and SATAPI 
+    if (cl==0x14 && ch==0xEB) return ATADEV_PATAPI;
+    if (cl==0x69 && ch==0x96) return ATADEV_SATAPI;
+    if (cl==0 && ch == 0) return ATADEV_PATA;
+    if (cl==0x3c && ch==0xc3) return ATADEV_SATA;
     */
 
     // Saving.
@@ -1009,18 +996,16 @@ int ide_dev_init (char port)
     struct st_dev  *tmp_dev;
     int data=0;
 
-    // #?
-    // We have four ports in the ide controller.
-    // See: ata_initialize.
+// #?
+// We have four ports in the ide controller.
+// See: ata_initialize.
     
     if (port<0){
         panic("ide_dev_init: [ERROR] port\n");
     }
 
-    
-    // See: hal/dev/blkdev/ata.h
-    // st_dev_t *new_dev;
-        
+// See: ata.h
+
     struct st_dev  *new_dev;
 
     new_dev = ( struct st_dev * ) kmalloc ( sizeof( struct st_dev) );

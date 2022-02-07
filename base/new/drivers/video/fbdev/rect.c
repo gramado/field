@@ -550,30 +550,26 @@ refresh_rectangle (
 // Only for full screen console.
 // See flag.
 
-void scroll_screen_rect (void){
+void scroll_screen_rect (void)
+{
 
     register unsigned int i=0;
-
     unsigned int line_size=0;  // w 
     unsigned int lines=0;      // h
-
     unsigned int offset=0;
 
 // Device info
-
     unsigned long deviceWidth  = (unsigned long) screenGetWidth();
     unsigned long deviceHeight = (unsigned long) screenGetHeight();
-
 
     //int cWidth = get_char_width ();
     int cHeight = get_char_height ();
 
-	// = 3; 
-	//24bpp
+// = 3; 
+//24bpp
     int bytes_count = 0;
     
     int count = 0; 
-
 
     // #debug
     //debug_print ("scroll_screen_rect:\n");
@@ -610,24 +606,22 @@ void scroll_screen_rect (void){
 // Pointers
 //
 
-    // Destination and Source.
-    // Destination is the first line.
-    // Source is the second line. It has the height of a char.
+// Destination and Source.
+// Destination is the first line.
+// Source is the second line. It has the height of a char.
 
     void *Dest = (void *) BACKBUFFER_ADDRESS;
     const void *Src  = (const void *) BACKBUFFER_ADDRESS + ( bytes_count * SavedX * cHeight ) ;
 
+//
+// Copy
+//
 
-    //
-    // Copy.
-    //
+// #importante
+// É bem mais rápido com múltiplos de 4.
 
-	//#importante
-	//É bem mais rápido com múltiplos de 4.	
-
-
-    // Se for divisível por 4.
-    // Copia uma linha, quatro bytes de cada vez.  
+// Se for divisível por 4.
+// Copia uma linha, quatro bytes de cada vez.  
         
     if ( ((line_size * bytes_count) % 4) == 0 )
     {
@@ -635,13 +629,12 @@ void scroll_screen_rect (void){
         count = ((line_size * bytes_count) / 4); 
         // count = (internal_pitch>>2);  // #todo: Use this one.
 
-        for ( i=0; i < lines; i++ )
-        {
+        for ( i=0; i < lines; i++ ){
             memcpy32 (Dest,Src,count);
-
             Src  += (deviceWidth * bytes_count);
             Dest += (deviceWidth * bytes_count);
         };
+
         return;
     }
 
@@ -663,6 +656,7 @@ void scroll_screen_rect (void){
         };
     }
 }
+
 
 // ??
 // Copiando ...
@@ -696,35 +690,6 @@ void *rectStrCopyMemory32 (
     };
 
     return dest;
-}    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 

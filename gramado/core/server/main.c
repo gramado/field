@@ -1,3 +1,11 @@
+
+// GWSSRV.BIN
+// This is a ring0 display server and window manager.
+
+// #todo: 
+// We need a fancy name for this project,
+// not only 'gws'.
+
 /*
  * File: main.c
  *    Main file for the Gramado Window Server.

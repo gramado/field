@@ -1,4 +1,5 @@
 
+// line.c
 
 #include <kernel.h>
 
@@ -14,11 +15,9 @@ extern unsigned long SavedY;
 extern unsigned long SavedBPP; 
 
 /*
- *****************************************
  * backbuffer_draw_horizontal_line:
  *     Draw a horizontal line on backbuffer. 
  */
-
 
 void 
 backbuffer_draw_horizontal_line ( 

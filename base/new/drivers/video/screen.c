@@ -1,4 +1,5 @@
 
+// screen.c
 
 
 #include <kernel.h>
@@ -16,18 +17,19 @@ unsigned long screen_bpp;
 unsigned long screen_pitch;
 
 
-// Qual é o endereço virtual do início de uma dada linha da tela.
+// Qual é o endereço virtual do início de uma dada linha da tela?
 unsigned long screen_scanline_va( int scanline )
 {
     unsigned long scanline_va=0;
-
     unsigned long start = FRONTBUFFER_VA;
 
+// pitch
     unsigned long pitch = (unsigned long) screenGetHeight();
     if ( pitch == 0 ){
         panic ("screen_scanline_va: pitch limits");
     }
 
+// height
     unsigned long height = (unsigned long) screenGetHeight();
     if ( height == 0 ){
         panic ("screen_scanline_va: height limits");
@@ -39,7 +41,8 @@ unsigned long screen_scanline_va( int scanline )
 
     scanline_va = (unsigned long) ( start + (pitch * scanline) );
 
-//done:
+// done:
+// É o endereço virtual do início de uma dada linha da tela.
     return (unsigned long) scanline_va;
 }
 
@@ -50,17 +53,20 @@ unsigned long screenGetWidth (void)
     return (unsigned long) screen_width;
 }
 
+
 // Get screen height
 unsigned long screenGetHeight (void)
 {
     return (unsigned long) screen_height;
 }
 
+
 // Get screen bpp
 unsigned long screenGetBPP (void)
 {
     return (unsigned long) screen_bpp;
 }
+
 
 // Get screen pitch
 unsigned long screenGetPitch (void)
@@ -75,7 +81,7 @@ unsigned long screenGetPitch (void)
 
 void screenSetSize( unsigned long width, unsigned long height )
 {
-    screen_width  = (unsigned long) width; 
+    screen_width  = (unsigned long) width;
     screen_height = (unsigned long) height;
 }
 
@@ -92,51 +98,43 @@ void screenSetSize( unsigned long width, unsigned long height )
 // backup.
 // This is working very well.
 // Copying long by long.
-
 // ?? 
 // Total size is wrong.
 // Esse é mais rápido.
-
-    // #bugbug
-    // #danger
-    // Dependendo do tamanho da tela, 
-    // essa rotina pode acabar copiando conteúdo 
-    // para alguma parte não mapeada no lfb.
-    // Precisamos de limites. Obedecendo a quantidade mapeada.
-
-    // #bugbug
-    // Como temos apenas 2MB de lfb mapeados, 
-    // então vamos copiar menos dados pra evitar ultrapassar o limite
-    // e causar PF.
+// #bugbug
+// #danger
+// Dependendo do tamanho da tela, 
+// essa rotina pode acabar copiando conteúdo 
+// para alguma parte não mapeada no lfb.
+// Precisamos de limites. Obedecendo a quantidade mapeada.
+// #bugbug
+// Como temos apenas 2MB de lfb mapeados, 
+// então vamos copiar menos dados pra evitar ultrapassar o limite
+// e causar PF.
 
 void fb_refresh_screen (unsigned long flags)
 {
     int i=0;
 
-// Char
-// slow way
+// Char. The slow way.
     unsigned char *backbuffer  = (unsigned char *) BACKBUFFER_VA;
     unsigned char *frontbuffer = (unsigned char *) FRONTBUFFER_VA;
 
-// Long
-// fast way
+// Long. The fast way.
     unsigned long *backbuffer_long  = (unsigned long *) BACKBUFFER_VA;
     unsigned long *frontbuffer_long = (unsigned long *) FRONTBUFFER_VA;
 
 // #todo
 // We can also use 16 bytes ... SSE?
 
-
 // #debug
     //debug_print_string("fb_refresh_screen:\n");
 
-// Vertical synchoniztion?
+// Vertical synchonization?
 //  if(flags & 1)
     vsync();
 
-    if ( SavedX == 0 || 
-         SavedY == 0 || 
-         SavedBPP == 0 )
+    if ( SavedX == 0 || SavedY == 0 || SavedBPP == 0 )
     {
         debug_print_string("fb_refresh_screen: [FAIL] validation\n");
         return;
@@ -163,13 +161,14 @@ void fb_refresh_screen (unsigned long flags)
     int Total = (screen_size_in_kb * 1024);
 
     //if ( Total >= (2*1024*1024) )
-    if(Total >= 2097152 ){
+    if (Total >= 2097152 ){
         debug_print_string("fb_refresh_screen: [FAIL-FIXME] Total\n");
         return;
     }
 
 // Fast way ?
 // Divisible by 8. So use the fast way.
+
     int FastTotal=0;
     if ( (Total % 8) == 0 )
     {
@@ -232,8 +231,8 @@ int screenInit (void){
     screen_bpp = SavedBPP;
     screen_pitch = ( SavedBPP * SavedX );
 
-    // Setup Screen structure.
-    // See: screen.h
+// Setup Screen structure.
+// See: screen.h
     
     Screen = (void *) kmalloc ( sizeof(struct screen_d) );
     
@@ -260,12 +259,5 @@ int screenInit (void){
 
     return 0;
 }
-
-
-
-
-
-
-
 
 

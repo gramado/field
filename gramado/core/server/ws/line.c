@@ -198,6 +198,8 @@ int servicelineBackbufferDrawHorizontalLine (void)
  *     Draw a horizontal line on backbuffer. 
  */
 
+// It's using the ring3 routine.
+
 void 
 grBackbufferDrawHorizontalLine ( 
     unsigned long x1,
@@ -206,9 +208,9 @@ grBackbufferDrawHorizontalLine (
     unsigned int color )
 {
 
-    unsigned long __x1 = x1;
-    unsigned long __x2 = x2;
-    unsigned long __y  = y;
+    unsigned long __x1 = (unsigned long) x1;
+    unsigned long __x2 = (unsigned long) x2;
+    unsigned long __y  = (unsigned long) y;
     
     //debug_print("Line\n");
     
@@ -221,6 +223,8 @@ grBackbufferDrawHorizontalLine (
         debug_print("grBackbufferDrawHorizontalLine: __x2 > 800\n");
         return;
     }
+
+// It's using the ring3 routine.
 
     while (__x1 < __x2)
     {

@@ -240,11 +240,13 @@ __draw_buttom_borders(
 }
 
 
-
 // worker:
 // no checks
 // Draw the border of an edit box.
-void __draw_window_border( struct gws_window_d *parent, struct gws_window_d *window )
+void 
+__draw_window_border( 
+    struct gws_window_d *parent, 
+    struct gws_window_d *window )
 {
 
     if ( (void*) parent == NULL )

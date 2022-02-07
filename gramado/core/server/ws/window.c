@@ -1,5 +1,5 @@
 /*
- * File: createw.c 
+ * File: window.c 
  * 
  *      Creates a window.
  *      It's part of the gws project.
@@ -7,9 +7,9 @@
  * History:
  *     2019 - Created by Fred Nora.
  */
- 
-    // #importante
-    // O frame de uma janela deve ser parte do Window Manager.
+
+// #importante
+// O frame de uma janela deve ser parte do Window Manager.
 
 // #bugbug
 // #todo
@@ -1378,13 +1378,12 @@ void *xxxCreateWindow (
 		//return (void*) window;
     }
 
-
-	// Minimized ? (Hide ?)
-	// Se tiver minimizada, não precisa mostrar a janela, porém
-	// é necessário pintar a janela no buffer dedicado, se essa técnica 
-	// estiver disponível.
-	// Talvez antes de retornarmos nesse caso seja necessário configurar 
-	// mais elementos da estrutura.
+// Minimized ? (Hide ?)
+// Se tiver minimizada, não precisa mostrar a janela, porém
+// é necessário pintar a janela no buffer dedicado, se essa técnica 
+// estiver disponível.
+// Talvez antes de retornarmos nesse caso seja necessário configurar 
+// mais elementos da estrutura.
 	
 	//#bugbug
 	//se estamos contruindo a janela, então ela não foi registrada 
@@ -1720,6 +1719,7 @@ void *xxxCreateWindow (
             // Esses valores precisam estar na estrutura para
             // podermos chamar a rotina redraw para repintar 
             // as bordas do botao.
+            // See: wm.c
 
             __draw_buttom_borders(
                 (struct gws_window_d *) window,

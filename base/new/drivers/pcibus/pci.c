@@ -1,3 +1,4 @@
+
 // pci.c
 
 
@@ -108,8 +109,6 @@ static const char* bridge_subclass_strings[] = {
 
 
 
-
-
 /*
  ********************************************************
  * pciConfigReadByte:
@@ -123,38 +122,36 @@ pciConfigReadByte (
     unsigned char func, 
     unsigned char offset )
 {
-    // Retorno armazenado na porta de status.
+
+// Retorno armazenado na porta de status.
     unsigned char Ret=0;
 
-    // Montando uma unsigned int. (32 bits)
-    // Bus, Device and Function.
+// Montando uma unsigned int. (32 bits)
+// Bus, Device and Function.
 
     unsigned int ibus  = (unsigned int) bus; 
     unsigned int islot = (unsigned int) slot; 
     unsigned int ifunc = (unsigned int) func; 
 
-    // O endereço a ser montado e enviado para porta 0xCF8.
-    // 32bit
+// O endereço a ser montado e enviado para porta 0xCF8.
+// 32bit
     unsigned int address = 0;
 
     // #todo: 
     // Filtros de tamanho máximo.
 
-    // Create configuration address.
-    // 32bit
+// Create configuration address.
+// 32bit
     address = (unsigned int) ((ibus  << 16) | (islot << 11) | (ifunc <<  8) | (offset & 0xfc) | ((unsigned int) 0x80000000) );
 
-    // sendComand:
-    // Write out the address. (0x0CF8).
+// sendComand:
+// Write out the address. (0x0CF8).
 
     out32 (PCI_ADDRESS_PORT, address);
     io_delay();
 
-	// getData:
-	// Read in the data port. (0x0CFC).
-	// Talves possamos usar um input do tipo char, que é assim
-	// inline unsigned char inportb(int port)  
-    // int inport8(int port) 
+// getData:
+// Read in the data port. (0x0CFC).
 
     Ret = (unsigned char) (( in32(PCI_DATA_PORT) >> ((offset & 3) * 8)) & 0xff); 
     io_delay();
@@ -162,7 +159,7 @@ pciConfigReadByte (
     // Obs: 
     // (offset & 2) * 8) = 0 Will choose the first word of the 32 bits register.    
 
-    // 1 byte
+// 1 byte
     return (unsigned char) Ret;
 }
 
@@ -201,50 +198,49 @@ pciConfigReadWord (
     unsigned char func, 
     unsigned char offset )
 {
-    // Retorno armazenado na porta de status.
+
+// Retorno armazenado na porta de status.
     unsigned short Ret=0;
 
-    // Montando uma unsigned int. 32bits
-    // Bus, Device and Function.
-
+// Montando uma unsigned int. 32bits
+// Bus, Device and Function.
     unsigned int ibus  = (unsigned int) bus; 
     unsigned int islot = (unsigned int) slot; 
     unsigned int ifunc = (unsigned int) func; 
 
-    // O endereço a ser montado e enviado para porta 0xCF8.
-    // 32bit
+// O endereço a ser montado e enviado para porta 0xCF8.
+// 32bit
     unsigned int address = 0;
-
 
 
     // #todo: 
     // Filtros de tamanho máximo.
 
-    // Create configuration address.
-    // 32bit
+// Create configuration address.
+// 32bit
     address = (unsigned int) ((ibus << 16) | (islot << 11) | (ifunc << 8) | (offset & 0xfc) | ((unsigned int)0x80000000));
 
 
-    // sendComand:
-    // Write out the address. (0x0CF8).
+// sendComand:
+// Write out the address. (0x0CF8).
 
     out32 (PCI_ADDRESS_PORT, address);
     io_delay();
 
-	// getData:
-	// Read in the data port. (0x0CFC).
-	// Apesar do inpot pegar uma longo o retornno é short.
-	// @todo: Talvez possamos usar um input do tipo short.
-	// que é assim int inport16(int port)
+// getData:
+// Read in the data port. (0x0CFC).
+// Apesar do inpot pegar uma longo o retornno é short.
+// #todo: Talvez possamos usar um input do tipo short.
+// que é assim int inport16(int port)
 
     Ret = (unsigned short) (( in32(PCI_DATA_PORT) >> ((offset & 2) * 8)) & 0xffff);
-	//Ret = (unsigned short)(  inport16(PCI_DATA_PORT) );
+    //Ret = (unsigned short)(  inport16(PCI_DATA_PORT) );
     io_delay();
 
     // Obs: 
     // (offset & 2) * 8) = 0 Will choose the first word of the 32 bits register.   
 
-    // 16 bits
+// 16 bits
     return (unsigned short) Ret; 
 }
 
@@ -264,51 +260,47 @@ pciConfigReadDWord (
     unsigned char offset )
 {
 
-    // Retorno armazenado na porta de status.
-    // 32bit
+// Retorno armazenado na porta de status.
+// 32bit
     unsigned int Ret = 0;
 
-
-    // Montando uma unsigned int. 32bit
-    // Bus, Device and Function.
-
+// Montando uma unsigned int. 32bit
+// Bus, Device and Function.
     unsigned int ibus  = (unsigned int) bus; 
     unsigned int islot = (unsigned int) slot; 
     unsigned int ifunc = (unsigned int) func; 
 
-    // O endereço a ser montado e enviado para porta 0xCF8.
-    // 32bit
+// O endereço a ser montado e enviado para porta 0xCF8.
+// 32bit
     unsigned int address = 0;
  
     // #todo: 
     // Filtros de tamanho máximo.
 
-    // Create configuration address.
+// Create configuration address.
     address = (unsigned int) ((ibus << 16) | (islot << 11) | (ifunc << 8) | (offset & 0xfc) | ((unsigned int)0x80000000));
 
-    // sendComand:
-    // Write out the address. (0x0CF8).
-
+// sendComand:
+// Write out the address. (0x0CF8).
     out32 (PCI_ADDRESS_PORT, address);
     io_delay();
 
-    // getData:
-    // Read in the data port. (0x0CFC).
-
-    // Parece ser o certo.
-    // 32bit
+// getData:
+// Read in the data port. (0x0CFC).
+// Parece ser o certo.
+// 32bit
     Ret = (unsigned int) ( in32(PCI_DATA_PORT) ); 
     io_delay();
     
     // Obs: 
     // (offset & 2) * 8) = 0 Will choose the first word of the 32 bits register.
 
-    // 32bit
+// 32bit
     return (unsigned int) Ret; 
 }
 
+
 /*
- ***********************************************************
  * pciGetBAR:
  *     Get BAR.
  *
@@ -321,24 +313,19 @@ pciConfigReadDWord (
  * #define PCI_OFFSET_BASEADDRESS5   0x24
  *
  * Obs: 
- * @todo: 
+ * #todo: 
  *     Talvez o retorno não pegue uma unsigned long como desejado e sim 
  * apenas uma unsigned short ou ainda retorne um unsigned long com uma 
  * parte suja.
- *
  * Obs: O argumento 'number' é o número do BAR.
- *
  * Primeiro devemos salvar o valor encontrado na BAR, o valor do BAR
  * servirá para identificarmos um endereço de memória ou número de
  * porta de i/o. Os bits do bar dirão se o endereço de memória é
  * de 32bit ou 64bit.
- *
  * Depois para sabermos a quantidade de memória que um dispositivo irá precisar
  * devemos colocar tudo 1 na BAR, pegar o valor da bar e efetuar um NOT (~) each
  * incrementar em 1, 
- *
  * Depois disso tudo podemos restaurar o valor da BAR que foi salvo.
- *
  * Obs: Nessa rotina apenas pegamos o valor da bar.
  */
 
@@ -349,10 +336,10 @@ pciGetBAR (
     int number )
 {
 
-    unsigned int BAR = 0;
+    unsigned int BAR=0;
 
-	// #todo: 
-	// Filtros para argumentos.
+// #todo: 
+// Filtros para argumentos.
 
     if ( number < 0 || number > 5 )
     {
@@ -360,63 +347,53 @@ pciGetBAR (
         return 0;
     }
 
-
     switch (number){
-
-        case 0:
-            BAR = (unsigned int) pciConfigReadDWord ( 
-                                      bus, slot, 0, 
-                                      PCI_OFFSET_BASEADDRESS0 );
-            goto done;
-            break;
-
-        case 1:
-            BAR = (unsigned int) pciConfigReadDWord ( 
-                                      bus, slot, 0, 
-                                      PCI_OFFSET_BASEADDRESS1 );
-            goto done;
-            break;
-
-        case 2:
-            BAR = (unsigned int) pciConfigReadDWord ( 
-                                      bus, slot, 0, 
-                                      PCI_OFFSET_BASEADDRESS2 );
-            goto done;
-            break;
-
-        case 3:
-            BAR = (unsigned int) pciConfigReadDWord ( 
-                                      bus, slot, 0, 
-                                      PCI_OFFSET_BASEADDRESS3 );
-            goto done;
-            break;
-
-        case 4:
-            BAR = (unsigned int) pciConfigReadDWord ( 
-                                      bus, slot, 0, 
-                                      PCI_OFFSET_BASEADDRESS4 );
-            goto done;
-            break;
-
-        case 5:
-            BAR = (unsigned int) pciConfigReadDWord( 
-                                      bus, slot, 0, 
-                                      PCI_OFFSET_BASEADDRESS5 );
-            goto done;
-            break;
-
-
-        default:
-            // ??
-            return 0;
-            break;
+    case 0:
+        BAR = (unsigned int) pciConfigReadDWord ( 
+                                 bus, slot, 0, 
+                                 PCI_OFFSET_BASEADDRESS0 );
+        goto done;
+        break;
+    case 1:
+        BAR = (unsigned int) pciConfigReadDWord ( 
+                                 bus, slot, 0, 
+                                 PCI_OFFSET_BASEADDRESS1 );
+        goto done;
+        break;
+    case 2:
+        BAR = (unsigned int) pciConfigReadDWord ( 
+                                 bus, slot, 0, 
+                                 PCI_OFFSET_BASEADDRESS2 );
+        goto done;
+        break;
+    case 3:
+        BAR = (unsigned int) pciConfigReadDWord ( 
+                                 bus, slot, 0, 
+                                 PCI_OFFSET_BASEADDRESS3 );
+        goto done;
+        break;
+    case 4:
+        BAR = (unsigned int) pciConfigReadDWord ( 
+                                 bus, slot, 0, 
+                                 PCI_OFFSET_BASEADDRESS4 );
+        goto done;
+        break;
+    case 5:
+        BAR = (unsigned int) pciConfigReadDWord( 
+                                 bus, slot, 0, 
+                                 PCI_OFFSET_BASEADDRESS5 );
+        goto done;
+        break;
+    default:
+        // ??
+        return 0;
+        break;
     };
-
-	// Nothing.
-
+// Nothing.
 done:
     return (unsigned int) BAR;
 }
+
 
 /*
  * pciGetClassCode:
@@ -424,15 +401,16 @@ done:
  */
 
 // #todo: 
-// Nesse momento não há nenhume busca por fuction.
+// Nesse momento não há nenhuma busca por fuction.
 
 unsigned char 
-pciGetClassCode (unsigned char bus, unsigned char slot)
+pciGetClassCode (
+    unsigned char bus, 
+    unsigned char slot )
 {
     return (unsigned char) pciConfigReadByte ( 
                                bus, slot, 0, PCI_OFFSET_CLASSCODE );
 }
-
 
 
 /*
@@ -444,7 +422,9 @@ pciGetClassCode (unsigned char bus, unsigned char slot)
 // Nesse momento não há nenhuma busca por fuction.
 
 unsigned char 
-pciGetHeaderType (unsigned char bus, unsigned char slot)
+pciGetHeaderType (
+    unsigned char bus, 
+    unsigned char slot )
 {
     return (unsigned char) pciConfigReadByte ( 
                                bus, slot, 0, PCI_OFFSET_HEADERTYPE );
@@ -467,6 +447,7 @@ pciGetInterruptLine (
                                PCI_OFFSET_INTERRUPTLINE );
 }
 
+
 /*
  * pciGetInterruptPin:
  *     Get interrupt pin offser 3d (Read only).
@@ -482,6 +463,7 @@ pciGetInterruptPin (
                                PCI_OFFSET_INTERRUPTPIN );
 }
 
+
 /*
  * pciGetSubClass:
  *     Get subclass code. Offset 0x0A.
@@ -491,7 +473,9 @@ pciGetInterruptPin (
 // Nesse momento não há nenhume busca por fuction.
 
 unsigned char 
-pciGetSubClass (unsigned char bus, unsigned char slot)
+pciGetSubClass (
+    unsigned char bus, 
+    unsigned char slot )
 {
     return (unsigned char) pciConfigReadByte ( 
                                bus, slot, 0, PCI_OFFSET_SUBCLASS );
@@ -508,7 +492,9 @@ pciGetSubClass (unsigned char bus, unsigned char slot)
 // Device.
 
 unsigned short 
-pciCheckDevice (unsigned char bus, unsigned char slot)
+pciCheckDevice (
+    unsigned char bus, 
+    unsigned char slot )
 {
     return (unsigned short) pciConfigReadWord ( 
                                 bus, slot, 0, PCI_OFFSET_DEVICEID ); 
@@ -525,27 +511,28 @@ pciCheckDevice (unsigned char bus, unsigned char slot)
 // Vendor.
 
 unsigned short 
-pciCheckVendor (unsigned char bus, unsigned char slot)
+pciCheckVendor (
+    unsigned char bus, 
+    unsigned char slot )
 {
     return (unsigned short) pciConfigReadWord ( 
                                 bus, slot, 0, PCI_OFFSET_VENDORID );
 }
 
+
 /*
  ***************************************
  * init_pci:
- * 
  *     Inicializa o módulo PCI em Kernel Mode, dentro do Kernel Base. 
- * 
  * todo: 
  *     +Pega informações sobre PCI.
  *     +Pegar as informações e por em estrutura e registro.
- *
- *     Obs: Essa rotina está incompleta.
+ * Obs: 
+ *     Essa rotina está incompleta.
  */
 
-int init_pci (void){
-
+int init_pci (void)
+{
     register int i=0;
     int Status = 0;
     int Max = PCI_DEVICE_LIST_SIZE; 
@@ -571,13 +558,13 @@ int init_pci (void){
     data = (unsigned long) in32(0xCF8);
     io_delay();
 
-	// #todo:
-	// Fazer alguma coisa pra esse caso.
-	// Talvez seja um 386 ou 486 sem suporte a PCI.
-	// Talvez ISA.
+// #todo:
+// Fazer alguma coisa pra esse caso.
+// Talvez seja um 386 ou 486 sem suporte a PCI.
+// Talvez ISA.
 
-    // STATUS_NOT_SUPPORTED
-    // Can we live with no pci support. Maybe ISA.
+// STATUS_NOT_SUPPORTED
+// Can we live with no pci support. Maybe ISA.
 
     if ( data != 0x80000000 ){
         panic ("init_pci: PCI not supported\n");
@@ -586,19 +573,18 @@ int init_pci (void){
 // --
 
 
-	//#todo: 
-	//Colocar esse status na estrutura platform->pci_supported.
-	//Talvez assim: platform->platform_type.
+// #todo: 
+// Colocar esse status na estrutura platform->pci_supported.
+// Talvez assim: platform->platform_type.
 
-	//#debug
-	//refresh_screen();
-	//while(1){}
-
+    //#debug
+    //refresh_screen();
+    //while(1){}
 
 // ==========
 
-    // Initialise PCI device list.
-    // Initialise the offset.
+// Initialise PCI device list.
+// Initialise the offset.
 
     for ( i=0; i<Max; ++i ){
         pcideviceList[i] = (unsigned long) 0;
@@ -609,9 +595,9 @@ int init_pci (void){
 // Devices
 //
 
-    // Encontrar os dispositivos PCI e salvar as informações sobre eles
-    // em suas respectivas estruturas.
-    // See: pciscan.c
+// Encontrar os dispositivos PCI e salvar as informações sobre eles
+// em suas respectivas estruturas.
+// See: pciscan.c
 
     //debug_print ("init_pci: [TODO] Call pci_setup_devices() \n");
     
@@ -670,9 +656,7 @@ pciHandleDevice (
 { 
 
     struct pci_device_d  *D;
-
     int Status = -1;
-
     uint32_t data=0;
     
     // char, block, network
@@ -716,15 +700,16 @@ pciHandleDevice (
         D->Vendor = (unsigned short) pciCheckVendor(bus,dev);
         D->Device = (unsigned short) pciCheckDevice(bus,dev);
 
-        D->name = "pci-device-no-name";
+        D->name = "pcidevice-noname";
 
-		// #debug
-		// printf ("$ vendor=%x device=%x \n",D->Vendor, D->Device);
+        // #debug
+        // printf ("$ vendor=%x device=%x \n",D->Vendor, D->Device);
 
         // OK, it is working
         // #todo: 
         // Nao deveriamos estar usando rotina que pertence ao modulo ata.
         // precisamos de uma rotina do modulo pci
+        // #todo: put the correct type.
         data = (uint32_t) diskReadPCIConfigAddr ( bus, dev, fun, 8 );
         D->classCode = (data >> 24) & 0xff;
         D->subclass  = (data >> 16) & 0xff;
@@ -764,6 +749,7 @@ pciHandleDevice (
         // 8c4a	Winbond
         // ...
         
+        // Illegal vendor.
         if ( (D->Vendor == 0xFFFF) ){
             debug_print ("pciHandleDevice: [BUGBUG] Illegal vendor\n");
         }
@@ -862,8 +848,8 @@ pciHandleDevice (
         //{}
 
          
-        // serial controller.
-        // desejamos a subclasse 3 que é usb. 
+        // Serial controller.
+        // Desejamos a subclasse 3 que é usb. 
         if ( (D->Vendor == 0x8086)  && 
              (D->Device == 0x7000 ) && 
              (D->classCode == PCI_CLASSCODE_SERIALBUS ) )
@@ -898,9 +884,9 @@ pciHandleDevice (
 
 		//Colocar a estrutura na lista.
 
-		// #todo: Limits
-		// #bugbug: limite determinado ... 
-		// precisa de variável.
+        // #todo: Limits
+        // #bugbug: limite determinado ... 
+        // precisa de variável.
 
         if ( pciListOffset < 0 || pciListOffset >= PCI_DEVICE_LIST_SIZE )
         { 
@@ -923,37 +909,41 @@ pciHandleDevice (
         //printf("$");
     };
 
+
 //
-// == Name ==========================================
+// Name
 //
-    
-    // #bugbug
-    // buffer overflow?
-    
-    // #test
-    // isso não é o ponto de montagem.
-    
-    //buffer1.
+
+// #bugbug
+// buffer overflow?
+// #test
+// isso não é o ponto de montagem.
+
+
+//buffer1.
     sprintf ( 
         (char *) &__tmpname[0], 
         "/DEV_%x_%x", 
         D->Vendor, 
         D->Device );
 
-    //buffer2.
+//buffer2.
     newname = (char *) kmalloc (64);
     if ( (void*) newname == NULL ){
         panic("pciHandleDevice: [FAIL] newname\n");
     }
     strcpy (newname,__tmpname);
 
+
 //
-// == file ====================================
+// file
 //
-    // Agora registra o dispositivo pci na lista genérica
-    // de dispositivos.
-    // #importante: ele precisa de um arquivo 'file'.
-    
+
+// Agora registra o dispositivo pci na lista genérica
+// de dispositivos.
+// #importante: 
+// Ele precisa de um arquivo 'file'.
+
     file *__file;
     
     __file = (file *) kmalloc ( sizeof(file) );
@@ -967,7 +957,6 @@ pciHandleDevice (
         __file->used  = TRUE;
         __file->magic = 1234;
         __file->isDevice = TRUE;
-
 
         //debug_print("pciHandleDevice: #todo Call devmgr_register_device()\n");
         
@@ -995,41 +984,6 @@ pciHandleDevice (
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

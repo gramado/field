@@ -9,6 +9,7 @@
 // #bugbug
 // Essa rotina é sensível, pois agora usamos 64bit.
 // Called by kernel_main()
+// Where? backbuffer?
 void backgroundDraw (unsigned int color)
 {
     unsigned long deviceWidth  = (unsigned long) screenGetWidth();
@@ -22,9 +23,10 @@ void backgroundDraw (unsigned int color)
         return;
     }
 
-    drawDataRectangle( 
-        0, 0, 
-        deviceWidth, deviceHeight, 
+// Draw a rectangle into the backbuffer.
+
+    backbuffer_draw_rectangle( 
+        0, 0, deviceWidth, deviceHeight, 
         color,
         0 );   //rop_flags
 
@@ -45,9 +47,9 @@ void backgroundDraw (unsigned int color)
     };
     
     */
-    
-    // Cursor.
-    // Nao funciona
+
+// Cursor.
+// Nao funciona
     set_up_cursor(0,0);
 }
 
@@ -59,10 +61,7 @@ int Background_initialize(void)
     // printf ("Background_initialize: TODO\n");
 
     backgroundDraw ( (unsigned int) COLOR_BLACK );
-    
     return 0;
 }
-
-
 
 

@@ -134,10 +134,9 @@ DrawBorder(
 // Draw char.
 // Service 1004.
 
-int serviceDrawChar (void){
-
+int serviceDrawChar (void)
+{
     unsigned long *message_address = (unsigned long *) &__buffer[0];
-
 
     struct gws_window_d *window;
     int window_id = -1;
@@ -157,7 +156,7 @@ int serviceDrawChar (void){
     gwssrv_debug_print ("serviceDrawChar: \n");
 
 
-    // Get
+// Get message parameters.
 
     window_id = message_address[4];
     x         = message_address[5];
@@ -166,16 +165,16 @@ int serviceDrawChar (void){
     unsigned long C = (unsigned long) message_address[8];
     //text_buffer =    //#todo
    
-    //lets create a fake string.
-   
+
+// Let's create a fake string.
+
    _string[0] = (unsigned char) C;
    _string[1] = (unsigned char) 0;
-   
-    
-    //
-    // Window ID
-    //
-   
+
+//
+// Window ID
+//
+
     // Limits
     if ( window_id < 0 || window_id >= WINDOW_COUNT_MAX ){
         gwssrv_debug_print ("gwssrv: serviceDrawChar window_id\n");
@@ -183,9 +182,8 @@ int serviceDrawChar (void){
     }
 
     //gwssrv_debug_print ("serviceDrawChar: get window pointer\n");
-    
-    //#todo
-    // Get the window structure given the id.
+
+// Get the window structure given the id.
     window = (struct gws_window_d *) windowList[window_id];
 
     // #bugbug
@@ -196,23 +194,27 @@ int serviceDrawChar (void){
     //printf ("[debug] window id      = %d \n",window_id);
     //printf ("[debug] window pointer = %x *hang\n",window);
     //while(1){}
-    
+
+
+// validations.
 
     if ( (void *) window == NULL ){
         gwssrv_debug_print ("gwssrv: serviceDrawChar window\n");
         return -1;
     }
 
-    //gwssrv_debug_print ("serviceDrawChar: pointer not null\n");
-    
     if ( window->used != TRUE || window->magic != 1234 ){
         gwssrv_debug_print ("gwssrv: serviceDrawChar validation\n");
         return -1;
     }
-    
-    //
-    // Draw
-    //
+
+//
+// Draw
+//
+
+// Let's draw the char 
+// using the routine for drawing a string.
+// See: dtext.c
 
     gwssrv_debug_print ("serviceDrawChar: Draw!\n");
     
@@ -230,11 +232,15 @@ int serviceDrawChar (void){
     //It is working
     //charBackbufferDrawcharTransparent ( x, y, color, C );
     
-    //
-    // Refresh
-    //  
+//
+// Refresh
+//
 
-    // Refresh only the char.
+// Refresh only the char.
+// #todo:
+// Maybe we can simply invalidar a small rectangle.
+// Maybe we can have a flag telling us if we need 
+// or not to refresh the char.
 
     //gws_show_backbuffer ();       // for debug   
     //gws_show_window_rect(window);   // something faster for now.
@@ -400,17 +406,17 @@ grBackbufferDrawCharTransparent (
             break;
     };
 
-
-    // O caractere sendo trabalhado.
+// O caractere sendo trabalhado.
 
     work_char = (void *) gws_currentfont_address + (c * gcharHeight);
 
 
 //
-// Draw
+// Draw char.
 //
 
-// Put pixel 
+// Put pixel using the ring3 routine.
+// See: bitblt.c
 
     for ( y2=0; y2 < gcharHeight; y2++ )
     {
@@ -437,7 +443,7 @@ grBackbufferDrawCharTransparent (
 /*
  *************************************************
  * charBackbufferDrawchar:
- *     Constrói um caractere no buffer.
+ *     Constrói um caractere no backbuffer.
  *     Desenha um caractere e pinta o pano de fundo.
  */ 
 
@@ -536,6 +542,7 @@ grBackbufferDrawChar (
 // Draw
 //
 
+// Draw a char using a ring3 routine.
 // #todo
 // Some flag for modification here?
 // Put pixel.

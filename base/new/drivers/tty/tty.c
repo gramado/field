@@ -1,15 +1,13 @@
 
+// tty.c
 
 
 #include <kernel.h>  
 
 
-
 /*
- *************************************************
  * __tty_read:
- *     Read n bytes from a tty. raw buffer
- * 
+ *     Read n bytes from a tty. raw buffer.
  * IN:
  *     tty    = Pointer to tty structure.
  *     buffer = Buffer.
@@ -30,12 +28,11 @@ __tty_read (
 
 
     //panic("__tty_read: [TODO] this is a work in progress");
-
     printf("__tty_read:\n");
 
-    // tty
-    if ( (void *) tty == NULL )
-    {
+// tty structure.
+
+    if ( (void *) tty == NULL ){
         printf ("__tty_read: tty\n");
         return -1;
     }
@@ -47,19 +44,17 @@ __tty_read (
     }
 
 
-
-    // buffer
+// buffer
     if ( (char *) buffer == NULL ){
          panic ("__tty_read: invalid buffer \n");
     }
 
-    // nr
+// nr
     if ( nr <= 0 ){
         printf ("__tty_read: nr \n");
         refresh_screen();
         return -1;
     }
-
 
     //if ( tty->stopped == TRUE )
         //return -1;
@@ -72,7 +67,6 @@ __tty_read (
 // A leitura nas filas vai depender do modo
 // configurado.
 // Temos basicamente os 'raw' e 'canonical'.
-
 // ??
 // Lembrando que no modo canônico teremos algum tipo de edição.
 // então o usuário receberá uma fila somente depois que ele digitar
@@ -91,17 +85,19 @@ __tty_read (
     
     int rbytes=nr;
     
-    if (rbytes<=0)
+    if (rbytes<=0){
         return 0;
+    }
 
     // não se pode ler mais que o limite.
-    if (rbytes>TTY_BUF_SIZE)
+    if (rbytes>TTY_BUF_SIZE){
         rbytes=TTY_BUF_SIZE;
+    }
 
     while ( rbytes > 0 )
     {
         // Empty
-        //  Isso acontece também quando a fila esta vazia.
+        // Isso acontece também quando a fila esta vazia.
         if ( tty->raw_queue.head == tty->raw_queue.tail )
         {
             printf("__tty_read: tty->raw_queue.head == tty->raw_queue.tail\n");
@@ -129,14 +125,15 @@ __tty_read (
             break;
     };
 
-// quantidade de bytes no buffer local.
+// Quantidade de bytes no buffer local.
     if ( i <= 0 ){
         printf("__tty_read: i <= 0\n");
         return 0;
     }
 
-    if ( i > TTY_BUF_SIZE )
+    if ( i > TTY_BUF_SIZE ){
         i=TTY_BUF_SIZE;
+    }
 
 //
 // Send
@@ -158,10 +155,8 @@ __tty_read (
 
 
 /*
- *************************************************
  * __tty_write:
  *     Write n bytes to a tty. raw buffer.
- * 
  * IN:
  *     tty    = Pointer to tty structure.
  *     buffer = Buffer.
@@ -183,11 +178,11 @@ __tty_write (
 
 
     printf("__tty_write:\n");
-    
     //panic("__tty_write: [TODO] this is a work in progress");
 
 
-    // tty
+// tty
+
     if ( (void *) tty == NULL ){
         debug_print ("__tty_write: tty\n");
         return -1;
@@ -199,22 +194,20 @@ __tty_write (
         return -1;
     }
 
-    // buffer
+// buffer
     if ( (char *) buffer == NULL ){
          panic ("__tty_write: invalid buffer \n");
     }
 
-    // nr
+// nr
     if ( nr <= 0 ){
         printf ("__tty_write: nr \n");
         refresh_screen();
         return -1;
     }
 
-
     //if ( tty->stopped == TRUE )
         //return -1;
-
 
 //
 // Queue 
@@ -223,7 +216,6 @@ __tty_write (
 // A escrita nas filas vai depender do modo
 // configurado.
 // Temos basicamente os 'raw' e 'canonical'.
-
 // ??
 // Lembrando que no modo canônico teremos algum tipo de edição.
 // então o usuário receberá uma fila somente depois que ele digitar
@@ -242,12 +234,14 @@ __tty_write (
     
     int wbytes=nr;
     
-    if (wbytes<=0)
+    if (wbytes<=0){
         return 0;
+    }
 
     // não se pode escrever mais que o limite.
-    if (wbytes>TTY_BUF_SIZE)
+    if (wbytes>TTY_BUF_SIZE){
         wbytes=TTY_BUF_SIZE;
+    }
 
 
 //
@@ -262,8 +256,9 @@ __tty_write (
         wbytes ); 
 
 
-    i=0;  //buffer local
-    
+//buffer local
+    i=0;
+
     while ( wbytes > 0 )
     {
         // acabou a fila.
@@ -295,18 +290,20 @@ done:
     printf("__tty_write: done\n");
 
 // quantidade de bytes que gravamos na tty
-    if ( i <= 0 )
+    if ( i <= 0 ){
         return 0;
+    }
 
-    if ( i > TTY_BUF_SIZE )
+    if ( i > TTY_BUF_SIZE ){
         i=TTY_BUF_SIZE;
+    }
 
 // Retornamos a quantidade que gravamos na fila da tty.
     return (int) i; 
 }
 
+
 /*
- *********************************
  * tty_read:
  *     Ler uma certa quantidade de bytes, 
  * da tty para o buffer indicado no argumento.
@@ -317,7 +314,6 @@ done:
 // se ele tiver o fd do dispositivo tty onde o teclado esta
 // colocando os bytes.
 // /PS2KBD
-
 // IN: 
 // fd = indice na lista de arquivos abertos pelo processo.
 
@@ -334,13 +330,16 @@ tty_read (
 
     debug_print ("tty_read: [FIXME]\n");
 
-    //Limits
+// fd
+
     if ( fd < 0 || fd > 32 ){
         printf ("tty_read: invalid fd\n");
         refresh_screen();
         return -1;
     }
 
+
+// process.
 
     p = (struct process_d *) processList[fd];
 
@@ -349,21 +348,23 @@ tty_read (
         return -1;
     }
 
-    // Pega o arquivo.
+// file
+
     f = (file *) p->Objects[fd];
 
     if ((void*) f == NULL){
         debug_print("tty_read: f\n");
         return -1;
     }
-    
-    
+
     if( f->____object != ObjectTypeTTY ){
         debug_print("tty_read: ____object\n");
         return -1;
     }
 
-    //pega a tty representada pelo arquivo
+// tty
+// Pega a tty representada pelo arquivo.
+
     __tty = (struct tty_d *) f->tty;
     
     if ( (void*) __tty == NULL ){
@@ -371,9 +372,7 @@ tty_read (
         return -1;
     }
 
-//
 // Read from tty device.
-//
 
      return (int) __tty_read ( 
                       (struct tty_d *) __tty, 
@@ -391,20 +390,20 @@ tty_write (
     int n )
 {
     struct tty_d *__tty;
-
     struct process_d *p;
     file *f;
-    
 
     debug_print ("tty_write: [FIXME]\n");
 
-    //Limits
+// fd
+
     if ( fd < 0 || fd > 32 ){
         printf ("tty_write: invalid fd\n");
         refresh_screen();
         return -1;
     }
 
+// process
 
     p = (struct process_d *) processList[fd];
 
@@ -413,21 +412,23 @@ tty_write (
         return -1;
     }
 
-    // Pega o arquivo.
+// file
+
     f = (file *) p->Objects[fd];
 
     if ((void*) f == NULL){
         debug_print("tty_write: f\n");
         return -1;
     }
-    
-    
-    if( f->____object != ObjectTypeTTY ){
+
+    if ( f->____object != ObjectTypeTTY ){
         debug_print("tty_write: ____object\n");
         return -1;
     }
 
-    //pega a tty representada pelo arquivo
+// tty
+// Pega a tty representada pelo arquivo.
+
     __tty = (struct tty_d *) f->tty;
     
     if ( (void*) __tty == NULL ){
@@ -435,12 +436,14 @@ tty_write (
         return -1;
     }
 
-    // Read tty.
+// Read tty.
 
-    return (int) __tty_write ( (struct tty_d *) __tty, 
+    return (int) __tty_write ( 
+                     (struct tty_d *) __tty, 
                      (char *) buffer, 
                      (int) n );
 }
+
 
 /*
  * tty_reset_termios: 
@@ -452,20 +455,24 @@ tty_write (
 
 void tty_reset_termios ( struct tty_d *tty )
 {
-    // #todo: Limits messages
+
+// #todo: 
+// Limits messages
+
+// tty
+
     if ( (void *) tty == NULL ){
         debug_print("tty_reset_termios: tty\n");
         return;
     }
 
-    // #check
-    // Is it a valid termios structure pointer?
+// #check
+// Is it a valid termios structure pointer?
 
     tty->termios.c_iflag = BRKINT | ICRNL | IXON;
     tty->termios.c_oflag = OPOST;
     tty->termios.c_cflag = CREAD | CS8;
     tty->termios.c_lflag = ECHO | ECHOE | ECHOK | ICANON | ISIG;
-
     tty->termios.c_ispeed = B9600;
     tty->termios.c_ospeed = B9600;
 
@@ -505,18 +512,15 @@ void tty_reset_termios ( struct tty_d *tty )
     //26; //BS
     tty->termios.c_cc[VSUSP]  = CSUSP;   
 
-    // #todo
-	//tty->win_size.ws_col = 80;
-	//tty->win_size.ws_row = 25;
+// #todo
+    //tty->win_size.ws_col = 80;
+    //tty->win_size.ws_row = 25;
 }
 
 
-
 /*
- ***********************************
  * tty_create: 
  *    Create a tty structure.
- * 
  * OUT:
  *     pointer.
  */
@@ -524,7 +528,6 @@ void tty_reset_termios ( struct tty_d *tty )
 // #test
 // We are including a pointer to the RIT. raw input thread.
 // This is the control thread of the window with focus on kgws.
-
 // See: tty.h
 
 struct tty_d *tty_create(void)
@@ -532,7 +535,6 @@ struct tty_d *tty_create(void)
     struct tty_d  *__tty;
     file *__file;
     char __tmpname[64];
-
     int i=0;
 
 
@@ -550,7 +552,6 @@ struct tty_d *tty_create(void)
         
         __tty->objectType  = ObjectTypeTTY;
         __tty->objectClass = ObjectClassKernelObjects;
-        
         __tty->used  = TRUE;
         __tty->magic = 1234;
 
@@ -683,7 +684,6 @@ struct tty_d *tty_create(void)
     panic ("tty_create: Crazy error!\n");
     //return NULL;
 
-
 // ==========================================
 __ok_register:
 
@@ -691,9 +691,9 @@ __ok_register:
         panic("tty_create: __tty\n");
     }
 
-    //#test
-    // isso não é o ponto de montagem.
-    
+// #test
+// Isso não é o ponto de montagem.
+
     sprintf ( 
         (char *) &__tmpname[0], 
         "/DEV_TTY%d", 
@@ -705,11 +705,10 @@ __ok_register:
     }
     strcpy (newname,__tmpname);
 
-
-    // Agora registra o dispositivo pci na lista genérica
-    // de dispositivos.
-    // #importante: 
-    // Ele precisa de um arquivo 'file'.
+// Agora registra o dispositivo pci na lista genérica
+// de dispositivos.
+// #importante: 
+// Ele precisa de um arquivo 'file'.
     
     __file = (file *) kmalloc ( sizeof(file) );
     
@@ -775,14 +774,15 @@ __ok_register:
     };
 // ==========================================
 
-    // last check.
+// last check.
     if ( (void *) __tty == NULL ){
         panic ("tty_create: [FAIL] __tty");
     }
 
-    // ok.
+// ok.
     return (struct tty_d *) __tty;
 }
+
 
 // file to tty.
 // OUT: tty pointer.
@@ -792,9 +792,9 @@ struct tty_d *file_tty (file *f)
     if ( (void *)f==NULL ){
         return (struct tty_d *) 0;
     }
-
     return (struct tty_d *) f->tty;
 }
+
 
 // #todo
 // flush the output buffer to the current virtual console.
@@ -811,7 +811,7 @@ void tty_start (struct tty_d *tty)
         return;
     }
 
-    //Se não está parada.
+// Se não está parada.
     if (tty->stopped == FALSE)
     {
         //debug_print("tty_start: not stopped\n");
@@ -828,7 +828,7 @@ void tty_stop (struct tty_d *tty)
         return;
     }
 
-    //se ela já está parada.
+// Se ela já está parada.
     if (tty->stopped == TRUE)
     {
         //debug_print("tty_stop: already stopped\n");
@@ -853,14 +853,14 @@ int tty_delete ( struct tty_d *tty )
          
          //reusar
          tty->magic = 216;
-         
          tty_stop(tty);
          
          //...
     };
-    
+
     return 0;
 }
+
 
 // Copia a estrutura de termios
 // para o aplicativo em ring3 poder ler.
@@ -881,13 +881,17 @@ tty_gets (
         return -1;
     }
 
-    // Copia a estrutura term da tty na estrutura de termios 
-    // que está em ring3.
+// Copia a estrutura term da tty na estrutura de termios 
+// que está em ring3.
 
-    memcpy ( termiosp, &tty->termios, sizeof(struct termios) );
+    memcpy ( 
+        termiosp, 
+        &tty->termios, 
+        sizeof(struct termios) );
 
     return 0;
 }
+
 
 // Copia de ring3 para o kernel.
 int 
@@ -914,10 +918,9 @@ tty_sets (
         return -1;
     }
 
-
-    //
-    // Options.
-    //
+//
+// Options.
+//
 
     switch (options)
     {
@@ -943,16 +946,12 @@ int tty_init_module (void)
     // Nothing for now!
 
     debug_print ("tty_init_module:\n");
-    
     // ...
-        
     return 0;
 }
 
 
-
 /*
- ******************************** 
  * tty_ioctl:
  * 
  */
@@ -960,10 +959,8 @@ int tty_init_module (void)
 // Pegaremos a estrutura de tty.
 // Dado o fd, pegaremos um arquivo que é um objeto tty.
 // Esse arquivo traz um ponteiro para a estrutura tty.
-
 // See:
 // https://man7.org/linux/man-pages/man3/tcflush.3.html
- 
 // #todo
 // See: 
 // termios.h
@@ -988,16 +985,15 @@ tty_ioctl (
         return -1;
     }
 
-
-   // #todo
-   // podemos checar novamente se realmente se trata de
-   // um tty. Mas isso ja foi feito no wrapper sys_ioctl.
-   
+// #todo
+// podemos checar novamente se realmente se trata de
+// um tty. Mas isso ja foi feito no wrapper sys_ioctl.
 
     //if (current_process < 0) 
         //return -1;
 
-     
+// process
+
     p = ( struct process_d * ) processList[current_process];
     
     if ( (void *) p == NULL ){
@@ -1005,8 +1001,8 @@ tty_ioctl (
         return -1;
     }
 
+// file. (Object).
 
-    // Object
     f = (file*) p->Objects[fd];
     
     if ( (void *) f == NULL ){
@@ -1014,19 +1010,20 @@ tty_ioctl (
         return -1;
     }
 
-    // Is it a tty object?
+// Is it a tty object?
+// Get tty struct!
+
     if (f->____object != ObjectTypeTTY){
         debug_print ("tty_ioctl: [FAIL] Not a tty file\n");
         return -1;
-
-    // Get tty struct!
     }else{
         tty = f->tty;
     };
 
+
+// The command!
+
     int xxxi=0;
-    
-    // The command!
 
     switch (request){
 
@@ -1104,65 +1101,6 @@ tty_ioctl (
     //fail.
     return -1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

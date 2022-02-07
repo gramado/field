@@ -1,4 +1,5 @@
 
+// pciinfo.c
 
 #include <kernel.h>  
 
@@ -7,7 +8,8 @@
 // Class strings.
 //
 
-//Obs: parece que outra forma de lista é mais apropriado.
+// Obs: 
+// Parece que outra forma de lista é mais apropriado.
 static const char* pci_class_strings[] = {
 	"Unknow",                              //0x00 (Pre 2.0 device)
 	"Mass Storage Controller",             //0x01
@@ -34,6 +36,7 @@ static const char* pci_class_strings[] = {
 	//0xff (Device does not fit in any defined classes)
 };
 
+
 /*
  * pciInfo:
  *     Mostra as informações salvas nas estruturas da 
@@ -48,20 +51,17 @@ static const char* pci_class_strings[] = {
 // Uma lista com no máximo 32 ponteiros para estrutura 
 // de dispositivo pci.
 
-int pciInfo (void){
-
+int pciInfo (void)
+{
     struct pci_device_d *D;
     int i=0;
     int Max = PCI_DEVICE_LIST_SIZE;
 
-
     printf ("pciInfo: \n");
-
 
     for ( i=0; i<Max; i++ )
     {
         D = (void *) pcideviceList[i];
-
         if ( (void *) D != NULL )
         {
             if ( D->used == TRUE && D->magic == 1234 )
@@ -76,7 +76,6 @@ int pciInfo (void){
     };
 
     printf ("Done\n");
-
     return 0; 
 }
 
@@ -87,14 +86,15 @@ int pciInfo (void){
  *     Apenas um dispositivo.
  */
 
-int pciShowDeviceInfo (int number){
-
+int pciShowDeviceInfo (int number)
+{
     struct pci_device_d  *D;
 
-    // Limits
-    // Pega um ponteiro de estrutura na lista.
+// Limits
+// Pega um ponteiro de estrutura na lista.
 
-    if (number < 0 || number >= PCI_DEVICE_LIST_SIZE){
+    if (number < 0 || number >= PCI_DEVICE_LIST_SIZE)
+    {
         debug_print("pciShowDeviceInfo: number\n");
         return -1;
     }else{

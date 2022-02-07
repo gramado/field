@@ -11,12 +11,16 @@ grBackBufferPutpixel (
     int x, 
     int y );
 
+
+// put pixel
+// low level.
 int 
 fb_BackBufferPutpixel ( 
     unsigned int color, 
     int x, 
     int y,
-    unsigned long flags );
+    unsigned long flags,
+    unsigned long buffer_va );
 
 
 int 

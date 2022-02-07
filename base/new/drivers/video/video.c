@@ -14,11 +14,10 @@
 // e enviará dados para o lfb.
 
 //
-// == VGA =======================================================
+// == VGA =============================
 //
 
 /*
-  
     This index lists the VGA's I/O ports in numerical order, 
     making looking up a specific I/O port access simpler.
  
@@ -48,10 +47,11 @@
 See:
     https://web.stanford.edu/class/cs140/projects/pintos/specs/freevga/vga/portidx.htm
  */
-
 // ================================
 
+
 #include <kernel.h>
+
 
 //@todo: Criar um arquivo para gerenciar fontes.
 #define VIDEO_BIOS_FONT8X8_ADDRESS    0x000FFA6E
@@ -85,6 +85,7 @@ int videoError;
 // #importante: Esse driver poderá ser diferente para
 // cada modelo de placa de vídeo.
 
+//#todo: Use static.
 unsigned long __frontbuffer_va;
 unsigned long __frontbuffer_pa;  
 
@@ -111,7 +112,8 @@ int videoInit (void)
 // LFB
 //
 
-    // frontbuffer
+// frontbuffer
+
     __frontbuffer_pa = (unsigned long) SavedLFB;
     __frontbuffer_va = (unsigned long) FRONTBUFFER_VA;
     g_frontbuffer_pa = (unsigned long) __frontbuffer_pa; 
@@ -121,14 +123,14 @@ int videoInit (void)
 // Backbuffer
 //
 
-    // backbuffer
+// backbuffer
+
     g_backbuffer_va  = (unsigned long) BACKBUFFER_VA;
 
 
-
-    // Device screen sizes. 
-    // (herdadas do boot loader.)
-    // See: globals/gdevice.h
+// Device screen sizes. 
+// (herdadas do boot loader.)
+// See: globals/gdevice.h
 
     g_device_screen_width  = (unsigned long) SavedX;
     g_device_screen_height = (unsigned long) SavedY;
@@ -137,8 +139,8 @@ int videoInit (void)
 
     // gwsSetCurrentFontAddress ( VIDEO_BIOS_FONT8X8_ADDRESS );
 
-    // #todo: 
-    // Usar a função que configura essas variáveis.
+// #todo: 
+// Usar a função que configura essas variáveis.
     gcharWidth  = VIDEO_BIOS_FONT8X8_WIDTH;
     gcharHeight = VIDEO_BIOS_FONT8X8_HEIGHT;
     gfontSize   = FONT8X8;
@@ -174,6 +176,7 @@ int Video_initialize(void)
     return 0;
 }    
 
+
 /*
  * videoGetMode: 
  *     Obtem o modo de video atual.
@@ -187,6 +190,7 @@ unsigned long videoGetMode (void)
     return (unsigned long) g_current_video_mode;
 }
 
+
 /*
  * videoSetMode:
  *     Configura o modo de video atual.
@@ -197,8 +201,8 @@ void videoSetMode (unsigned long mode)
 
     unsigned long VideoMode;
     unsigned long Width;
-	unsigned long Height;
-	//continua...(outros parametros)
+    unsigned long Height;
+    //continua...(outros parametros)
 
 
     debug_print ("videoSetMode: [BUGBUG] This routine is wrong\n");
@@ -212,67 +216,70 @@ void videoSetMode (unsigned long mode)
 	//
 	
 	//if (){}
-	
 
-	//Se estiver nos limites.
-	if ( VideoMode > 0 && VideoMode < 9000)
-	{
-		//g_current_video_mode = (unsigned long) VideoMode;
+
+// Se estiver nos limites.
+    if ( VideoMode > 0 && VideoMode < 9000)
+    {
+        //g_current_video_mode = (unsigned long) VideoMode;
         g_video_mode = (unsigned long) VideoMode;
-		VideoBlock.vesaMode = (unsigned long) VideoMode; 
-		//...
-	}
+        VideoBlock.vesaMode = (unsigned long) VideoMode; 
+        //...
+    }
 
-	//
-	// @todo:
-	// Organizar isso. Os valores atuais devem ser obtidos em real mode 
-	// usando os recursos do VESA BIOS.
-	//
-	
+// #todo:
+// Organizar isso. Os valores atuais devem ser obtidos em real mode 
+// usando os recursos do VESA BIOS.
+
+// #bugbug
+// This is is very wrong.
+// We need to get these values in the controller.
+
     switch (VideoMode){
-		
-	    case 0x110: 
-		    Width = 800;
-			Height = 600;
-		break;
 
-	    case 0x111:
-		    Width = 800;
-			Height = 600;
-		break;
+        case 0x110: 
+            Width = 800;
+            Height = 600;
+            break;
 
-	    case 0x112:
-		    Width = 800;
-			Height = 600;
-		break;
+        case 0x111:
+            Width = 800;
+            Height = 600;
+            break;
 
-	    case 0x113:
-		    Width = 800;
-			Height = 600;
-		break;
+        case 0x112:
+            Width = 800;
+            Height = 600;
+            break;
 
-	    case 0x114:
-		    Width = 800;
-			Height = 600;
-		break;
-		
-	    case 0x115:
-		    Width = 800;
-			Height = 600;
-		    break;
+        case 0x113:
+            Width = 800;
+            Height = 600;
+            break;
+
+        case 0x114:
+            Width = 800;
+            Height = 600;
+            break;
+
+        case 0x115:
+            Width = 800;
+            Height = 600;
+            break;
 
         default:
-		    Width = 800;
-			Height = 600;
-		    break;
+            Width = 800;
+            Height = 600;
+            break;
     };
 
     screenSetSize (Width,Height);
 
-	// Continua... (outros parametros)
+    // Continua... (outros parametros)
 
     g_current_video_mode = (unsigned long) VideoMode;
 }
+
 
 /*
  * videoSetupCGAStartAddress:
@@ -283,35 +290,11 @@ void videoSetMode (unsigned long mode)
 void videoSetupCGAStartAddress (unsigned long address)
 {
     g_current_vm = (unsigned long) address;
-	//g_current_cga_address
+    //g_current_cga_address
 }
-
 
 
 //
 // End.
 //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

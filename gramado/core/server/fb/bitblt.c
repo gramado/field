@@ -14,8 +14,7 @@
 
 
 
-
-// usando serviço do kernel
+// Put pixel using the kernel service.
 int 
 grBackBufferPutpixel2 ( 
     unsigned int color, 
@@ -26,10 +25,9 @@ grBackBufferPutpixel2 (
     if (x<0){ return -1; }
     if (y<0){ return -1; }
 
+// Service number 6.
     return (int) gramado_system_call ( 6, color, x, y );
 }
-
-
 
 
 int 
@@ -41,8 +39,19 @@ grBackBufferPutpixel (
 
     // ...
 
-    return (int) fb_BackBufferPutpixel(color,x,y,0);
+// put pixel into the backbuffer.
+    return (int) fb_BackBufferPutpixel( 
+                     color,
+                     x,
+                     y,
+                     0, // ROP
+                     ____BACKBUFFER_VA );  // Target buffer.
+
+// #todo
+// put pixel into another buffer.
+    //return (int) fb_BackBufferPutpixel(color,x,y,0,____ANOTHER_BUFFER_VA);
 }
+
 
 
 /*
@@ -82,7 +91,8 @@ fb_BackBufferPutpixel (
     unsigned int color, 
     int x, 
     int y,
-    unsigned long flags )  // #todo: Change to 'rop_flags'
+    unsigned long flags, // #todo: Change to 'rop_flags'
+    unsigned long buffer_va )  
 {
 
     //debug_print("Pixel\n");
@@ -128,7 +138,6 @@ fb_BackBufferPutpixel (
     int bytes_count=0;
 
 
-
 //
 // Clipping
 //
@@ -144,7 +153,6 @@ fb_BackBufferPutpixel (
 // Purify
     x = ( x & 0xFFFF);
     y = ( y & 0xFFFF);
-
 
 //
 // bpp
@@ -174,7 +182,6 @@ fb_BackBufferPutpixel (
 // Nao pode ser maior que 2MB.
 // Que eh o tamanho do buffer que temos ate agora.
     unsigned long pitch=0; 
-    
 
     if (bytes_count!=3 && bytes_count!=4 )
         return -1;
