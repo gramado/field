@@ -2145,11 +2145,18 @@ int serviceGetClientMessage(void)
 }
 
 
-
-
+// Async request.
 // No response.
+// #bugbug: Esta travando.
 int serviceAsyncCommand (void)
 {
+
+    // #bugbug
+    // Quando o cliente chama essa rotina
+    // o sistema esta travando.
+    // Não esta retornando direito para o cliente.
+
+
     //O buffer é uma global nesse documento.
     unsigned long *message_address = (unsigned long *) &__buffer[0];
 
@@ -2171,14 +2178,22 @@ int serviceAsyncCommand (void)
 
     // ...
 
+
+    gwssrv_debug_print ("serviceAsyncCommand:\n");
+
+
 // Validate our message number.
 
     if (message_id != 2222)
     {
-        gwssrv_debug_print ("serviceAsyncCommand: [ERROR] message id\n");
-                    printf ("serviceAsyncCommand: [ERROR] message id\n");
+        gwssrv_debug_print ("serviceAsyncCommand: [ERROR] message_id\n");
+                    printf ("serviceAsyncCommand: [ERROR] message_id\n");
         return (int) (-1);
     }
+
+//
+// id
+//
 
     // #debug
     // printf ("serviceAsyncCommand: [request %d] \n", request_id);
@@ -2189,7 +2204,7 @@ int serviceAsyncCommand (void)
     // #todo:
     // Close all the clients and close the server.
     case 1:
-        gwssrv_debug_print ("serviceAsyncCommand: [request 1]  Exit GWS\n");
+        gwssrv_debug_print ("serviceAsyncCommand: [1]  Exit GWS\n");
         //printf ("serviceAsyncCommand: [request 1] Closing server\n");
         printf("serviceAsyncCommand: Exit GWS\n");
         serviceExitGWS();
@@ -2198,7 +2213,7 @@ int serviceAsyncCommand (void)
         break;
 
     case 2:
-        gwssrv_debug_print ("serviceAsyncCommand: [request 2] \n");
+        gwssrv_debug_print ("serviceAsyncCommand: [2] \n");
         printf("PING\n");
         //Notify_CloseClient = TRUE;
         //Notify_PongClient = TRUE;
@@ -2207,7 +2222,7 @@ int serviceAsyncCommand (void)
         break;
 
     case 3:
-        gwssrv_debug_print ("serviceAsyncCommand: [request 3] hello\n");
+        gwssrv_debug_print ("serviceAsyncCommand: [3] hello\n");
         printf("HELLO\n");
         //exit(0);
         return 0;
@@ -2215,11 +2230,12 @@ int serviceAsyncCommand (void)
 
     // See: demos.c
     case 4:
+        gwssrv_debug_print ("serviceAsyncCommand: [4] \n");
         if (current_mode == GRAMADO_JAIL)
         {
             gwssrv_debug_print("serviceAsyncCommand: [request 4] demo\n"); 
-            demos_startup_animation(subrequest_id);
-            gwssrv_show_backbuffer();
+            //demos_startup_animation(subrequest_id);
+            //gwssrv_show_backbuffer();
             return 0;
         }
         break;
@@ -2227,6 +2243,7 @@ int serviceAsyncCommand (void)
     // Draw black rectangle.
     // #bugbug: trava ...
     //case 5:
+       //gwssrv_debug_print ("serviceAsyncCommand: [5] \n");
        //if (current_mode == GRAMADO_JAIL)
        //{
            //rectBackbufferDrawRectangle ( 
@@ -2238,6 +2255,7 @@ int serviceAsyncCommand (void)
 
     // Setup if we will show or not the 'fps window'.
     case 6:
+        gwssrv_debug_print ("serviceAsyncCommand: [6] \n");
         if( subrequest_id == TRUE )
         {
             show_fps_window = TRUE;
@@ -2247,6 +2265,7 @@ int serviceAsyncCommand (void)
         break;
 
     // Register wm pid
+    // #suspended: o wm fica no ws por enquanto.
     case 7:
         gwssrv_debug_print ("serviceAsyncCommand: [7] Register wm pid\n");
         //printf ("serviceAsyncCommand: [7] [BREAKPOINT] Register wm pid\n");
@@ -2260,6 +2279,7 @@ int serviceAsyncCommand (void)
     // As mensages aqui interessam somente ao window manager
     // que esta dentro do window server.
     case 8:
+        gwssrv_debug_print ("serviceAsyncCommand: [8] \n");
         printf ("serviceAsyncCommand: [8] \n");
         if (subrequest_id = 1)
         {
@@ -2268,6 +2288,7 @@ int serviceAsyncCommand (void)
         break;
 
     case 9:
+        gwssrv_debug_print ("serviceAsyncCommand: [9] \n");
         set_window_with_focus(Data);
         break;
 
@@ -2275,7 +2296,9 @@ int serviceAsyncCommand (void)
     // #test
     // drawing a rect using ring0 and ring3 routines.
     // TRUE = use kgws ; FALSE =  do not use kgws.
-    //case 10:
+    case 10:
+        gwssrv_debug_print ("serviceAsyncCommand: [10] \n");
+        printf ("serviceAsyncCommand: [10] \n");
 
         //rectBackbufferDrawRectangle0(
         //    10, 10, 40, 40,
@@ -2284,9 +2307,9 @@ int serviceAsyncCommand (void)
         //    0,        // rop falgs
         //    FALSE );   // TRUE = use kgws. (kernel service)
         //refresh_rectangle_via_kgws(10, 10, 40, 40);
-        //return 0;
+        return 0;
         
-        //break;
+        break;
 
     // ...
 
@@ -2297,6 +2320,8 @@ int serviceAsyncCommand (void)
         break;
     };
 
+//fail:
+    gwssrv_debug_print ("serviceAsyncCommand: FAIL\n");
     return (int)(-1);
 }
 
@@ -2640,6 +2665,7 @@ int main (int argc, char **argv)
 // Let's create the standard green background.
 
     initGraphics();
+
 
     //gws_show_backbuffer();
     //while(1){}

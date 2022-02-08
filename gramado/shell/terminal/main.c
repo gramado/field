@@ -193,8 +193,11 @@ void compareStrings(int fd)
         //    fg_color, 
         //    '/' ); 
         
-        //gws_async_command(fd,5,0,0); //#test #bugbug
-        //gws_async_command(fd,10,0,0); //#test #bugbug
+        // #bugbug
+        // Esta travando.
+        //gws_async_command(fd,4,0,0);    //demos
+        //gws_async_command(fd,5,0,0);  //rectangle ring3
+        //gws_async_command(fd,10,0,0); //ramdom tests
 
         goto exit_cmp;
     }

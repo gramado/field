@@ -169,8 +169,11 @@ __draw_buttom_borders(
     unsigned int outer_color )
 {
 
-    if ( (void*) w == NULL )
+    debug_print("__draw_buttom_borders:\n");
+
+    if ( (void*) w == NULL ){
         return;
+    }
 
 //  ____
 // |
@@ -212,16 +215,22 @@ __draw_buttom_borders(
 
 // Dir
     rectBackbufferDrawRectangle ( 
-        ((w->left) + (w->width) -1 -1 -1), w->top+1+1, 
-        1, w->height-4, 
+        ((w->left) + (w->width) -1 -1 -1), 
+        w->top+1+1, 
+        1, 
+        w->height-4, 
         color2_light, TRUE, 0 );
     rectBackbufferDrawRectangle ( 
-        ((w->left) + (w->width) -1 -1), w->top+1, 
-        1, w->height-2, 
+        ((w->left) + (w->width) -1 -1), 
+        w->top+1, 
+        1, 
+        w->height-2, 
         color2, TRUE, 0 );
     rectBackbufferDrawRectangle ( 
-        ((w->left) + (w->width) -1), w->top+1, 
-        1, w->height-2, 
+        ((w->left) + (w->width) -1), 
+        w->top+1, 
+        1, 
+        w->height-2, 
         outer_color, TRUE, 0 );
 
 // Baixo
@@ -237,6 +246,8 @@ __draw_buttom_borders(
         w->left+1, ( (w->top) + (w->height) -1 ),  
         w->width-2, 1, 
         outer_color, TRUE, 0 );
+
+    debug_print("__draw_buttom_borders: done\n");
 }
 
 
@@ -248,6 +259,8 @@ __draw_window_border(
     struct gws_window_d *parent, 
     struct gws_window_d *window )
 {
+
+    debug_print("__draw_window_border:\n");
 
     if ( (void*) parent == NULL )
         return;
@@ -305,6 +318,8 @@ __draw_window_border(
             window->width, window->border_size, 
             window->border_color, TRUE,0 );
     }
+
+    debug_print("__draw_window_border: done\n");
 }
 
 
@@ -698,71 +713,74 @@ wmCreateWindowFrame (
             // The Titlebar in an overlapped window will affect
             // the top position of the client area rectangle.
             window->rcClient.top += window->titlebar_height;
-        }
 
-        // Ornamento:
-        // Ornamento na parte de baixo da title bar.
-        // #important:
-        // O ornamento é pintado dentro da barra, então isso
-        // não afetará o positionamento da área de cliente.
+            // Ornamento:
+            // Ornamento na parte de baixo da title bar.
+            // #important:
+            // O ornamento é pintado dentro da barra, então isso
+            // não afetará o positionamento da área de cliente.
+            // border on bottom.
+            // Usado para explicitar se a janela é ativa ou não
+            // e como separador entre a barra de títulos e a segunda
+            // área da janela de aplicativo.
+            // Usado somente por overlapped window.
+        
+            window->frame.ornament_color1   = OrnamentColor1;  //COLOR_BLACK;
+            window->titlebar_ornament_color = OrnamentColor1;  //COLOR_BLACK;
+        
+            rectBackbufferDrawRectangle ( 
+                tbWindow->left, 
+                ( (tbWindow->top) + (tbWindow->height) - METRICS_TITLEBAR_ORNAMENT_SIZE ),  
+                tbWindow->width, 
+                METRICS_TITLEBAR_ORNAMENT_SIZE, 
+                OrnamentColor1, 
+                TRUE,
+                0 );  // rop_flags
 
-        // border on bottom.
-        // Usado para explicitar se a janela é ativa ou não
-        // e como separador entre a barra de títulos e a segunda
-        // área da janela de aplicativo.
-        // Usado somente por overlapped window.
-        
-        window->frame.ornament_color1   = OrnamentColor1;  //COLOR_BLACK;
-        window->titlebar_ornament_color = OrnamentColor1;  //COLOR_BLACK;
-        
-        rectBackbufferDrawRectangle ( 
-            tbWindow->left, ( (tbWindow->top) + (tbWindow->height) - METRICS_TITLEBAR_ORNAMENT_SIZE ),  
-            tbWindow->width, METRICS_TITLEBAR_ORNAMENT_SIZE, 
-            OrnamentColor1, TRUE,
-            0 );  // rop_flags
+            //
+            // Icon (Titlebar)
+            //
 
-        //
-        // Icon (Titlebar)
-        //
+            // O posicionamento em relação
+            // à janela é consistente por questão de estilo.
+            // See: bmp.c
+            // IN: index, x, y.
 
-        // O posicionamento em relação
-        // à janela é consistente por questão de estilo.
-        
-        // See: bmp.c
-        // IN: index, x, y.
+            window->titlebarHasIcon = FALSE;
+            window->frame.icon_id = 1;
+            if( useIcon == TRUE ){
+                gwssrv_display_system_icon( 
+                    (int) window->frame.icon_id, 
+                    (tbWindow->left + METRICS_ICON_LEFT), 
+                    (tbWindow->top  + METRICS_ICON_TOP) );
+                    window->titlebarHasIcon = TRUE;
+             }
 
-        window->titlebarHasIcon = FALSE;
-        window->frame.icon_id = 1;
-        if( useIcon == TRUE ){
-            gwssrv_display_system_icon( 
-                (int) window->frame.icon_id, 
-                (tbWindow->left + METRICS_ICON_LEFT), 
-                (tbWindow->top  + METRICS_ICON_TOP) );
-             window->titlebarHasIcon = TRUE;
-         }
+            //
+            // String (title bar)
+            //
+        
+            window->titlebar_text_color = COLOR_WHITE;
+        
+            // #todo
+            // Temos que gerenciar o posicionamento da string.
+        
+            // #bugbug: Use 'const char *'
+            tbWindow->name = (char *) strdup ( (const char *) window->name );
+        
+            //#todo: validation
+            //if ( (void*) tbWindow->name == NULL ){}
+        
+            if ( useTitleString == TRUE ){
+                grDrawString ( 
+                    (tbWindow->left) + offset, 
+                    (tbWindow->top)  + 8, 
+                    COLOR_WHITE, 
+                    tbWindow->name );
+            }
 
-        //
-        // String (title bar)
-        //
-        
-        window->titlebar_text_color = COLOR_WHITE;
-        
-        // #todo
-        // Temos que gerenciar o posicionamento da string.
-        
-        // #bugbug: Use 'const char *'
-        tbWindow->name = (char *) strdup ( (const char *) window->name );
-        
-        //#todo: validation
-        //if ( (void*) tbWindow->name == NULL ){}
-        
-        if ( useTitleString == TRUE ){
-            grDrawString ( 
-                (tbWindow->left) + offset, 
-                (tbWindow->top)  + 8, 
-                COLOR_WHITE, 
-                tbWindow->name );
-        }
+        }  //--use title bar.
+        // ooooooooooooooooooooooooooooooooooooooooooooooo
 
 
         //
@@ -1844,6 +1862,31 @@ wmHandler(
         wm_update_desktop();
         return 0;  //important: We need to return.
     }
+
+// ==============================================
+// #test
+// Testing some random functions.
+
+    if (msg == 9093){
+        debug_print ("wmHandler: 9093\n");
+
+        // #test
+        // drawing a rect using ring0 and ring3 routines.
+        // TRUE = use kgws ; FALSE =  do not use kgws.
+
+        rectBackbufferDrawRectangle0(
+            10, 10, 40, 40,
+            COLOR_RED,
+            TRUE,      // fill? 
+            0,         // rop falgs
+            FALSE );   // TRUE = use kgws. (kernel service)
+        //refresh_rectangle_via_kgws(10, 10, 40, 40);
+
+        return 0;
+    }
+// ==============================================
+
+
 
 //
 // Data

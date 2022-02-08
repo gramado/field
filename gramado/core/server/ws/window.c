@@ -391,16 +391,15 @@ void *xxxCreateWindow (
     unsigned long rop_flags ) 
 {
 
-    // #todo
-    // Essa função deve chamar helpers que pintem sem criar objetos
-    // gráficos que alocam memória. Dessa forma eles
-    // poderão serem reusados nas funções de 'redraw'.
-
-	// #todo: 
-	// O argumento style está faltando.
-	// Cada tipo de tanela poderá ter vários estilos.
-	// Obs: 
-	// Podemos ir usando apenas um estilo padrão por enquanto.
+// #todo
+// Essa função deve chamar helpers que pintem sem criar objetos
+// gráficos que alocam memória. Dessa forma eles
+// poderão serem reusados nas funções de 'redraw'.
+// #todo: 
+// O argumento style está faltando.
+// Cada tipo de tanela poderá ter vários estilos.
+// Obs: 
+// Podemos ir usando apenas um estilo padrão por enquanto.
 
 
     // #todo:

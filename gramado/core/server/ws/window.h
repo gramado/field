@@ -132,7 +132,7 @@ struct gws_button_d
 	// label
 	// #todo: mudar o tipo para (char *)
     unsigned char *string; 
-	
+
 	// Estilo de design.
 	// 3D, flat ...
     int style;

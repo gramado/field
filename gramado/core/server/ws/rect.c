@@ -789,15 +789,31 @@ rectBackbufferDrawRectangle0 (
     //int DrawRectangleUsingKGWS = TRUE;     // ok
     int DrawRectangleUsingKGWS = use_kgws;
 
-    debug_print("rectBackbufferDrawRectangle:\n");
+    debug_print("rectBackbufferDrawRectangle0:\n");
 
     struct gws_rect_d rect;
     
-    unsigned long w_max = gws_get_device_width();
-    unsigned long h_max = gws_get_device_height();
+//
+// device
+//
 
-    w_max = (unsigned long) (w_max & 0xFFFF);
-    h_max = (unsigned long) (h_max & 0xFFFF);
+    unsigned long device_w = (unsigned long) gws_get_device_width();
+    unsigned long device_h = (unsigned long) gws_get_device_height();
+    device_w = (unsigned long) (device_w & 0xFFFF);
+    device_h = (unsigned long) (device_h & 0xFFFF);
+// #provisório
+// limites do dispositivo
+    if(device_w > 800)
+    {
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] device_w\n");
+        return; 
+    }
+    if(device_h > 600)
+    {
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] device_h\n");
+        return; 
+    }
+
 
 // set values
 
@@ -805,22 +821,92 @@ rectBackbufferDrawRectangle0 (
     rect.top    =  (unsigned long) (y      & 0xFFFF);
     rect.width  =  (unsigned long) (width  & 0xFFFF);
     rect.height =  (unsigned long) (height & 0xFFFF);
-    rect.bg_color = (unsigned int)(color & 0xFFFFFF);
-
-// limits
-    if ( rect.width > (w_max - rect.left) )
-    {
-        rect.width = (w_max - rect.left);
-    }
-    
-    if (rect.height > (h_max - rect.top) )
-    {
-        rect.height > (h_max - rect.top);
-    }
 
 //Margins.
     rect.right  = (unsigned long) (rect.left + rect.width);
     rect.bottom = (unsigned long) (rect.top  + rect.height); 
+
+    rect.bg_color = (unsigned int)(color & 0xFFFFFF);
+
+
+//
+// Fail
+//
+
+// #bugbug
+// O início não pode ser depois do fim.
+
+    if ( rect.left > rect.right )
+    { 
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] left > right\n");
+        
+        //#debug
+        printf ("rectBackbufferDrawRectangle0: l:%d r:%d\n",
+            rect.left,rect.right);
+        exit(0);
+
+        return; 
+    }
+    if ( rect.top > rect.bottom )
+    { 
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] top  > bottom\n");
+
+        //#debug
+        printf ("rectBackbufferDrawRectangle0: t:%d b:%d\n",
+            rect.top,rect.bottom);
+        exit(0);
+
+        return; 
+    }
+
+
+// Clip
+
+    // se a largura for maior que largura do dispositivo.
+    if ( rect.width > device_w ){
+        rect.width = (unsigned long) device_w;
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] rect.width > device_w\n");
+        return;
+    }
+    
+    // se a altura for maior que altura do dispositivo.
+    if ( rect.height > device_h ){
+        rect.height = (unsigned long) device_h;
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] rect.height > device_h\n");
+        return;
+    }
+
+
+// limits
+// Se for maior que o espaço que sobre, 
+// então será igual ao espaço que sobra.
+
+    if ( rect.width > (device_w - rect.left) )
+    {
+        rect.width = (unsigned long) (device_w - rect.left);
+        debug_print("rectBackbufferDrawRectangle0: [AJUST] rect.width\n");
+    }
+    
+    if (rect.height > (device_h - rect.top) )
+    {
+        rect.height = (unsigned long) (device_h - rect.top);
+        debug_print("rectBackbufferDrawRectangle0: [AJUST] rect.height\n");
+    }
+
+
+
+// check
+    if ( rect.right > device_w )
+    {
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] rect.right > device_w\n");
+        return;
+    }
+    if ( rect.bottom > device_h )
+    {
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] rect.bottom > device_h\n");
+        return;
+    }
+
 
 //
 // empty
@@ -887,43 +973,54 @@ rectBackbufferDrawRectangle0 (
 
 // Drawing in ring0 using kgws.
 // Draw lines on backbuffer.
+// Invalidate the rectangle.
 
     if ( DrawRectangleUsingKGWS == TRUE )
     {
-         debug_print("rectBackbufferDrawRectangle: Using R0\n");
+         debug_print("rectBackbufferDrawRectangle0: Using R0\n");
          draw_rectangle_via_kgws (
              rect.left, rect.top, rect.width, rect.height,
              rect.bg_color,
              rop_flags );
-          // Invalidate the rectangle.
          rect.dirty = TRUE;
          return;
     }
 
+//===============================================================
 
 //
 // Drawing in ring3.
 //
 
-//===============================================================
-
     // ring3 routine is not working.
     //if(DrawRectangleUsingKGWS == FALSE)
         //debug_print("rectBackbufferDrawRectangle:\n");
 
-    debug_print("rectBackbufferDrawRectangle: Using R3 #bugbug\n");
+    debug_print("rectBackbufferDrawRectangle0: Using R3 #bugbug\n");
 
+
+/*
 // Clip
+    if ( rect.width > device_w )
+        rect.width = (unsigned long) device_w;
 
-    if ( rect.width > w_max )
-        rect.width = w_max;
+    if ( rect.height > device_h )
+        rect.height = (unsigned long) device_h;
+*/
 
-    if ( rect.height > h_max )
-        rect.height = h_max;
-
+/*
 // Fail
-    if ( rect.left > rect.width  ){ return; }
-    if ( rect.top  > rect.height ){ return; }
+    if ( rect.left > rect.width  )
+    { 
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] rect.left > rect.width\n");
+        return; 
+    }
+    if ( rect.top  > rect.height )
+    { 
+        debug_print("rectBackbufferDrawRectangle0: [FAIL] rect.top  > rect.height\n");
+        return; 
+    }
+*/
 
     //#debug
     //printf ("w=%d h=%d l=%d t=%d \n",
@@ -935,24 +1032,26 @@ rectBackbufferDrawRectangle0 (
 // Draw lines on backbuffer.
 // It's using the ring3 routine.
 
-    unsigned long I=0;
-    I = (unsigned long) rect.height;
+    unsigned long number_of_lines=0;
+    number_of_lines = (unsigned long) rect.height;
 
-    while (I--)
+    while (number_of_lines--)
     {
-        if (rect.top >= h_max){ 
-            break; 
-        }
+        
+        if (rect.top >= rect.bottom){ break; }
+        if (rect.top >= device_h)   { break; }
+        
         grBackbufferDrawHorizontalLine ( 
             rect.left, rect.top, rect.right, 
             (unsigned int) rect.bg_color );
+        
         rect.top++;
     };
 
 //done:
 // Invalidate rectangle.
     rect.dirty = TRUE;
-    debug_print("rectBackbufferDrawRectangle: done\n");
+    debug_print("rectBackbufferDrawRectangle0: done\n");
 }
 
 
@@ -970,6 +1069,7 @@ rectBackbufferDrawRectangle (
 // TRUE = use kgws.
 // FALSE = do not use kgws. #bugbug
 
+    // ok: It's working
     rectBackbufferDrawRectangle0(
         x,
         y,
@@ -979,6 +1079,19 @@ rectBackbufferDrawRectangle (
         fill,
         rop_flags,
         TRUE );   // TRUE = use kgws. (kernel service)
+
+    /*
+    // ok: It's working
+    rectBackbufferDrawRectangle0(
+        x,
+        y,
+        width,
+        height,
+        color,
+        fill,
+        rop_flags,
+        FALSE );   // FALSE = do not use kgws. (kernel service)
+    */
 }
 
 
