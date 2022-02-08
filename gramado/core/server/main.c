@@ -588,14 +588,12 @@ void dispacher (int fd)
     int Status=-1;
     int SendErrorResponse=FALSE;
 
-    // #todo:
-    // No loop precisamos de accept() read() e write();
-
-    //#atenção:
-    // A função accept vai retornar o descritor do 
-    // socket que usaremos ... por isso poderemos fecha-lo
-    // para assim obtermos um novo da próxima vez.
-
+// #todo:
+// No loop precisamos de accept() read() e write();
+//#atenção:
+// A função accept vai retornar o descritor do 
+// socket que usaremos ... por isso poderemos fecha-lo
+// para assim obtermos um novo da próxima vez.
 
     //gwssrv_debug_print ("dispacher: \n");
 
@@ -608,18 +606,16 @@ void dispacher (int fd)
 
 //__loop:
 
-    //
-    // == Request ============================
-    //
+//
+// == Request ============================
+//
 
-    // Requests may generate replies, events, and errors;
-    // Request packets are numbered sequentially by the server 
-    // as soon as it receives them.
-
-    // See:
-    // https://en.wikipedia.org/wiki/Round-trip_delay
-
-    // If the request is (XNextEvent), so the reply will be the event.
+// Requests may generate replies, events, and errors;
+// Request packets are numbered sequentially by the server 
+// as soon as it receives them.
+// See:
+// https://en.wikipedia.org/wiki/Round-trip_delay
+// If the request is (XNextEvent), so the reply will be the event.
 
     /*
     // Is current client connected.
@@ -909,25 +905,24 @@ done:
  *     Main dialog.
  */
 
-// Called by dispacher.
+// Called by dispacher().
 
-    // #todo
-    // Dependendo do tipo de request, então construiremos
-    // a resposta ou prestatemos os serviço.
-    // Para cada tipo de request o servidor precisa construir
-    // uma resposta diferente.
-    // O request afeta os campos da mensagem.
-    // Esses campos estão em um buffer, mas poderiam estar
-    // em um arquivo json.
-
-    // Types:
-    // + Null: fail.
-    // + Identify: The server needs to identify itself.
-    // + Get all objects:
-    // + Set inspected object:
-    // + Set property: Probably setting a property of an object.
-    // + Disconnect:
-    // ...
+// #todo
+// Dependendo do tipo de request, então construiremos
+// a resposta ou prestatemos os serviço.
+// Para cada tipo de request o servidor precisa construir
+// uma resposta diferente.
+// O request afeta os campos da mensagem.
+// Esses campos estão em um buffer, mas poderiam estar
+// em um arquivo json.
+// Types:
+// + Null: fail.
+// + Identify: The server needs to identify itself.
+// + Get all objects:
+// + Set inspected object:
+// + Set property: Probably setting a property of an object.
+// + Disconnect:
+// ...
 
 // OUT
 // <0 : error 
@@ -1222,7 +1217,6 @@ gwsProcedure (
     case GWS_DrainInput:
         gwssrv_debug_print("gwssrv: gwsProcedure 8080\n");
         break;
-
 
     // ...
 
@@ -2159,7 +2153,6 @@ int serviceAsyncCommand (void)
     //O buffer é uma global nesse documento.
     unsigned long *message_address = (unsigned long *) &__buffer[0];
 
-
     // int window_id=0;
     unsigned long message_id =0;
     unsigned long request_id =0;
@@ -2178,7 +2171,7 @@ int serviceAsyncCommand (void)
 
     // ...
 
-    // Validate our message number.
+// Validate our message number.
 
     if (message_id != 2222)
     {
@@ -2192,104 +2185,120 @@ int serviceAsyncCommand (void)
  
     switch (request_id){
 
-        // 1 =  Exit GWS
-        // #todo:
-        // Close all the clients and close the server.
-        case 1:
-            gwssrv_debug_print ("serviceAsyncCommand: [request 1]  Exit GWS\n");
-                        //printf ("serviceAsyncCommand: [request 1] Closing server\n");
-            printf("serviceAsyncCommand: Exit GWS\n");
-            serviceExitGWS();
-            printf("serviceAsyncCommand: [FAIL] fail when closing the GWS\n");
-            exit(0);
-            break;
+    // 1 =  Exit GWS
+    // #todo:
+    // Close all the clients and close the server.
+    case 1:
+        gwssrv_debug_print ("serviceAsyncCommand: [request 1]  Exit GWS\n");
+        //printf ("serviceAsyncCommand: [request 1] Closing server\n");
+        printf("serviceAsyncCommand: Exit GWS\n");
+        serviceExitGWS();
+        printf("serviceAsyncCommand: [FAIL] fail when closing the GWS\n");
+        exit(0);
+        break;
 
-        case 2:
-            gwssrv_debug_print ("serviceAsyncCommand: [request 2] \n");
-            printf("PING\n");
-            //Notify_CloseClient = TRUE;
-            //Notify_PongClient = TRUE;
-            //exit(0);
+    case 2:
+        gwssrv_debug_print ("serviceAsyncCommand: [request 2] \n");
+        printf("PING\n");
+        //Notify_CloseClient = TRUE;
+        //Notify_PongClient = TRUE;
+        //exit(0);
+        return 0;
+        break;
+
+    case 3:
+        gwssrv_debug_print ("serviceAsyncCommand: [request 3] hello\n");
+        printf("HELLO\n");
+        //exit(0);
+        return 0;
+        break;
+
+    // See: demos.c
+    case 4:
+        if (current_mode == GRAMADO_JAIL)
+        {
+            gwssrv_debug_print("serviceAsyncCommand: [request 4] demo\n"); 
+            demos_startup_animation(subrequest_id);
+            gwssrv_show_backbuffer();
             return 0;
-            break;
+        }
+        break;
 
-        case 3:
-            gwssrv_debug_print ("serviceAsyncCommand: [request 3] hello\n");
-            printf("HELLO\n");
-            //exit(0);
+    // Draw black rectangle.
+    // #bugbug: trava ...
+    //case 5:
+       //if (current_mode == GRAMADO_JAIL)
+       //{
+           //rectBackbufferDrawRectangle ( 
+           //    0, 0, 28, 8, COLOR_GREEN, TRUE,
+           //    0 );  //rop_flags
+           //return 0;
+       //}
+       //break;
+
+    // Setup if we will show or not the 'fps window'.
+    case 6:
+        if( subrequest_id == TRUE )
+        {
+            show_fps_window = TRUE;
             return 0;
-            break;
+        }
+        show_fps_window = FALSE;
+        break;
+
+    // Register wm pid
+    case 7:
+        gwssrv_debug_print ("serviceAsyncCommand: [7] Register wm pid\n");
+        //printf ("serviceAsyncCommand: [7] [BREAKPOINT] Register wm pid\n");
+         ____saved_wm_magic_pid = (int) Data;
+        //exit(0);
+        return 0;
+        break;
+ 
+    // 8
+    // Window Manager requests. Power Trio.
+    // As mensages aqui interessam somente ao window manager
+    // que esta dentro do window server.
+    case 8:
+        printf ("serviceAsyncCommand: [8] \n");
+        if (subrequest_id = 1)
+        {
+            //exit(0);
+        }
+        break;
+
+    case 9:
+        set_window_with_focus(Data);
+        break;
+
+
+    // #test
+    // drawing a rect using ring0 and ring3 routines.
+    // TRUE = use kgws ; FALSE =  do not use kgws.
+    //case 10:
+
+        //rectBackbufferDrawRectangle0(
+        //    10, 10, 40, 40,
+        //    COLOR_RED,
+        //    TRUE,
+        //    0,        // rop falgs
+        //    FALSE );   // TRUE = use kgws. (kernel service)
+        //refresh_rectangle_via_kgws(10, 10, 40, 40);
+        //return 0;
         
-        // See: demos.c
-        case 4:
-            if (current_mode == GRAMADO_JAIL)
-            {
-                gwssrv_debug_print("serviceAsyncCommand: [request 4] demo\n"); 
-                demos_startup_animation(subrequest_id);
-                gwssrv_show_backbuffer();
-                return 0;
-            }
-            break;
+        //break;
 
-        // Draw black rectangle.
-        case 5:
-           //if (current_mode == GRAMADO_JAIL)
-           //{
-               rectBackbufferDrawRectangle ( 
-                   0, 0, 28, 8, COLOR_GREEN, TRUE,
-                   0 );  //rop_flags
-               return 0;
-           //}
-           break;
+    // ...
 
-        // Setup if we will show or not the 'fps window'.
-        case 6:
-            if( subrequest_id == TRUE )
-            {
-                show_fps_window = TRUE;
-                return 0;
-            }
-            show_fps_window = FALSE;
-            break;
-
-         // Register wm pid
-         case 7:
-            gwssrv_debug_print ("serviceAsyncCommand: [7] Register wm pid\n");
-             //printf ("serviceAsyncCommand: [7] [BREAKPOINT] Register wm pid\n");
-             ____saved_wm_magic_pid = (int) Data;
-             //exit(0);
-             return 0;
-             break;
-             
-        // 8
-        // Window Manager requests. Power Trio.
-        // As mensages aqui interessam somente ao window manager
-        // que esta dentro do window server.
-        case 8:
-            printf ("serviceAsyncCommand: [8] \n");
-            if (subrequest_id = 1)
-            {
-                
-                //exit(0);
-            }
-            break;
-        
-        case 9:
-            set_window_with_focus(Data);
-            break;
-
-        // ...
-                
-        default:
-            gwssrv_debug_print ("serviceAsyncCommand: [ERROR] bad request\n");
-                     // printf ("serviceAsyncCommand: [ERROR] bad request\n");
-            // return -1;
-            break;
+    default:
+        gwssrv_debug_print ("serviceAsyncCommand: [ERROR] bad request\n");
+                 // printf ("serviceAsyncCommand: [ERROR] bad request\n");
+        // return -1;
+        break;
     };
 
     return (int)(-1);
 }
-
 
 
 char *gwssrv_get_version(void)

@@ -193,6 +193,9 @@ void compareStrings(int fd)
         //    fg_color, 
         //    '/' ); 
         
+        //gws_async_command(fd,5,0,0); //#test #bugbug
+        //gws_async_command(fd,10,0,0); //#test #bugbug
+
         goto exit_cmp;
     }
 

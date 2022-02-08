@@ -1416,6 +1416,17 @@ gws_refresh_rectangle (
 // Paint it into the backbuffer.
 
 void 
+rectBackbufferDrawRectangle0 ( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    int fill,
+    unsigned long rop_flags,
+    int use_kgws );
+
+void 
 rectBackbufferDrawRectangle ( 
     unsigned long x, 
     unsigned long y, 
@@ -1424,7 +1435,7 @@ rectBackbufferDrawRectangle (
     unsigned int color,
     int fill,
     unsigned long rop_flags );
-
+    
 int update_rectangle( struct gws_rect_d *rect );
 
 // =======================================

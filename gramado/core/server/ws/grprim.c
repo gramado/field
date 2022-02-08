@@ -1453,17 +1453,19 @@ int serviceGrCubeZ(void)
 // sevice 2042
 int serviceGrRectangle(void)
 {
-    // #todo:
-    // Vamos pegar os vertices do cubo nos argumentos
-    // e completar a estrtutura local.
-    // entao passamos o endereço da estrutura para a funçao helper.
+
+// #todo:
+// Vamos pegar os vertices do cubo nos argumentos
+// e completar a estrtutura local.
+// entao passamos o endereço da estrutura para a funçao helper.
 
     unsigned long *message_address = (unsigned long *) &__buffer[0];
     
     struct gr_rectangle_d rect;
 
+
     gwssrv_debug_print("serviceGrRectangle: [2042]\n");
-   
+
     //south     
     rect.p[0].x = message_address[10];
     rect.p[0].y = message_address[11];
@@ -1484,17 +1486,15 @@ int serviceGrRectangle(void)
     rect.p[3].y = message_address[23];
     rect.p[3].z = message_address[24];
     rect.p[3].color = message_address[25];
-   
-    //#test
-    //Temos que passar corretamente o endereço da estrutura.
+
+// #test
+// Temos que passar corretamente o endereço da estrutura.
     rectangleZZ ( (struct gr_rectangle_d *) &rect );
    
     gwssrv_debug_print("serviceGrRectangle: [2042] DONE << \n");
     
     return 0;
 }
-
-
 
 
 //Circle

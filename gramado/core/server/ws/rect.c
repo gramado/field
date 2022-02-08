@@ -759,15 +759,20 @@ gws_refresh_rectangle (
 // So, the caller needs to specify a rect structure,
 // this way we can invalidated it.
 
+// use_kgws?
+// TRUE = use kgws.
+// FALSE = do not use kgws. #bugbug
+
 void 
-rectBackbufferDrawRectangle ( 
+rectBackbufferDrawRectangle0 ( 
     unsigned long x, 
     unsigned long y, 
     unsigned long width, 
     unsigned long height, 
     unsigned int color,
     int fill,
-    unsigned long rop_flags )
+    unsigned long rop_flags,
+    int use_kgws )
 {
 
 //
@@ -781,10 +786,11 @@ rectBackbufferDrawRectangle (
 // The ring3 routine is not working everytime we call it.
 
     //int DrawRectangleUsingKGWS = FALSE;  // #bugbug
-    int DrawRectangleUsingKGWS = TRUE;     // ok
+    //int DrawRectangleUsingKGWS = TRUE;     // ok
+    int DrawRectangleUsingKGWS = use_kgws;
 
     debug_print("rectBackbufferDrawRectangle:\n");
-    
+
     struct gws_rect_d rect;
     
     unsigned long w_max = gws_get_device_width();
@@ -901,7 +907,11 @@ rectBackbufferDrawRectangle (
 
 //===============================================================
 
-    debug_print("rectBackbufferDrawRectangle: Using R3\n");
+    // ring3 routine is not working.
+    //if(DrawRectangleUsingKGWS == FALSE)
+        //debug_print("rectBackbufferDrawRectangle:\n");
+
+    debug_print("rectBackbufferDrawRectangle: Using R3 #bugbug\n");
 
 // Clip
 
@@ -944,6 +954,33 @@ rectBackbufferDrawRectangle (
     rect.dirty = TRUE;
     debug_print("rectBackbufferDrawRectangle: done\n");
 }
+
+
+void 
+rectBackbufferDrawRectangle ( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    int fill,
+    unsigned long rop_flags )
+{
+
+// TRUE = use kgws.
+// FALSE = do not use kgws. #bugbug
+
+    rectBackbufferDrawRectangle0(
+        x,
+        y,
+        width,
+        height,
+        color,
+        fill,
+        rop_flags,
+        TRUE );   // TRUE = use kgws. (kernel service)
+}
+
 
 // #todo
 // The structure needs to have all the information
