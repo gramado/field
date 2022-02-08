@@ -1,4 +1,6 @@
-// a place for demos.
+
+// demos.c
+// A place for demos.
 
 #include <gws.h>
 
@@ -27,8 +29,8 @@ void demoFlushSurface(void)
 
     // mostra na resolução 320x200
 
-    //gws_refresh_rectangle(0,0,320,200);
-    rtl_invalidate_screen();
+    gws_refresh_rectangle(0,0,320,200);
+    //rtl_invalidate_screen();
 }
 
 
@@ -71,26 +73,26 @@ void demoCat (void)
 
     // eyes
     if ( CatModel.eyesVisible == TRUE ){
-    plotCircleZ ( -10, 20, 1+i, COLOR_WHITE, 0); 
-    plotCircleZ (  10, 20, 1+i, COLOR_WHITE, 0); 
+        plotCircleZ ( -10, 20, 1+i, COLOR_WHITE, 0); 
+        plotCircleZ (  10, 20, 1+i, COLOR_WHITE, 0); 
     }
 
     // whiskers
     if ( CatModel.whiskersVisible == TRUE ){
-    // =
-    plotLine3d ( -40, 8,0, -4, 5,0, COLOR_WHITE); 
-    plotLine3d ( -40, 5,0, -4, 4,0, COLOR_WHITE); 
-    plotLine3d ( -40, 2,0, -4, 3,0, COLOR_WHITE); 
+        // =
+        plotLine3d ( -40, 8,0, -4, 5,0, COLOR_WHITE); 
+        plotLine3d ( -40, 5,0, -4, 4,0, COLOR_WHITE); 
+        plotLine3d ( -40, 2,0, -4, 3,0, COLOR_WHITE); 
 
-    // =
-    plotLine3d ( 4, 5,0, 40, 8,0, COLOR_WHITE); 
-    plotLine3d ( 4, 4,0, 40, 5,0, COLOR_WHITE); 
-    plotLine3d ( 4, 3,0, 40, 2,0, COLOR_WHITE); 
+        // =
+        plotLine3d ( 4, 5,0, 40, 8,0, COLOR_WHITE); 
+        plotLine3d ( 4, 4,0, 40, 5,0, COLOR_WHITE); 
+        plotLine3d ( 4, 3,0, 40, 2,0, COLOR_WHITE); 
     }
 
     // mouth
     if ( CatModel.mouthVisible == TRUE ){
-    plotLine3d ( -10, -2,0, 10, -2,0, COLOR_WHITE); 
+        plotLine3d ( -10, -2,0, 10, -2,0, COLOR_WHITE); 
     }
 
 // Begin paint
@@ -99,12 +101,14 @@ void demoCat (void)
 // Flush surface
     demoFlushSurface();
 
+// Delay
     for (j=0; j<8; j++){ gwssrv_yield();}
+    
     };
+    
     count--;
     };
 }
-
 
 void demoLine1(void)
 {
@@ -145,23 +149,24 @@ void demoFred0(void)
     register int i=0;
 
     for (i=0; i<100; i++){
-            //noraDrawingStuff3 (i,i,0);
-            noraDrawingStuff3 (-i,-i,0);
-            //rectangle(8,8,i,i,COLOR_BLUE);
-            //rectangleZ(i,i,i+20,i+20,COLOR_BLUE,i);
-            //plotCircle ( -i % 20, -i % 20, i%20, COLOR_GREEN);
+
+        //noraDrawingStuff3 (i,i,0);
+        noraDrawingStuff3 (-i,-i,0);
+        //rectangle(8,8,i,i,COLOR_BLUE);
+        //rectangleZ(i,i,i+20,i+20,COLOR_BLUE,i);
+        //plotCircle ( -i % 20, -i % 20, i%20, COLOR_GREEN);
+
+        plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);  //save this
+        //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);   //save this
+        //cool
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i % fib(20), COLOR_GREEN, i % fib(20) );
+        //igual o de cima.
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i, COLOR_GREEN, i % fib(20) );
+        //plotCircleZ ( -i % fib(7), -i % fib(7), i % fib(7), COLOR_GREEN, i % fib(7) );
+        //plotEllipseRect ( i, i, i*5, i*5, COLOR_BLUE);
+        //plotEllipseRectZ ( i%20, i%20, i, i, COLOR_BLUE,i%20);
             
-            plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);  //save this
-            //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);   //save this
-            //cool
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i % fib(20), COLOR_GREEN, i % fib(20) );
-            //igual o de cima.
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i, COLOR_GREEN, i % fib(20) );
-            //plotCircleZ ( -i % fib(7), -i % fib(7), i % fib(7), COLOR_GREEN, i % fib(7) );
-            //plotEllipseRect ( i, i, i*5, i*5, COLOR_BLUE);
-            //plotEllipseRectZ ( i%20, i%20, i, i, COLOR_BLUE,i%20);
-            
-            //rtl_invalidate_screen();
+        //rtl_invalidate_screen();
     };
 }
 
@@ -173,20 +178,21 @@ void demoFred1(void)
     register int i=0;
 
     for (i=0; i<100; i++){
-            //noraDrawingStuff3 (i,i,0);
-            noraDrawingStuff3 (-i,-i,0);
-            //rectangle(8,8,i,i,COLOR_BLUE);
-            //rectangleZ(i,i,i+20,i+20,COLOR_BLUE,i);
-            //plotCircle ( -i % 20, -i % 20, i%20, COLOR_GREEN);
-            //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);  //save this
-            //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);   //save this
-            //cool
-            plotCircleZ ( -i % fib(20), -i % fib(20), i % fib(20), COLOR_GREEN, i % fib(20) );
-            //igual o de cima.
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i, COLOR_GREEN, i % fib(20) );
-            //plotCircleZ ( -i % fib(7), -i % fib(7), i % fib(7), COLOR_GREEN, i % fib(7) );
-            //plotEllipseRect ( i, i, i*5, i*5, COLOR_BLUE);
-            //plotEllipseRectZ ( i%20, i%20, i, i, COLOR_BLUE,i%20);
+    
+        //noraDrawingStuff3 (i,i,0);
+        noraDrawingStuff3 (-i,-i,0);
+        //rectangle(8,8,i,i,COLOR_BLUE);
+        //rectangleZ(i,i,i+20,i+20,COLOR_BLUE,i);
+        //plotCircle ( -i % 20, -i % 20, i%20, COLOR_GREEN);
+        //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);  //save this
+        //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);   //save this
+        //cool
+        plotCircleZ ( -i % fib(20), -i % fib(20), i % fib(20), COLOR_GREEN, i % fib(20) );
+        //igual o de cima.
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i, COLOR_GREEN, i % fib(20) );
+        //plotCircleZ ( -i % fib(7), -i % fib(7), i % fib(7), COLOR_GREEN, i % fib(7) );
+        //plotEllipseRect ( i, i, i*5, i*5, COLOR_BLUE);
+        //plotEllipseRectZ ( i%20, i%20, i, i, COLOR_BLUE,i%20);
     };
 }
 
@@ -196,30 +202,31 @@ void demoFred2(void)
     register int i=0;
 
     for (i=1; i< (1024-768); i++){
-            //noraDrawingStuff3 (i,i,0);
-            noraDrawingStuff3 (-i,-i,0);
-            //rectangle(8,8,i,i,COLOR_BLUE);
-            //rectangleZ(i,i,i+20,i+20,COLOR_BLUE,i);
-            //plotCircle ( -i % 20, -i % 20, i%20, COLOR_GREEN);
-            //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);  //save this
-            //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);   //save this
-            //cool
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i % fib(20), COLOR_GREEN, i % fib(20) );
+
+        //noraDrawingStuff3 (i,i,0);
+        noraDrawingStuff3 (-i,-i,0);
+        //rectangle(8,8,i,i,COLOR_BLUE);
+        //rectangleZ(i,i,i+20,i+20,COLOR_BLUE,i);
+        //plotCircle ( -i % 20, -i % 20, i%20, COLOR_GREEN);
+        //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);  //save this
+        //plotCircleZ ( -i % 20, -i % 20, i % 20, COLOR_GREEN, i % 20);   //save this
+        //cool
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i % fib(20), COLOR_GREEN, i % fib(20) );
             
-            //IN: x,y,r,color,z
-            plotCircleZ ( -i % fib(20), -i % fib(20), i % (1024-768), COLOR_RED, i % fib(20) );
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/3), COLOR_GREEN, i % fib(20) );
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/5), COLOR_BLUE, i % fib(20) );
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/7), COLOR_YELLOW, i % fib(20) );
+        //IN: x,y,r,color,z
+        plotCircleZ ( -i % fib(20), -i % fib(20), i % (1024-768), COLOR_RED, i % fib(20) );
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/3), COLOR_GREEN, i % fib(20) );
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/5), COLOR_BLUE, i % fib(20) );
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/7), COLOR_YELLOW, i % fib(20) );
             
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/), COLOR_GREEN, i % fib(20) );
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/3), COLOR_YELLOW, i % fib(20) );
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/), COLOR_GREEN, i % fib(20) );
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i %  fib(20/3), COLOR_YELLOW, i % fib(20) );
             
-            //igual o de cima.
-            //plotCircleZ ( -i % fib(20), -i % fib(20), i, COLOR_GREEN, i % fib(20) );
-            //plotCircleZ ( -i % fib(7), -i % fib(7), i % fib(7), COLOR_GREEN, i % fib(7) );
-            //plotEllipseRect ( i, i, i*5, i*5, COLOR_BLUE);
-            //plotEllipseRectZ ( i%20, i%20, i, i, COLOR_BLUE,i%20);
+        //igual o de cima.
+        //plotCircleZ ( -i % fib(20), -i % fib(20), i, COLOR_GREEN, i % fib(20) );
+        //plotCircleZ ( -i % fib(7), -i % fib(7), i % fib(7), COLOR_GREEN, i % fib(7) );
+        //plotEllipseRect ( i, i, i*5, i*5, COLOR_BLUE);
+        //plotEllipseRectZ ( i%20, i%20, i, i, COLOR_BLUE,i%20);
     };
 }
 
@@ -261,8 +268,6 @@ void demoSA1(void)
     
     //=================
     //--
-
-
 
     register int i=0;
 
@@ -358,11 +363,9 @@ void demoTriangle(void)
 {
     struct gr_triandle_d *triangle;
 
-
     //printf("demoTriangle:\n");
 
     triangle = (void *) malloc( sizeof( struct gr_triandle_d ) );
-
 
     int i=0;
     int T=0;
@@ -371,10 +374,8 @@ void demoTriangle(void)
     if ( (void*) triangle != NULL )
     {
         // clear
-
-        //rectBackbufferDrawRectangle ( 0, 0, 320, 200, COLOR_BLACK, 1,0 );
         demoClearSurface();
-           
+
         // down
         triangle->p[0].x = 0;   // +T translation in x
         triangle->p[0].y = 0;
@@ -394,21 +395,17 @@ void demoTriangle(void)
         triangle->p[2].color = COLOR_BLUE;
 
         // Draw
-
         xxxTriangleZ(triangle);
 
-        //gws_refresh_rectangle(0,0,320,200);
+        // flush surface
         demoFlushSurface();  
         
         T++;
     }
-
     };
 
-
-     
-     //Debug
-     //exit(0);
+    //Debug
+    //exit(0);
 
     //printf("demoTriangle: done\n");
 }
@@ -429,11 +426,9 @@ void demoPolygon(void)
 
     // ...
 
-
     int i=0;
     int TranslationOffset=0;
     int j=0;
-
 
     // structure
 
@@ -450,15 +445,14 @@ void demoPolygon(void)
     p->list_address = (void*) vecList;
 
 
-    // clear vecList.
-    // This is a local list.
+// clear vecList.
+// This is a local list.
 
     for(i=0; i<8; i++){
         vecList[i] = 0;
     };
 
-
-    // Creating some points.
+// Creating some points.
 
     v0 = (struct gr_vec3D_d *) malloc( sizeof( struct gr_vec3D_d ) );
     if((void*)v0==NULL){return;}
@@ -483,12 +477,18 @@ void demoPolygon(void)
     vecList[5] = (unsigned long) v0;  //circular
 
 
-    //
-    // loop forever.
-    //
+//
+// loop
+//
 
-    // animation loop: forever
+// animation loop.
+
+    int times=0;
+
     while(1){
+
+    times++;
+    if(times>8){break;}
     
     // translation in Y
     TranslationOffset=0;
@@ -565,11 +565,9 @@ void demoPolygon2(void)
 
     // ...
 
-
     int i=0;
     int TranslationOffset=0;
     int j=0;
-
 
     // structure
 
@@ -620,12 +618,18 @@ void demoPolygon2(void)
     vecList[5] = (unsigned long) v0;  //circular
 
 
-    //
-    // loop forever.
-    //
+//
+// loop
+//
 
-    // animation loop: forever
+// animation loop
+
+    int times=0;
+
     while(1){
+
+    times++;
+    if(times>8){break;}
     
     // translation in Y
     TranslationOffset=0;
@@ -635,11 +639,8 @@ void demoPolygon2(void)
     
     for (i=0; i<10; i++){
 
-    //rectBackbufferDrawRectangle ( 
-        //0, 0, 320, 200, COLOR_BLACK, 1,0 );
-
+    // clear surface
     demoClearSurface();
-    
     
     TranslationOffset = (TranslationOffset+i);
     
@@ -681,16 +682,16 @@ void demoPolygon2(void)
 
     p->type = POLYGON_POLYLINE;
     xxxPolygonZ(p);
-    
-    //gws_refresh_rectangle(0,0,320,200);
+
+    // flush surface.
     demoFlushSurface();  
     
+    //delay
     for (j=0; j<20; j++){ gwssrv_yield();}
 
     };
     };   //while
 
-    
     gwssrv_debug_print("DONE\n");
     //printf ("DONE\n");
 }
@@ -703,7 +704,6 @@ void demoCube1(void)
 {
     register int i=0;
     register int j=0;
-
 
     struct gr_cube_d *cube;
     cube = (void *) malloc( sizeof( struct gr_cube_d ) );
@@ -958,10 +958,6 @@ void demoCurve(void)
 
     for (i=0; i<10; i++){
 
-        // clear
-        //rectBackbufferDrawRectangle ( 
-            //0, 0, 320, 200, COLOR_BLACK, 1,0 );
-
         demoClearSurface();
         
         // line
@@ -972,7 +968,6 @@ void demoCurve(void)
            100,  20+i+i, 0,  //x2, y2, z2, 
            COLOR_YELLOW );
 
-
         //string! char by char
         plotCharBackbufferDrawcharTransparentZ ( 40+ (8*0), 20+i+i, COLOR_RED, 'G', 0 );
         plotCharBackbufferDrawcharTransparentZ ( 40+ (8*1), 20+i+i, COLOR_RED, 'R', 0 );   
@@ -981,23 +976,26 @@ void demoCurve(void)
         plotCharBackbufferDrawcharTransparentZ ( 40+ (8*4), 20+i+i, COLOR_RED, 'A', 0 );
         plotCharBackbufferDrawcharTransparentZ ( 40+ (8*5), 20+i+i, COLOR_RED, 'D', 0 );
         plotCharBackbufferDrawcharTransparentZ ( 40+ (8*6), 20+i+i, COLOR_RED, 'O', 0 );
-
-        //gws_refresh_rectangle(0,0,320,200);
-        demoFlushSurface();  
+        
+        // flush surface
+        demoFlushSurface();
+        
+        // delay  
         for (j=0; j<80; j++){ gwssrv_yield();}
     };
-    
     }
 }
 
 
+// #bugbug
+// It's not working.
+// page fault.
 void demoMatrix1(void)
 {
     register int i=0;
     
      //#define N 4
-   
-   
+
     // To store result
     int res[4][4]; 
 
@@ -1053,9 +1051,7 @@ void demoMatrix1(void)
 
     for (i=0; i<8; i++){
 
-       //rectBackbufferDrawRectangle ( 
-           //0, 0, 320, 200, COLOR_BLACK, 1,0 );
-
+       // Clear surface
        demoClearSurface();
         
        // See: Where is this projection?
@@ -1073,33 +1069,33 @@ void demoMatrix1(void)
        // projection4x4[0][2] = 0;
        // projection4x4[0][3] = 0;
 
-       
-        projection4x4[1][0] = 0;
-        projection4x4[1][1] = i%5;
+       projection4x4[1][0] = 0;
+       projection4x4[1][1] = i%5;
        // projection4x4[1][2] = 0;
        // projection4x4[1][3] = 0;
 
-       
-        projection4x4[2][0] = 0;
-        projection4x4[2][1] = 0;
+       projection4x4[2][0] = 0;
+       projection4x4[2][1] = 0;
        // projection4x4[2][2] = 0;
        // projection4x4[2][3] = 0;
 
-       
-        projection4x4[3][0] = i%5;
-        projection4x4[3][1] = i%5;
+       projection4x4[3][0] = i%5;
+       projection4x4[3][1] = i%5;
        // projection4x4[3][2] = 0;
        // projection4x4[3][3] = 0;
    
-	    //{i,0,0,0}, 
-	    //{0,i,0,0},
-	    //{0,0,0,0},
-	    //{i,i,0,0}
+       //{i,0,0,0}, 
+       //{0,i,0,0},
+       //{0,0,0,0},
+       //{i,i,0,0}
 
-        gws_show_backbuffer();  
-        gwssrv_yield();
-        gwssrv_yield(); 
-        };
+       // Flush surface
+       demoFlushSurface();
+
+       // delay
+       gwssrv_yield();
+       gwssrv_yield(); 
+       };
     };
 }
 
@@ -1129,12 +1125,15 @@ void demos_startup_animation(int i)
     case 10: demoTriangle(); break;
 
     case 11: 
-        //demoPolygon(); 
-        demoPolygon2();
         break;
     
     case 12: demoLine1(); break;
     
+    case 13: demoTerry(); break;  //See: window.c
+
+    case 14: demoPolygon();  break; 
+    case 15: demoPolygon2(); break;
+        
     default: break;
     };
 }

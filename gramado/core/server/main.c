@@ -1579,17 +1579,30 @@ int initGraphics (void)
     if (current_mode == GRAMADO_JAIL)
     {
          //demos_startup_animation(1);
-         //demos_startup_animation(2);
-         //demos_startup_animation(3);
-         //demos_startup_animation(4);
-         //demos_startup_animation(5);
-         //demos_startup_animation(6);
-         //demos_startup_animation(7);
-         //demos_startup_animation(8);
-         //demos_startup_animation(9);
+         //demos_startup_animation(5);  //cube1
+         //demos_startup_animation(6);  //cube2
+         //demos_startup_animation(7);  //curve
+         //demos_startup_animation(8);  //matrix 1  #bugbug
+         //demos_startup_animation(9);  //cat
+         
+         //demos_startup_animation(14);  //polygon
+         //demos_startup_animation(15);  //polygon2
+         
          //gwssrv_show_backbuffer();
-         //while(1){}
          // ...
+         //while(1){}
+    }
+
+    if (current_mode == GRAMADO_HOME)
+    {
+         //demos_startup_animation(2);  //fred0
+         //demos_startup_animation(3);  //fred1
+         //demos_startup_animation(4);  //fred2
+         //demos_startup_animation(10);  //triangle
+         //demos_startup_animation(13); //Terry's window
+         //gwssrv_show_backbuffer();
+         // ...
+         //while(1){}
     }
 
 
@@ -2179,7 +2192,7 @@ int serviceAsyncCommand (void)
     // ...
 
 
-    gwssrv_debug_print ("serviceAsyncCommand:\n");
+    gwssrv_debug_print ("serviceAsyncCommand: #bugbug\n");
 
 
 // Validate our message number.

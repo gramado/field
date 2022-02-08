@@ -6,6 +6,7 @@
 
 // Types
 // #todo: maybe create a 'enum'
+// nope: we don't need a enum.
 
 #define SPRITE_NULL   0
 #define SPRITE_POINT  1
@@ -16,6 +17,13 @@
 
 struct gws_sprite_d
 {
+
+    // #todo
+    // Position: Where the sprite begin?
+    // x,y: inside a window?
+    // pointer for memory position?
+    // offset?
+   
     int used;
     int magic;
     
@@ -64,7 +72,14 @@ struct gws_sprite_d
     // ...
 
     // ...
+
+//
+// list
+//
+    //struct gws_sprite_d *last;
+    struct gws_sprite_d *next;
 };
+
 
 #define SPRITE_MAX_NUMBER 32
 // Sprite list.
