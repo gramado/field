@@ -425,7 +425,7 @@ int flush_rectangle(struct gws_rect_d *rect)
 
 
 //======================================
-// Calling kgws in ring0.
+// Calling kgws in the kernel.
 // Using the kgws to draw the rectangle.
 
 // #todo
@@ -486,7 +486,7 @@ void invalidate_surface_retangle (void)
 
 
 //======================================
-// Calling kgws in ring0.
+// Calling kgws in the kernel.
 // Using the kgws to refresh the rectangle.
 
 void 
@@ -572,7 +572,7 @@ gws_refresh_rectangle (
 
 
 //
-// Refresh in ring0 using the kgws.
+// Refresh in the kernel using the kgws.
 //
 
     if ( RefreshRectangleUsingKGWS == TRUE )
@@ -584,7 +584,7 @@ gws_refresh_rectangle (
 
 
 //
-// Refresh in ring 3
+// Refresh using the routine inside the ws.
 //
 
 // ==========================================================
@@ -783,7 +783,7 @@ rectBackbufferDrawRectangle0 (
 // #todo
 // Let's include this flag into the function's parameters.
 // #bugbug
-// The ring3 routine is not working everytime we call it.
+// The ws routine is not working everytime we call it.
 
     //int DrawRectangleUsingKGWS = FALSE;  // #bugbug
     //int DrawRectangleUsingKGWS = TRUE;     // ok
@@ -971,7 +971,7 @@ rectBackbufferDrawRectangle0 (
 // Draw
 //
 
-// Drawing in ring0 using kgws.
+// Drawing in the kernel using kgws.
 // Draw lines on backbuffer.
 // Invalidate the rectangle.
 
@@ -989,10 +989,11 @@ rectBackbufferDrawRectangle0 (
 //===============================================================
 
 //
-// Drawing in ring3.
+// Drawing
+// Using the routine inside the ws.
 //
 
-    // ring3 routine is not working.
+    // ws routine is not working.
     //if(DrawRectangleUsingKGWS == FALSE)
         //debug_print("rectBackbufferDrawRectangle:\n");
 
@@ -1030,7 +1031,7 @@ rectBackbufferDrawRectangle0 (
 
 // ===============================
 // Draw lines on backbuffer.
-// It's using the ring3 routine.
+// It's using the ws routine.
 
     unsigned long number_of_lines=0;
     number_of_lines = (unsigned long) rect.height;

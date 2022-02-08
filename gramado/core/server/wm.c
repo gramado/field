@@ -1871,7 +1871,7 @@ wmHandler(
         debug_print ("wmHandler: 9093\n");
 
         // #test
-        // drawing a rect using ring0 and ring3 routines.
+        // drawing a rect using kernel and ws routines.
         // TRUE = use kgws ; FALSE =  do not use kgws.
 
         rectBackbufferDrawRectangle0(
