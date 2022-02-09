@@ -1505,7 +1505,7 @@ plotCircle (
     int xm, 
     int ym, 
     int r, 
-    unsigned long color )
+    unsigned int color )
 {
 
     /* II. Quadrant */ 
@@ -1557,7 +1557,7 @@ plotCircleZ (
     int xm, 
     int ym, 
     int r, 
-    unsigned long color, 
+    unsigned int color, 
     int z )
 {
 
@@ -2488,7 +2488,6 @@ unsigned int invert_color(unsigned int color)
 
     return (unsigned int) Color;
 }
-
 
 
 //

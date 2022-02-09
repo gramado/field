@@ -11,67 +11,79 @@
 #define SPRITE_NULL   0
 #define SPRITE_POINT  1
 #define SPRITE_LINE   2
-#define SPRITE_CIRCLE 3
+#define SPRITE_TRIANGLE    3  
+#define SPRITE_RECTANGLE   4
+#define SPRITE_CIRCLE      5
+#define SPRITE_ELLIPSE     6
+#define SPRITE_BITMAP      7  // raw array of bytes.
+#define SPRITE_POLYGON     8  // 
+#define SPRITE_MESH        9  // 
 // ...
 
 
 struct gws_sprite_d
 {
 
+    int used;
+    int magic;
+
+// ==================================
+
     // #todo
     // Position: Where the sprite begin?
     // x,y: inside a window?
     // pointer for memory position?
     // offset?
-   
-    int used;
-    int magic;
-    
-    //  shape
+    // >>>> base
+
+    void *base;
+    // associated window.
+    struct gws_window_d *window;
+// ==================================
+
+
+//  shape
     int type;
 
     unsigned long flags;
-    
 
-    // ??
-    // what is this?
-    
-    // basics
+// color for raw objects.
+    unsigned int color;
+
+// dither color.
+    unsigned int dither_color;
+
+    unsigned int transparent_color;
+
+// point support
+// 2d and 3d
+    int point_x;
+    int point_y;
+    int point_z;
+
+// line and trianglesupport
+// 2d and 3d
     int x1;
     int y1;
     int z1;
-    unsigned long color1;
-
+    unsigned int color1;
     int x2;
     int y2;
     int z2;
-    unsigned long color2;
+    unsigned int color2;
+    int x3;
+    int y3;
+    int z3;
+    unsigned int color3;
 
-    // ??
-    int r;
     
-    // z-order
-    int z;
-    
-    
-    unsigned long transparent_color;
-    
-    // next
-    // struct gws_sprite_d *next;
-    
-    // associated window.
-    struct gws_window_d *window;
-    
-    // #todo
-    // Rectangles
-    
-    // rcSprite =  the rectangle that represents the sprint in the screen
-    // rcBackbuffer
-    // rcSrc
-    // rcDst
-    // ...
+// circle support
+    int r;  // radius
+    int a;  // angle
 
-    // ...
+// string support.
+    void *string;
+    int string_size;
 
 //
 // list

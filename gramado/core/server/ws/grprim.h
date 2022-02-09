@@ -12,6 +12,9 @@
 #define __GRPRIM_H   1
 
 
+// vector.
+// vertex
+// vertice
 struct gr_vec3D_d
 {
     int x;
@@ -22,12 +25,29 @@ struct gr_vec3D_d
     unsigned int color;
 };
 
+struct gr_mesh_point_d
+{
+// raw color
+    unsigned int color;
+// cada número representa um 
+// índice num vetor de indices.
+    int n[1];
+};
+
 
 struct gr_line_d
 {
     struct gr_vec3D_d p[2];
 };
 
+struct gr_mesh_line_d
+{
+// raw color
+    unsigned int color;
+// cada número representa um 
+// índice num vetor de indices.
+    int n[2];
+};
 
 struct gr_triandle_d
 {
@@ -35,9 +55,30 @@ struct gr_triandle_d
 };
 
 
+struct gr_mesh_triangle_d
+{
+// raw color
+    unsigned int color;
+// cada número representa um 
+// índice num vetor de indices.
+    int n[3];
+};
+
+
+
 struct gr_rectangle_d
 {
     struct gr_vec3D_d p[4];
+};
+
+// quad mesh
+struct gr_mesh_rectangle_d
+{
+// raw color
+    unsigned int color;
+// cada número representa um 
+// índice num vetor de indices.
+    int n[4];
 };
 
 
@@ -64,6 +105,46 @@ struct gr_polygon_d
     void *list_address;
 };
 
+
+struct gr_mesh_d
+{
+
+// Quantos bytes tem a face list.
+    int facelist_size_in_bytes;   // bytes
+    int facelist_size_in_dwords;  // ints
+
+// lista de indices.
+// cada indice representa um vetor.
+    void *facelist;
+
+// Se o tipo for triangulo, então
+// na facelist os indices serão agrupados de 3 em 3.
+// Se for quad, então serão agrupados de 4 em 4.
+// 1=TRIANGLE
+// 2=QUAD
+    int type;
+
+// contando os triangulos na lista caso o mesh seja de quad.
+    int tri_count;
+// contando os quads na lista caso o mesh seja de quad.
+    int quad_count; 
+
+// quantos pontos no total.
+// Cada indice vai usar 4 bytes da lista.
+    int vertex_count;
+
+    //struct gr_mesh_d *last;
+    struct gr_mesh_d *next;
+};
+
+
+struct gr_mesh_list_d
+{
+// number of elements in the linked list.
+    int n;
+    struct gr_mesh_d *first_mesh;
+    struct gr_mesh_d *last_mesh;
+};
 
 
 // #define RAY_TYPE_LIGHT    1
@@ -408,14 +489,14 @@ plotCircle(
     int xm, 
     int ym, 
     int r, 
-    unsigned long color );
+    unsigned int color );
 
 void 
 plotCircleZ ( 
     int xm, 
     int ym, 
     int r, 
-    unsigned long color, 
+    unsigned int color, 
     int z );
 
 

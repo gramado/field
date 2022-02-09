@@ -130,7 +130,7 @@ PlotSprite3D (
                 (int) (z + sprite->z1), 
                 (int) (x + sprite->x1), 
                 (int) (y + sprite->y1), 
-                (unsigned long) sprite->color1 );
+                (unsigned int) sprite->color1 );
             break;
 
         case SPRITE_LINE:
@@ -142,7 +142,7 @@ PlotSprite3D (
                (int) (x + sprite->x2), 
                (int) (y + sprite->y2), 
                (int) (z + sprite->z2), 
-               (unsigned long) sprite->color1 );
+               (unsigned int) sprite->color1 );
             break;
 
         case SPRITE_CIRCLE:
@@ -151,7 +151,7 @@ PlotSprite3D (
                 (int) (x + sprite->x1),           // xm 
                 (int) (y + sprite->y1),           // ym 
                 (int) sprite->r,                  // r 
-                (unsigned long) sprite->color1,   // color 
+                (unsigned int) sprite->color1,   // color 
                 (int) (z + sprite->z1) );         // z 
             break;
             
