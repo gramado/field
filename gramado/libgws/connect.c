@@ -3,7 +3,7 @@
  * 
  */
 
-// Os códigos da libgws vão precisar disso 
+// Os códigos da libgws podem usar as funções desse módulo
 // pra se conectarem com o Window Server.
 
 // rtl
@@ -44,12 +44,13 @@ char ____gws_io_buffer[512];  // buffer
 int gws_connect (void){
 
     int fd=0;
+    int Status=0;
+
     struct sockaddr addr;
     addr.sa_family = 8000;  // AF_GRAMADO
     addr.sa_data[0] = 'w';
     addr.sa_data[1] = 's';
 
-    int Status=0;
 
 //
 // socket
@@ -58,15 +59,13 @@ int gws_connect (void){
 // Create the socket.
 
     // #debug
-    printf ("libgws-gws_connect: Creating socket ...\n");
+    printf ("libgws-gws_connect: Creating socket\n");
 
     fd = socket ( 8000, SOCK_STREAM, 0 );
 
     if ( fd < 0 ){
        gws_debug_print ("libgws-gws_connect: Couldn't create socket\n");
-       ____gws_connected = 0;  // Disconnected
-       ____gws_client_fd = 0;  // fail
-       return -1;
+       goto fail;
     }
 
 //
@@ -78,24 +77,23 @@ int gws_connect (void){
                   sizeof(addr) );
 
     if ( Status < 0 ){ 
-        gws_debug_print ("libgws-gws_connect: Connection Failed \n"); 
+        gws_debug_print ("libgws-gws_connect: Connection Failed\n"); 
         close(fd);
-       // Saving
-       ____gws_connected = 0;  // Disconnected
-       ____gws_client_fd = 0;  // fail
-        return (int)(-1); 
+        goto fail;
     }    
 
 // done
 // Saving
 // Return fd.
-
     ____gws_connected = Status;
     ____gws_client_fd = fd;
-
     return (int) fd;
-}
 
+fail:
+    ____gws_connected = 0;  // Disconnected
+    ____gws_client_fd = 0;  // fail
+    return (int)(-1);       // Error. fd.
+}
 
 
 //#todo
@@ -152,28 +150,34 @@ void gws_set_desktop_id(int desktop_id)
 
 int gws_initialize_connection (void)
 {
+    unsigned long Value=0;
+
 
 // Pega o id do desktop atual.
 // ?? Ou o qual o processo pertence?
 
-    __gws__desktop__id = (int) gws_system_call (519,0,0,0);
+    Value = (unsigned long) gws_system_call (519,0,0,0);
+    __gws__desktop__id = (int) (Value & 0xFFFFFFFF); 
 
-    // #todo
     if (__gws__desktop__id < 0){
-        
+    // #todo        
     }
 
 
 // Get ws PID for a given desktop.
-    __ws__pid = (int) gws_system_call ( 512,
-                         (unsigned long) __gws__desktop__id,
-                         (unsigned long) __gws__desktop__id,
-                         (unsigned long) __gws__desktop__id );    
+
+     Value = (unsigned long) gws_system_call ( 
+                 512,
+                 (unsigned long) __gws__desktop__id,
+                 (unsigned long) __gws__desktop__id,
+                 (unsigned long) __gws__desktop__id );    
+
+    __ws__pid = (int) (Value & 0xFFFFFFFF);
 
     if (__ws__pid < 0)
     {
         // Message?
-        return -1;
+        return (int) (-1);
     }
 
 // #bugbug
@@ -181,12 +185,11 @@ int gws_initialize_connection (void)
 // Ele apenas pega as mensagens de sistema quando solicitadas
 // pelos clientes.
 
+// Send message.
+// Envia uma mensagem pedindo para o ws emitir um hello!
+// msg = 1000;
 
-    // Send message.
-    // Envia uma mensagem pedindo para o ws emitir um hello!
-    // msg = 1000;
-
-    //vamos criar uma chamada semelhante a essa.
+// vamos criar uma chamada semelhante a essa.
 
     // IN: PID, window, msg, long1, long2
     //gws_send_message_to_process ( __ws__pid, 

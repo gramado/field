@@ -176,11 +176,11 @@ void *gws_system_call (
     unsigned long c, 
     unsigned long d )
 {
-    int __Ret=0;
+    unsigned long ReturnValue=0;
     asm volatile ( " int %1 \n"
-                 : "=a"(__Ret)
+                 : "=a"(ReturnValue)
                  : "i"(0x80), "a"(a), "b"(b), "c"(c), "d"(d) );
-    return (void *) __Ret; 
+    return (void *) ReturnValue; 
 }
 
 
@@ -2549,7 +2549,7 @@ gws_send_message_to_process (
     unsigned long long2 )
 {
     unsigned long message_buffer[8];
-
+    unsigned long Value=0;
 
     if ( pid<0 ){
         gws_debug_print ("gws_send_message_to_process: [FAIL] pid\n");
@@ -2565,11 +2565,15 @@ gws_send_message_to_process (
     message_buffer[5] = 0;  // tid
     // ...
 
-    return (int) gws_system_call ( 
-                     112, 
-                     (unsigned long) &message_buffer[0], 
-                     (unsigned long) pid, 
-                     (unsigned long) pid );
+    Value = (unsigned long) gws_system_call ( 
+                112, 
+                (unsigned long) &message_buffer[0], 
+                (unsigned long) pid, 
+                (unsigned long) pid );
+
+// #todo
+// Error message
+    return (int) (Value & 0xF);
 }
 
 
@@ -2588,6 +2592,7 @@ gws_send_message_to_thread (
     unsigned long long2 )
 {
     unsigned long message_buffer[8];
+    unsigned long Value=0;
 
 
     if ( tid<0 ){
@@ -2604,12 +2609,18 @@ gws_send_message_to_thread (
     message_buffer[5] = 0;  // tid
     // ...
 
-    return (int) gws_system_call ( 
-                     117, 
-                     (unsigned long) &message_buffer[0], 
-                     (unsigned long) tid, 
-                     (unsigned long) tid );
+    Value = (unsigned long) gws_system_call ( 
+                117, 
+                (unsigned long) &message_buffer[0], 
+                (unsigned long) tid, 
+                (unsigned long) tid );
+
+// #todo
+// Error message
+    return (int) (Value & 0xF);
 }
+
+
 
 
 
@@ -2633,13 +2644,14 @@ void gws_reboot (void)
 
 
 // Load a file using a pathname as an argument.
+// #todo: Explain the return value.
 int 
 gws_load_path ( 
     char *path, 
     unsigned long buffer, 
     unsigned long buffer_len )
 {
-    int status = -1;
+    unsigned long Value=0;
 
 
 // Arguments.
@@ -2659,17 +2671,16 @@ gws_load_path (
 // #todo
 // Chame a rtl e não uma syscall.
 
-    status = (int) gws_system_call ( 
-                       4004, 
-                       (unsigned long) path, 
-                       (unsigned long) buffer, 
-                       (unsigned long) buffer_len );
+    Value = (unsigned long) gws_system_call ( 
+                4004, 
+                (unsigned long) path, 
+                (unsigned long) buffer, 
+                (unsigned long) buffer_len );
 
-    //if (status<0){
-    // #todo: message
-    //}
+// #todo
+// Error message.
 
-    return (int) status;
+    return (int) (Value & 0xF);
 }
 
 
@@ -2758,7 +2769,7 @@ gws_redraw_window (
    int window, 
    unsigned long flags )
 {
-    int value=0;
+    unsigned long Value=0;
 
 // Arguments.
     if (fd<0){
@@ -2777,11 +2788,11 @@ gws_redraw_window (
 
 // Response
 // Waiting to read the response.
-    while (1){
-        value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
-        if (value == ACTION_REPLY ) { break; }
-        if (value == ACTION_ERROR ) { return -1; }
-        if (value == ACTION_NULL )  { return -1; }  //no reponse. (syncronous)
+    while (TRUE){
+        Value = (unsigned long) rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
+        if (Value == ACTION_REPLY ) { break; }
+        if (Value == ACTION_ERROR ) { return -1; }
+        if (Value == ACTION_NULL )  { return -1; }  //no reponse. (syncronous)
         //gws_yield();
     };
     __gws_redraw_window_reponse (fd);
@@ -2794,7 +2805,7 @@ gws_redraw_window (
 struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
 {
     struct gws_event_d *e;
-    int value=0;
+    unsigned long Value=0;
 
 
     if (fd<0){
@@ -2808,13 +2819,12 @@ struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
 
 // Response
 // Waiting to read the response.
-    while (1){
-        value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
-        if (value == ACTION_REPLY ) { break; }
-        if (value == ACTION_ERROR )
+    while (TRUE){
+        Value = (unsigned long) rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
+        if (Value == ACTION_REPLY ) { break; }
+        if (Value == ACTION_ERROR )
         {
-             
-            return -1; 
+            return NULL; 
         }
     };
     e = (struct gws_event_d *) __gws_get_next_event_response (fd,event);
@@ -3098,8 +3108,8 @@ void gws_start_thread (void *thread)
 
 int gws_clone_and_execute ( char *name )
 {
+    unsigned long Value=0;
 
-    int Ret = -1;
 
     if ( (void*) name == NULL ){ 
         debug_print("gws_clone_and_execute: name\n");
@@ -3114,13 +3124,12 @@ int gws_clone_and_execute ( char *name )
     // #todo
     // Ret = (int) rtl_clone_and_execute(name);
     
-    Ret = (int) sc82 ( 900, (unsigned long) name, 0, 0 );
+    Value = (unsigned long) sc82 ( 900, (unsigned long) name, 0, 0 );
 
-    if (Ret<0){
-        debug_print("gws_clone_and_execute: Fail\n");
-    }
+// #todo
+// Error message
 
-    return (int) Ret;
+    return (int) (Value & 0xF);
 }
 
 
@@ -3137,24 +3146,25 @@ unsigned long gws_get_system_metrics (int index)
 
 // enter critical section
 // close the gate
+// Pega o valor do spinlock principal.
+// Se deixou de ser 0 então posso entrar.
+// Se ainda for 0, continuo no while.
+// TRUE = OPEN.
+// FALSE = CLOSED.
+// yield thread if closed.
+
 void gws_enter_critical_section (void)
 {
-    int S=0;
+    unsigned long S=0;
 
-    // Pega o valor do spinlock principal.
-    // Se deixou de ser 0 então posso entrar.
-    // Se ainda for 0, continuo no while.
-    // TRUE = OPEN.
-    // FALSE = CLOSED.
-    // yield thread if closed.
-
+// Waiting the value 1.
     while (TRUE){
-        S = (int) gws_system_call ( 226, 0, 0, 0 );
+        S = (unsigned long) gws_system_call ( 226, 0, 0, 0 );
         if ( S == 1 ){ goto done; }
         //gws_yield();
     };
 
-    // Close the gate. turn FALSE.
+// Close the gate. turn FALSE.
 done:
     gws_system_call ( 227, 0, 0, 0 );
     return;
@@ -3391,11 +3401,10 @@ unsigned int gws_explode_byte_32 (unsigned char data)
 int gws_create_empty_file ( char *file_name )
 {
 
-	// #todo
-	// Use rtl, not a systemcall.
+// #todo
+// Use rtl, not a systemcall.
 
-
-    int __ret = 0;
+    unsigned long Value=0;
 
 
     if ( (void*) file_name == NULL ){
@@ -3408,18 +3417,15 @@ int gws_create_empty_file ( char *file_name )
         return -1;
     }
 
-
     //gde_enter_critical_section();
-    __ret = (int) gramado_system_call ( 
+    Value = (unsigned long) gramado_system_call ( 
                       43, (unsigned long) file_name, 0, 0);
     //gde_exit_critical_section();    
 
+// #todo
+// Error message.
 
-    if(__ret<0){
-        debug_print("gws_create_empty_file: [FAIL] __ret\n");
-    }
-
-    return (int) __ret;
+    return (int) (Value & 0xF);
 }
 
 
@@ -3428,32 +3434,35 @@ int gws_create_empty_file ( char *file_name )
 int gws_create_empty_directory ( char *dir_name )
 {
 
-	// #todo
-	// Use rtl, not a systemcall.
+// #todo
+// Use rtl, not a systemcall.
 
-    int __ret=0;
-
+    unsigned long Value=0;
 
     if ( (void*) dir_name == NULL ){
         debug_print("gws_create_empty_directory: [FAIL] dir_name\n");
-        return -1;
+        return (int)(-1);
     }
 
     if ( *dir_name == 0 ){
         debug_print("gws_create_empty_directory: [FAIL] *dir_name\n");
-        return -1;
+        return (int)(-1);
     }
 
+// #todo
+// Quais são os valores de retorno.
+// TRUE or FALSE ?
+
     //gde_enter_critical_section();
-    __ret = (int) gramado_system_call ( 
+    Value = (unsigned long) gramado_system_call ( 
                       44, (unsigned long) dir_name, 0, 0);
     //gde_exit_critical_section();    
 
-    if(__ret<0){
-        debug_print("gws_create_empty_directory: [FAIL] __ret\n");
-    }
 
-    return (int) __ret;
+// #todo
+// Error message
+
+    return (int) (Value & 0xF);
 }
 
 
