@@ -17,7 +17,6 @@
 unsigned long systemGetSystemMetrics ( int index )
 {
 
-
     // #bugbug
     // We have a HUGE problem here.
     // We can't properly get the data inside the structures. 
@@ -44,7 +43,7 @@ unsigned long systemGetSystemMetrics ( int index )
             return (unsigned long) screenGetWidth();
             break;
 
-        //screen height.	
+        //screen height.
         case 2:
             return (unsigned long) screenGetHeight();
             break;
@@ -60,55 +59,50 @@ unsigned long systemGetSystemMetrics ( int index )
             return (unsigned long) CONSOLE_TTYS[fg_console].cursor_height_in_pixels;
             break;
 
-
         // mouse pointer width.
         case 5:
             return (unsigned long) g_mousepointer_width;
             break;
-         
+
         // mouse pointer height. 
         case 6:
             return (unsigned long) g_mousepointer_height;
             break;
 
-		//char width.
+        // char width.
         case 7:
-		    return (unsigned long) get_char_width();
+            return (unsigned long) get_char_width();
             break;
 
-		//char height.
+        // char height.
         case 8:
-		    return (unsigned long) get_char_height();
+            return (unsigned long) get_char_height();
             break;
-            
-            
+
         case 9:
             return (unsigned long) SavedBPP;
             break;    
-            
-      
+
         //
         // screen buffers
         //
 
         // lfb pa
         case 10:
-		    return (unsigned long) g_frontbuffer_pa;
+            return (unsigned long) g_frontbuffer_pa;
             break;        
 
-            
         // lfb va
         case 11:
-		    return (unsigned long) g_frontbuffer_va;
+            return (unsigned long) g_frontbuffer_va;
             break;        
 
         // main backbuffer va
         case 12:
-		    return (unsigned long) g_backbuffer_va;
+            return (unsigned long) g_backbuffer_va;
             break;                   
-     
-                      
-        //20   
+
+        //20
         // mouse x    
         case SM_GETMOUSEX:
             //#bugbug: Pegando informações com o driver de mouse.
@@ -192,7 +186,6 @@ unsigned long systemGetSystemMetrics ( int index )
             break; 
 
 
-            
         //
         // used memory support
         //
@@ -205,23 +198,17 @@ unsigned long systemGetSystemMetrics ( int index )
             return (unsigned long) mm_used_ring3_area;
             break;   
 
-
         case 62:
             return (unsigned long) mm_used_backbuffer;
             break;   
-
-
 
         case 63:
             return (unsigned long) mm_used_pagedpool;
             break;   
 
-
-
         case 64:
             return (unsigned long) mm_used_heappool;
             break;   
-
 
         case 65:
             return (unsigned long) mm_used_extraheap1;

@@ -12,7 +12,6 @@
 #include <string.h>
 #include <unistd.h>
 
-
 #include <rtl/gramado.h> 
 #include <sysdeps/gramado/syscall.h>
 #include <pthread.h>
@@ -549,6 +548,12 @@ void rtl_show_backbuffer (void)
  *     #importante
  */
 
+    // #bugbug
+    // We have a HUGE problem here.
+    // We can't properly get the data inside the structures. 
+    // The value is not the same when we enter inside the kernel via
+    // keyboard interrupt or via system interrupt.
+
 unsigned long rtl_get_system_metrics (int index)
 {
     //if (index<0){
@@ -556,7 +561,8 @@ unsigned long rtl_get_system_metrics (int index)
         //return 0;
     //}
 
-    return (unsigned long) gramado_system_call ( SYSTEMCALL_GETSYSTEMMETRICS, 
+    return (unsigned long) gramado_system_call ( 
+                               SYSTEMCALL_GETSYSTEMMETRICS, 
                                (unsigned long) index, 
                                (unsigned long) index, 
                                (unsigned long) index );
@@ -585,7 +591,7 @@ pthread_t pthread_self(void)
 // usado para calcular o tempo de execuçao de uma funcao.
 unsigned long rtl_get_progress_time(void)
 {
-    return rtl_get_system_metrics (120);
+    return (unsigned long) rtl_get_system_metrics (120);
 }
 
 

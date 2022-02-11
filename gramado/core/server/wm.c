@@ -54,10 +54,15 @@ struct wm_d  WindowManager;
 //GetWindowRect
 //GetClientRect
 
+// refresh rate of the whole screen.
+static unsigned long fps=0;
+
+// refresh rate for all dirty objects. In one round.
+static unsigned long frames_count=0;
+//static unsigned long frames_count_in_this_round;
 
 static unsigned long ____old_time=0;
 static unsigned long ____new_time=0;
-
 
 
 void __set_default_background_color( int color )
@@ -104,22 +109,51 @@ int __has_wallpaper(void)
 
 void __update_fps(void)
 {
+    unsigned long dt=0;
+    char rate_string[32];
 
-    //debug_print ("__update_fps:\n");
+    debug_print ("__update_fps:\n");
 
-    // counter
+// counter
     frames_count++;
 
-    //
-    // == time =========================================
-    //
-    
-    // delta
-    unsigned long dt=0;
-    ____new_time = rtl_get_progress_time();
-    dt = (unsigned long) (____new_time - ____old_time);
+//
+// == time =========================================
+//
 
-//===================================================================
+    // #bugbug
+    // We have a HUGE problem here.
+    // We can't properly get the data inside the structures. 
+    // The value is not the same when we enter inside the kernel via
+    // keyboard interrupt or via system interrupt.
+
+
+// get current time.
+
+    //____new_time = rtl_get_progress_time();
+    //____new_time = (unsigned long) rtl_get_system_metrics (120);
+
+// delta
+    //dt = (unsigned long) (____new_time - ____old_time);
+
+    //if( dt>4)
+    //{
+        //____old_time = ____new_time;
+        //dt=0;
+    //}
+
+    // mostra 
+    itoa(frames_count,rate_string);
+    //itoa(____new_time,rate_string);
+    yellow_status(rate_string);
+
+    return;
+    
+
+    //if(dt<8)
+        //return;
+
+//=============================================================
 // ++  End
 
     //t_end = rtl_get_progress_time();
@@ -131,19 +165,22 @@ void __update_fps(void)
     //====================================
     // fps++
     // conta quantos frames. 
-    char rate_string[32];
+
     // se passou um segundo.
-    if ( dt > 1000 )
+    //if ( dt > 1000 )
+    if ( dt > 8 )
     {
         // Save old time.
         ____old_time = ____new_time;
         
-        fps = frames_count; // quantos frames em 1000 ms aproximadamente?
-        itoa(fps,rate_string); 
+        //fps = frames_count; // quantos frames em 1000 ms aproximadamente?
+        //itoa(fps,rate_string); 
 
-        if ( show_fps_window == TRUE ){
+        itoa(dt,rate_string); // mostra o delta.
+
+        //if ( show_fps_window == TRUE ){
             yellow_status(rate_string);
-        }
+        //}
 
         // Clean for next round.
         frames_count=0;
@@ -152,6 +189,8 @@ void __update_fps(void)
     }
     //fps--
     //=======================
+
+    debug_print ("__update_fps: done\n");
 }
 
 
@@ -896,8 +935,13 @@ void gwssrv_show_backbuffer (void)
 // Its gonne be called by the timer.
 void wmCompose(void)
 {
+    // #todo: Working on this thing.
+    //__update_fps();
+    
     compose();
 }
+
+
 
 /*
  ***********************************************
@@ -1798,14 +1842,12 @@ wmHandler(
     unsigned long r=0;
 
 // Final message
-    struct gws_window_d  *w;
+    struct gws_window_d *w;
     int msg=0;
     unsigned long long1=0;
     unsigned long long2=0;
 
-
-    debug_print ("wmHandler:--------------------------------\n");
-
+    debug_print ("wmHandler:-------------------------------\n");
 
 // #debug
     //printf("wmHandler: %x %x %x %x\n", 
@@ -1886,8 +1928,6 @@ wmHandler(
     }
 // ==============================================
 
-
-
 //
 // Data
 //
@@ -1966,7 +2006,6 @@ void yellow_status( char *string )
     unsigned long offset_string2 = ( 8*5 );
     unsigned long bar_size = w;
 
-
     debug_print ("yellow_status:\n");
     
     //#todo
@@ -1983,14 +2022,15 @@ void yellow_status( char *string )
             0, 0, bar_size, 24, COLOR_YELLOW, 1,0 );
     }else{
 
-        bar_size = (offset_string2 + (4*8) );
+        //bar_size = (offset_string2 + (4*8) );
+        bar_size = (offset_string2 + (100) );
         rectBackbufferDrawRectangle ( 
             0, 0, bar_size, 24, COLOR_YELLOW, 1,0 );
     };
 
 // Escreve as strings
     grDrawString ( offset_string1, 8, COLOR_BLACK, string );
-    grDrawString ( offset_string2, 8, COLOR_BLACK, "FPS" );
+    //grDrawString ( offset_string2, 8, COLOR_BLACK, "FPS" );
     
     // Mostra o retângulo.
      
@@ -1998,6 +2038,8 @@ void yellow_status( char *string )
         bar_size = 32;
  
     gws_refresh_rectangle(0,0,bar_size,24);
+
+    debug_print ("yellow_status: done\n");
 }
 
 
@@ -3869,6 +3911,15 @@ void wm_Update_TaskBar( char *string )
 
 // Show the window.
     flush_window(__taskbar_window);
+}
+
+void wmInitializeGlobals(void)
+{
+    debug_print ("wmInitializeGlobals:\n");
+    fps=0;
+    frames_count=0;
+    ____old_time=0;
+    ____new_time=0;
 }
 
 

@@ -2755,10 +2755,11 @@ int main (int argc, char **argv)
     newconn = -1;
  
 // Initialize frames counter.
-    frames_count = 0;
-    fps = 0;
- 
- 
+    //frames_count = 0;
+    //fps = 0;
+
+    wmInitializeGlobals();
+
 
 // #important
 // Here we are exporting some callback to the base kernel.

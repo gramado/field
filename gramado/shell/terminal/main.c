@@ -180,9 +180,9 @@ void compareStrings(int fd)
     if ( strncmp(prompt,"t1",2) == 0 )
     {
         // pixel: ok
-        gws_plot0(fd, 20, 20, 0, COLOR_RED );
-        gws_plot0(fd, 30, 30, 0, COLOR_GREEN );
-        gws_plot0(fd, 40, 40, 0, COLOR_BLUE );
+        //gws_plot0(fd, 20, 20, 0, COLOR_RED );
+        //gws_plot0(fd, 30, 30, 0, COLOR_GREEN );
+        //gws_plot0(fd, 40, 40, 0, COLOR_BLUE );
 
         // char: #testing
         //gws_draw_char ( 
@@ -199,8 +199,8 @@ void compareStrings(int fd)
         //gws_async_command(fd,2,0,0);    // PING
         //gws_async_command(fd,4,0,0);  //demos
         //gws_async_command(fd,5,0,0);  //rectangle ring3
-        gws_async_command(fd,10,0,0); //ramdom tests
-
+        //gws_async_command(fd,10,0,0); //ramdom tests
+        //gws_async_command(fd,6,0,0);  // show fps bar.
         goto exit_cmp;
     }
 
