@@ -28,8 +28,11 @@ unsigned long seconds;
 // Por quantos ms o sistema esta rodando.
 unsigned long sys_time_ms;
 
+
+
 // pit frequency
-unsigned long sys_time_hz;
+// See: system.c
+extern unsigned long sys_time_hz;
 
 
 //

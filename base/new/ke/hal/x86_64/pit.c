@@ -147,7 +147,7 @@ void DeviceInterface_PIT(void)
 
 
 // #test 60fps com o pit a 1000.
-// 1000/60 = 16
+// 1000/16 = 62
 // Chamando o compositor dentro do window server.
 
     //if ( (jiffies % DEFAULT_PIT_FREQ) == 0 )

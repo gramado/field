@@ -130,22 +130,30 @@ void __update_fps(void)
 
 // get current time.
 
+// #bugbug
+// A variável do indice 120 não esta sendo usada.
+// Vamos tentar a variável do indice 118, que é a jiffies.
+
     //____new_time = rtl_get_progress_time();
     //____new_time = (unsigned long) rtl_get_system_metrics (120);
+    ____new_time = (unsigned long) rtl_get_system_metrics (118);
 
 // delta
-    //dt = (unsigned long) (____new_time - ____old_time);
+    dt = (unsigned long) (____new_time - ____old_time);
 
-    //if( dt>4)
+    ____old_time = ____new_time;
+
+
+    fps = (1000/dt);
+
+// mostra 
+    //if ( show_fps_window == TRUE )
     //{
-        //____old_time = ____new_time;
-        //dt=0;
+        //itoa(____new_time,rate_string);
+        //itoa(dt,rate_string);
+        itoa(fps,rate_string);
+        yellow_status(rate_string);
     //}
-
-    // mostra 
-    itoa(frames_count,rate_string);
-    //itoa(____new_time,rate_string);
-    yellow_status(rate_string);
 
     return;
     
@@ -2030,7 +2038,7 @@ void yellow_status( char *string )
 
 // Escreve as strings
     grDrawString ( offset_string1, 8, COLOR_BLACK, string );
-    //grDrawString ( offset_string2, 8, COLOR_BLACK, "FPS" );
+    grDrawString ( offset_string2, 8, COLOR_BLACK, "FPS" );
     
     // Mostra o retângulo.
      

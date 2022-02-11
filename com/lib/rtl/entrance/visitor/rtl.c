@@ -548,12 +548,6 @@ void rtl_show_backbuffer (void)
  *     #importante
  */
 
-    // #bugbug
-    // We have a HUGE problem here.
-    // We can't properly get the data inside the structures. 
-    // The value is not the same when we enter inside the kernel via
-    // keyboard interrupt or via system interrupt.
-
 unsigned long rtl_get_system_metrics (int index)
 {
     //if (index<0){
@@ -591,7 +585,13 @@ pthread_t pthread_self(void)
 // usado para calcular o tempo de execuçao de uma funcao.
 unsigned long rtl_get_progress_time(void)
 {
-    return (unsigned long) rtl_get_system_metrics (120);
+
+    // #bugbug
+    // A variável do indice 120 ainda não esta em uso.
+    // Use a variável do indice 118, que é o jiffies.
+
+    return (unsigned long) rtl_get_system_metrics (118);
+    //return (unsigned long) rtl_get_system_metrics (120);
 }
 
 

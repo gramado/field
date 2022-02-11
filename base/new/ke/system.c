@@ -4,6 +4,7 @@
 #include <kernel.h>    
 
 
+unsigned long sys_time_hz=0;
 
 /*
  ***************************************
@@ -16,15 +17,6 @@
 
 unsigned long systemGetSystemMetrics ( int index )
 {
-
-    // #bugbug
-    // We have a HUGE problem here.
-    // We can't properly get the data inside the structures. 
-    // The value is not the same when we enter inside the kernel via
-    // keyboard interrupt or via system interrupt.
-    // #todo: Maybe we need to use global variables for now
-    // and review all the moment when the ring3 app tryes to
-    // get data from a ring0 struct.
 
     // # The solution.
     // We are trying to have more system calls. sc80 sc81 sc82.
@@ -47,7 +39,6 @@ unsigned long systemGetSystemMetrics ( int index )
         case 2:
             return (unsigned long) screenGetHeight();
             break;
-
 
         //cursor width in pixels.
         case 3:

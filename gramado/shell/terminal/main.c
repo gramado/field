@@ -200,7 +200,14 @@ void compareStrings(int fd)
         //gws_async_command(fd,4,0,0);  //demos
         //gws_async_command(fd,5,0,0);  //rectangle ring3
         //gws_async_command(fd,10,0,0); //ramdom tests
-        //gws_async_command(fd,6,0,0);  // show fps bar.
+        gws_async_command(fd,6,0,0);  // show fps bar.
+        
+        // #bugbug
+        // Não podemos pegar esse falor corretamente.
+         printf ("M=%d\n",rtl_get_system_metrics(118) ); //jiffies
+        //printf ("M=%d\n",rtl_get_system_metrics(120) ); // variável de time
+        //printf ("M=%d\n",rtl_get_system_metrics(1) );
+        //printf ("M=%d\n",rtl_get_system_metrics(2) );
         goto exit_cmp;
     }
 

@@ -2269,13 +2269,11 @@ int serviceAsyncCommand (void)
     // Setup if we will show or not the 'fps window'.
     case 6:
         gwssrv_debug_print ("serviceAsyncCommand: [6] \n");
-        if( subrequest_id == TRUE )
-        {
-            show_fps_window = TRUE;
-            return 0;
-        }
-        show_fps_window = FALSE;
+        if( subrequest_id == TRUE ){ show_fps_window = TRUE;  return 0; }
+        if( subrequest_id != TRUE ){ show_fps_window = FALSE; return 0; }
+        //show_fps_window = FALSE;
         break;
+
 
     // Register wm pid
     // #suspended: o wm fica no ws por enquanto.
