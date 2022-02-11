@@ -195,9 +195,11 @@ void compareStrings(int fd)
         
         // #bugbug
         // Esta travando.
-        //gws_async_command(fd,4,0,0);    //demos
+        // #fixed: Essa chamada esta funcionando agora.
+        //gws_async_command(fd,2,0,0);    // PING
+        //gws_async_command(fd,4,0,0);  //demos
         //gws_async_command(fd,5,0,0);  //rectangle ring3
-        //gws_async_command(fd,10,0,0); //ramdom tests
+        gws_async_command(fd,10,0,0); //ramdom tests
 
         goto exit_cmp;
     }

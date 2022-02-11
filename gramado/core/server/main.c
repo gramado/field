@@ -698,15 +698,14 @@ void dispacher (int fd)
          SendErrorResponse = TRUE;
     }
 
-
 //
 // == Sending reply ==========
 //
 
-// Alguns requests nao exigem resposta.
+// Alguns requests não exigem resposta.
+// Como é o caso das mensagens assíncronas.
 // Entao precisamos modificar a flag de sincronizaçao.
 // que ainda deve estar sinalizando um request.
-
 // #todo
 // O problema é que temos que conferir
 // na biblioteca client-side se o cliente espera ou não
@@ -718,6 +717,7 @@ void dispacher (int fd)
             fd, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
         goto exit0;
     }
+
 
 //
 // == reponse ================
@@ -2313,13 +2313,13 @@ int serviceAsyncCommand (void)
         gwssrv_debug_print ("serviceAsyncCommand: [10] \n");
         printf ("serviceAsyncCommand: [10] \n");
 
-        //rectBackbufferDrawRectangle0(
-        //    10, 10, 40, 40,
-        //    COLOR_RED,
-        //    TRUE,
-        //    0,        // rop falgs
-        //    FALSE );   // TRUE = use kgws. (kernel service)
-        //refresh_rectangle_via_kgws(10, 10, 40, 40);
+        rectBackbufferDrawRectangle0(
+            10, 10, 40, 40,
+            COLOR_RED,
+            TRUE,
+            0,        // rop falgs
+            FALSE );   // TRUE = use kgws. (kernel service)
+        refresh_rectangle_via_kgws(10, 10, 40, 40);
         return 0;
         
         break;

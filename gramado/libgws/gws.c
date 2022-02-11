@@ -3481,10 +3481,11 @@ gws_async_command (
     unsigned long data )
 {
 
-    // Isso permite ler a mensagem na forma de longs.
+// Isso permite ler a mensagem na forma de longs.
     unsigned long *message_buffer = (unsigned long *) &__gws_message_buffer[0]; 
 
-    int n_writes = 0;   // For sending requests.
+// For sending requests.
+    int n_writes = 0;
 
     //char *name = "Window name 1";
 
@@ -3493,29 +3494,28 @@ gws_async_command (
         return;
     }
 
-    //
-    // Send request.
-    //
+//
+// Send request.
+//
 
     // #debug
     gws_debug_print ("gws_async_command: send...\n"); 
 
-    // Enviamos um request para o servidor.
-    // ?? Precisamos mesmo de um loop para isso. ??
+// Enviamos um request para o servidor.
+// Precisamos mesmo de um loop para isso?
+// Write!
+// Se foi possível enviar, então saimos do loop.  
+// Nesse caso, corremos o risco de ficarmos presos
+// caso não seja possível escrever.
 
-    while (1){
-        
-        message_buffer[0] = 0;                 // window. 
-        message_buffer[1] = GWS_AsyncCommand;  // message number.
-        
-        // parameters
+    while (TRUE){
+
+        message_buffer[0] = 0;                 // window id
+        message_buffer[1] = GWS_AsyncCommand;  // message number
         message_buffer[2] = request;           // request
         message_buffer[3] = sub_request;       // sub request
         message_buffer[4] = data;              // data
         // ...
-
-        // Write!
-        // Se foi possível enviar, então saimos do loop.  
 
         n_writes = send ( 
                        fd,
@@ -3523,17 +3523,34 @@ gws_async_command (
                        sizeof(__gws_message_buffer), 
                        0 );
 
-        if (n_writes > 0){ 
+        if (n_writes > 0)
+        { 
             rtl_set_file_sync ( 
                 fd, 
                 SYNC_REQUEST_SET_ACTION, 
                 ACTION_REQUEST );
             break; 
         }
+
+        gws_debug_print ("gws_async_command: Couldn't write, try again\n"); 
     };
 
-    // No return.
 
+// No return.
+    int Value=0;
+    while (1){
+        Value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
+        // Essa é a sincronização esperada.
+        // Não teremos uma resposta, mas precisamos
+        // conferir a sincronização.
+        if (Value == ACTION_NULL ) { goto done; }
+        if (Value == ACTION_ERROR ){ goto done; }
+
+        gws_debug_print ("gws_async_command: Waiting sync flag.\n"); 
+    };
+    
+done:
+    gws_debug_print ("gws_async_command: done\n"); 
     return; 
 }
 
