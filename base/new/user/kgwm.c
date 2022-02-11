@@ -1097,6 +1097,10 @@ done:
 int xxxMouseEvent(long x, long y)
 {
 
+    //old: for ereasing
+    static long old_x=0;
+    static long old_y=0;
+
     unsigned long deviceWidth  = (unsigned long) screenGetWidth();
     unsigned long deviceHeight = (unsigned long) screenGetHeight();
 
@@ -1115,6 +1119,7 @@ int xxxMouseEvent(long x, long y)
     if ( y > (deviceHeight-1) ){ y = (deviceHeight-1); }
 
 
+
 // #test
 // Draw rectangle.
 // #todo #bugbug
@@ -1125,11 +1130,32 @@ int xxxMouseEvent(long x, long y)
 // é um código portado da arquitetura de 32bit 
 // para a arquitetura de 64bit.
 
-    backbuffer_draw_rectangle( 
+//
+// Erease cursor.
+//
+
+// Ereasing the cursor by refreshing a little
+// part of the backbuffer into the front buffer.
+
+
+    refresh_rectangle ( old_x, old_y, 10, 10 );
+
+
+    old_x = x;
+    old_y = y;
+
+//
+// Drawing the cursor.
+//
+
+// Drawing the cursor directly into
+// the framebuffer.
+
+    frontbuffer_draw_rectangle( 
         x, y, 
         10, 10, COLOR_RED, 0 );
 
-    //frontbuffer_draw_rectangle( 
+    //backbuffer_draw_rectangle( 
     //    x, y, 
     //    10, 10, COLOR_RED, 0 );
 
@@ -1142,11 +1168,11 @@ int xxxMouseEvent(long x, long y)
     //    y,      // y
     //    0 );          // rop_flags
 
-    refresh_rectangle ( x, y, 10, 10 );
+    //refresh_rectangle ( x, y, 10, 10 );
 
 
+done:
     debug_print ("xxxMouseEvent: Done\n");
-
     return 0;
 }
 
