@@ -21,6 +21,7 @@ struct cat_model_d CatModel;
 // prototypes ===============
 //
 
+void demoLines(void);
 
 void demoClearSurface(void);
 void demoFlushSurface(void);

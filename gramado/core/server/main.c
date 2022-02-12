@@ -2318,6 +2318,9 @@ int serviceAsyncCommand (void)
             0,        // rop falgs
             FALSE );   // TRUE = use kgws. (kernel service)
         refresh_rectangle_via_kgws(10, 10, 40, 40);
+        
+        demoLines();
+        
         return 0;
         
         break;
