@@ -2163,13 +2163,6 @@ int serviceGetClientMessage(void)
 // #bugbug: Esta travando.
 int serviceAsyncCommand (void)
 {
-
-    // #bugbug
-    // Quando o cliente chama essa rotina
-    // o sistema esta travando.
-    // Não esta retornando direito para o cliente.
-
-
     //O buffer é uma global nesse documento.
     unsigned long *message_address = (unsigned long *) &__buffer[0];
 
@@ -2247,8 +2240,8 @@ int serviceAsyncCommand (void)
         if (current_mode == GRAMADO_JAIL)
         {
             gwssrv_debug_print("serviceAsyncCommand: [request 4] demo\n"); 
-            //demos_startup_animation(subrequest_id);
-            //gwssrv_show_backbuffer();
+            demos_startup_animation(subrequest_id);
+            gwssrv_show_backbuffer();
             return 0;
         }
         break;

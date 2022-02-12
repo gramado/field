@@ -197,10 +197,16 @@ void compareStrings(int fd)
         // Esta travando.
         // #fixed: Essa chamada esta funcionando agora.
         //gws_async_command(fd,2,0,0);    // PING
-        //gws_async_command(fd,4,0,0);  //demos
         //gws_async_command(fd,5,0,0);  //rectangle ring3
-        gws_async_command(fd,10,0,0); //ramdom tests
+        //gws_async_command(fd,10,0,0); //ramdom tests
         //gws_async_command(fd,6,0,0);  // show fps bar.
+
+        //demos: IN: fd,service,demo_index,0.
+        //gws_async_command(fd,4,1,0); //?
+        //gws_async_command(fd,4,5,0); //cube1
+        //gws_async_command(fd,4,6,0); //cube2
+        //gws_async_command(fd,4,7,0); //curve
+        gws_async_command(fd,4,9,0); //cat
         
         // #bugbug
         // Não podemos pegar esse falor corretamente.

@@ -320,13 +320,21 @@ gr_clamp(
  * grPlot0:
  *      plot pixel.
  *      Low level routine.
- *      Plot into a normalized screen. kinda.
+ *      Prigin in center of the device screen. 
+ *      #todo: Plot into a 'normalized' screen. kinda.
  *      #new: Plotting into a clipping window.
+ * low level plot.
+ * History:
+ *      2020 - Created by Fred Nora.
  */
 
-// low level plot.
-// History:
-//     2020 - Created by Fred Nora.
+// left hand orientation
+// z+ on top/right corner.
+// We use:
+// Left-hand System (LHS) 
+// LHS is clockwise (CW).
+// Same as Microsoft Direct3D.
+// See: https://en.wikipedia.org/wiki/Direct3D
 
 // window ?
 // Essa rotina pode pintar em qualquer posição 
@@ -350,18 +358,13 @@ grPlot0 (
 // #todo
 // We can use a 'clipping window' and draw only inside this window.
 // If the clipping window is NULL, so we need to use the root window.
-
-    // #todo
-    // This is a work in progress
-
+// #todo
+// This is a work in progress
 
     // Draw flag.
     int Draw = TRUE;
-    int UseClipping = FALSE;
-
 
     int UsingDepthBuffer = FALSE;
-    
     int UsingAlphaBlending = FALSE;
 
     // left hand orientation
@@ -369,31 +372,32 @@ grPlot0 (
     
     int FixOrientation = TRUE;
 
+// clipping window support.
+    struct gws_window_d *w;
+    int UseClipping = FALSE;
 
-
-    // #todo
-    // We need a z-buffer or (depth buffer)
-    // it is used to depth testing.
-    // it discards some unnecessary covered plots. 
+// #todo
+// We need a z-buffer or (depth buffer)
+// it is used to depth testing.
+// it discards some unnecessary covered plots. 
     
-    // Normalized Device Coordinates (NDC)
-    // We are using or own ndc style.
-    // Maybe it is different for diferent systens.
+// Normalized Device Coordinates (NDC)
+// We are using or own ndc style.
+// Maybe it is different for diferent systems.
     
-    //      +y  +z
-    // -x   +   +x
-    // -z   -y
+//      +y  +z
+// -x   +   +x
+// -z   -y
     
-    // We use:
-    // Left-hand System (LHS) 
-    // LHS is clockwise (CW).
-    // Same as Microsoft Direct3D.
-    // See: https://en.wikipedia.org/wiki/Direct3D
+// We use:
+// Left-hand System (LHS) 
+// LHS is clockwise (CW).
+// Same as Microsoft Direct3D.
+// See: https://en.wikipedia.org/wiki/Direct3D
     
     // Another way is:
     // Right-Hand Coordinate System (RHS).
     // RHS is counter-clockwise (CCW).
-    
     
     unsigned long zBaseX=0;
     unsigned long zBaseY=0;
@@ -405,22 +409,17 @@ grPlot0 (
      int X=0;
      int Y=0;
 
-
 //
 // The clipping window.
 //
 
-    struct gws_window_d *w;
+// #todo
+// If the clipping window is invalid, 
+// so we're gonna use the root window.
+// #todo:
+// Maybe we need to use the device context structure,
+// or something like that.
 
-    // #todo
-    // If the clipping window is invalid, 
-    // so we're gonna use the root window.
-    // #todo:
-    // Maybe we need to use the device context structure,
-    // or something like that.
-    
-    UseClipping = FALSE;
-    
     if ( (void*) clipping_window != NULL )
     {
         if ( clipping_window->used  == TRUE && 
@@ -436,7 +435,7 @@ grPlot0 (
 // Device screen structure
 //
 
-    // See: screen.h
+// See: screen.h
 
     // #debug
     if ( (void *) DeviceScreen == NULL )
@@ -446,45 +445,38 @@ grPlot0 (
         exit(1);
     }
 
-
-    // #todo
-    // precisamos checar algumas globais, como HotSpotX e HotSpotY.
-
-    // Usaremos a janela chamada screen se nenhuma outra foi indicada.
-    //gui->screen
+// #todo
+// precisamos checar algumas globais, como HotSpotX e HotSpotY.
+// Usaremos a janela chamada screen se nenhuma outra foi indicada.
+//gui->screen
 
 
-    // z negativo
-    //  _
-    //   |
-
+// ========================
+// z negativo
+//  _
+//   |
+//
     if (z < 0)
     {
         // z é módulo para todos os casos em que z é menor que 0.
         z = abs(z);
 
-        // positivo, para direita.
-        if (x >= 0 )
-        {
+        // x positivo, para direita.
+        if (x >= 0 ){
             X = (unsigned long) ( (unsigned long)HotSpotX  + (unsigned long)x);
         }
-
-        // negativo, para esquerda.
-        if (x < 0 )
-        {
+        // x negativo, para esquerda.
+        if (x < 0 ){
             x = abs(x); 
-            X = (unsigned long) (  (unsigned long)HotSpotX - (unsigned long)x );
+            X = (unsigned long) ( (unsigned long)HotSpotX - (unsigned long)x );
         }
 
-        // positivo, para cima.
-        if ( y >= 0 )
-        {
+        // y positivo, para cima.
+        if ( y >= 0 ){
             Y = (unsigned long) ( (unsigned long)HotSpotY - (unsigned long)y );
         }
-
-        // negativo, para baixo
-        if ( y < 0 )
-        {
+        // y negativo, para baixo
+        if ( y < 0 ){
             y = abs(y);
             Y = (unsigned long) ( (unsigned long) HotSpotY + (unsigned long) y );
         }
@@ -498,37 +490,32 @@ grPlot0 (
         goto draw;
     }
 
-
-    // z maior ou igual a zero.
-    //    |
-    //    ----
-    //
+// ========================
+// z maior ou igual a zero.
+//    |
+//    ----
+//
     if (z >= 0)
     {
         // z é positivo para todos os casos onde z é maior igual a 0.
         
-        // positivo, para direita.
-        if (x >= 0 )
-        {
+        // x positivo, para direita.
+        if (x >= 0 ){
             X = (unsigned long) ( (unsigned long) HotSpotX + (unsigned long) x );
         }
-
-        // negativo, para esquerda.
-        if (x < 0 )
-        {
+        // x negativo, para esquerda.
+        if (x < 0 ){
             x = abs(x);   
             X = (unsigned long) ( (unsigned long)HotSpotX - (unsigned long)x  );
         }
 
-        // positivo, para cima.
-        if ( y >= 0 )
-        {
+        // y positivo, para cima.
+        if ( y >= 0 ){
             Y = (unsigned long) ( (unsigned long)HotSpotY - (unsigned long)y );
         }
 
-        // negativo, para baixo
-        if ( y < 0 )
-        {
+        // y negativo, para baixo
+        if ( y < 0 ){
             y = abs(y);
             Y = (unsigned long) ( (unsigned long)HotSpotY + (unsigned long)y );
         }
@@ -556,63 +543,69 @@ draw:
 // Clipping
 //
 
+// #todo
+// Talvez possamos retornar '0'
+// se a flag indicar que não precisava desenhar.
+
+    if (Draw != TRUE)
+        return -1;
+
 // #todo: 
 // We need to check the window limits
 // if we are drawing inside a given window.
 
-    // Checking the device screen limits.
-        
+// Checking the device screen limits.
+
+// #bugbug
+// Já fizemos isso logo acima?
+
+    if (X<0){ return -1; }
+    if (Y<0){ return -1; }
+
     if ( 0 <= X < DeviceScreen->width && 
          0 <= Y < DeviceScreen->height )
     {
-        if (Draw == TRUE)
+        // #bugbug
+        // Já fizemos isso logo acima.
+        //if (X<0){ return -1; }
+        //if (Y<0){ return -1; }
+            
+        if ( UsingAlphaBlending == TRUE )
         {
-            // #bugbug
-            // Já fizemos isso logo acima.
-            
-            if (X<0){ return -1; }
-            if (Y<0){ return -1; }
-            
-            if ( UsingAlphaBlending == TRUE )
-            {
-                // #todo
-                // Get the color and modify it.
-                
-                //color = get??()
-            }
-
-            // Se NÃO temos uma janela válida.
-            // device screen
-            // 2D, No clipping or transformation.
-
-            if ( UseClipping == FALSE ){
-                grBackBufferPutpixel(
-                    (unsigned int) color, X, Y ); 
-            }
-
-            // Se temos uma janela válida.
-            if ( UseClipping == TRUE ){
-                if ( X >= w->left  &&
-                     X <= w->right &&
-                     Y >= w->top   &&
-                     Y <= w->bottom )
-                 {
-                     grBackBufferPutpixel(
-                         (unsigned int) color, X, Y ); 
-                 }
-            }
-
             // #todo
-            // This is a work in progress
-            
-            //if( UsingDepthBuffer == TRUE )
-            //{
-            //    depth_buffer[ offset ] = Z;
-            //}
-            
-            return 0;
+            // Get the color and modify it.
+            //color = get??()
         }
-        return -1;
+
+        // Se NÃO temos uma janela válida.
+        // device screen
+        // 2D, No clipping or transformation.
+        if ( UseClipping == FALSE )
+        {
+            grBackBufferPutpixel( (unsigned int) color, X, Y ); 
+        }
+
+        // Se temos uma janela válida.
+        if ( UseClipping == TRUE )
+        {
+            if ( X >= w->left  && 
+                 X <= w->right &&
+                 Y >= w->top   && 
+                 Y <= w->bottom )
+                 {
+                     grBackBufferPutpixel((unsigned int) color, X, Y ); 
+                 }
+        }
+
+        // #todo
+        // This is a work in progress
+            
+        //if( UsingDepthBuffer == TRUE )
+        //{
+        //    depth_buffer[ offset ] = Z;
+        //}
+            
+        return 0;
     }
 
 // Fail 
