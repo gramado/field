@@ -218,14 +218,12 @@ struct gr_projection_d
     // perspective or orthographic
     int type;
 
-
-    // fovy   Number The angle between the upper and lower sides of the viewing frustum.
-    // aspect Number The aspect ratio of the viewing window. (width/height).
-    
+// fovy   Number The angle between the upper and lower sides of the viewing frustum.
+// aspect Number The aspect ratio of the viewing window. (width/height).
  
-    // The frustrum:   
-    // The rectangle that the can see.
-    // The limits in z axis. zmin and zmax;
+// The frustrum:   
+// The rectangle that the can see.
+// The limits in z axis. zmin and zmax;
     
     struct gr_rectangle_d *frustrum_view;   // projection window.
     
@@ -372,6 +370,25 @@ int projection_initialize(void);
 // Chaging the view for the current projection
 int view(int near, int far);
 
+// See: view()
+void 
+gwsDepthRange(
+    int minZ, 
+    int maxZ);
+
+void 
+gwsViewport(
+    int topleft_x, 
+    int topleft_y, 
+    int width, 
+    int height);
+
+
+void 
+__transform_from_modelspace_to_screespace(
+    int *buffer_x,
+    int *buffer_y,
+    int *buffer_z);
 
 // Point. 
 int 

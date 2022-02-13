@@ -1,15 +1,11 @@
 /*
  * File: grprim.c 
- * 
  *     Primitives.
- *
  * History:
  *     2020 - Created by Fred Nora.
  */
 
-
 #include <gws.h>
-
 
 // See:
 // https://wiki.osdev.org/3D_Renderer_Basics
@@ -17,6 +13,29 @@
 // http://math.hws.edu/graphicsbook/c2/s3.html
 // http://math.hws.edu/graphicsbook/index.html
 // ...
+
+// ================================
+// Viewport 2d:
+// A origem normalmente fica em top/left.
+// É o 'raster', para fazer rasterização.
+// Viewport is a rectangular display area 
+// on the application window, which is measured 
+// in screen's coordinates 
+// (in pixels, with origin at the top-left corner). A viewport defines the size and shape of the display area to map the projected scene captured by the camera onto the application window. 
+// It may or may not occupy the entire screen.
+// Viewport 3d:
+// Então o viewpoint agora possui 3 coordenadas.
+// In 3D graphics, a viewport is 3-dimensional 
+// to support z-ordering, which is needed for 
+// situations such as ordering of overlapping windows.
+// Object world:
+// O objeto tem seu proprio mundo e a origem fica 
+// no centro da tela.
+// Each object (or model or avatar) in a 3D scene 
+// is typically drawn in its own coordinate system, 
+// known as its model space (or local space, or object space). 
+// See: https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html
+// =============================
 
 
 // #todo
@@ -234,9 +253,11 @@ camera (
 }
 
 
-
+// See:
 int projection_initialize(void)
 {
+
+    // See: gr_projection_d
 
     CurrentProjection = (void *) malloc ( sizeof( struct gr_projection_d ) );
     
@@ -314,19 +335,188 @@ gr_clamp(
 */
 
 
+// Configurando o viewport.
+// Isso determina os limites onde podemos
+// pintar com 2d. Esse é nosso 'raster'.
+// See: projection_initialize
+void 
+gwsViewport(
+    int topleft_x, 
+    int topleft_y, 
+    int width, 
+    int height)
+{
+    // Esses valores não podem ser maiores
+    // que os valores da tela.
+    
+    if (topleft_x<0)
+        topleft_x=0;
+    if(topleft_y<0)
+        topleft_y=0;
+
+    if (width<0)
+        width=0;
+    if(height<0)
+        width=0;
+
+    // ...
+    
+    // #todo
+    // call that routine.
+    //projection_initialize(...)
+}
+
+
+
+// Limites da profundidade usada pelo raster.
+// See: view().
+void 
+gwsDepthRange(
+    int minZ,     // near
+    int maxZ)     // far
+{
+    view(minZ,maxZ);
+}
+
+
+
+// worker: Used by grPlot0()
+// Transforma no 'world space' para o 'view port'.
+void 
+__transform_from_modelspace_to_screespace(
+    int *buffer_x,
+    int *buffer_y,
+    int *buffer_z)
+{
+
+
+    // #todo
+    // NOT TESTED YET
+
+
+// save parameters.
+    int x = (int) *buffer_x;
+    int y = (int) *buffer_y;
+    int z = (int) *buffer_z;
+
+// final result.
+    int X=0;
+    int Y=0;
+    int Z=0;
+    int FixOrientation = TRUE;
+
+
+// final z
+
+    Z = (int) z;
+
+
+// ========================
+// z negativo
+//  _
+//   |
+//
+    if (z < 0)
+    {
+        // z é módulo para todos os casos em que z é menor que 0.
+        z = abs(z);
+
+        // x positivo, para direita.
+        if (x >= 0 ){
+            X = (unsigned long) ( (unsigned long)HotSpotX  + (unsigned long)x);
+        }
+        // x negativo, para esquerda.
+        if (x < 0 ){
+            x = abs(x); 
+            X = (unsigned long) ( (unsigned long)HotSpotX - (unsigned long)x );
+        }
+
+        // y positivo, para cima.
+        if ( y >= 0 ){
+            Y = (unsigned long) ( (unsigned long)HotSpotY - (unsigned long)y );
+        }
+        // y negativo, para baixo
+        if ( y < 0 ){
+            y = abs(y);
+            Y = (unsigned long) ( (unsigned long) HotSpotY + (unsigned long) y );
+        }
+
+        if (FixOrientation == TRUE){
+            X = ( (unsigned long) X - (unsigned long) z );
+            Y = ( (unsigned long) Y + (unsigned long) z );
+        }
+        
+        //if (Draw == FALSE){ return -1; }
+        goto done;
+    }
+
+// ========================
+// z maior ou igual a zero.
+//    |
+//    ----
+//
+    if (z >= 0)
+    {
+        // z é positivo para todos os casos onde z é maior igual a 0.
+        
+        // x positivo, para direita.
+        if (x >= 0 ){
+            X = (unsigned long) ( (unsigned long) HotSpotX + (unsigned long) x );
+        }
+        // x negativo, para esquerda.
+        if (x < 0 ){
+            x = abs(x);   
+            X = (unsigned long) ( (unsigned long)HotSpotX - (unsigned long)x  );
+        }
+
+        // y positivo, para cima.
+        if ( y >= 0 ){
+            Y = (unsigned long) ( (unsigned long)HotSpotY - (unsigned long)y );
+        }
+
+        // y negativo, para baixo
+        if ( y < 0 ){
+            y = abs(y);
+            Y = (unsigned long) ( (unsigned long)HotSpotY + (unsigned long)y );
+        }
+
+        if (FixOrientation == TRUE){
+            X = ( (unsigned long) X + (unsigned long) z );
+            Y = ( (unsigned long) Y - (unsigned long) z );
+        }
+        
+        //if (Draw == FALSE){ return -1; }
+        goto done;
+    }
+
+done:
+    *buffer_x = X;
+    *buffer_y = Y;
+    *buffer_z = Z;
+    return;
+}
+
+
 
 /*
  ******************************* 
  * grPlot0:
  *      plot pixel.
+ *      Viewport Transformation.
+ * 
  *      Low level routine.
- *      Prigin in center of the device screen. 
- *      #todo: Plot into a 'normalized' screen. kinda.
+ *      Origin at center of the device screen. 
+ *      #todo: Plot into a 'normalized' 2d rater screen. 
  *      #new: Plotting into a clipping window.
  * low level plot.
  * History:
  *      2020 - Created by Fred Nora.
  */
+
+// Transformation:
+// Estamos tranformando de um 'object space' com origem 
+// no centro da tela para um viewport que ocupa a tela toda, 
+// com origem no canto superior esquerdo.
 
 // left hand orientation
 // z+ on top/right corner.
@@ -345,6 +535,31 @@ gr_clamp(
 // O limite máximo será modular.
 
 // 3D fullscreen, origin in center.
+// ==================================================
+//
+// O 'object space' esta no centro da tela. (0,0,0). 
+// Essa rotina plota o pixel considerando o viewport com 
+// a origem no canto superior esquerdo da tela. (0,0).
+// Cada objeto pode ter seu proprio 'object space'
+// e o 'world' pode ter seu 'world space' no centro do
+// viewport.
+// Por enquanto tanto o 'object space' quanto o 'world space'
+// estão no centro da tela, em (0,0,0), e o viewport
+// é o proprio raster que compreende a tela toda.
+
+// Screen Coordinate System - 
+// This 2D coordinate system refers to the physical coordinates 
+// of the pixels on the computer screen, based on 
+// current screen resolution. ( E.g. 1024x768 )
+// Viewport Coordinate System - This coordinate system refers 
+// to a subset of the screen space where the model window 
+// is to be displayed. Typically the viewport will occupy 
+// the entire screen window, or even the entire screen, 
+// but it is also possible to set up multiple smaller viewports 
+// within a single screen window.
+// See:
+// https://www.cs.uic.edu/~jbell/CourseNotes/ComputerGraphics/Coordinates.html
+//
 
 int 
 grPlot0 ( 
@@ -395,19 +610,19 @@ grPlot0 (
 // Same as Microsoft Direct3D.
 // See: https://en.wikipedia.org/wiki/Direct3D
     
-    // Another way is:
-    // Right-Hand Coordinate System (RHS).
-    // RHS is counter-clockwise (CCW).
+// Another way is:
+// Right-Hand Coordinate System (RHS).
+// RHS is counter-clockwise (CCW).
     
-    unsigned long zBaseX=0;
-    unsigned long zBaseY=0;
+    //unsigned long zBaseX=0;
+    //unsigned long zBaseY=0;
 
 // #bugbug
 // Precisa ser 'int', nao podemos enviar 
 // valores negativos para putpixel.
 
-     int X=0;
-     int Y=0;
+    int X=0;
+    int Y=0;
 
 //
 // The clipping window.
@@ -450,6 +665,15 @@ grPlot0 (
 // Usaremos a janela chamada screen se nenhuma outra foi indicada.
 //gui->screen
 
+// Transformation:
+// Estamos tranformando de um 'object space' com origem 
+// no centro da tela para um viewport que ocupa a tela toda, 
+// com origem no canto superior esquerdo.
+
+// #todo
+// Podemos criar um worker que faça essa rotina de transformação.
+// Chamaremos ele agora e pegaremos os valores ja transformados.
+// See: __transform_from_modelspace_to_screespace()
 
 // ========================
 // z negativo
@@ -562,14 +786,11 @@ draw:
     if (X<0){ return -1; }
     if (Y<0){ return -1; }
 
+
     if ( 0 <= X < DeviceScreen->width && 
          0 <= Y < DeviceScreen->height )
     {
-        // #bugbug
-        // Já fizemos isso logo acima.
-        //if (X<0){ return -1; }
-        //if (Y<0){ return -1; }
-            
+
         if ( UsingAlphaBlending == TRUE )
         {
             // #todo
@@ -582,6 +803,8 @@ draw:
         // 2D, No clipping or transformation.
         if ( UseClipping == FALSE )
         {
+            // Plot pixel into the raster.
+            // The origin is top/left of the viewport. (0,0).
             grBackBufferPutpixel( (unsigned int) color, X, Y ); 
         }
 
@@ -593,6 +816,8 @@ draw:
                  Y >= w->top   && 
                  Y <= w->bottom )
                  {
+                     // Plot pixel into the raster.
+                     // The origin is top/left of the viewport. (0,0).
                      grBackBufferPutpixel((unsigned int) color, X, Y ); 
                  }
         }

@@ -30,6 +30,8 @@ grBackBufferPutpixel2 (
 }
 
 
+// Plot pixel into the raster.
+// The origin is top/left of the viewport. (0,0).
 int 
 grBackBufferPutpixel ( 
     unsigned int color, 
@@ -85,6 +87,9 @@ grBackBufferPutpixel (
 // #todo
 // rop_flags   ... raster operations
 // See the same routine in the kernel side.
+
+// Plot pixel into the raster.
+// The origin is top/left of the viewport. (0,0).
 
 int 
 fb_BackBufferPutpixel ( 
