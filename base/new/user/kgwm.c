@@ -208,10 +208,12 @@ wmProcedure (
         case MSG_KEYDOWN:
 
             // Para todas as teclas quando o console não está ativo.
-            // Serão exibidas na janela com foco de entrada,
-            // se ela for do tipo editbox.
+            // Serão exibidas pelo window server 
+            // na janela com foco de entrada,
+            // Se ela for do tipo editbox.
             // O ws mandará mensagens para a thread associa
             // à janela com foco de entrada.
+            
             if ( ShellFlag!=TRUE ){
                 wmSendInputToWindowManager(0,MSG_KEYDOWN,long1,long2);
             }
@@ -812,6 +814,9 @@ xxxKeyEvent (
         // minúscula
         // Nenhuma tecla de modificação ligada.
 
+        // #bugbug: some chars are not working
+        // for shift_abnt2[]
+        // See: include/user/kbdabnt2.h
         if (Event_Message == MSG_KEYUP)
         {
             // Minúsculas.

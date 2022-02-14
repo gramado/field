@@ -554,11 +554,18 @@ int main ( int argc, char *argv[] ){
 // Input
 //
 
+// #focus
+// Well, the editor.bin application is not receiving
+// the input ... so, i guess the window server
+// is printing the chars into the window with focus.
+
+
     while(1){
         //
     };
 
 
+/*
     int C=0;
     //char data[2];
     //int nread=0;
@@ -579,9 +586,9 @@ int main ( int argc, char *argv[] ){
                 C );           // long2 (ascii)
         }
     };
+*/
 
 //==============================================
-
 
 
 //

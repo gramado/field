@@ -148,7 +148,6 @@ int main ( int argc, char *argv[] )
 // acionar os locks, sincronizar os sistemas de arquivo
 // montados, etc ...
 
-
     int isQEMU       = FALSE;
     //int isVirtualBox = FALSE;
     //int isBochs      = FALSE;
@@ -157,9 +156,10 @@ int main ( int argc, char *argv[] )
     //isVirtualBox = rtl_get_system_metrics(?);
     //isBochs      = rtl_get_system_metrics(?);
 
+// ==============================
+// qemu
+// In newer versions of QEMU, you can do shutdown with:
 
-    // qemu
-    // In newer versions of QEMU, you can do shutdown with:
     if (isQEMU == TRUE){
         //__serial_write_char('1');
         //__serial_write_char('2');
@@ -171,8 +171,9 @@ int main ( int argc, char *argv[] )
             (unsigned short) 0x2000 );
     }
 
-    // virtualbox
-    // In Virtualbox, you can do shutdown with:
+// =========================
+// virtualbox
+// In Virtualbox, you can do shutdown with:
     //if (isVirtualBox == TRUE){
     //    libio_outport16(0x4004, 0x3400);
     //}
@@ -182,7 +183,6 @@ int main ( int argc, char *argv[] )
     //if (isBochs == TRUE){
     //    libio_outport16(0xB004, 0x2000);
     //}
-
 
 fail:
     printf ("shutdown: [FAIL] Not running on qemu.\n");

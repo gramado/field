@@ -231,6 +231,10 @@ void compareStrings(int fd)
 // #important:
 // For now the system will crash if the
 // command is not found.
+// #bugbug
+// We are using the whole 'command line' as an argument.
+// We need to work on that routine of passing
+// the arguments to the child process.
 
     rtl_clone_and_execute(prompt);
 

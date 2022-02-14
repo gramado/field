@@ -3,10 +3,8 @@
  *     Header de suporte ao teclado abnt2.
  */
 
-
 #ifndef ____KBDABNT2_H
 #define ____KBDABNT2_H
-
 
 
 //Usado no mapa de caracteres. 
@@ -20,21 +18,20 @@
 #define STP    0x80    // stop output.
 
 
-
 //ASCII
 
 //A disciplina de linhas precisa disso.
-#define KEY_RETURN   28 //13     //sc 28 #bugbug tem que ser 28
-#define KEY_TAB	     15
-#define KEY_SHIFT	 42     //16
-#define KEY_CONTROL	 29     //17
-#define KEY_CTRL	 29     //17
-#define KEY_MENU	 56     //18
-#define KEY_ALT  	 56     //18
-#define KEY_CAPITAL	 20     //58
-#define KEY_SPACE	 57     //32
-#define KEY_WINKEY	 91   
-#define KEY_DELETE   127    //sc 83
+#define KEY_RETURN   28   //13 //sc 28 #bugbug tem que ser 28
+#define KEY_TAB      15
+#define KEY_SHIFT    42   //16
+#define KEY_CONTROL  29   //17
+#define KEY_CTRL     29   //17
+#define KEY_MENU     56   //18
+#define KEY_ALT      56   //18
+#define KEY_CAPITAL  20   //58
+#define KEY_SPACE    57   //32
+#define KEY_WINKEY   91   
+#define KEY_DELETE   127  //sc 83
 
 
 
@@ -242,7 +239,7 @@ VK_F24,	 //135
 
 // CAPS LOCK LIGADO
 
-// maiusculas
+// mai'usculas
 
 static unsigned char shift_abnt2[ABNT2_CHARMAP_SIZE] = {
 0, 
@@ -261,26 +258,26 @@ VK_ABNT2_TREMA, //168,   //7 (00a8 @) (trema)
 '+',   //13 
 VK_BACK,  // 0x0E     0177,
 VK_TAB,   // 0x0F     '\t',   //15 TAB
-'Q',    //16  FAIL
-'W',    //17  
+'Q',    //16
+'W',    //17
 'E',    //18
-'R',    //19  FAIL
+'R',    //19
 'T',    //20
 'Y',    //21
 'U',    //22
-'I',    //23    FAIL
-'O',    //24    FAIL
-'P',    //25    FAIL
+'I',    //23
+'O',    //24
+'P',    //25    (FAIL!)
 '`',    //26
 '{',    //27
 VK_RETURN,   // 28
 CTL,         // 29 
-'A',    //30
-'S',    // FAIL
+'A',  //30
+'S',
 'D',
 'F',
-'G',    //FAIL
-'H',    //FAIL
+'G',
+'H',  //FAIL
 'J',
 'K',  //FAIL
 'L',  //38
@@ -295,7 +292,7 @@ SHF,
 'V',
 'B',
 'N',
-'M',  //50             //FAIL
+'M',  //50    //FAIL
 '<',  //51 abnt2
 '>',  //52 abnt2
 ':',  //53 abnt2

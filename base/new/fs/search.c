@@ -26,11 +26,14 @@
 // The structure found there will give us the inode structure pointer.
 
 // IN:
-// File name. "1234578XYZ"
+// File name. "12345678XYZ"
 // Address of the directory.
 
 // OUT:
 // 1 = Found.
+
+// #todo
+// Is it a virtual address? change to dir_va in this case.
 
 int 
 search_in_dir ( 
@@ -71,17 +74,32 @@ search_in_dir (
 
     size_t stringSize=0;
 
+
     debug_print ("search_in_dir: $\n");
 
 //
 // Copy file name
 //
 
-    stringSize = strlen(file_name);
+// get the size
+    stringSize = (size_t) strlen(file_name);
 
-//#debug
+    //#debug
     //printf ("Name size = {%d}\n",stringSize);
 
+// check
+// #bugbug
+// The teminal.bin application is sending 
+// the whole commant line to this routine.
+// We need only the filename.
+    if (stringSize > 11 ){
+        printf ("search_in_dir: [ERROR] Wrong name size. {%d} \n", 
+        stringSize);
+        printf("filename: %s\n",file_name);
+        goto fail;
+    }
+
+// copy
     strncpy (NameBuffer, file_name, stringSize);
 
     if (stringSize < 11 )
@@ -121,11 +139,14 @@ search_in_dir (
 
     NameBuffer[11] = 0;
 
+/*
 // hack hack
     if (stringSize != 11 ){
-        printf ("search_in_dir: [ERROR] Wrong name size. {%d} \n", stringSize);
+        printf ("search_in_dir: [ERROR] Wrong name size. {%d} \n", 
+        stringSize);
         goto fail;
     }
+*/
 
 // name.
 

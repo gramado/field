@@ -1376,6 +1376,8 @@ void wm_remove_window_from_list_and_kill( struct gws_window_d *window)
 // ====================
 
 // Local worker
+// The color is red.
+// We need to create a parameter for that.
 void 
 __draw_char_into_the_window(
     struct gws_window_d *window, 
@@ -1383,8 +1385,6 @@ __draw_char_into_the_window(
 {
 // draw char support.
     unsigned char _string[4];
-
-
 
 // Invalid window
     if( (void*)window == NULL)
@@ -1479,11 +1479,13 @@ __draw_char_into_the_window(
     if( window->type == WT_EDITBOX ||
         window->type == WT_EDITBOX_MULTIPLE_LINES )
     {
+        // draw char
         dtextDrawText ( 
             (struct gws_window_d *) window,
             (window->ip_x*8), (window->ip_y*8), 
             COLOR_RED, (unsigned char *) &_string[0] );
 
+        // refresh rectangle
         // x,y,w,h
         gws_refresh_rectangle ( 
             (window->left + (window->ip_x*8)), 
@@ -1694,7 +1696,6 @@ wmProcedure(
     unsigned long long2 )
 {
 
-
 // #debug
     //printf("wmProcedure: w=? m=%d l1=%d l2=%d\n", 
         //msg, long1, long2 );
@@ -1877,7 +1878,6 @@ wmHandler(
 //
 // Message
 //
-
     msg = (int) (arg2_rsi & 0xFFFF);
 
 
@@ -1954,7 +1954,8 @@ wmHandler(
     case GWS_KeyDown:
     case GWS_SysKeyDown:
     case GWS_SwitchFocus:
-        if( window_with_focus < 0 || window_with_focus >= WINDOW_COUNT_MAX ){ return 0; } //fail
+        if( window_with_focus < 0 || window_with_focus >= WINDOW_COUNT_MAX )
+        { return 0; }
         w = windowList[window_with_focus];
         goto do_process_message;
         break;
