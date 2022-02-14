@@ -384,32 +384,36 @@ gwsDepthRange(
 // Transforma no 'world space' para o 'view port'.
 void 
 __transform_from_modelspace_to_screespace(
-    int *buffer_x,
-    int *buffer_y,
-    int *buffer_z)
+    int *res_x,
+    int *res_y,
+    int _x, int _y, int _z )
 {
-
 
     // #todo
     // NOT TESTED YET
 
 
 // save parameters.
-    int x = (int) *buffer_x;
-    int y = (int) *buffer_y;
-    int z = (int) *buffer_z;
+    int x = (int) _x;
+    int y = (int) _y;
+    int z = (int) _z;
 
 // final result.
     int X=0;
     int Y=0;
-    int Z=0;
+    //int Z=0;
     int FixOrientation = TRUE;
 
 
 // final z
+    //Z = (int) z;
 
-    Z = (int) z;
 
+    // The world space.
+    // (HotSpotX,HotSpotY,0)
+    // This is the origin of the 'world space'.
+    // model space.
+    // Been the reference for all the 'object spaces'.
 
 // ========================
 // z negativo
@@ -423,7 +427,7 @@ __transform_from_modelspace_to_screespace(
 
         // x positivo, para direita.
         if (x >= 0 ){
-            X = (unsigned long) ( (unsigned long)HotSpotX  + (unsigned long)x);
+            X = (unsigned long) ( (unsigned long)HotSpotX + (unsigned long)x);
         }
         // x negativo, para esquerda.
         if (x < 0 ){
@@ -490,9 +494,8 @@ __transform_from_modelspace_to_screespace(
     }
 
 done:
-    *buffer_x = X;
-    *buffer_y = Y;
-    *buffer_z = Z;
+    *res_x = (int) X;
+    *res_y = (int) Y;
     return;
 }
 
@@ -675,93 +678,25 @@ grPlot0 (
 // Chamaremos ele agora e pegaremos os valores ja transformados.
 // See: __transform_from_modelspace_to_screespace()
 
-// ========================
-// z negativo
-//  _
-//   |
-//
-    if (z < 0)
-    {
-        // z é módulo para todos os casos em que z é menor que 0.
-        z = abs(z);
+    // #test
+    // 
+    
+    int res_x=0;
+    int res_y=0;
 
-        // x positivo, para direita.
-        if (x >= 0 ){
-            X = (unsigned long) ( (unsigned long)HotSpotX  + (unsigned long)x);
-        }
-        // x negativo, para esquerda.
-        if (x < 0 ){
-            x = abs(x); 
-            X = (unsigned long) ( (unsigned long)HotSpotX - (unsigned long)x );
-        }
+    __transform_from_modelspace_to_screespace( 
+        (int *) &res_x,
+        (int *) &res_y,
+        x,y,z );
 
-        // y positivo, para cima.
-        if ( y >= 0 ){
-            Y = (unsigned long) ( (unsigned long)HotSpotY - (unsigned long)y );
-        }
-        // y negativo, para baixo
-        if ( y < 0 ){
-            y = abs(y);
-            Y = (unsigned long) ( (unsigned long) HotSpotY + (unsigned long) y );
-        }
-
-        if (FixOrientation == TRUE){
-            X = ( (unsigned long) X - (unsigned long) z );
-            Y = ( (unsigned long) Y + (unsigned long) z );
-        }
-        
-        //if (Draw == FALSE){ return -1; }
-        goto draw;
-    }
-
-// ========================
-// z maior ou igual a zero.
-//    |
-//    ----
-//
-    if (z >= 0)
-    {
-        // z é positivo para todos os casos onde z é maior igual a 0.
-        
-        // x positivo, para direita.
-        if (x >= 0 ){
-            X = (unsigned long) ( (unsigned long) HotSpotX + (unsigned long) x );
-        }
-        // x negativo, para esquerda.
-        if (x < 0 ){
-            x = abs(x);   
-            X = (unsigned long) ( (unsigned long)HotSpotX - (unsigned long)x  );
-        }
-
-        // y positivo, para cima.
-        if ( y >= 0 ){
-            Y = (unsigned long) ( (unsigned long)HotSpotY - (unsigned long)y );
-        }
-
-        // y negativo, para baixo
-        if ( y < 0 ){
-            y = abs(y);
-            Y = (unsigned long) ( (unsigned long)HotSpotY + (unsigned long)y );
-        }
-
-        if (FixOrientation == TRUE){
-            X = ( (unsigned long) X + (unsigned long) z );
-            Y = ( (unsigned long) Y - (unsigned long) z );
-        }
-        
-        //if (Draw == FALSE){ return -1; }
-        goto draw;
-    }
-
-// Fail
-    Draw = FALSE;
-    return (-1);
+    X = (int) res_x;
+    Y = (int) res_y;
 
 //
 // Draw
 //
 
-draw:
+//draw:
 
 //
 // Clipping
@@ -834,7 +769,6 @@ draw:
     }
 
 // Fail 
-
     return (-1);
 }
 
@@ -1018,7 +952,8 @@ plotLine3d (
 void 
 plotLine3d2 (
     int x0, int y0, int z0, unsigned long color1,
-    int x1, int y1, int z1, unsigned long color2, int flag )
+    int x1, int y1, int z1, unsigned long color2, 
+    int flag )
 {
 
     int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
@@ -1037,8 +972,9 @@ plotLine3d2 (
     y1 = x1;
     z1 = x1;
 
-    // nothing for now;
-    // interpolation flag.
+// nothing for now;
+// interpolation flag.
+
     flag=0;
 
 
@@ -1061,114 +997,152 @@ plotLine3d2 (
 
 
 
-// The upper-left corner and lower-right corner. 
+// IN:
+// The upper-left corner
+// lower-right corner. 
+// color
 void
-rectangle (
+rectangle_from_two_points (
     int left, int top, 
     int right, int bottom,
-    unsigned long color )
+    unsigned int color )
 {
 
     // #todo
     // Check validation
     // if (left<0 ...
 
-    // cima
-    plotLine3d ( left, top, 0, right, top, 0, color );
-    // baixo
-    plotLine3d ( left, bottom, 0, right,bottom, 0, color );
-    // esquerda
-    plotLine3d ( left, top, 0, left, bottom, 0, color );
-    // direita
-    plotLine3d ( right, top, 0, right, bottom, 0, color );
+// cima
+    plotLine3d ( 
+        left,top,0, 
+        right,top,0, 
+        color );
+
+// baixo
+    plotLine3d ( 
+        left,bottom,0, 
+        right,bottom,0, 
+        color );
+
+// esquerda
+    plotLine3d ( 
+        left,top,0, 
+        left,bottom,0, 
+        color );
+
+// direita
+    plotLine3d ( 
+        right,top,0, 
+        right,bottom,0, 
+        color );
 }
 
 
-// The upper-left corner and lower-right corner. 
-void
-rectangleZ (
-    int left, int top, 
-    int right, int bottom,
-    unsigned long color,
-    int z )
-{
-    // #todo
-    // Check validation
-    // if (left<0 ...
-    
-    // cima
-    plotLine3d ( left, top,  z, right, top, z, color );
-    // baixo
-    plotLine3d ( left, bottom, z, right,bottom, z, color );
-    // esquerda
-    plotLine3d ( left, top, z, left, bottom, z, color );
-    // direita
-    plotLine3d ( right,  top, z, right, bottom, z, color );
-}
-
-
-void rectangleZZ ( struct gr_rectangle_d *rect )
+// worker
+// 4 3d lines, not filled.
+void __rectangleZZ ( struct gr_rectangle_d *rect )
 {
     if ( (void*) rect == NULL ){
         return;
     }
 
-
     // #todo
     // Check the validation of the values in the structure.
 
+    // points
+    //  0  1
+    //  3  2
 
-      // points
-      //  0  1
-      //  3  2
+    //#bugbug
+    // We need to create a routine with colors in both points.
 
-     //#bugbug
-     // We need to create a routine with colors in both points.
+//
+// Draw 4 lines.
+//
 
-     // cima
-     //plotLine3d ( left, top,  z, right, top, z, color );
-     plotLine3d2 ( rect->p[0].x, rect->p[0].y, rect->p[0].z, rect->p[0].color,
-                   rect->p[1].x, rect->p[1].y, rect->p[1].z, rect->p[1].color, 0 );
+// cima
+    //plotLine3d2 ( left, top,  z, right, top, z, color, flag );
+    plotLine3d2 ( 
+        rect->p[0].x, rect->p[0].y, rect->p[0].z, rect->p[0].color,
+        rect->p[1].x, rect->p[1].y, rect->p[1].z, rect->p[1].color, 
+        0 );
 
-     // baixo
-     //plotLine3d ( left, bottom, z, right,bottom, z, color );
-     plotLine3d2 ( rect->p[3].x, rect->p[3].y, rect->p[3].z, rect->p[3].color,
-                   rect->p[2].x, rect->p[2].y, rect->p[2].z, rect->p[2].color, 0 );
+// baixo
+     //plotLine3d2 ( left, bottom, z, right,bottom, z, color, flag );
+     plotLine3d2 ( 
+         rect->p[3].x, rect->p[3].y, rect->p[3].z, rect->p[3].color,
+         rect->p[2].x, rect->p[2].y, rect->p[2].z, rect->p[2].color, 
+         0 );
 
-     // esquerda
-     //plotLine3d ( left, top, z, left, bottom, z, color );
-     plotLine3d2 ( rect->p[0].x, rect->p[0].y, rect->p[0].z, rect->p[0].color,
-                   rect->p[3].x, rect->p[3].y, rect->p[3].z, rect->p[3].color, 0 ); 
-     // direita
-     //plotLine3d ( right,  top, z, right, bottom, z, color );
-     plotLine3d2 ( rect->p[1].x, rect->p[1].y, rect->p[1].z, rect->p[1].color,
-                   rect->p[2].x, rect->p[2].y, rect->p[2].z, rect->p[2].color, 0 );
+// esquerda
+     //plotLine3d2 ( left, top, z, left, bottom, z, color, flag );
+     plotLine3d2 ( 
+         rect->p[0].x, rect->p[0].y, rect->p[0].z, rect->p[0].color,
+         rect->p[3].x, rect->p[3].y, rect->p[3].z, rect->p[3].color, 
+         0 ); 
+
+// direita
+     //plotLine3d2 ( right,  top, z, right, bottom, z, color, flag );
+     plotLine3d2 ( 
+         rect->p[1].x, rect->p[1].y, rect->p[1].z, rect->p[1].color,
+         rect->p[2].x, rect->p[2].y, rect->p[2].z, rect->p[2].color, 
+         0 );
 }
+
 
 int grRectangle( struct gr_rectangle_d *rect )
 {
-    rectangleZZ(rect);
+
+    if( (void*) rect == NULL )
+        return -1;
+
+// #todo
+// Use options
+// Create a flag in the fuction's parameters.
+
+// Option 1:
+// worker
+// 4 3d lines, not filled.
+    __rectangleZZ(rect);
+
+// Option 2:
+// ...
+
     return 0;
 }
 
-// Rectangle rasterization using lines.
+
+// Rectangle rasterization using 3d lines.
+// It's not the standard quad rasterization routine
+// using the viewport 2d coordenates.
+// It uses the model 3d coordenates.
 // It applies only on few cases.
 // The upper-left corner and lower-right corner.
  
 void
-ras_rectangleZ (
-    int left, int top, int z0,
+rectangle_ras3D (
+    int left,  int top,    int z0,
     int right, int bottom, int z1,
-    unsigned long color )
+    unsigned int color )
 {
+
     register int Line=0;
 
-    // #todo
-    // No caso de inclinações da linha,
-    // precisamos considerar que temos dois 'top' diferentes.
-    // precisamos receber mais paâmetros de função,
-    // ou criarmos uma outra funções que tenha tais parâmetros,
-    // ficando essa somente para retâmgulos não inclinados.
+// #todo
+// No caso de inclinações da linha,
+// precisamos considerar que temos dois 'top' diferentes.
+// precisamos receber mais paâmetros de função,
+// ou criarmos uma outra funções que tenha tais parâmetros,
+// ficando essa somente para retâmgulos não inclinados.
+
+    if (top<=bottom)
+        return;
+
+    if (left>=right)
+        return;
+
+// #todo
+// device limits.
 
     // Começa com a linha de cima.
     for ( Line=top; Line >= bottom; Line-- )
@@ -1176,8 +1150,8 @@ ras_rectangleZ (
         // IN: 
         // x0,y0,z0, x1,y1,z1, color.
         plotLine3d ( 
-            left,  Line, z0, 
-            right, Line, z1, 
+            left,  Line, z0,   // vertex 1 
+            right, Line, z1,   // vertex 2 
             color );
     };
 }
@@ -1292,7 +1266,10 @@ int xxxTriangleZ ( struct gr_triandle_d *triangle )
         return -1;
     }
 
-    // Circular, sentido horario, começando pelo ponto de cima.
+// Draw:
+// Circular, 
+// sentido horario, 
+// começando pelo ponto de cima.
 
     plotLine3d (
         triangle->p[0].x, triangle->p[0].y, triangle->p[0].z, 
@@ -1312,10 +1289,14 @@ int xxxTriangleZ ( struct gr_triandle_d *triangle )
     return 0;
 }
 
-int grTriangle( struct gr_triandle_d *triangle)
+
+int grTriangle( struct gr_triandle_d *triangle )
 {
     int Status=0;
     
+    if ( (void*) triangle == NULL )
+        return -1;
+
     // #todo
     // something
   
@@ -1500,10 +1481,12 @@ int xxxCubeZ ( struct gr_cube_d *cube )
 
     // p4 = left top 
     // p6 = right bottom
-    if (UseRasterization == TRUE){
-    ras_rectangleZ ( 
-        cube->p[4].x, cube->p[4].y, cube->p[4].z, 
-        cube->p[6].x, cube->p[6].y, cube->p[6].z, cube->p[4].color  );
+    if (UseRasterization == TRUE)
+    {
+        rectangle_ras3D ( 
+            cube->p[4].x, cube->p[4].y, cube->p[4].z, 
+            cube->p[6].x, cube->p[6].y, cube->p[6].z, 
+            (unsigned int) cube->p[4].color  );
     }
 
     //=================================================================
@@ -1532,32 +1515,36 @@ int xxxCubeZ ( struct gr_cube_d *cube )
     // Isso só funciona para retângulos não inclinados.
     // p0 = left top da frente 
     // p7 = left bottom de trás
-    if (UseRasterization == TRUE){
-    ras_rectangleZ ( 
-        cube->p[0].x, cube->p[0].y, cube->p[0].z, 
-        cube->p[7].x, cube->p[7].y, cube->p[7].z, cube->p[0].color  );
+    if (UseRasterization == TRUE)
+    {
+        rectangle_ras3D ( 
+            cube->p[0].x, cube->p[0].y, cube->p[0].z, 
+            cube->p[7].x, cube->p[7].y, cube->p[7].z, 
+            cube->p[0].color  );
     }
 
     // right ok
     // Isso só funciona para retângulos não inclinados.
     // p1 = right top da frente 
     // p7 = right bottom de trás
-    if (UseRasterization == TRUE){
-    ras_rectangleZ ( 
-        cube->p[1].x, cube->p[1].y, cube->p[1].z, 
-        cube->p[6].x, cube->p[6].y, cube->p[6].z, cube->p[1].color  );
+    if (UseRasterization == TRUE)
+    {
+        rectangle_ras3D( 
+            cube->p[1].x, cube->p[1].y, cube->p[1].z, 
+            cube->p[6].x, cube->p[6].y, cube->p[6].z, 
+            cube->p[1].color  );
     }
 
     // tampa de baixo
     //bottom fail
-    //ras_rectangleZ ( 
+    //rectangle_ras3D ( 
     //    cube->p[3].x, cube->p[3].y, cube->p[3].z, 
     //    cube->p[6].x, cube->p[6].y, cube->p[6].z,
     //    cube->p[2].color  );
 
     // tampa de cima.
     // top fail
-    //ras_rectangleZ ( 
+    //rectangle_ras3D ( 
     //    cube->p[4].x, cube->p[4].y, cube->p[4].z, 
     //    cube->p[0].x, cube->p[0].y, cube->p[0].z,
     //    cube->p[3].color  );
@@ -1588,9 +1575,10 @@ int xxxCubeZ ( struct gr_cube_d *cube )
     // p0 = left top 
     // p2 = right bottom
     if (UseRasterization == TRUE){
-        ras_rectangleZ (  
+        rectangle_ras3D (  
             cube->p[0].x, cube->p[0].y, cube->p[0].z, 
-            cube->p[2].x, cube->p[2].y, cube->p[2].z, cube->p[0].color );
+            cube->p[2].x, cube->p[2].y, cube->p[2].z, 
+            cube->p[0].color );
     }
     
     // ok
@@ -1707,7 +1695,9 @@ int serviceGrRectangle(void)
 
 // #test
 // Temos que passar corretamente o endereço da estrutura.
-    rectangleZZ ( (struct gr_rectangle_d *) &rect );
+// pois essa eh uma estrutura local, que nao foi alocada.
+
+    __rectangleZZ ( (struct gr_rectangle_d *) &rect );
    
     gwssrv_debug_print("serviceGrRectangle: [2042] DONE << \n");
     

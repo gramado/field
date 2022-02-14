@@ -203,9 +203,9 @@ void compareStrings(int fd)
 
         //demos: IN: fd,service,demo_index,0.
         //gws_async_command(fd,4,1,0); //?
-        //gws_async_command(fd,4,5,0); //cube1
-        //gws_async_command(fd,4,6,0); //cube2
-        //gws_async_command(fd,4,7,0); //curve
+        gws_async_command(fd,4,5,0); //cube1
+        gws_async_command(fd,4,6,0); //cube2
+        gws_async_command(fd,4,7,0); //curve
         gws_async_command(fd,4,9,0); //cat
         
         // #bugbug

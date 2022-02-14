@@ -2172,10 +2172,7 @@ int serviceAsyncCommand (void)
     unsigned long subrequest_id = 0;
     unsigned long Data = 0;
 
-//
 // Parameters
-//
-
     // window_id  = message_address[0];
     message_id    = message_address[1];   // message code.
     request_id    = message_address[2]; 
@@ -2184,9 +2181,7 @@ int serviceAsyncCommand (void)
 
     // ...
 
-
     gwssrv_debug_print ("serviceAsyncCommand: #bugbug\n");
-
 
 // Validate our message number.
 
@@ -2200,7 +2195,6 @@ int serviceAsyncCommand (void)
 //
 // id
 //
-
     // #debug
     // printf ("serviceAsyncCommand: [request %d] \n", request_id);
  

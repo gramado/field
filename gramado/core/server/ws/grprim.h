@@ -386,9 +386,9 @@ gwsViewport(
 
 void 
 __transform_from_modelspace_to_screespace(
-    int *buffer_x,
-    int *buffer_y,
-    int *buffer_z);
+    int *res_x,
+    int *res_y,
+    int _x, int _y, int _z);
 
 // Point. 
 int 
@@ -442,26 +442,20 @@ plotQuadBezierSeg (
 
 
 void
-rectangle (
+rectangle_from_two_points (
     int left, int top, 
     int right, int bottom,
-    unsigned long color );
+    unsigned int color );
 
-void
-rectangleZ (
-    int left, int top, 
-    int right, int bottom,
-    unsigned long color,
-    int z );
 
-void rectangleZZ( struct gr_rectangle_d *rect );
+void __rectangleZZ( struct gr_rectangle_d *rect );
 int grRectangle( struct gr_rectangle_d *rect );
 
 void
-ras_rectangleZ (
+rectangle_ras3D (
     int left, int top, int z0,
     int right, int bottom, int z1,
-    unsigned long color );
+    unsigned int color );
 
 
 //sevice 2042
