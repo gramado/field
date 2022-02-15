@@ -49,21 +49,24 @@ struct gr_mesh_line_d
     int n[2];
 };
 
+
 struct gr_triandle_d
 {
     struct gr_vec3D_d p[3];
+
+// mesh support.
+    struct gr_triandle_d *last;
+    struct gr_triandle_d *next;
 };
 
 
+// tri mesh
 struct gr_mesh_triangle_d
 {
-// raw color
-    unsigned int color;
-// cada número representa um 
-// índice num vetor de indices.
-    int n[3];
+    int n;
+    struct gr_triandle_d *first_triangle;
+    struct gr_triandle_d *last_triangle;
 };
-
 
 
 struct gr_rectangle_d
@@ -74,11 +77,9 @@ struct gr_rectangle_d
 // quad mesh
 struct gr_mesh_rectangle_d
 {
-// raw color
-    unsigned int color;
-// cada número representa um 
-// índice num vetor de indices.
-    int n[4];
+    int n;
+    struct gr_rectangle_d *first_rectangle;
+    struct gr_rectangle_d *last_rectangle;   
 };
 
 

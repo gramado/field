@@ -239,7 +239,7 @@ VK_F24,	 //135
 
 // CAPS LOCK LIGADO
 
-// mai'usculas
+// maiúsculas
 
 static unsigned char shift_abnt2[ABNT2_CHARMAP_SIZE] = {
 0, 

@@ -395,7 +395,6 @@ void demoSA1(void)
 }
 
 
-
 void demoTriangle(void)
 {
     struct gr_triandle_d *triangle;
@@ -446,6 +445,120 @@ void demoTriangle(void)
 
     //printf("demoTriangle: done\n");
 }
+
+
+void demoMesh1(void)
+{
+
+// #bugbug
+// We do not free the memory
+
+    struct gr_mesh_triangle_d *m;
+
+    static int N=80;
+
+    struct gr_triandle_d *last_tri;
+    struct gr_triandle_d *tmp_tri;
+    
+    m = (void *) malloc( sizeof( struct gr_mesh_triangle_d ) );
+    if( (void*) m == NULL )
+        return;
+
+    last_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
+    if( (void*) last_tri == NULL )
+        return;
+
+    m->n = N;
+    m->first_triangle = (struct gr_triandle_d *) last_tri;
+    m->last_triangle = (struct gr_triandle_d *) last_tri;
+
+    int i=0;
+    int value=0;
+
+    // clear
+    demoClearSurface();
+
+// loop: compose
+
+    for(i=0; i<N; i++){
+
+    tmp_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
+    if( (void*) tmp_tri == NULL )
+        return;
+
+    if ( (void*) tmp_tri != NULL )
+    {
+        // clear
+        //demoClearSurface();
+
+        // down
+        tmp_tri->p[0].x = (0 -value);
+        tmp_tri->p[0].y = (0 +value);
+        tmp_tri->p[0].z = 0;
+        tmp_tri->p[0].color = COLOR_RED;
+
+        // left
+        tmp_tri->p[2].x = (-80 -value);
+        tmp_tri->p[2].y = ( 80 +value);
+        tmp_tri->p[2].z =   0;
+        tmp_tri->p[2].color = COLOR_BLUE;
+
+
+        // right
+        tmp_tri->p[1].x =(80 -value);
+        tmp_tri->p[1].y =(80 -value);
+        tmp_tri->p[1].z =  0;
+        tmp_tri->p[1].color = COLOR_GREEN;
+
+        // Draw
+        //xxxTriangleZ(tmp_tri);
+
+        // flush surface
+        //demoFlushSurface();  
+        
+        value++;
+        
+        // Passa a ser o próximo do criado anteriormente.
+        last_tri->next = (struct gr_triandle_d *) tmp_tri;
+        // Passa a ser o anterior.
+        last_tri = (struct gr_triandle_d *) tmp_tri;
+        m->last_triangle = (struct gr_triandle_d *) last_tri;
+    }
+    };
+
+// finaliza
+    last_tri->next = NULL;
+
+// loop: draw
+
+    tmp_tri = (struct gr_triandle_d *) m->first_triangle;
+
+    for(i=0; i<N; i++)
+    {
+        //#debug
+        //demoClearSurface();
+        
+        if( (void*) tmp_tri == NULL )
+            break;
+        
+        if( (void*) tmp_tri != NULL )
+            xxxTriangleZ(tmp_tri);
+        
+        tmp_tri = (struct gr_triandle_d *) tmp_tri->next;
+    
+        //#debug
+        //demoFlushSurface();
+    };
+
+    // flush surface
+    demoFlushSurface();  
+
+    //Debug
+    //exit(0);
+
+    //printf("demoTriangle: done\n");
+}
+
 
 
 // demo: polygon type polyline
@@ -1143,38 +1256,23 @@ void demoMatrix1(void)
 void demos_startup_animation(int i)
 {
     switch (i){
-    
     case 1: demoSA1();  break;
-    
     case 2: demoFred0();  break;
     case 3: demoFred1();  break;
     case 4: demoFred2();  break;
-    
     case 5: demoCube1();  break;
     case 6: demoCube2();  break;
-    
     case 7: demoCurve();  break;
-    
     case 8: demoMatrix1();  break;
-    
     case 9: demoCat();  break;
-    
-    case 10: demoTriangle(); break;
-
-    case 11: 
-        break;
-    
-    case 12: demoLine1(); break;
-    
-    case 13: demoTerry(); break;  //See: window.c
-
+    case 10: demoTriangle();  break;
+    case 11: demoMesh1();  break;
+    case 12: demoLine1();  break;
+    case 13: demoTerry();  break;  //See: window.c
     case 14: demoPolygon();  break; 
-    case 15: demoPolygon2(); break;
-        
-    default: break;
+    case 15: demoPolygon2();  break;
+    default:  break;
     };
 }
-
-
 
 

@@ -18,51 +18,30 @@ struct cat_model_d CatModel;
 
 
 //
-// prototypes ===============
+// == Prototypes ===============
 //
-
-void demoLines(void);
 
 void demoClearSurface(void);
 void demoFlushSurface(void);
+void demos_startup_animation(int i);
 
-
-
-// cat model
-void setupCatModel(int eyes, int whiskers, int mouth );
-
-
+void demoLines(void);
 void demoLine1(void);
-
-//
-// == fred demo  ===========================================
-//
 void demoFred0(void);
 void demoFred1(void);
 void demoFred2(void);
-// ...
-
-//start up animation
 void demoSA1(void);
-// ...
-
-
 void demoTriangle(void);
-
+void demoMesh1(void);
 void demoPolygon(void);
 void demoPolygon2(void);
-
-
 void demoCube1(void);
 void demoCube2(void);
-
 void demoCurve(void);
-
 void demoMatrix1(void);
-
+void setupCatModel(int eyes, int whiskers, int mouth );
 void demoCat(void);
 
-void demos_startup_animation(int i);
 
 
 #endif    
