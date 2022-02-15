@@ -96,31 +96,31 @@ void doPrompt(int fd);
 //====================================================
 
 
+// Clear
+// Redraw the client window.
+// Setup the cursor position.
 void clear_terminal_client_window(int fd)
 {
+    if (fd<0){return;}
 
-    if( fd<0)
-        return;
-
-// Redraw the client window.
      gws_redraw_window(
          fd,
          Terminal.client_window_id,
          TRUE );
 
-// Cursor do terminal.
     cursor_x = Terminal.left;
     cursor_y = Terminal.top;
 }
+
 
 
 // Compare the string typed into the terminal.
 // Remember, we have an embedded command interpreter.
 void compareStrings(int fd)
 {
-
-    if(fd<0)
+    if(fd<0){
         return;
+    }
 
     //printf("\n");
 
@@ -251,14 +251,14 @@ void doPrompt(int fd)
 {
     int i=0;
 
-
-    if(fd<0)
+    if(fd<0){
         return;
+    }
 
-    // Clean prompt buffer.
-    
+// Clean prompt buffer and setup it again.
+
     for ( i=0; i<PROMPT_MAX_DEFAULT; i++ ){ prompt[i] = (char) '\0'; };
-    
+
     prompt[0] = (char) '\0';
     prompt_pos    = 0;
     prompt_status = 0;
@@ -289,12 +289,12 @@ void doPrompt(int fd)
 
 // Refresh client window.
 
-    if(Terminal.client_window_id < 0)
+    int wid=Terminal.client_window_id;
+    if(wid < 0){
         return;
-
-    gws_refresh_window(fd,Terminal.client_window_id);
+    }
+    gws_refresh_window(fd,wid);
 }
-
 
 
 // interna
@@ -407,12 +407,10 @@ void __send_to_child (void)
 // Write something in the standard stream and call shell.bin.
 void test_standard_stream(int fd)
 {
-    char buffer[4096];
+    char buffer[4096];  //#bugbug: 4KB
     int nread = 0;
-    
 
     gws_debug_print("test_standard_stream:\n");  
-
 
     //FILE *f;
     //f = fopen("syscalls.txt", "r+"); 
@@ -420,11 +418,9 @@ void test_standard_stream(int fd)
     //f = fopen("kstderr.txt", "r+");
     //f = fopen("g.txt", "r+");
 
-
     // Testar   
     //gramado_system_call ( 900, 
         //(unsigned long) "tprintf.bin", 0, 0 );
-
 
    //gramado_system_call ( 900, 
      //  (unsigned long) "tprintf.bin", 0, 0 );
@@ -437,11 +433,9 @@ void test_standard_stream(int fd)
     //fseek(f, 0, SEEK_SET);   // seek back to beginning of file
     //printf (">>>> size %d \n",size);  
 
-
     fseek(stdin, 0, SEEK_SET); 
     fseek(stdout, 0, SEEK_SET); 
     fseek(stderr, 0, SEEK_SET); 
-
 
     input('\n');
     input('\0');
@@ -457,7 +451,6 @@ void test_standard_stream(int fd)
     //fseek(stdin, 0, SEEK_SET); 
     //fseek(stdout, 0, SEEK_SET); 
     //fseek(stderr, 0, SEEK_SET); 
-
 
     int ii=0;
     prompt_pos = 0;
@@ -530,20 +523,13 @@ terminal_write_char (
     unsigned long x = (cursor_x*8);
     unsigned long y = (cursor_y*8);
 
-
-    if (fd<0)
-        return;
-
-    if (window<0)
-        return;
-
-    if (c<0)
-        return;
+    if (fd<0)    {return;}
+    if (window<0){return;}
+    if (c<0)     {return;}
 
 // #todo
 // Ver no kernel esse tipo de rotina
 // tab;
-    
 
     if ( c == '\r' )
     {
@@ -600,16 +586,14 @@ terminal_write_char (
  * pudesse usar, ou o servidor de recursos gráficos pudesse usar.
  */
 
-	//#importante:
-	//o refresh é chamado no default do procedimento de janela
+//#importante:
+//o refresh é chamado no default do procedimento de janela
 
 void terminalInsertNextChar (char c)
 {
-
 	// #todo
 	// para alguns caracteres temos que efetuar o flush.
 	// \n \r ... ??
-			
 	// Coloca no buffer.
 
     LINES[cursor_y].CHARS[cursor_x] = (char) c;
@@ -684,6 +668,9 @@ void ri (void)
 // # terminal stuff
 void del (void)
 {
+    //if(cursor_x<0){cursor_x=0;}
+    //if(cursor_y<0){cursor_y=0;}
+    
     LINES[cursor_y].CHARS[cursor_x] = (char) '\0';
     LINES[cursor_y].ATTRIBUTES[cursor_x] = 7;
 }
@@ -717,17 +704,16 @@ tputc (
     int c, 
     int len )
 {
-
     unsigned char ascii = (unsigned char) c;
     //unsigned char ascii = *c;
 
+// ?? #bugbug
+// Control codes
+// #todo: Use 'if'.
 
-    // ?? #bugbug
-    // Control codes
     int control = (ascii < '\x20' || ascii == 0177);
     //bool control = ascii < '\x20' || ascii == 0177;
 
- 
     /*
     if(fd<0){
         printf("tputc: fd\n"); //debug
@@ -772,9 +758,8 @@ tputc (
          };
     }
 
-
-    // Control codes. 
-    // (dentro de um range)
+// Control codes. 
+// (dentro de um range)
 
     if (control){
  
@@ -1057,7 +1042,7 @@ terminalInsertCharXY (
         return;
     }
 
-    LINES[y].CHARS[x] = (char) c;
+    LINES[y].CHARS[x]      = (char) c;
     LINES[y].ATTRIBUTES[x] = 7;
 }
 
@@ -1078,29 +1063,24 @@ static void restore_cur (void)
 }
 
 
-/*
- ****************************************
- * shellClearBuffer:
- *     Limpa o buffer da tela.
- *     Inicializamos com espaços.
- */
 
-void terminalClearBuffer (void){
+// terminalClearBuffer:
+// Limpa o buffer da tela.
+// Inicializamos com espaços.
 
-    int i=0;
+void terminalClearBuffer (void)
+{
+    register int i=0;
     int j=0;
-
     for ( i=0; i<32; i++ )
     {
-        for ( j=0; j<80; j++ )
-        {
-		    LINES[i].CHARS[j] = (char) ' ';
-		    LINES[i].ATTRIBUTES[j] = (char) 7;
+        for ( j=0; j<80; j++ ){
+            LINES[i].CHARS[j]      = (char) ' ';
+            LINES[i].ATTRIBUTES[j] = (char) 7;
         };
-		
-		LINES[i].left = 0;
-		LINES[i].right = 0;
-		LINES[i].pos = 0;
+        LINES[i].left = 0;
+        LINES[i].right = 0;
+        LINES[i].pos = 0;
     };
 }
 
@@ -1165,13 +1145,11 @@ int textGetCurrentCol (void)
 
 void move_to ( unsigned long x, unsigned long y )
 {
-
     if ( x > __wlMaxColumns || y > __wlMaxRows )
         return;
 
 	//screen_buffer_x = x;
 	//screen_buffer_y = y;
-	
     cursor_x = x;
     cursor_y = y;
 
@@ -1179,25 +1157,26 @@ void move_to ( unsigned long x, unsigned long y )
 }
 
 
-/* credits: bsd*/
+/* credits: bsd */
 /* Pad STRING to COUNT characters by inserting blanks. */
 
-int pad_to (int count, char *string){
-
+int pad_to (int count, char *string)
+{
     register int i=0;
 
-    i = strlen(string);
+//#todo
+//Check string validation?
 
+    i = strlen(string);
     if (i >= count){
         string[i++] = ' ';
     }else{
-
         while (i < count)
             string[i++] = ' ';
     };
     string[i] = '\0';
 
-    return (i);
+    return (int) (i);
 }
 
 
@@ -1217,10 +1196,12 @@ struct sockaddr_in addr = {
 //interna
 int __terminal_clone_and_execute ( char *name )
 {
+    //if( (void*) name == NULL )
+    //    return -1;
+    //if(*name == 0)
+    //    return -1;
     return (int) gramado_system_call ( 900, (unsigned long) name, 0, 0 );
 }
-
-
 
 void _draw(int fd, int c)
 {
@@ -1276,15 +1257,13 @@ terminalProcedure (
     unsigned long long2 )
 
 {
+    if (fd<0)    {return -1;}
+    if (window<0){return -1;}
+    if (msg<0)   {return -1;}
 
-    if (fd<0)
-        return -1;
-
-    if (window<0)
-        return -1;
-
-    if (msg<0)
-        return -1;
+    unsigned long jiffie_start=0;
+    unsigned long jiffie_end=0;
+    unsigned long jiffie_delta=0;
 
 // ==================
 
@@ -1297,7 +1276,13 @@ terminalProcedure (
                     //printf("RETURN \n");
                     //doPrompt(fd);
                     input('\0');
+                    //jiffie_start = (unsigned long) rtl_get_system_metrics(118);
                     compareStrings(fd);
+                    //jiffie_end = (unsigned long) rtl_get_system_metrics(118);
+                    //jiffie_delta = (jiffie_end-jiffie_start);
+                    //#bugbug: We do not have a function to print strings
+                    // into the terminal's client window.
+                    //printf("speed: %d ms\n",jiffie_delta);
                     return 0;
                     break;
 
@@ -1662,11 +1647,8 @@ void terminalTerminal (void)
     int j=0;
 
 // Internas.
-
     //shellStatus = 0;
     //shellError = 0;
-
-
     cursor_x=0;
     cursor_y=0;
     bg_color=COLOR_BLACK;
@@ -1728,7 +1710,6 @@ void terminalTerminal (void)
 
 	//terminalClearBuffer ();
 
-	
 	//shellBufferMaxColumns = DEFAULT_BUFFER_MAX_COLUMNS;
 	//shellBufferMaxRows    = DEFAULT_BUFFER_MAX_ROWS;
 	
@@ -1804,8 +1785,8 @@ void terminalInitSystemMetrics(void)
 } 
 
 
-void terminalInitWindowLimits (void){
-	
+void terminalInitWindowLimits (void)
+{
 	// #todo
 	// Tem variáveis aqui que não podem ser '0'.
 	
@@ -1887,18 +1868,17 @@ void terminalInitWindowSizes(void)
 
 void terminalInitWindowPosition(void)
 {
-
-    if (Terminal.initialized != TRUE ){
+    if (Terminal.initialized != TRUE )
+    {
         printf("terminalInitWindowPosition: Terminal.initialized\n");
         exit(1);
     }
 
-	//window position
-	wpWindowLeft = Terminal.left;
-	wpWindowTop  = Terminal.top;
-
-	//wpWindowLeft = (unsigned long) ( (smScreenWidth - wsWindowWidth)/2 );
-	//wpWindowTop = (unsigned long) ( (smScreenHeight - wsWindowHeight)/2 );  	
+//window position
+    wpWindowLeft = Terminal.left;
+    wpWindowTop  = Terminal.top;
+    //wpWindowLeft = (unsigned long) ( (smScreenWidth - wsWindowWidth)/2 );
+    //wpWindowTop = (unsigned long) ( (smScreenHeight - wsWindowHeight)/2 );  	
 }
 
 
