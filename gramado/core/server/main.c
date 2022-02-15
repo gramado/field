@@ -1496,7 +1496,6 @@ int initGraphics (void)
 {
     int __init_status = -1;
 
-
     debug_print("initGraphics\n");
     //printf("initGraphics: \n");
 

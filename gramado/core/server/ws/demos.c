@@ -447,7 +447,10 @@ void demoTriangle(void)
 }
 
 
-void demoMesh1(void)
+
+
+
+struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
 {
 
 // #bugbug
@@ -455,18 +458,20 @@ void demoMesh1(void)
 
     struct gr_mesh_triangle_d *m;
 
-    static int N=80;
+    int N=number_of_elements;
 
     struct gr_triandle_d *last_tri;
     struct gr_triandle_d *tmp_tri;
+ 
+    debug_print("__demoMesh1_worker:\n");
     
     m = (void *) malloc( sizeof( struct gr_mesh_triangle_d ) );
     if( (void*) m == NULL )
-        return;
+        return NULL;
 
     last_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
     if( (void*) last_tri == NULL )
-        return;
+        return NULL;
 
     m->n = N;
     m->first_triangle = (struct gr_triandle_d *) last_tri;
@@ -476,7 +481,7 @@ void demoMesh1(void)
     int value=0;
 
     // clear
-    demoClearSurface();
+    //demoClearSurface();
 
 // loop: compose
 
@@ -484,37 +489,27 @@ void demoMesh1(void)
 
     tmp_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
     if( (void*) tmp_tri == NULL )
-        return;
+        return NULL;
 
     if ( (void*) tmp_tri != NULL )
     {
-        // clear
-        //demoClearSurface();
-
         // down
         tmp_tri->p[0].x = (0 -value);
-        tmp_tri->p[0].y = (0 +value);
+        tmp_tri->p[0].y = 0;  //(0 +value);
         tmp_tri->p[0].z = 0;
         tmp_tri->p[0].color = COLOR_RED;
 
         // left
         tmp_tri->p[2].x = (-80 -value);
-        tmp_tri->p[2].y = ( 80 +value);
+        tmp_tri->p[2].y = 80;  //( 80 +value);
         tmp_tri->p[2].z =   0;
         tmp_tri->p[2].color = COLOR_BLUE;
 
-
         // right
-        tmp_tri->p[1].x =(80 -value);
-        tmp_tri->p[1].y =(80 -value);
+        tmp_tri->p[1].x = (80 -value);
+        tmp_tri->p[1].y = 80;  //(80 -value);
         tmp_tri->p[1].z =  0;
         tmp_tri->p[1].color = COLOR_GREEN;
-
-        // Draw
-        //xxxTriangleZ(tmp_tri);
-
-        // flush surface
-        //demoFlushSurface();  
         
         value++;
         
@@ -526,37 +521,110 @@ void demoMesh1(void)
     }
     };
 
-// finaliza
+// finaliza a lista
     last_tri->next = NULL;
 
-// loop: draw
+    debug_print("__demoMesh1_worker: done\n");
+    
+    return (struct gr_mesh_triangle_d *) m;
+}
 
-    tmp_tri = (struct gr_triandle_d *) m->first_triangle;
 
-    for(i=0; i<N; i++)
-    {
-        //#debug
-        //demoClearSurface();
+void __demoMesh1_transformation(struct gr_mesh_triangle_d *mesh)
+{
+    int i=0;
+    int n=0;
+
+    debug_print("__demoMesh1_transformation:\n");
+    
+    if ( (void *) mesh == NULL )
+        return;
+    
+    n = mesh->n;
+
+    struct gr_triandle_d *tmp_tri;
+    
+    tmp_tri = (struct gr_triandle_d *) mesh->first_triangle;
         
-        if( (void*) tmp_tri == NULL )
+    for( i=0; i<n; i++)
+    {
+        if((void*) tmp_tri == NULL)
             break;
         
-        if( (void*) tmp_tri != NULL )
-            xxxTriangleZ(tmp_tri);
-        
+        // transformation
+
+        // down 
+        tmp_tri->p[0].x = tmp_tri->p[0].x + 1;
+        tmp_tri->p[0].y = tmp_tri->p[0].y + 1;
+
+        // left
+        tmp_tri->p[2].x = tmp_tri->p[2].x + 1;
+        tmp_tri->p[2].y = tmp_tri->p[2].y - 1;
+
+        // right
+        tmp_tri->p[1].x = tmp_tri->p[1].x - 1;
+        tmp_tri->p[1].y = tmp_tri->p[1].y + 1;
+
+
+        // próximo
         tmp_tri = (struct gr_triandle_d *) tmp_tri->next;
-    
-        //#debug
-        //demoFlushSurface();
     };
 
-    // flush surface
-    demoFlushSurface();  
+    debug_print("__demoMesh1_transformation: done\n");
+}
 
-    //Debug
-    //exit(0);
 
-    //printf("demoTriangle: done\n");
+void demoMesh1(void)
+{
+    struct gr_mesh_triangle_d *m;
+
+    int i=0;
+    int j=0;
+    static int N = 80;
+
+    debug_print("demoMesh1:\n");
+
+    m = (struct gr_mesh_triangle_d *) __demoMesh1_worker(N);
+
+    if( (void*) m == NULL )
+        return;
+
+    if (m->n != 80)
+        return;
+
+    struct gr_triandle_d *tmp_tri;
+
+
+//
+// loop: draw
+//
+
+
+    for(j=0; j<80; j++)
+    {
+        demoClearSurface();
+
+        tmp_tri = (struct gr_triandle_d *) m->first_triangle;
+            
+        for(i=0; i<N; i++)
+        {
+            if( (void*) tmp_tri == NULL )
+                break;
+        
+            if( (void*) tmp_tri != NULL )
+            {
+                xxxTriangleZ(tmp_tri);
+                tmp_tri = (struct gr_triandle_d *) tmp_tri->next;
+            }
+        };
+        
+        demoFlushSurface();  
+
+        // transforma o mesh
+        __demoMesh1_transformation(m);
+    };
+
+    debug_print("demoMesh1: done\n");
 }
 
 
