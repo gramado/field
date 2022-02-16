@@ -6,10 +6,7 @@
 #include <kernel.h>
 
 
-
-
 /*
- *********************************************************
  * __scheduler_rr:
  *    Troca a thread atual, escolhe uma nova thread atual 
  * para rodar no momento.

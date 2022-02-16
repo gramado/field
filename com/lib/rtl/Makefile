@@ -101,12 +101,11 @@ link install clean
 
 libc-header:
 
-	# unit 3: First release.
+# unit 3: First release.
 	gcc  -c  entrance/student/unit3/crt0.c  $(CFLAGS) -I. -I include/ -o crt0.o
 
-	# visitor
+# visitor
 	gcc -c entrance/visitor/rtl.c  $(CFLAGS) -I. -I include/ -o rtl.o
-
 
 libc-content:
 

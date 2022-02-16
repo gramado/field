@@ -1,9 +1,10 @@
 
+// dispatch.c
+
 
 #include <kernel.h>  
 
 /*
- ************************************************
  * IncrementDispatcherCount:
  *     Mensura os critérios de escolha.
  *     Contagem por critério de seleção.
@@ -13,9 +14,9 @@
  * tempo. Vamos preserva-lo. 
  */
 
-	// #todo
-	// Create error messages.
-	// Isse é chamado várias vezes, é melhor não ter mensagem de debug.
+// #todo
+// Create error messages.
+// Isse é chamado várias vezes, é melhor não ter mensagem de debug.
 
 void IncrementDispatcherCount ( int type )
 {
@@ -25,15 +26,14 @@ void IncrementDispatcherCount ( int type )
         return;
     }
 
-
-    // See:
-    // landos/kernel/include/land/ps/dispatch.h
+// See:
+// dispatch.h
 
     if ( (void *) DispatchCountBlock == NULL ){
         panic ("IncrementDispatcherCount:\n");
     }
 
-	// Activating the selected type.
+// Activating the selected type.
 
     switch (type){
         case SELECT_IDLE_COUNT:
@@ -64,7 +64,7 @@ void IncrementDispatcherCount ( int type )
             DispatchCountBlock->SelectDispatcherQueueCount++;
             break;
 
-		//...
+       //...
 
        // Nothing.
        // Aqui poderia ter um contador de indefinições.
@@ -76,8 +76,8 @@ void IncrementDispatcherCount ( int type )
     // ??
 }
 
+
 /*
- *********************************************************
  * dispatcher:
  *     Despacha a thread atual que foi escolhida pelo scheduler. 
  *     Despacha, colocando ela no estado RUNNING e restaurando os valores 
@@ -101,7 +101,6 @@ void dispatcher ( int type )
 
     //debug_print (" DISPATCHER: ");
 
-
 //
 // type
 //
@@ -117,7 +116,6 @@ void dispatcher ( int type )
     if ( type != DISPATCHER_CURRENT ){
         type = DISPATCHER_CURRENT;
     }
-
 
 dispatch_current:
 
@@ -140,7 +138,6 @@ dispatch_current:
         panic ("dispatcher: state\n");
     }
 
-
 // #importante
 // >> MOVEMENT 4 (Ready --> Running).
 // A thread passa para o estado RUNNING.
@@ -150,11 +147,9 @@ dispatch_current:
     if ( TargetThread->state == READY )
     {
         TargetThread->state = RUNNING;
-
         TargetThread->runningCount = 0;
         TargetThread->runningCount_ms = 0;
     }
-
 
 //
 // ## RESTORE CONTEXT ##
@@ -163,48 +158,16 @@ dispatch_current:
 // Flag sinalizando que o contexto não está mais salvo.
 // Esse flag é acionada quando o contexto é salvo no início 
 // da task switch.
-
-    TargetThread->saved = FALSE;
-
 // Chama a rotina que colocará as informações da estrutura de thread 
 // nas variáveis usadas pelo assembly para configurar 
 // os registradores antes do iretd.
-
-    restore_current_context();
-
 // #todo
 // Change the return type and return with error
 // if something goes wrong. So this way we can try another thing.
 
+    TargetThread->saved = FALSE;
+    restore_current_context();
     return;
     //return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

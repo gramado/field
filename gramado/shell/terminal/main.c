@@ -237,6 +237,7 @@ void compareStrings(int fd)
 // We are using the whole 'command line' as an argument.
 // We need to work on that routine of passing
 // the arguments to the child process.
+// See: rtl.c
 
     rtl_clone_and_execute(prompt);
 
@@ -1497,7 +1498,6 @@ int main ( int argc, char *argv[] )
 // Set window with focus
     //gws_async_command(client_fd,9,0,terminal_window);
 
-
 // Invalidate surface.
     invalidate_surface_retangle();
 
@@ -1541,7 +1541,6 @@ int main ( int argc, char *argv[] )
 // only after having the Terminal structure initialized.
 
     terminalTerminal();
-
 
 // Inicializando prompt[].
     input('\n');
@@ -1590,8 +1589,11 @@ int main ( int argc, char *argv[] )
     doPrompt(client_fd);
 
 //
-// Loop!
+// Input loop!
 //
+
+// #importante:
+// Esse event loop pega dados de um arquivo.
 
     int C=0;
     FILE *new_stdin;

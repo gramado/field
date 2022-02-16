@@ -1,6 +1,5 @@
 /*
  * File: fcntl.c
- * 
  * 2020 - Created by Fred Nora.
  */
 
@@ -97,13 +96,11 @@ int openat (int dirfd, const char *pathname, int flags)
 
 
 /*
- **********************
  * open:
  *
  */
 
 // Called by fopen().
-
 // #obs
 // Isso precisa abrir um arquivo, colocar o ponteiro na 
 // lista de arquivos abertos e retornar o índice. 
@@ -118,12 +115,11 @@ int open (const char *pathname, int flags, mode_t mode)
 // #todo: devemos fazer isso em ring0, não aqui.
 // isso funcionou.
 
-    // #todo: nao fazer isso em ring3.
-    // pois ja estamos fazendo em ring0.
+// #todo: nao fazer isso em ring3.
+// pois ja estamos fazendo em ring0.
     //stdio_fntos( (char *) pathname );
     
     sprintf(tmp_path,pathname);
-
 
      //printf ("DEBUG-FOPEN: %s\n",tmp_path);
 
@@ -131,8 +127,8 @@ int open (const char *pathname, int flags, mode_t mode)
 // Size
 //
 
-    // Get file size.
-    // Limits: 1MB.
+// Get file size.
+// Limits: 1MB.
     
     /*
     FileSize = (size_t) gramado_system_call ( 178, 
@@ -145,15 +141,12 @@ int open (const char *pathname, int flags, mode_t mode)
     }
     */
 
-
-    // Load the file into the address.
-    // O arquivo será carregado no buffer em ring0,
-    // A chamada não oferecerá um endereço em ring3,
-    // pois não dá pra confiar na biblioteca,
-    // o kernel não pode confiar na qualidade da libc.
-
-    // IN: 
-    // service, pathname, flags, mode 
+// Load the file into the address.
+// O arquivo será carregado no buffer em ring0,
+// A chamada não oferecerá um endereço em ring3,
+// pois não dá pra confiar na biblioteca,
+// o kernel não pode confiar na qualidade da libc.
+// IN: service, pathname, flags, mode 
 
     fd = (int) gramado_system_call ( 
                    16,  
@@ -166,7 +159,7 @@ int open (const char *pathname, int flags, mode_t mode)
         return (int) (-1);
     }
 
-    // fopen() needs this. 
+// fopen() needs this. 
     return (int) fd;
 }
 

@@ -1,6 +1,21 @@
 
 // ps2mouse.c
 
+
+/*
+ #todo
+ enable mouse?
+ See: temple os
+
+    if (*0x40E(U16 *) == 0x9FC0)
+    {
+        _b = 0x9FC00 + 0x30;
+        *_b = 1;    
+    }
+
+*/
+
+
 #include <kernel.h>  
 
 

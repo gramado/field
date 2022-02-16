@@ -2096,16 +2096,14 @@ int sys_ioctl ( int fd, unsigned long request, unsigned long arg )
 //#??? isso não pertence à fcntl.c ?
 //SVr4,  4.3BSD,  POSIX.1-2001. 
 
+// Syscall 16.
 // #bugbug
 // Precisamos de um endereço em ring 3
 // para que a libc possa manipular o buffer ?
-
 // ou open deve ser usado somente com dispositivos ??
 // #obs:
 // vamos retornar o indice da tabela de arquivos abertos 
 // do processo atual.
-
-// Syscall 16.
 
 int 
 sys_open (
@@ -2114,15 +2112,15 @@ sys_open (
     mode_t mode )
 {
     int _ret=-1;
- 
-    // ??
-    // creat chama open.
-    // open tenta ler num arquivo que nao existe?
+
+// ??
+// creat chama open.
+// open tenta ler num arquivo que nao existe?
 
     debug_print ("sys_open: $ \n");
 
-    // See: sci/fs/fs.c
-    // OUT: fd
+// See: fs.c
+// OUT: fd
 
     _ret = (int) sys_read_file_from_disk ( 
                      (char *) pathname, 

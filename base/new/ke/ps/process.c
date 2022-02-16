@@ -1514,38 +1514,39 @@ unsigned long GetProcessHeapStart ( pid_t pid )
 {
     struct process_d  *process;
 
-
+// #debug
     debug_print ("GetProcessHeapStart:\n");
+    //printf ("GetProcessHeapStart: [DEBUG] pid %d\n", pid);
+    //refresh_screen();
 
-    // #debug
-    printf ("GetProcessHeapStart: [DEBUG] pid %d\n", pid);
-    refresh_screen();
+// pid.
 
-    // Limits
-
-    if ( pid < GRAMADO_PID_BASE || pid >= PROCESS_COUNT_MAX )
+    if ( pid < GRAMADO_PID_BASE || 
+         pid >= PROCESS_COUNT_MAX )
     {
         debug_print ("pid\n");
         goto fail; 
     }
 
+// process structure.
+
     process = (struct process_d *) processList[pid];
-    
-    if ( (void *) process == NULL )
-    {
+
+    if ( (void *) process == NULL ){
         debug_print ("process\n");
         goto fail;
-    }else{
+    }
 
-        if ( process->used != 1 || process->magic != 1234 )
-        {
-            debug_print ("process validation\n");
-            goto fail;
-        }
+   if ( process->used != TRUE || 
+        process->magic != 1234 )
+   {
+       debug_print ("process validation\n");
+       goto fail;
+   }
 
-        // Ok.
-        return (unsigned long) process->HeapStart;
-    };
+// OUT: 
+// The start address of the heap of a process.
+    return (unsigned long) process->HeapStart;
 
 fail:
     debug_print ("GetProcessHeapStart: fail\n");
@@ -1994,14 +1995,17 @@ int process_get_tty (int pid)
 
 struct process_d *__create_and_initialize_process_object(void)
 {
-    struct process_d *New;
+    struct process_d  *new_process;
     int PID=-1;
+    register int i=0;
 
-    New = (struct process_d *) processObject();
-    if ( (void *) New == NULL )
+// process structure.
+
+    new_process = (struct process_d *) processObject();
+    if ( (void *) new_process == NULL )
     {
-        debug_print ("__create_and_initialize_process_object: [FAIL] New\n");
-        printf      ("__create_and_initialize_process_object: [FAIL] New\n");
+        debug_print ("__create_and_initialize_process_object: [FAIL] new_process\n");
+        printf      ("__create_and_initialize_process_object: [FAIL] new_process\n");
         goto fail;
     }
 
@@ -2011,9 +2015,10 @@ struct process_d *__create_and_initialize_process_object(void)
 // em ring3.
 
     // Invalidate.
-    New->pid = -1;
+    new_process->pid = -1;
 
-    // Get new pid.
+// Get new pid.
+
     PID = (int) getNewPID();
     if ( PID < GRAMADO_PID_BASE || PID >= PROCESS_COUNT_MAX )
     {
@@ -2023,45 +2028,38 @@ struct process_d *__create_and_initialize_process_object(void)
         goto fail;
     }
 
-    // Initializing the process structure.
-    // Saving the process pointer in the list.
+// Initializing the process structure.
+// Saving the process pointer in the list.
 
-    New->pid = (pid_t) PID;
-    New->uid = (uid_t) current_user;
-    New->gid = (gid_t) current_group;
-    
+    new_process->pid = (pid_t) PID;
+    new_process->uid = (uid_t) current_user;
+    new_process->gid = (gid_t) current_group;
+    new_process->syscalls_counter = 0;
 
-    // syscall counter
-    New->syscalls_counter = 0;
+// #bugbug
+// #todo
+// Ok mesma coisa precisa ser feito para o endereço
+// virtual da pilha.
 
-
-        // #bugbug
-        // #todo
-        // Ok mesma coisa precisa ser feito para o endereço
-        // virtual da pilha.
-
-        // #Cuidado
-        // Heap for Clone.
-        // Essa é a rotina usada na criação de processo 
-        // pra gerar um heap para ele.
-        // Vamos tentar usar isso na rotina de clonagem.
-
+// #Cuidado
+// Heap for Clone.
+// Essa é a rotina usada na criação de processo 
+// pra gerar um heap para ele.
+// Vamos tentar usar isso na rotina de clonagem.
 
     if (g_heappool_va == 0){
         panic("clone_and_execute_process: g_heappool_va\n");
     }
-
     if (g_heap_count == 0){
         panic("clone_and_execute_process: g_heap_count\n");
     }
-
     if (g_heap_size == 0){
         panic("clone_and_execute_process: g_heap_size\n");
     }
 
-    // #bugbug
-    // There is a limit here. End we will have a huge problem 
-    // when reach it.
+// #bugbug
+// There is a limit here. End we will have a huge problem 
+// when reach it.
 
 //===========================================================
 
@@ -2069,20 +2067,24 @@ struct process_d *__create_and_initialize_process_object(void)
 // Heap
 //
 
-    New->HeapStart = (unsigned long) g_heappool_va + (g_heap_count * g_heap_size);
-    New->HeapSize  = (unsigned long) g_heap_size;
-    New->HeapEnd   = (unsigned long) (New->HeapStart + New->HeapSize); 
+    new_process->HeapStart = 
+        (unsigned long) (g_heappool_va + (g_heap_count * g_heap_size));
+    new_process->HeapSize = 
+        (unsigned long) g_heap_size;
+    new_process->HeapEnd = 
+        (unsigned long) (new_process->HeapStart + new_process->HeapSize); 
+    
     g_heap_count++;
 
 //#debug
-    printf (":: HeapStart %x | HeadSize %x | HeapEnd %x \n",
-        New->HeapStart, New->HeapSize, New->HeapEnd );
-    
+    //printf ("clone_and_execute_process: HeapStart %x | HeadSize %x | HeapEnd %x \n",
+    //    new_process->HeapStart, new_process->HeapSize, new_process->HeapEnd );
+
+//#breakpoint
     //refresh_screen();
     //while(1){}
 
 //===========================================================
-
 
 //
 // Stack
@@ -2090,37 +2092,44 @@ struct process_d *__create_and_initialize_process_object(void)
 
 // Stack for the clone. 
 
-    New->control->rsp = CONTROLTHREAD_STACK;
-    New->StackStart   = CONTROLTHREAD_STACK;
-    New->StackSize    = (32*1024);    //isso foi usado na rotina de alocação.
-    New->StackEnd     = ( New->StackStart - New->StackSize );
+    new_process->control->rsp = CONTROLTHREAD_STACK;
 
+    new_process->StackStart = 
+        (unsigned long) CONTROLTHREAD_STACK;
+    new_process->StackSize = 
+        (unsigned long) (32*1024);  // Isso foi usado na rotina de alocação.
+    new_process->StackEnd = 
+        (unsigned long) ( new_process->StackStart - new_process->StackSize );
 
+//#todo
+//#debug: print stack info.
 
 //
 // Socket ============
 //
 
-    int sIndex=0;
+// #todo:
+// Maybe we need to save this index in some place.
 
-    for (sIndex=0; sIndex<32; ++sIndex)
-    {
-        New->socket_pending_list[sIndex] = 0; 
+    for (i=0; i<32; ++i){
+        new_process->socket_pending_list[i] = 0; 
     };
 
-    New->socket_pending_list_head = 0;
-    New->socket_pending_list_tail = 0;
-    New->socket_pending_list_max  = 0; //atualizado pelo listen();
+    new_process->socket_pending_list_head = 0;
+    new_process->socket_pending_list_tail = 0;
+    new_process->socket_pending_list_max  = 0; //atualizado pelo listen();
 
-    New->Image        = (unsigned long) CONTROLTHREAD_BASE;        // 0x200000 
-    
-    New->used  = TRUE;
-    New->magic = 1234;
-    processList[PID] = (unsigned long) New;
+// #todo: Explain it better.
+    new_process->Image = (unsigned long) CONTROLTHREAD_BASE;  // 0x200000 
 
-    // ok
-    return (struct process_d *) New;
-    
+    new_process->used = TRUE;
+    new_process->magic = 1234;
+    processList[PID] = (unsigned long) new_process;
+
+// OUT:
+// Pointer for a structure of a new process.
+    return (struct process_d *) new_process;
+
 fail:
     return NULL;
 }

@@ -31,7 +31,6 @@ pid_t copy_process(
 // Usado como armazenamento temporário de endereço físico de tabela.
     unsigned long phy=0;
 
-
 //
 // Tables
 //
@@ -745,7 +744,7 @@ do_clone:
 
 // #debug
     debug_print ("copy_process: [5] Done\n");
-    debug_print ("----------------------\n");
+    //debug_print ("----------------------\n");
     //printf ("copy_process: [5] Done\n");
 
     invalidate_screen();
@@ -818,7 +817,7 @@ fail:
 
 // #debug
     debug_print ("copy_process: [X] Fail\n");
-    debug_print ("----------------------\n");
+    //debug_print ("----------------------\n");
     //printf      ("copy_process: [X] Fail\n");
     //printf      ("----------------------\n");
     //refresh_screen();

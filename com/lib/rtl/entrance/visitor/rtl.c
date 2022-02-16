@@ -1683,12 +1683,13 @@ int rtl_clone_and_execute ( char *name )
         return -1;
     }
 
-    // #todo
-    // Parameters vector.
-    // Maybe we can provide a default parameters vector.
+// #todo
+// Parameters vector.
+// Maybe we can provide a default parameters vector.
 
     return (int) sc82 ( 900, (unsigned long) name, 0, 0 );
 }
+
 
 int rtl_spawn_process( const char *path )
 {

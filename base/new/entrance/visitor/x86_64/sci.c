@@ -15,10 +15,7 @@ void *gde_extra_services (
     unsigned long arg3, 
     unsigned long arg4 );
 
-
-
 //==================================
-
 
 // local
 void __service897(void);
@@ -26,7 +23,6 @@ void __service897(void)
 {
     struct thread_d *myThread; 
     struct rect_d r;
-
 
     unsigned int _Color=0;
 
@@ -43,15 +39,13 @@ void __service897(void)
     if( current_thread < 0 )
         return;
 
-
-
     _Color = (unsigned int) (COLOR_GREEN + 0);
 
 // Configura o retângulo
 
     r.left = 0;
     r.top = 0;
-    r.width  = 24;
+    r.width = 24;
     r.height = 24;
 
     r.dirty = FALSE; 
@@ -73,7 +67,6 @@ void __service897(void)
     drawDataRectangle( r.left, r.top, r.width, r.height, _Color, 0 );
 
     r.dirty = TRUE;
-
 
 //
 //  Thread
@@ -795,8 +788,6 @@ void *gde_extra_services (
         return NULL;
     }
 
-
-
     //7000 ~ 7020 for network sockets
 
     // socket() 
@@ -962,7 +953,6 @@ void *sci0 (
 
     int desktopID=0;
 
-
     // #debug
     //debug_print("sc0:\n");
     //printf("sc0:\n");
@@ -970,7 +960,7 @@ void *sci0 (
 
     g_profiler_ints_gde_services++;
 
-    // Profiling in the process structure.
+// Profiling in the process structure.
 
     if (current_process<0)
         panic("sci0: current_process\n");
@@ -1148,10 +1138,10 @@ void *sci0 (
         //rede: 12,13,14,15
 
         // 16 - open()
-        // In ring0, see: sci/sys/sys.c
+        // In ring0, see: sys.c
         // In ring3, see: fcntl.c
         // IN: pathname, flags, mode
-        //OUT: fd
+        // OUT: fd
 
         case SYS_OPEN:
             debug_print ("sci0: SYS_OPEN\n");
@@ -1941,14 +1931,12 @@ void *sci2 (
         return NULL; 
     }
 
-
-	// 900
-	// Clona e executa o filho dado o nome do filho.
-	// O filho inicia sua execução do início da imagem.
-	// #bugbug: Isso às vezes falha na máquina real.
-	// #todo: Use more arguments.
-	// See: See: ps/action/clone.c
-	// See: clone.c
+// 900
+// Clona e executa o filho dado o nome do filho.
+// O filho inicia sua execução do início da imagem.
+// #bugbug: Isso às vezes falha na máquina real.
+// #todo: Use more arguments.
+// See: clone.c
 
     // IN: file name, parent pid, clone flags.
     if ( number == 900 ){
@@ -1958,7 +1946,6 @@ void *sci2 (
                             (pid_t) current_process, 
                             (unsigned long) arg3 );
     }
-
 
     // fcntl()
     // See: sci/sys/sys.c    

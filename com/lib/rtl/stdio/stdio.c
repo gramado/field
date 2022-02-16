@@ -1180,8 +1180,8 @@ int fclose (FILE *stream)
 // The only way is using read() and the fd given by open().
 // See: https://man7.org/linux/man-pages/man2/open.2.html
 
-FILE *fopen ( const char *filename, const char *mode ){
-
+FILE *fopen ( const char *filename, const char *mode )
+{
     FILE *__stream;   // Return this pointer.
     int fd=0;         // File descriptor.  
     int flags=0;      // flags
@@ -1199,16 +1199,13 @@ FILE *fopen ( const char *filename, const char *mode ){
     //if ( (void*) filename == NULL ){}
     //if ( *filename == 0 ){}
 
+// #todo:
+// The 'mode' passed via argment will give us the 'flags'
+// used in open().
 
-
-    // #todo:
-    // The 'mode' passed via argment will give us the 'flags'
-    // used in open().
-    
-   
-    // NOTE: 
-    // rt is a non-standard mode which opens a file for read, explicitly
-    // specifying that it's a text file
+// NOTE: 
+// rt is a non-standard mode which opens a file for read, explicitly
+// specifying that it's a text file
     
     if (!strcmp(mode, "r") || !strcmp(mode, "rb") || !strcmp(mode, "rt")){
         flags = O_RDONLY;
@@ -1228,7 +1225,6 @@ FILE *fopen ( const char *filename, const char *mode ){
         //ASSERT_NOT_REACHED();
     };
 
-
 //
 // Open
 //
@@ -1239,14 +1235,13 @@ FILE *fopen ( const char *filename, const char *mode ){
     fd = open (filename, flags, oflags);  
 
     if (fd < 0){
-        printf (" fopen: open() fail\n");
+        printf ("fopen: open() fail\n");
         return NULL;
     }
 
 //
 // Stream
 //
-
     __stream = (FILE *) malloc ( sizeof(FILE) );
 
     if ( (void *) __stream == NULL ){

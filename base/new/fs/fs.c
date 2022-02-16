@@ -1719,12 +1719,10 @@ fsLoadFile (
 // Size: maximum buffer size in size.
     unsigned long BufferSizeInBytes = (unsigned long) (buffer_size_in_bytes & 0xFFFFFFFF);
 
-
-    unsigned long z = 0;       //Deslocamento do rootdir 
-    unsigned long n = 0;       //Deslocamento no nome.
+    unsigned long z=0;  //Deslocamento do rootdir 
+    unsigned long n=0;  //Deslocamento no nome.
 
     char tmpName[13];
-    
     size_t FileNameSize = 0;
     unsigned long FileSize = 0;
 
@@ -1807,7 +1805,6 @@ fsLoadFile (
         panic ("fsLoadFile: [DEBUG] DirEntries IS LESS THE 512\n");
     }
 
-
 // =======================
 
     if ( BufferSizeInBytes == 0 ){
@@ -1819,12 +1816,12 @@ fsLoadFile (
         panic("fsLoadFile: [FAIL] BufferSizeInBytes\n");
     }
 
-    // Root file system structure.
-    // + Checa se é válida a estrutura do sistema de arquivos.
-    // + Pega a quantidade de setores por cluster.
-    // + Pega o tamanho do diretório raiz. Ou seja, pega o número 
-    //    máximo de entradas.
-    // ...
+// Root file system structure.
+// + Checa se é válida a estrutura do sistema de arquivos.
+// + Pega a quantidade de setores por cluster.
+// + Pega o tamanho do diretório raiz. Ou seja, pega o número 
+//    máximo de entradas.
+// ...
 
     if ( (void *) root == NULL ){
         panic ("fsLoadFile: No root file system.\n");
@@ -1851,20 +1848,19 @@ fsLoadFile (
     };
 
 
-	// Continua ... 
-	// Pegar mais informações sobre o sistema de arquivos.
-	// Busca simples pelo arquivo no diretório raiz.
-	// #todo: 
-	// Essa busca pode ser uma rotina mais sofisticada. Uma função auxiliar.
-	// Primero caractere da entrada:
-	// 0 = entrada vazia.
-	// $ = entrada de arquivo deletado.
-	// outros ...
-	// ATENÇÃO:
-	// Na verdade a variável 'root' é do tipo short.
+// Continua ... 
+// Pegar mais informações sobre o sistema de arquivos.
+// Busca simples pelo arquivo no diretório raiz.
+// #todo: 
+// Essa busca pode ser uma rotina mais sofisticada. Uma função auxiliar.
+// Primero caractere da entrada:
+// 0 = entrada vazia.
+// $ = entrada de arquivo deletado.
+// outros ...
+// ATENÇÃO:
+// Na verdade a variável 'root' é do tipo short.
 
-
-    // file name
+// file name
 
     if ( (void *) file_name == NULL ){
         printf ("fsLoadFile: [FAIL] file_name\n");
@@ -1876,14 +1872,12 @@ fsLoadFile (
         goto fail;
     }
 
-
-    //#debug
-    //vamos mostrar a string.
+//#debug
+//vamos mostrar a string.
     //printf ("fsLoadFile: file_name={%s}\n", file_name);
 
-
-    // name size.
-    // Se o tamanho da string falhar, vamos ajustar.
+// name size.
+// Se o tamanho da string falhar, vamos ajustar.
 
     FileNameSize = (size_t) strlen (file_name); 
 
@@ -1893,13 +1887,11 @@ fsLoadFile (
          //return 1; //fail
     }
 
-
 //
 // File size
 //
 
 // Pegar o tamanho do arquivo e comparar com o limite do buffer.
-
 // #bugbug: 
 // Essa rotina so pega o tamanho dos arquivos que estao 
 // no diretorio raiz.
@@ -1937,12 +1929,11 @@ fsLoadFile (
         goto fail;
     }
 
+// We are opening the root dir.
 
-    // We are opening the root dir.
     //if ( file_name[0] == '/' && size == 1 )
     //{
     //}
-
 
 //
 // Search dirent
@@ -2005,7 +1996,6 @@ __found:
     // refresh_screen();
     // while(1){}
 
-
 //
 // Cluster
 //
@@ -2021,7 +2011,6 @@ __found:
 // O número máximo do cluster nesse caso é (256*64).
 // #todo
 // Na verdade os dois primeiros clusters estão indisponíveis.
-
 
     cluster = __dir[ z+13 ];
 
@@ -2054,8 +2043,10 @@ __found:
 // 128?
 // 246?
 
-    fs_load_fat(VOLUME1_FAT_ADDRESS,VOLUME1_FAT_LBA,246);
-
+    fs_load_fat(
+        VOLUME1_FAT_ADDRESS,
+        VOLUME1_FAT_LBA,
+        246 );
 
 // Load clusters.
 // Carregar o arquivo, cluster por cluster.
@@ -2072,14 +2063,14 @@ __found:
     //unsigned short tmp_table[1024];
     
     //#todo: Use while()
-    
-    // #todo
-    // Create a helper function like this one.
+
+// #todo
+// Create a helper function like this one.
+
     // int fsReadClusterChain ( char *file_address, short first_cluster, char *fat_address ){}
 
-
 //
-// == Load cluster chain ===================================
+// == Load cluster chain ================
 //
 
 __loop_next_entry:
@@ -2126,7 +2117,6 @@ __loop_next_entry:
     //tmp_table[tmp_table_index] = cluster;
     //tmp_table_index++;
 
-
 // Some invalid address.
 // We can not load a file in the same core addresses.
 
@@ -2167,7 +2157,6 @@ __loop_next_entry:
     }
 
     next = (unsigned short) fat[cluster];
-
     cluster = (unsigned short) (next & 0xFFFF);
 
 // ?? done
@@ -2218,7 +2207,10 @@ fsLoadFile2 (
     }
 
     fc->file_name = file_name;
-    
+
+// #todo
+// Return type.
+
     return fsLoadFile ( 
                (unsigned long)   fc->fat_address,
                (unsigned long)   fc->dir_address,
@@ -2228,8 +2220,8 @@ fsLoadFile2 (
                (unsigned long)   fc->buffer_limit );
 }
 
+
 /*
- ********************************
  * fsLoadFileFromCurrentTargetDir:
  * 
  *     Carrega o diretório que está configurado como 'target dir' 
@@ -2284,7 +2276,6 @@ int fsLoadFileFromCurrentTargetDir (void)
         goto fail;
     }
 
-
 	//#debug
 	//printf ("fsLoadFileFromCurrentTargetDir: dir_name=(%s) old_dir_addr=(%x) #debug \n",
 	//    current_target_dir.name, current_target_dir.current_dir_address );
@@ -2309,12 +2300,14 @@ int fsLoadFileFromCurrentTargetDir (void)
 	//printf ("fsLoadFileFromCurrentTargetDir: dir_name=(%s) new_dir_addr=(%x) #debug \n",
 	//   current_target_dir.name, current_target_dir.current_dir_address );
 
-
     debug_print ("fsLoadFileFromCurrentTargetDir: done\n");
-    
     return (int) Ret;
 
 fail:
+    
+    // #todo
+    // debug message.
+    
         current_target_dir.current_dir_address = VOLUME1_ROOTDIR_ADDRESS;
         for ( i=0; i<11; i++ ){
             current_target_dir.name[i] = '\0';
@@ -2326,7 +2319,6 @@ fail:
 
 
 /*
- *****************************************
  * fsUpdateWorkingDiretoryString:
  * 
  *     +Atualiza o pathname na estrutura do processo atual.
@@ -2340,9 +2332,7 @@ void fsUpdateWorkingDiretoryString ( char *string )
     struct process_d  *p;
     char *tmp;
     int i=0; 
-
     int string_size = 0;
-
 
     debug_print ("fsUpdateWorkingDiretoryString:\n"); 
 
@@ -2531,21 +2521,23 @@ void fs_fntos ( char *name )
         }
     };
 
-// Acrescentamos ' ' até completarmos as oito letras do nome.
+
 
 CompleteWithSpaces:
 
+// Acrescentamos ' ' até completarmos as oito letras do nome.
+// Acrescentamos a extensão
+// Finalizamos.
+ 
     while (ns < 8)
     {
         *name++ = ' ';
         ns++;
     };
 
-    // Acrescentamos a extensão
-
-    for (i=0; i < 3; i++){  *name++ = ext[i];  };
-
-    // Finalizamos.
+    for (i=0; i < 3; i++){  
+        *name++ = ext[i];  
+    };
 
     *name = '\0';
 }
@@ -2597,7 +2589,6 @@ int fs_get_free_fd_from_pid (int pid)
 
 
 /*
- **************************************
  * fs_initialize_process_cwd:
  *     Cada processo deve inicialiar seus dados aqui. 
  */
@@ -2628,11 +2619,9 @@ int fs_initialize_process_cwd ( int pid, char *string )
         //return 1;
     }
 
-
-    // Current process.
-
-	// #importante
-	// Vamos copiar a string para a estrutura do processo atual.
+// Current process.
+// #importante
+// Vamos copiar a string para a estrutura do processo atual.
 
     p = (struct process_d *) processList[pid];
 
@@ -2652,8 +2641,8 @@ int fs_initialize_process_cwd ( int pid, char *string )
     return 0;
 }
 
+
 /*
- *********************************************************
  * fs_load_path:
  *     Carrega nesse endereço o arquivo que está nesse path.
  *     ??: O endereço pode ser ring3?
@@ -2724,7 +2713,6 @@ fs_load_path (
     if ( (void*) path == NULL ){
         panic ("fs_load_path: path\n"); 
     }
-
     if (*path == 0){
         panic ("fs_load_path: *path\n"); 
     }
@@ -2752,9 +2740,11 @@ fs_load_path (
     if (n_levels==0){
         panic ("fs_load_path: n_levels\n");
     }
+    
+    // #debug
     printf ("fs_load_path: path with %d levels\n",n_levels);
+    
     level = 0;
-
 
 // Local pointer.
     p = path;
@@ -2772,7 +2762,6 @@ fs_load_path (
     if ( p[0] != '/' ){
         panic ("fs_load_path: Not absolute pathname \n");
     }
-
 
 //
 // loop: 
@@ -2986,7 +2975,6 @@ fs_load_path (
         };
     };   
 
-
 fail:
     debug_print ("fs_load_path: Fail\n");
     printf      ("fs_load_path: Fail\n");
@@ -2994,8 +2982,8 @@ fail:
     return (-1);
 }
 
+
 /* 
- ************************************************
  * fs_pathname_backup:
  *     Remove n nomes de diret�rio do pathname do processo indicado no 
  * argumento.
@@ -3013,7 +3001,6 @@ void fs_pathname_backup ( int pid, int n ){
 
     struct process_d *p;
     int i=0;
-
 
 // CWD
 
@@ -3071,8 +3058,8 @@ void fs_pathname_backup ( int pid, int n ){
     };
 }
 
+
 /*
- *********************************
  * fs_print_process_cwd
  *     Cada processo tem seu proprio pwd.
  *     Essa rotina mostra o pathname usado pelo processo. 
@@ -3851,9 +3838,7 @@ sys_write_file_to_disk (
 
 
 /*
- ************************************* 
  * sys_read_file_from_disk: 
- * 
  *     This is called by sys_open() in sys.c
  */
 
@@ -3862,21 +3847,17 @@ sys_write_file_to_disk (
 // abertos.
 // Carrega um arquivo do disco para a memoria.
 // funcionou.
-
 // #bugbug
 // Na minha m�quina real, �s vezes d� problemas no tamanho do arquivo.
-
 // #bugbug
 // Estamos alocando mem�ria em ring para carregar o arquivo
 // e depois estamos usando o buffer em ring3 passado pelo usu�rio.
 // >>> vamos confiar no usu�rio e usarmos
-
 // #bugbug
 // precisamos colocar os arquivos também na lista
 // global de arquivos abertos. file_table[]
 // E na lista de inodes. inode_table[]
 // See: fs.c
-
 // #bugbug
 // Nao seria o read() usado para ler um arquivo ja aberto ??
 // sim. a rotina de suporte para read esta em sys_read e 
@@ -3916,32 +3897,33 @@ sys_read_file_from_disk (
         return -1;
     }
 
-
-    // Convertendo o formato do nome do arquivo.    
-    // >>> "12345678XYZ"
-    // #todo: nao fazer isso em ring3.
+// Convertendo o formato do nome do arquivo.    
+// >>> "12345678XYZ"
+// #todo: 
+// Não fazer isso em ring3.
 
     fs_fntos ( (char *) file_name );
 
+// #debug
 
-    // #debug
-    printf ("FILE={%s}\n",file_name);
-    refresh_screen();
+    //printf ("sys_read_file_from_disk: FILE={%s}\n",
+    //    file_name);
+    //refresh_screen();
 
-    // #bugbug
-    // We need to search in the inode list. inode_table[]
-    // If the file is found in the inode list, so we don't
-    // need to load it again, just increment the counter.
+// #bugbug
+// We need to search in the inode list. inode_table[]
+// If the file is found in the inode list, so we don't
+// need to load it again, just increment the counter.
 
     // #todo
     // fs_search_inode_table(file_name);
 
-    // Searching for the file only on the root dir.
+// Searching for the file only on the root dir.
 
     Status = (int) search_in_dir ( file_name, VOLUME1_ROOTDIR_ADDRESS );
 
-    // Quando não existe, tentamos criar.
-    // #bugbug: Então 'cat' não deve chamar essa função.
+// Quando não existe, tentamos criar.
+// #bugbug: Então 'cat' não deve chamar essa função.
 
     // found
     if (Status == TRUE)
@@ -4005,9 +3987,7 @@ sys_read_file_from_disk (
 
 __go:
 
-    //
-    // Process.
-    //
+// Process.
   
     p = (struct process_d *) processList[current_process];
 
@@ -4016,18 +3996,18 @@ __go:
         return -1;
     }
 
-    if ( p->used != 1 || p->magic != 1234 ){
+    if ( p->used != TRUE || p->magic != 1234 ){
         debug_print ("sys_read_file_from_disk: validation\n");
         return -1;
     }
-    
-    
-    // Procurando um slot livre.
+
+// Procurando um slot livre.
     for (__slot=0; __slot<32; __slot++)
     {
          if ( p->Objects[__slot] == 0 ){ goto __OK; }
     };
-    
+
+// fail
     panic ("sys_read_file_from_disk: No slots!\n");
 
 // Slot found.
@@ -4048,69 +4028,67 @@ __OK:
         printf ("sys_read_file_from_disk: __file\n");
         refresh_screen();
         return -1;
-    }else{
-        __file->used  = TRUE;
-        __file->magic = 1234;
-        __file->pid = (pid_t) current_process;
-        __file->uid = (uid_t) current_user;
-        __file->gid = (gid_t) current_group;
+    }
 
-        
-        // #bugbug [FIXME]
-        // We need a type in read().
+    // initialize.
+    __file->used = TRUE;
+    __file->magic = 1234;
 
-        // #bugbug
-        // This function was called by sys_open, and open
-        // is able to open any kind of file.
-        // Why are we using this type here?
-        
-        __file->____object = ObjectTypeFile;
+    __file->pid = (pid_t) current_process;
+    __file->uid = (uid_t) current_user;
+    __file->gid = (gid_t) current_group;
 
+// #bugbug [FIXME]
+// We need a type in read().
+
+// #bugbug
+// This function was called by sys_open, and open
+// is able to open any kind of file.
+// Why are we using this type here?
+
+    __file->____object = ObjectTypeFile;
+
+
+// ==================
+// #todo #bubug
+// Permissoes:
+// As permissoes dependem do tipo de arquivo.
+
+// #bugbug: Let's do this for normal files for now.
+    __file->sync.can_read  = TRUE;
+    __file->sync.can_write = TRUE;
+
+    __file->sync.action = ACTION_NULL;
         // ==================
-        
-        // #todo #bubug
-        // Permissoes:
-        // As permissoes dependem do tipo de arquivo.
-       
-        // #bugbug: Let's do this for normal files for now.
-        __file->sync.can_read  = TRUE;
-        __file->sync.can_write = TRUE;
 
-        __file->sync.action = ACTION_NULL;
-        
-        // ==================
-  
-        // #todo:
-        // We need to get the name in the inode.
-        //__file->_tmpfname = NULL;
- 
+// #todo:
+// We need to get the name in the inode.
 
-        __file->_lbfsize = BUFSIZ;
-        __file->_r = 0;
-        __file->_w = 0;
-        __file->_file = __slot;
-        __file->fd_counter = 1; //inicializando. 
+    //__file->_tmpfname = NULL;
 
+    __file->_lbfsize = BUFSIZ;
+    __file->_r = 0;
+    __file->_w = 0;
+    __file->_file = __slot;
+    __file->fd_counter = 1; //inicializando. 
 
-        // #todo
-        // Se ele não foi encontrado na lista de inodes
-        // e tivemos que carrega-lo do disco, então
-        // precisamos colocar ele na lista de inodes.. inode_table[]
-        // Atenção: O arquivo será carregado logo abaixo.
-        
-        // #todo
-        // atualizar a tabela  global de arquivos. file_table[]
-    };
-    
+// #todo
+// Se ele não foi encontrado na lista de inodes
+// e tivemos que carrega-lo do disco, então
+// precisamos colocar ele na lista de inodes.. inode_table[]
+// Atenção: O arquivo será carregado logo abaixo.
 
-    //
-    // buffer
-    //
+// #todo
+// atualizar a tabela  global de arquivos. file_table[]
 
-    // buffer padrão
-    // #bugbug: open chama isso. E se o arquivo for maior que o buffer ?
-    // open() precisa alocar outro buffer.
-        
+//
+// buffer
+//
+
+// buffer padrão
+// #bugbug: open chama isso. E se o arquivo for maior que o buffer ?
+// open() precisa alocar outro buffer.
+
     __file->_base = (char *) kmalloc(BUFSIZ);
     
     if ( (void *) __file->_base == NULL ){
@@ -4120,9 +4098,9 @@ __OK:
     }
 
 
-    // #debug
-    printf ("FILE_AGAIN={%s}\n",file_name);
-    refresh_screen();
+// #debug
+    //printf ("FILE_AGAIN={%s}\n",file_name);
+    //refresh_screen();
     
     // File size.
     // #bugbug: OUT: 'unsigned long'
@@ -4136,12 +4114,12 @@ __OK:
         return (-1);
     }
 
-    // Limits.
+// Limits.
     if ( FileSize < __file->_lbfsize ){ FileSize = __file->_lbfsize; }
 
-    // Limits.
-    // Se o arquivo for maior que buffer dispon�vel.
-    // Podemos almentar o buffer.
+// Limits.
+// Se o arquivo for maior que buffer dispon�vel.
+// Podemos almentar o buffer.
     if (FileSize > __file->_lbfsize)
     {
         // #bugbug: Provisório.
@@ -4166,32 +4144,32 @@ __OK:
         __file->_lbfsize = (int) FileSize;
     }
 
-    // #paranoia.
-    // Checando os limites novamente.
-    // #bugbug: Provisório.
-    // Limits - 1MB
+// #paranoia.
+// Checando os limites novamente.
+// #bugbug: Provisório.
+// Limits - 1MB
     if (FileSize > 1024*1024){
         printf ("sys_read_file_from_disk: File size out of limits\n");
         refresh_screen();
         return -1;
     }
 
-    // #paranoia.
-    // Checando base novamente.
+// #paranoia.
+// Checando base novamente.
     if ( (void *) __file->_base == NULL ){
         printf ("sys_read_file_from_disk: buffer fail\n");
         refresh_screen();
         return -1;
     }
 
-   // Pointer.
+// Pointer.
     __file->_p = __file->_base;
-    
-    //
-    // Load.
-    //
-    
-    // Carrega o arquivo na memória.
+
+//
+// Load.
+//
+
+// Carrega o arquivo na memória.
  
     Status = (int) fsLoadFile ( 
                        VOLUME1_FAT_ADDRESS, 
@@ -4207,21 +4185,18 @@ __OK:
         return -1;
     }
 
-    
-    // #bugbug
-    // Agora é a hora de atualizarmos as tabelas ....
-    // Depois de carregarmos o arquivo.
-    
-     
-    //
-    // Pointer. (mode)
-    //
-    
-    // Ajusta o ponteiro para depois do tamanho do arquivo.
-    // Dependendo do modo.
-    
-    // See:
-    // https://linux.die.net/man/2/open
+// #bugbug
+// Agora é a hora de atualizarmos as tabelas ....
+// Depois de carregarmos o arquivo.
+
+//
+// Pointer. (mode)
+//
+
+// Ajusta o ponteiro para depois do tamanho do arquivo.
+// Dependendo do modo.
+// See:
+// https://linux.die.net/man/2/open
 
            /*
            O_RDONLY        open for reading only
@@ -4238,15 +4213,13 @@ __OK:
            O_SYMLINK       allow open of symlinks
            O_FSYNC         write will save into the disk. :)
            */
-      
-      // Saving into de disk ?
-      // You can use the O_FSYNC open mode to make write always 
-      // store the data to disk before returning;    
-          
-          
+
+// Saving into de disk ?
+// You can use the O_FSYNC open mode to make write always 
+// store the data to disk before returning;    
+
      // Default ???
-       
-       
+
     //if (mode == 0)
     //{
           debug_print ("sys_read_file_from_disk: default mode\n");
@@ -4254,8 +4227,8 @@ __OK:
     //}
 
 
-    // The file is opened in append mode. 
-    // O offset fica no fim do arquivo.
+// The file is opened in append mode. 
+// O offset fica no fim do arquivo.
     if ( mode & O_APPEND)        
     { 
         debug_print ("sys_read_file_from_disk: O_APPEND\n");
@@ -4276,24 +4249,19 @@ __OK:
     */
 
 
-    if ( mode & O_CREAT )        
-    { 
+    if ( mode & O_CREAT ){
          debug_print ("sys_read_file_from_disk: O_CREAT\n");
     }
-        
-             
-    
-    // #importante
-    // Se não liberarmos para leitura então read()
-    // não poderá ler.
-    
+
+// #importante
+// Se não liberarmos para leitura então read()
+// não poderá ler.
+
     __file->_flags = (__file->_flags | __SRD);
-        
 
-    // Salva o ponteiro.  
-    // Ja checamos fd.
+// Salva o ponteiro.  
+// Ja checamos fd.
     p->Objects[__slot] = (unsigned long) __file;
-
 
     //printf ("done\n");
     //refresh_screen();
@@ -4306,6 +4274,7 @@ __OK:
                   
     return (int) __file->_file;
 }
+
 
 // ==============================
 // Service 43

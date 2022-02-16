@@ -19,8 +19,12 @@
 #define LARGESYSTEM_ORIGIN_ADDRESS   SYSTEM_ORIGIN
 // Size = 1KB
 #define REALMODE_IVT  SYSTEM_ORIGIN
+
 // Size?
+// 0x00000400 - 0x000004FF - BIOS Data Area
 #define REALMODE_BIOSDATAAREA  0x400
+#define BDA  0x400
+
 // Size?
 #define REALMODE_FREEAREA  0x500
 
@@ -95,6 +99,22 @@
 //#define VOLUME1_ROOTDIR_PA  VOLUME1_ROOTDIR_ADDRESS
 //#define VOLUME2_ROOTDIR_PA  VOLUME2_ROOTDIR_ADDRESS
 
+
+/*
+    #bugbug
+    
+    0x00007E00 - 0x0009FFFF - Unused" 
+    This is not entirely true. 
+    The range that is guaranteed to be free 
+    is 0x00007E00 - 0x0007FFFF. 
+    Above that range you will have the EBDA 
+    (usually at 0x0009FC00 - 0x0009FFFF, 
+     but I've seen it at 0x00096C00 and 
+     other locations as well) and 
+     potentially some BIOS code. 
+     Some BIOSes have PXE boot code in this range. 
+     A conservative approach is to avoid everything above 0x00080000. 
+ */
 
 //
 // == 512 KB ==================================================
@@ -194,10 +214,16 @@
 // 0x0009FFF0 ??
 
 
-
 //
 // == 640 KB ==================================================
 //
+
+// - 0x000A0000 - 0x000BFFFF - Video RAM (VRAM) Memory
+// - 0x000B0000 - 0x000B7777 - Monochrome Video Memory
+// - 0x000B8000 - 0x000BFFFF - Color Video Memory
+// - 0x000C0000 - 0x000C7FFF - Video ROM BIOS
+// - 0x000C8000 - 0x000EFFFF - BIOS Shadow Area
+// - 0x000F0000 - 0x000FFFFF - System BIOS
 
 //==============
 // vga

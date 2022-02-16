@@ -95,24 +95,18 @@ int crt0( unsigned long rdi){
     int token_count=0;
     int index=0;
 
-
-
     unsigned long *surface_config = (unsigned long *) rdi;
 
-
-
-	// #importante
-	// Linha de comandos passada pelo shell.
-	// See:
-	// globals/gva.h
-    // #define FRONTBUFFER_VA    0xC0400000
-    // #define BACKBUFFER_VA     0xC0800000
-    // So. We are using the top of the front buffer
-    // as a shared memory. No problem for now.
-
-    // #todo
-    // Change this address. We need a valid one.
-
+// #importante
+// Linha de comandos passada pelo shell.
+// See:
+// globals/gva.h
+// #define FRONTBUFFER_VA    0xC0400000
+// #define BACKBUFFER_VA     0xC0800000
+// So. We are using the top of the front buffer
+// as a shared memory. No problem for now.
+// #todo
+// Change this address. We need a valid one.
 
     // #todo
     //char *shared_info = (char *) (0xC0800000 -0x100);
@@ -140,12 +134,12 @@ int crt0( unsigned long rdi){
 #endif
 */
 
-    //
-    // Tokenizing.
-    //
+//
+// Tokenizing.
+//
 
-    // Criando o ambiente.
-    // Transferindo os ponteiros do vetor para o ambiente.
+// Criando o ambiente.
+// Transferindo os ponteiros do vetor para o ambiente.
 
     tokenList[0] = strtok ( &shared_info[0], LSH_TOK_DELIM );
 
@@ -206,27 +200,25 @@ int crt0( unsigned long rdi){
 //
 
     int rt_status = -1;
-    
-    // See: stdlib/stdlib.c
-    gramado_system_call(65,'1',0,0);
+
+
+// See: stdlib/stdlib.c
+    //gramado_system_call(65,'1',0,0);  //#debug: put char
     rt_status = libcInitRT();
 
-    if (rt_status != 0)
-        gramado_system_call(65,'e',0,0);
-
-
-    // return void
-    // See: stdio/stdio.c
-    gramado_system_call(65,'2',0,0);
+    if (rt_status != 0){
+        gramado_system_call(65,'e',0,0);    //#debug: put char
+    }
+    
+// return void
+// See: stdio/stdio.c
+    //gramado_system_call(65,'2',0,0);    //#debug: put char
     stdioInitialize();
-
-
 
     // #todo
     // Chamar esse ao invés de chamar os dois acima.
     //See: sysdeps/x86/x86start.c
     //x86start ( ( token_count, tokenList, default_env );
-
 
 /*
 #ifdef TEDITOR_VERBOSE

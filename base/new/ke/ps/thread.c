@@ -1447,40 +1447,39 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
 
     ClonedThread = clone;
 
-
     clone->type  = father->type; 
 
 //
 // Input
 //
 
-// #suspenso. Vamos usar as flags em 't->input_flags'
+// #suspenso. 
+// Vamos usar as flags em 't->input_flags'
     //clone->input_model = father->input_model; 
     
     clone->input_flags = father->input_flags;
 
-	// #importante
-	// Esse momento � critico.
-	// dependendo do estado da thread ele pode n�o rodar.
-	// ou ela pode rodar e falhar por n�o esta pronta,
-	// vamos testar op��es.
+// #importante
+// Esse momento � critico.
+// dependendo do estado da thread ele pode n�o rodar.
+// ou ela pode rodar e falhar por n�o esta pronta,
+// vamos testar op��es.
 
     // Começando com o clone bloqueada ...
     // Mas isso será mudado pela função que chamou essa.
     // obs: Isso funcionou.
     clone->state = BLOCKED;  
 
+//Apenas Initialized, pois a fun��o SelectForExecution
+//seleciona uma thread para a execu��o colocando ela no
+//state Standby.	
 
-	//Apenas Initialized, pois a fun��o SelectForExecution
-	//seleciona uma thread para a execu��o colocando ela no
-	//state Standby.	
-
-	// #todo: 
-	// ISSO DEVERIA VIR POR ARGUMENTO
+// #todo: 
+// ISSO DEVERIA VIR POR ARGUMENTO
     clone->plane = father->plane;
 
-	// A prioridade b�sica da thread � igual a prioridade b�sica 
-	// do processo.
+// A prioridade b�sica da thread � igual a prioridade b�sica 
+// do processo.
 	// Process->base_priority;
 	// priority; A prioridade din�mica da thread foi 
 	// passada por argumento.
@@ -1488,10 +1487,10 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
     clone->base_priority = father->base_priority; 
     clone->priority      = father->priority;
 
-	// IOPL.
-	// Se ela vai rodar em kernel mode ou user mode.
-	// #todo: 
-	// Herdar o mesmo do processo.
+// IOPL.
+// Se ela vai rodar em kernel mode ou user mode.
+// #todo: 
+// Herdar o mesmo do processo.
 
     clone->iopl      = father->iopl;            // Process->iopl;
     clone->saved     = father->saved;          // Saved flag.
@@ -1503,9 +1502,8 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
 	//Thread->Stack;
 	//Thread->StackSize;
 
-    // Temporizadores. 
-    // step - Quantas vezes ela usou o processador no total.
-
+// Temporizadores. 
+// step - Quantas vezes ela usou o processador no total.
 
 //
 // == Jiffies ==============
@@ -1554,31 +1552,29 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
     clone->signal = father->signal;
     clone->umask  = father->umask;
 
+// #todo: 
+// Essa parte � dependente da arquitetura i386.
+// Poder� ir pra outro arquivo.
 
-	// #todo: 
-	// Essa parte � dependente da arquitetura i386.
-	// Poder� ir pra outro arquivo.
+// init_stack:
+// O endere�o de in�cio da pilha � passado via argumento.
+// Ent�o quem chama precisa alocar mem�ria para a pilha.
+// @todo: Podemos checar a validade dessa pilha ou � problema 
+// na certa.
 
-	// init_stack:
-	// O endere�o de in�cio da pilha � passado via argumento.
-	// Ent�o quem chama precisa alocar mem�ria para a pilha.
-	// @todo: Podemos checar a validade dessa pilha ou � problema 
-	// na certa.
-		
-	// init_eip:
-	// O endere�o in�cio da sess�o de c�digo da thread � 
-	// passado via argumento. Ent�o quem chama essa rotina 
-	// deve providendiar um endere�o v�lido.
-	// Obs: init_eip Aceita endere�os inv�lidos pois a thread 
-	// fecha nesses casos por PG fault. Mas o sistema pode travar 
-	// se for a �nica thread e um �nico processo. 
-		
+// init_eip:
+// O endere�o in�cio da sess�o de c�digo da thread � 
+// passado via argumento. Ent�o quem chama essa rotina 
+// deve providendiar um endere�o v�lido.
+// Obs: init_eip Aceita endere�os inv�lidos pois a thread 
+// fecha nesses casos por PG fault. Mas o sistema pode travar 
+// se for a �nica thread e um �nico processo. 
+
 	//if( init_stack == 0 ){ ... }
 	//if( init_eip == 0 ){ ... }
-		
-	// Contexto x86 usado pela thread.
-		
-	//Context.
+
+// Contexto x86 usado pela thread.
+
 	// ss (0x20 | 3)
 	// cs (0x18 | 3)
 
@@ -1592,14 +1588,14 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
     clone->cs     = father->cs;
     clone->rip    = father->rip;   // wrong 
 
-	//O endere�o incial, para controle.
+//O endere�o incial, para controle.
 
     clone->initial_rip = father->initial_rip; 
-    
-    // #bugbug:
-    // We need the initial stack address
 
-	// (0x20 | 3)
+// #bugbug:
+// We need the initial stack address
+// (0x20 | 3)
+
     clone->ds = father->ds; 
     clone->es = father->es; 
     clone->fs = father->fs; 
@@ -1634,16 +1630,16 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
 	//Thread->confined = 0;
 	//Thread->CurrentProcessor = 0;
 	//Thread->NextProcessor = 0;
-		
-	// @todo: 
-    // O processo dono da thread precisa ter um diret�rio 
-	// de p�ginas v�lido.
-		
-	// #bugbug
-	// Page Directory. (#CR3).
-	// Estamos usando o page directory do processo.
-	// Page directory do processo ao qual a thread pertence.
-		
+
+// @todo: 
+// O processo dono da thread precisa ter um diret�rio 
+// de p�ginas v�lido.
+
+// #bugbug
+// Page Directory. (#CR3).
+// Estamos usando o page directory do processo.
+// Page directory do processo ao qual a thread pertence.
+
 	//clone->DirectoryPA = thread->DirectoryPA; 
     //clone->DirectoryVA = thread->DirectoryVA;
 
@@ -1651,32 +1647,25 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
     //Ticks ...
     //DeadLine ... 
 
-		
 	//Thread->PreviousMode  //ring???
-		
 	//Thread->idealprocessornumber
-		
 	//Thread->event
-		
-	// ORDEM: 
-	// O que segue � referenciado com pouca frequ�ncia.
 
-    clone->waitingCount = father->waitingCount;    //Tempo esperando algo.
-    clone->blockedCount = father->blockedCount;    //Tempo bloqueada.
+// ORDEM: 
+// O que segue � referenciado com pouca frequ�ncia.
 
-    //qual processo pertence a thread.  
+    clone->waitingCount = father->waitingCount;  //Tempo esperando algo.
+    clone->blockedCount = father->blockedCount;  //Tempo bloqueada.
+
+//qual processo pertence a thread.  
     clone->process = father->process; 
 
 	//Thread->window_station
 	//Thread->desktop
-		
 	//Thread->control_menu_procedure
-		
 	//Thread->wait4pid =
 
-
-
-    // Razões para esperar.
+// Razões para esperar.
     for ( w=0; w<8; w++ ){
         clone->wait_reason[w] = father->wait_reason[w];
     };
@@ -1696,14 +1685,12 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
 //==================================
 */
 
-
-	//...
-    //@todo:
-    //herdar o quantum do processo.
-    //herdar a afinidade do processo.(cpu affinity) 
+//...
+//@todo:
+//herdar o quantum do processo.
+//herdar a afinidade do processo.(cpu affinity) 
 
     clone->exit_code = father->exit_code;
-
 
 //
 // #debug
@@ -1720,12 +1707,11 @@ struct thread_d *copy_thread_struct ( struct thread_d *thread )
 	while(1){}
 */
 
-
-
-    // Returning the pointer for the clone.
+// Returning the pointer for the clone.
 
     return (struct thread_d *) clone;
 }
+
 
 // #bugbug 
 // It's a work in progress

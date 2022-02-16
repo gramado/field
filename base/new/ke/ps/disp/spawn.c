@@ -20,13 +20,11 @@ void spawn_thread (int tid)
 
     int next_tid = (int) (tid & 0xFFFF);
 
-
     debug_print ("spawn_thread:\n");
 
     // #debug
     //printf ("spawn_thread: SPAWN !\n");
     //refresh_screen();
-
 
 //
 // Target 
@@ -86,29 +84,21 @@ void spawn_thread (int tid)
 
     Target->standbyCount = 0;
     Target->standbyCount_ms = 0;
-    
     Target->runningCount = 0;
     Target->runningCount_ms = 0;
-    
     Target->readyCount = 0;
     Target->readyCount_ms = 0;
-    
     Target->waitingCount = 0;
     Target->waitingCount_ms = 0;
-    
     Target->blockedCount = 0;
     Target->blockedCount_ms = 0;
-
-// ...
-
+    // ...
 
     Target->initial_jiffie = jiffies;  // initial jiffie
     Target->step = 0;                  // how much tick untill now.
 
     Target->initial_time_ms = 0;
     Target->total_time_ms = 0;
-    
-
 
 // The next thread will be the window server.
 
@@ -166,11 +156,11 @@ void spawn_thread (int tid)
     IncrementDispatcherCount (SELECT_INITIALIZED_COUNT);
 
 
+
+// local
+// Set cr3 and flush TLB.
+
     debug_print ("spawn_thread: Load pml4\n");
-
-
-    // Set cr3 and flush TLB.
-    // local
     __spawn_load_pml4_table ( Target->pml4_PA );
     // #bugbug: rever isso.
     asm ("movq %cr3, %rax");
@@ -268,12 +258,12 @@ spawn_enter_usermode(
     unsigned long rsp3_va )  // Stack pointer.
 {
 
-    // This is the entry point of the new thread
-    // Probably created by a ring 3 process.
+// This is the entry point of the new thread
+// Probably created by a ring 3 process.
     unsigned long entry = (unsigned long) entry_va;
 
-    // This is the stack pointer for the ring 3 thread.
-    // Probably given by a ring 3 process.
+// This is the stack pointer for the ring 3 thread.
+// Probably given by a ring 3 process.
     unsigned long rsp3  = (unsigned long) rsp3_va;
 
     if ( eoi == TRUE ){
@@ -329,9 +319,9 @@ spawn_enter_kernelmode(
         asm ("outb %al, $0x20 \n");
     }
 
+// #todo
+// We need to review the stack frame fpor ring0
 
-    // #todo
-    // We need to review the stack frame fpor ring0
     asm volatile ( 
         " movq $0, %%rax    \n" 
         " mov %%ax, %%ds    \n" 
@@ -355,20 +345,12 @@ spawn_enter_kernelmode(
 }
 
 
-
-
-
-
-
-
-
 // KiSpawnTask:
 // Interface to spawn a thread.
 
 void KiSpawnThread (int tid)
 {
     debug_print ("KiSpawnThread:\n");
-
 
     if ( tid < 0 || tid >= THREAD_COUNT_MAX )
     {
@@ -387,10 +369,13 @@ void KiSpawnThread (int tid)
 void spawn_pid(pid_t pid)
 {
     struct process_d *p;
-    
+
+// pid
     if (pid < 0 || pid >= PROCESS_COUNT_MAX )
         panic("spawn_pid: pid\n");
-    
+
+// process structure.
+
     p = (struct process_d *) processList[pid];
     
     if ( (void*) p == NULL )
@@ -399,8 +384,8 @@ void spawn_pid(pid_t pid)
     if ( p->used != TRUE || p->magic != 1234 )
         panic("spawn_pid: validation\n");
 
+// spawn
     KiSpawnThread(p->control);
-
     return;
 }
 
@@ -408,10 +393,13 @@ void spawn_pid(pid_t pid)
 void spawn_tid(int tid)
 {
     struct thread_d *t;
-    
+
+// tid
     if (tid < 0 || tid >= THREAD_COUNT_MAX )
         panic("spawn_tid: tid\n");
-    
+
+// thread structure.
+
     t = (struct thread_d *) threadList[tid];
     
     if ( (void*) t == NULL )
@@ -420,8 +408,8 @@ void spawn_tid(int tid)
     if ( t->used != TRUE || t->magic != 1234 )
         panic("spawn_tid: validation\n");
 
+// spawn
     KiSpawnThread(t);
-
     return;
 }
 
