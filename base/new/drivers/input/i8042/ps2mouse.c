@@ -154,14 +154,16 @@ void __ps2mouse_parse_data_packet (void)
 {
     unsigned char Flags=0;
 
-
     debug_print ("__ps2mouse_parse_data_packet:\n");
 
-    mouse_packet_data = buffer_mouse[0];    // Primeiro char
-    mouse_packet_x    = buffer_mouse[1];    // Segundo char.
-    mouse_packet_y    = buffer_mouse[2];    // Terceiro char.
+// grab the items.
+    mouse_packet_data = buffer_mouse[0];
+    mouse_packet_x    = buffer_mouse[1];
+    mouse_packet_y    = buffer_mouse[2];
+    // ? = = buffer_mouse[3];  //extra 
 
-    Flags = mouse_packet_data;     // Para uso interno.
+// Local use.
+    Flags = mouse_packet_data; 
 
 // == Posicionamento ====
 // #todo
@@ -169,8 +171,9 @@ void __ps2mouse_parse_data_packet (void)
 
     saved_mouse_x = mouse_x;
     saved_mouse_y = mouse_y;
-    //__update_mouse(); 
 
+    // old method.
+    //__update_mouse(); 
 
     int x_overflow=FALSE; 
     int y_overflow=FALSE;
@@ -191,7 +194,6 @@ void __ps2mouse_parse_data_packet (void)
     { 
         mouse_packet_y = (char) (mouse_packet_y - 0xFF - 0x01);
     }
-
 
 /*
     if (x_overflow || y_overflow)
@@ -226,22 +228,19 @@ void __ps2mouse_parse_data_packet (void)
 // Multiplica ou adiciona ao delta.
 
 // It is relative.
-    //mouse_x += mouse_packet_x;
-    //mouse_y -= mouse_packet_y;
     mouse_x = (long) (mouse_x + mouse_packet_x);
     mouse_y = (long) (mouse_y - mouse_packet_y);
-
 
 // Agora vamos manipular os valores atualizados.
     mouse_x = (mouse_x & 0x000003FF );
     mouse_y = (mouse_y & 0x000003FF );
 
 /*
- #todo
+// #todo
 // buttons
-  mouse_buttons[0] =  mouse_buf[0] & 1;
-  mouse_buttons[1] = (mouse_buf[0] & 2) >> 1;
-  mouse_buttons[2] = (mouse_buf[0] & 4) >> 2;
+  mouse_buttons[0] = (Flags & MOUSE_LEFT_BUTTON   );
+  mouse_buttons[1] = (Flags & MOUSE_RIGHT_BUTTON  ) >> 1;
+  mouse_buttons[2] = (Flags & MOUSE_MIDDLE_BUTTON ) >> 2;
   mouse_buttons[3] = (mouse_buf[3] & 0x10) >> 4;
   mouse_buttons[4] = (mouse_buf[3] & 0x20) >> 5;
 */
@@ -265,7 +264,8 @@ void __ps2mouse_parse_data_packet (void)
 // Comparando o novo com o antigo, pra saber se o mouse se moveu.
 // #obs: Pra quem mandaremos a mensagem de moving ??
 
-    if ( saved_mouse_x != mouse_x || saved_mouse_y != mouse_y )
+    if ( saved_mouse_x != mouse_x || 
+         saved_mouse_y != mouse_y )
     {
         // flag: o mouse está se movendo.
         // usaremos isso no keydown.
@@ -313,15 +313,23 @@ void __ps2mouse_parse_data_packet (void)
     };
 
 // event
-    //if( !x_overflow && !y_overflow )
-        xxxMouseEvent(mouse_x,mouse_y);
+
+    //if( !x_overflow && !y_overflow ){
+        //IN: event id, x, y
+        //xxxMouseEvent(0,mouse_x,mouse_y);
+    //}
+    
+    //#todo: event id 
+    xxxMouseEvent(0,mouse_x,mouse_y);
+    //xxxMouseEvent(1,mouse_x,mouse_y);
+    //...
 
     debug_print ("__ps2mouse_parse_data_packet: Done\n");
 }
 
 
-#define __PS2MOUSE_SET_DEFAULTS              0xF6
-#define __PS2MOUSE_SET_RESOLUTION            0xE8
+#define __PS2MOUSE_SET_DEFAULTS      0xF6
+#define __PS2MOUSE_SET_RESOLUTION    0xE8
 
 void ps2mouse_initialize_device (void)
 {
@@ -527,10 +535,8 @@ void ps2mouse_initialize_device (void)
 void DeviceInterface_PS2Mouse(void)
 {
     unsigned char _byte=0;
-
     int posX = 0;
     int posY = 0;
-
 
 
     debug_print ("DeviceInterface_PS2Mouse:\n");
@@ -548,8 +554,6 @@ void DeviceInterface_PS2Mouse(void)
 // #define ACKNOWLEDGE         0xFA
 // #define RESEND              0xFE
 
-
-
 // == bytes =================================
 // #todo
 // Read this to understand the bytes.
@@ -566,7 +570,6 @@ void DeviceInterface_PS2Mouse(void)
  because every packet begins with an ACK (0xFA), 
  which is easily recognizable.
 */
-
 
 // =============================================
 // #test
@@ -593,7 +596,6 @@ void DeviceInterface_PS2Mouse(void)
     if ( is_mouse_device == FALSE )
         return;
 // =============================================
-
 
     debug_print ("[Get byte]: #bugbug PF\n");
     //_byte = (unsigned char) zzz_mouse_read();

@@ -1099,9 +1099,8 @@ done:
 //==========
 
 
-int xxxMouseEvent(long x, long y)
+int xxxMouseEvent(int event_id,long x, long y)
 {
-
     //old: for ereasing
     static long old_x=0;
     static long old_y=0;
@@ -1145,7 +1144,6 @@ int xxxMouseEvent(long x, long y)
 
     refresh_rectangle ( old_x, old_y, 10, 10 );
 
-
     old_x = x;
     old_y = y;
 
@@ -1174,7 +1172,6 @@ int xxxMouseEvent(long x, long y)
     //    0 );          // rop_flags
 
     //refresh_rectangle ( x, y, 10, 10 );
-
 
 done:
     debug_print ("xxxMouseEvent: Done\n");
