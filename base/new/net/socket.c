@@ -246,17 +246,14 @@ socket_gramado (
     int protocol )
 {
 
-    // Esse é o arquivo usado pelos aplicativos.
-    // Retornaremos seu fd.
+// Esse é o arquivo usado pelos aplicativos.
+// Retornaremos seu fd.
 
     file *_file;
 
     struct process_d *Process;
-
-    // Procurar slot livres.
     int i=0;
     int __slot = -1;
-
 
 
     debug_print ("socket_gramado:\n");
@@ -267,7 +264,6 @@ socket_gramado (
         goto fail;
     }
 
-
     if (family != AF_GRAMADO){
         debug_print ("socket_gramado: [FAIL] bad family\n");
         goto fail;
@@ -277,7 +273,7 @@ socket_gramado (
     // #todo
     // Check current_process ?
 
-    // Process.
+// Process.
 
     Process = (void *) processList[current_process];
 
@@ -292,38 +288,35 @@ socket_gramado (
         //ok
     };
 
+//#todo
+//temos que criar uma rotina que procure slots em Process->Objects[]
+//e colocarmos em process.c
+//essa é afunção que estamos criando.
+    
+    // process_find_empty_stream_slot ( struct process_d *process );
 
-	//#todo
-	//temos que criar uma rotina que procure slots em Process->Objects[]
-	//e colocarmos em process.c
-	//essa é afunção que estamos criando.
-	// process_find_empty_stream_slot ( struct process_d *process );
+// #improvisando
+// 0, 1, 2 são reservados para o fluxo padrão.
+// Como ainda não temos rotinas par ao fluxo padrão,
+// pode ser que peguemos os índices reservados.
+// Para evitar, começaremos depois deles.
 
-
-
-	// #improvisando
-	// 0, 1, 2 são reservados para o fluxo padrão.
-	// Como ainda não temos rotinas par ao fluxo padrão,
-	// pode ser que peguemos os índices reservados.
-	// Para evitar, começaremos depois deles.
-
-
-    // Reserva um slot.
+// Reserva um slot.
     for ( i=3; i<NUMBER_OF_FILES; i++ )
     {
         if ( Process->Objects[i] == 0 ){ __slot = i; break; }
     };
 
-    // Check slot validation. 
+// Check slot validation. 
     if ( __slot == -1 )
     {
         printf ("socket_gramado: [FAIL] No free slots\n");
         goto fail;
     }
 
-    //
-    // == Buffer ========================
-    //
+//
+// == Buffer ========================
+//
     
     //char *buff = (char *) newPage ();
     char *buff = (char *) kmalloc(BUFSIZ);
@@ -365,7 +358,6 @@ socket_gramado (
     _file->uid = (uid_t) current_user;
     _file->gid = (gid_t) current_group;
 
-
 // sync
 
     _file->sync.sender   = -1;
@@ -389,7 +381,6 @@ socket_gramado (
 
     _file->_flags = __SWR;
 
-
 // No name for now.
     _file->_tmpfname = NULL;
         //_file->_tmpfname = "socket";
@@ -402,14 +393,14 @@ socket_gramado (
     _file->_p       = buff;
     _file->_lbfsize = BUFSIZ;
 
-    // Quanto falta
+// Quanto falta
     _file->_cnt = _file->_lbfsize;
 
-    // Offsets
+ // Offsets
     _file->_r = 0;
     _file->_w = 0;
 
-    // Status do buffer do socket.
+// Status do buffer do socket.
     _file->socket_buffer_full = 0;  
 
 
@@ -417,12 +408,12 @@ socket_gramado (
 
     _file->socket = sock;
 
-    // O arquivo do soquete, o buffer ?
+// O arquivo do soquete, o buffer ?
     sock->private_file = (file *) _file; 
 
-    // Socket pointer.
-    // Salvamos o ponteira para estrutura de soquete
-    // na estrutura de processo do processo atual.
+// Socket pointer.
+// Salvamos o ponteira para estrutura de soquete
+// na estrutura de processo do processo atual.
     Process->priv = (void *) sock;
 
 //
@@ -441,8 +432,8 @@ socket_gramado (
 
     debug_print ("socket_gramado: done\n");
 
-    // ok.
-    // Retornamos o fd na lista de arquivos abertos pelo processo.
+// ok.
+// Retornamos o fd na lista de arquivos abertos pelo processo.
 
     return (int) __slot;
 
@@ -464,11 +455,9 @@ socket_inet (
     int type, 
     int protocol )
 {
-
     file *_file;
-    struct process_d *Process;
 
-    // Procurar slot livres.
+    struct process_d *Process;
     int i=0;
     int __slot = -1;
 
@@ -764,23 +753,25 @@ int socket_ioctl ( int fd, unsigned long request, unsigned long arg )
     return -1;
 }
 
-int socket_read ( unsigned int fd, char *buf, int count ){
 
+int socket_read ( unsigned int fd, char *buf, int count )
+{
     debug_print ("socket_read:[TODO]\n");
     return -1;
 }
 
 
-int socket_write ( unsigned int fd, char *buf, int count ){
-
+int socket_write ( unsigned int fd, char *buf, int count )
+{
     debug_print ("socket_write:[TODO]\n");
     return -1;
 }
 
+
 // Conjunto especiais de portas.
 // Usados apenas na famíla AF_GRAMADO.
-int socket_set_gramado_port (int port, pid_t pid){
-
+int socket_set_gramado_port (int port, pid_t pid)
+{
     //port
     if ( port<0 || port >31){
         debug_print ("socket_set_gramado_port: port fail\n");
@@ -810,18 +801,14 @@ socket_unix (
     int type, 
     int protocol )
 {
-
     file *_file;
-    struct process_d *Process;
 
-    // Procurar slot livres.
+    struct process_d *Process;
     int i=0;
     int __slot = -1;
 
-
     //#todo
     //check sock arg.
-
 
     debug_print ("socket_unix:\n");
 
@@ -2501,16 +2488,15 @@ update_socket (
     unsigned long ip, 
     unsigned short port )
 {
-
     if ( (void *) socket ==  NULL ){
         return (int) 1;
-
     }else{
         socket->ip   = (unsigned long)  ip;
         socket->port = (unsigned short) port;
         return 0;
     };
 }
+
 
 /*
  ********************** 

@@ -69,6 +69,8 @@ __local_gotoxy (
     int console_number )
 {
 
+// #todo: max limit.
+
     if (console_number<0){
         return;
     }
@@ -98,6 +100,11 @@ void __local_save_cur (int console_number)
 
 void __local_restore_cur (int console_number)
 {
+//#todo: max limit
+    if(console_number<0){
+        return;
+    }
+
     CONSOLE_TTYS[console_number].cursor_x = saved_x;
     CONSOLE_TTYS[console_number].cursor_y = saved_y;
 }
@@ -134,29 +141,33 @@ void __local_insert_line (int console_number)
 
 void __local_delete_line(int console_number)
 {
+    int n=0;
     int oldtop    = 0;
     int oldbottom = 0;
 
-
+// #todo: max limit
     if(console_number<0){
         return;
     }
 
-    oldtop    = CONSOLE_TTYS[console_number].cursor_top;
-    oldbottom = CONSOLE_TTYS[console_number].cursor_bottom;
+    n = console_number;
 
+// save old.
+    oldtop    = (int) CONSOLE_TTYS[n].cursor_top;
+    oldbottom = (int) CONSOLE_TTYS[n].cursor_bottom;
 
-    CONSOLE_TTYS[console_number].cursor_top = CONSOLE_TTYS[console_number].cursor_y;
-    
+    CONSOLE_TTYS[n].cursor_top = (int) CONSOLE_TTYS[n].cursor_y;
+
     //#bugbug: apontando para si mesmo.
-    //CONSOLE[console_number].cursor_bottom = CONSOLE[console_number].cursor_bottom;
+    //CONSOLE[n].cursor_bottom = CONSOLE[n].cursor_bottom;
 
-    //#todo
-	//scrup();
+//#todo
+    //scrup();
 
-    CONSOLE_TTYS[console_number].cursor_top    = oldtop;
-    CONSOLE_TTYS[console_number].cursor_bottom = oldbottom;
+    CONSOLE_TTYS[n].cursor_top    = oldtop;
+    CONSOLE_TTYS[n].cursor_bottom = oldbottom;
 }
+
 
 void csi_J (int par)
 {
@@ -309,9 +320,8 @@ console_interrupt(
 
     //int TargetThread = foreground_thread;
     int TargetThreadTID = (target_thread & 0xFFFF);
-    int DeviceType   = device_type;
-    int Data         = data;
-
+    int DeviceType = device_type;
+    int Data = data;
 
 // #todo
 // E se não tivermos uma foreground thread ?
@@ -321,9 +331,9 @@ console_interrupt(
 
 // #todo: 
 // Check overflow
-
 // #todo
 // Maybe we can set the idle thread if it fail.
+// #todo: max limit
 
     if ( TargetThreadTID < 0 ){
         debug_print ("console_interrupt: [FAIL] TargetThreadTID\n");
@@ -332,10 +342,9 @@ console_interrupt(
 
     switch (DeviceType){
 
-
         // keyboard
         // data =  raw byte.
-        // See: vt/draw/model/kgws.c
+        // See: kgws.c
         case CONSOLE_DEVICE_KEYBOARD:
             debug_print("console_interrupt: input from keyboard device :)\n");
 
@@ -349,7 +358,6 @@ console_interrupt(
                 //cut_round( threadList[TargetThreadTID] );
 
             break;
-
 
         // COM port
         case CONSOLE_DEVICE_SERIAL:
@@ -374,17 +382,14 @@ void console_init_virtual_console (int n)
 {
     int ConsoleIndex = -1;
 
-
     debug_print ("console_init_virtual_console:\n");
 
 
-//
 // Limits
-//
 
     ConsoleIndex = n;
-
-    if ( ConsoleIndex < 0 || ConsoleIndex >= CONSOLETTYS_COUNT_MAX  )
+    if ( ConsoleIndex < 0 || 
+         ConsoleIndex >= CONSOLETTYS_COUNT_MAX  )
     {
         debug_print ("console_init_virtual_console: [FAIL] ConsoleIndex\n");
         x_panic     ("console_init_virtual_console: [FAIL] ConsoleIndex\n");
@@ -490,29 +495,26 @@ void console_init_virtual_console (int n)
 // cursor limits
 
 
-    // Full screen
+// Full screen
     CONSOLE_TTYS[ConsoleIndex].fullscreen_flag = TRUE;
     CONSOLE_TTYS[ConsoleIndex].cursor_left = 0;
     CONSOLE_TTYS[ConsoleIndex].cursor_top  = 0;
     CONSOLE_TTYS[ConsoleIndex].cursor_right  = (SavedX/8);
     CONSOLE_TTYS[ConsoleIndex].cursor_bottom = (SavedY/8);
 
-    //everyone.
+//everyone.
     CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_WHITE; 
 
 
     if ( ConsoleIndex == 0){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_WHITE; 
     }
-
     if ( ConsoleIndex == 1){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_RED; 
     }
-
     if ( ConsoleIndex == 2){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_GREEN; 
     }
-
     if ( ConsoleIndex == 3){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_BLUE; 
     }
@@ -674,7 +676,7 @@ void console_scroll (int console_number)
 
     scroll_screen_rect();
 
-    // Clena the last line.
+// Clear the last line.
   
 // Salva cursor
     OldX = CONSOLE_TTYS[console_number].cursor_x;
@@ -725,9 +727,7 @@ void console_scroll (int console_number)
 }
 
 
-
 /*
- *********************************************
  * console_outbyte:
  *     Trata o caractere a ser imprimido e chama a rotina /_outbyte/
  * para efetivamente colocar o caractere na tela.
@@ -748,6 +748,8 @@ void console_outbyte (int c, int console_number)
     int n = (int) console_number;
 
     static char prev=0;
+
+// char support.
 
     unsigned long __cWidth  = gwsGetCurrentFontCharWidth();
     unsigned long __cHeight = gwsGetCurrentFontCharHeight();
@@ -995,7 +997,6 @@ draw:
 
 
 /*
- ***************************************
  * xxxConsoleOutbyte:
  * 
  *    Outputs a char on the console device;
@@ -1114,7 +1115,6 @@ void console_putchar ( int c, int console_number )
     int cWidth = get_char_width();
     int cHeight = get_char_height();
 
-
     if ( cWidth == 0 || cHeight == 0 )
     {
         panic ("console_putchar: char\n");
@@ -1125,10 +1125,9 @@ void console_putchar ( int c, int console_number )
 
 // #todo
 // Check these limits.
-
-    //  Console limits
-    // CONSOLETTYS_COUNT_MAX
-    // See: tty.h
+// Console limits
+// CONSOLETTYS_COUNT_MAX
+// See: tty.h
 
     if ( console_number < 0 || console_number > 3 )
     {
@@ -1173,7 +1172,6 @@ int consoleCompareStrings(void)
     //unsigned long tmp_size = (512*4096);    // 512*4096 = 2MB
     void *__buffer; //= (void *) allocPages ( 512 );
 
-
 // ===================================
 // #test: Testando carregar usando path.
     //char __path[] = "/GRAMADO/TEST.BMP";
@@ -1181,7 +1179,6 @@ int consoleCompareStrings(void)
     //char __path[] = "/GRAMADO/FOLDER/TEST2.TXT";
     char __path[] = "/GRAMADO/FOLDER/FOLDER2/TEST3.TXT";
 // =========================================
-
 
     debug_print("consoleCompareStrings: \n");
     printf("\n");
@@ -1422,25 +1419,27 @@ done:
  *     Inicializa o prompt.
  */
 
+// Clean prompt buffer.
+// Print the prompt string.
+ 
 void consolePrompt (void)
 {
-    int i=0;
+    register int i=0;
+    
+    for ( i=0; i<PROMPT_MAX_DEFAULT; i++ ){ 
+        prompt[i] = (char) '\0'; 
+    };
 
-    // Clean prompt buffer.
-    
-    for ( i=0; i<PROMPT_MAX_DEFAULT; i++ ){ prompt[i] = (char) '\0'; };
-    
     prompt[0] = (char) '\0';
     prompt_pos    = 0;
     prompt_status = 0;
     prompt_max    = PROMPT_MAX_DEFAULT;  
 
-    // Prompt
     printf("\n");
     printf("$ ");
-    
-    //invalidate_screen();
+
     refresh_screen();
+    //invalidate_screen();
 }
 
 
@@ -1464,9 +1463,7 @@ __console_write (
     char *data = (char *) buf;
     size_t MaxSize = (size_t) count;
 
-    // loop
     register size_t i=0;
-
     char ch=0; 
 
 //
@@ -1919,17 +1916,23 @@ fail:
 
 void __respond (int console_number)
 {
-    char * p = __RESPONSE;
+    char *p = __RESPONSE;
+
+// #todo: max limit
+    if(console_number<0){
+        return;
+    }
 
     while (*p) {
         
         //PUTCH(*p,tty->read_q);
         console_putchar ( (int) *p, console_number );
         p++;
-    }
+    };
 
-	//copy_to_cooked(tty);
+    //copy_to_cooked(tty);
 }
+
 
 // See:
 // https://en.wikipedia.org/wiki/Control_character
@@ -1980,6 +1983,8 @@ void __local_insert_char ( int console_number )
 
 void __local_delete_char(int console_number)
 {
+
+// #todo: max limit
 
     if(console_number<0){
         return;
@@ -2071,8 +2076,8 @@ int VirtualConsole_initialize(void)
 
     ShellFlag = FALSE;
 
-    // Virtual Console:
-    // The kernel only have four virtual consoles.
+// Virtual Console:
+// The kernel only have four virtual consoles.
 
     fg_console = 0;
 
@@ -2080,9 +2085,7 @@ int VirtualConsole_initialize(void)
     console_init_virtual_console(1);
     console_init_virtual_console(2);
     console_init_virtual_console(3);
-    
-    jobcontrol_switch_console(0);
-
+    jobcontrol_switch_console(fg_console);
 
     /*
     int i=0;
@@ -2097,22 +2100,21 @@ int VirtualConsole_initialize(void)
     };
     */
 
+// Obs: 
+// O video já foi inicializado em main.c.
+// Isso atualiza a estrutura de console do console atual.
 
-		// Obs: 
-		// O video já foi inicializado em main.c.
-		// Isso atualiza a estrutura de console do console atual.
+// BANNER !
+// Welcome message. (Poderia ser um banner.) ??
 
-    // BANNER !
-    // Welcome message. (Poderia ser um banner.) ??
+// Cursor:
+// See: system.c
 
-    // Cursor:
-    // See: 0mem/core/system.c
-    
     set_up_cursor(0,0);
 
-    // #hackhack
-    // Esse trabalho não nos pertence, pertence ao stdio,
-    // mas funciona.
+// #hackhack
+// Esse trabalho não nos pertence, pertence ao stdio,
+// mas funciona.
 
     stdio_terminalmode_flag = TRUE;
     stdio_verbosemode_flag = TRUE;
@@ -2120,14 +2122,16 @@ int VirtualConsole_initialize(void)
     return 0;
 }
 
+
 // This will be the firt message
 // at the top/left corner of the screen.
 void console_banner(unsigned long banner_flags)
 {
 
 // Serial
-    if ( Initialization.serial_log == TRUE )
+    if ( Initialization.serial_log == TRUE ){
         debug_print ("Welcome to Gramado OS!\n");
+    }
 
 // Virtual console
     if( Initialization.console_log == TRUE )
@@ -2238,49 +2242,43 @@ console_ioctl (
 
 void REFRESH_STREAM ( file *f )
 {
-    // loop
     int i=0;
     int j=0;
-
     char *ptr;
-
-    int cWidth  = get_char_width();
-    int cHeight = get_char_height();
-
 
     debug_print("console.c-REFRESH_STREAM: [FIXME] It is wrong!\n");
 
-    if ( cWidth == 0 || cHeight == 0 )
-    {
+// char width and height.
+    int cWidth  = get_char_width();
+    int cHeight = get_char_height();
+    
+    if ( cWidth == 0 || cHeight == 0 ){
         panic ("REFRESH_STREAM: [FAIL] char w h\n");
     }
 
-
     j = (80*25);
 
-    //
-    // File
-    //
+// File
+// #bugbug
+// Tem que checar a validade da estrutura e do ponteiro base.
 
-    // #bugbug
-    // Tem que checar a validade da estrutura e do ponteiro base.
-    if ( (void *) f == NULL )
-    { 
+    if ( (void *) f == NULL ){ 
         panic ("REFRESH_STREAM: [FAIL] f\n");
     }
 
-
-    // Pointer
+// Pointer
 
     ptr = f->_base;
 
-    // #bugbug
-    // Tem que checar a validade da estrutura e do ponteiro base.
+// #bugbug
+// Tem que checar a validade da estrutura e do ponteiro base.
+
     //if ( (void *) c == NULL ){ ? }
 
-    // Seleciona o modo terminal.
+// Seleciona o modo terminal.
 
-    //++
+
+//++
     stdio_terminalmode_flag = TRUE; 
     for ( i=0; i<j; i++ )
     {
@@ -2298,31 +2296,33 @@ void REFRESH_STREAM ( file *f )
         ptr++;
     };
     stdio_terminalmode_flag = FALSE; 
-    //--
+//--
 }
 
-/*
- * kclear:
- *     Limpa a tela
- */
+
+// kclear:
+//     Clear console.
+// #todo: change the name of the function.
 
 int kclear (int color, int console_number)
 {
-    int Status = -1;
+    if ( VideoBlock.useGui != TRUE ){
+        return -1;
+    }
 
+    backgroundDraw (color);
 
-    if ( VideoBlock.useGui == 1 )
-    {
-        backgroundDraw ( COLOR_BLUE );
-        
-        CONSOLE_TTYS[console_number].cursor_x = 0; 
-        CONSOLE_TTYS[console_number].cursor_y = 0; 
-        Status = 0;
-        
-    }else{ Status = -1; };
+// #todo: max limit.
+    if (console_number<0){
+        return -1;
+    }
 
-    return (int) Status;
+    CONSOLE_TTYS[console_number].cursor_x = 0;
+    CONSOLE_TTYS[console_number].cursor_y = 0;
+
+    return 0;
 }
+
 
 int kclearClientArea (int color)
 {
@@ -2330,22 +2330,6 @@ int kclearClientArea (int color)
 
     return (int) kclear (color, fg_console);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

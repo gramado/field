@@ -1,7 +1,7 @@
 
+// userenv.c
 
 #include <kernel.h>
-
 
 
 // User Environment Manager (UEM)
@@ -51,17 +51,19 @@ int is_superuser(void)
     return FALSE;
 }
 
+
 int __getusername (char *buffer)
 {
     char *login_buffer = (char *) buffer;
+
 
     if ( (void*) buffer == NULL ){
         debug_print ("__getusername: [FAIL] buffer\n");
         return -1;
     }
 
-	//Estrutura default para informações sobre o host.
-	//host.h
+//Estrutura default para informações sobre o host.
+//host.h
 
     if ( (void *) CurrentUser== NULL ){
         printf ("__getusername: CurrentUser\n");
@@ -93,10 +95,9 @@ int __setusername ( const char *new_username )
         return -1;
     }
 
-    // Estrutura de usuário.
-     
-    // #todo
-    // Where is this structure defined?
+// Estrutura de usuário.
+// #todo
+// Where is this structure defined?
 
     if ( (void *) CurrentUser == NULL ){
         printf ("__setusername: CurrentUser\n");
@@ -114,6 +115,7 @@ int __setusername ( const char *new_username )
     return (int) -1;
 }
 
+
 /*
  * CreateUser:
  *     Cria um usuário do computador.
@@ -123,17 +125,15 @@ int __setusername ( const char *new_username )
  * configuração dentro da pasta.
  */
 
-void *CreateUser ( char *name, int type ){
-
+void *CreateUser ( char *name, int type )
+{
     struct user_info_d  *New;
-
     int Index = 0;
     int i=0;
 
-
-    // #bugbug
-    // We don't wanna kill the initialization 
-    // only for a wrong name.
+// #bugbug
+// We don't wanna kill the initialization 
+// only for a wrong name.
 
     // #alert
     if ( (void*) name == NULL ){
@@ -147,14 +147,13 @@ void *CreateUser ( char *name, int type ){
         panic ("CreateUser: [FIXME] *name is not valid\n");
     }
 
+// #todo
+// We need to check the limits for the name size.
+// Maybe copy the name into a local buffer.
+// strlen(name);
 
-    // #todo
-    // We need to check the limits for the name size.
-    // Maybe copy the name into a local buffer.
-    // strlen(name);
 
-
-    // Structure.
+// Structure.
 
     New = (void *) kmalloc ( sizeof(struct user_info_d) ); 
 
@@ -229,7 +228,6 @@ fail:
 }
 
 
-
 int User_initialize(void)
 {
 
@@ -237,12 +235,12 @@ int User_initialize(void)
 
     current_user = 0;
 
-    // User session, room (Window Station), desktop, 
+// User session, room (Window Station), desktop, 
     current_usersession  = 0;
     current_room         = 0;
     current_desktop      = 0;
 
-    // Initialize user info structure
+// Initialize user info structure
     printf ("User_initialize: init_user_info\n");
     //init_user_info ();   
 
@@ -251,13 +249,13 @@ int User_initialize(void)
 // Security
 //
 
-    // Initialize User Session, room and Desktop.
-    // user section
+// Initialize User Session, room and Desktop.
+// user section
     //printf ("User_initialize: initializing user session\n");
     //init_user_session();
 
-    // room
-    // initialize window station default.
+// room
+// initialize window station default.
     //printf ("User_initialize: initializing room\n");   
     //init_room_manager();
 
@@ -265,11 +263,11 @@ int User_initialize(void)
     printf ("User_initialize: initializing desktop\n");   
     init_desktop();
 
-
-
     debug_print("User_initialize: done\n");
     return 0;
 }
+
+
 
 
 

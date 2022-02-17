@@ -17,7 +17,7 @@ int kgws_ws_status;
 
 //=================================
 
-// sendto_tty:
+// write_in_tty:
 // Colocamos na tty PS2KeyboardDeviceTTY ou imprimimos na tela.
 
 int 
@@ -36,7 +36,6 @@ write_in_tty (
     //struct tty_d *tty;
     //tty = (struct tty_d *) PS2KeyboardDeviceTTY;
     //tty = (struct tty_d *) target_tty;
-
 
 //
 // Event block
@@ -213,7 +212,7 @@ fail:
 
 
 // ==================================
-// sendto_eventqueue:
+// postto_eventqueue:
 // keyboard events.
 // Envia eventos para a fila na thread em foreground.
 // Chama um diálogo local para algumas combinações de teclas.
@@ -419,6 +418,7 @@ void kgws_enable(void)
     EnableKGWS = TRUE;
 }
 
+
 void kgws_disable(void)
 {
     debug_print("kgws_disable: Disable KGWS\n");
@@ -440,10 +440,9 @@ void kgws_disable(void)
 
 
 // Fibonacci Series using Recursion 
-int fib (int n){ 
-
+int fib (int n)
+{ 
     register int Copy = n;
-    
     int a=0;
     int b=0;
 
@@ -1030,8 +1029,6 @@ int KGWS_initialize(void)
 
     CurrentDisplay->id = 0;  // ??
     CurrentDisplay->fd = 0;  // ??
-
-// Validation
     CurrentDisplay->used = TRUE; 
     CurrentDisplay->magic = 1234; 
 
