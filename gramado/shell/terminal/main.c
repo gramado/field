@@ -113,6 +113,37 @@ void clear_terminal_client_window(int fd)
 }
 
 
+// local
+// command "window"
+void __test_gws(int fd)
+{
+
+    // test window
+    int test_win = Terminal.main_window_id;
+    //int test_win = Terminal.client_window_id;
+
+    if(fd<0)
+        return;
+
+    gws_change_window_position(fd,test_win,0,0);
+    gws_resize_window(
+        fd, test_win, 400, 400);
+
+    //gws_refresh_window(fd,test_win); //#bugbug
+
+    //text
+    //gws_draw_text(fd,test_win,0,0,COLOR_RED,"This is a string");
+
+    gws_redraw_window(
+         fd, test_win, TRUE );
+
+    //text
+    //gws_draw_text(fd,test_win,0,0,COLOR_RED,"This is a string");
+
+// update desktop
+    //gws_async_command(fd,11,0,0); //update desktop
+}
+
 
 // Compare the string typed into the terminal.
 // Remember, we have an embedded command interpreter.
@@ -123,6 +154,22 @@ void compareStrings(int fd)
     }
 
     //printf("\n");
+
+    //#test: testando serviços diversos.
+    if ( strncmp(prompt,"window",6) == 0 )
+    {
+        __test_gws(fd);
+        goto exit_cmp;
+    }
+
+    //#test: update all the windows in the desktop.
+    if ( strncmp(prompt,"desktop",7) == 0 )
+    {
+        //gws_async_command(fd,12,0,0); //switch focus.
+        gws_async_command(fd,11,0,0); //update desktop
+        goto exit_cmp;
+    }
+
 
 // =============
 // 'help'

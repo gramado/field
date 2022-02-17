@@ -1129,7 +1129,7 @@ void __Tile(void)
 }
 
 
-// #danger: Not tested yet.
+// #danger: We are testing this funcion.
 // Repinta todas as janelas seguindo a ordem da lista
 // que está em last_window.
 // No teste isso é chamado pelo kernel através do handler.
@@ -3541,10 +3541,9 @@ int gwssrv_redraw_menu ( struct gwsssrv_menu_d *menu )
 
 
 //test
-int create_main_menu(void){
-
+int create_main_menu(void)
+{
     struct gwsssrv_menu_d *menu;
-
 
     // #testing (NEW)
     menu = gwssrv_create_menu (

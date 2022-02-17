@@ -60,16 +60,14 @@ int gUseFrame = TRUE;
 
 void gws_enable_transparence(void)
 {
-   config_use_transparency=TRUE;
+    config_use_transparency=TRUE;
 }
 
 
 void gws_disable_transparence(void)
 {
-   config_use_transparency=FALSE;
+    config_use_transparency=FALSE;
 }
-
-
 
 
 // #todo
@@ -278,7 +276,6 @@ struct gws_surface_d *xxxCreateSurface(
 
 void demoTerry(void)
 {
-
     CreateWindow ( 
          WT_SIMPLE, 
          0,  //style
@@ -288,7 +285,6 @@ void demoTerry(void)
          40-8, 40-8, 200+8+8, 320+8+8,   
          gui->screen_window, 0, 
          COLOR_WHITE, COLOR_WHITE );
-
 
      struct gws_window_d *terry;
      terry = (struct gws_window_d *) CreateWindow ( 
@@ -313,14 +309,12 @@ void demoTerry(void)
     //    8, 240, 
     //    8, 320, 0 );
 
-
     if ( (void*) terry != NULL){
         dtextDrawText ( (struct gws_window_d *) terry,
             20, 20, COLOR_BLUE, "Demo: Terry's window" );
         dtextDrawText ( (struct gws_window_d *) terry,
             20, 32, COLOR_RED,  "Gramado Community :)" );
     }
-
 }
 
 

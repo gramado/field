@@ -2311,6 +2311,16 @@ int serviceAsyncCommand (void)
         
         break;
 
+    case 11:
+        wm_update_desktop(); //see: wm.c
+        return 0;
+        break;
+
+    case 12:
+        __switch_focus();
+        return 0;
+        break;
+
     // ...
 
     default:

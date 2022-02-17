@@ -1,22 +1,16 @@
 /*
  * File: gws.c
- * 
  *     Part of the Gramado Window Server.
- *
  * History:
  *     2019 - Created by Fred Nora.
  */
 
 
-
 // Window server routines.
 #include <gws.h>
 
-
-
 int dirty=0;
 int background=0;
-
 
 
 /*
@@ -79,16 +73,16 @@ void xxxThread (void){
  *     @todo: na hora de criar a thread precisamos passar o PID desse processo.
  */
 
-void ____test_threads (void){
-
+void ____test_threads (void)
+{
     void *T;	
-	
-	// Obs: 
-	// As threads criadas aqui s�o atribu�das ao processo PID=0.
-	// @todo: 
-	// No kernel, quando criar uma thread ela deve ser atribu�da
-    // ao processo que chamou a rotina de cria��o.	
-	
+
+// Obs: 
+// As threads criadas aqui s�o atribu�das ao processo PID=0.
+// @todo: 
+// No kernel, quando criar uma thread ela deve ser atribu�da
+// ao processo que chamou a rotina de cria��o.	
+
 	printf ("____test_threads: Creating threads..\n");
 	//apiCreateThread((unsigned long)&shellThread, 0x004FFFF0,"TestShellThread1");
 	//apiCreateThread((unsigned long)&shellThread, 0x004FFFF0,"TestShellThread2");

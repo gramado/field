@@ -1203,9 +1203,8 @@ struct gws_surface_d
 struct gws_surface_d *rootSurface;
 
 
-
 //
-// == prototypes =====================================================
+// == prototypes ===========================
 //
 
 void __switch_focus(void);
@@ -1215,7 +1214,6 @@ void set_focus(struct gws_window_d *window);
 void gws_enable_transparence(void);
 void gws_disable_transparence(void);
 
-
 struct gws_surface_d *xxxCreateSurface( 
     unsigned long left,
     unsigned long top,
@@ -1223,20 +1221,16 @@ struct gws_surface_d *xxxCreateSurface(
     unsigned long height,
     unsigned long color );
 
-
-
-
 void wm_flush_rectangle(struct gws_rect_d *rect);
 void wm_flush_window(struct gws_window_d *window);
 void wm_flush_screen(void);
-
 
 void wmCompose(void);
 void wmRefreshDirtyRectangles(void);
 
 void flush_frame(void);
 
-// #danger: Not tested yet.
+// #danger: We are testing this funcion.
 void wm_update_desktop(void);
 
 
