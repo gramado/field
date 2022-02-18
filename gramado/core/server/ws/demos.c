@@ -469,19 +469,24 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
     if( (void*) m == NULL )
         return NULL;
 
-    last_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
-    if( (void*) last_tri == NULL )
-        return NULL;
+    //last_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
+    //if( (void*) last_tri == NULL )
+        //return NULL;
 
     m->n = N;
-    m->first_triangle = (struct gr_triandle_d *) last_tri;
-    m->last_triangle = (struct gr_triandle_d *) last_tri;
 
     int i=0;
     int value=0;
 
     // clear
     //demoClearSurface(COLOR_BLACK);
+
+    //tmp_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
+    //if( (void*) tmp_tri == NULL )
+        //return NULL;
+
+    //m->first_triangle = (struct gr_triandle_d *) tmp_tri;
+    //m->last_triangle  = (struct gr_triandle_d *) tmp_tri;
 
 // loop: compose
 
@@ -493,6 +498,24 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
 
     if ( (void*) tmp_tri != NULL )
     {
+        // Se ele foi o primeiro a ser criado.
+        if(i==0){
+            m->first_triangle = (struct gr_triandle_d *) tmp_tri;
+            m->last_triangle  = (struct gr_triandle_d *) tmp_tri;
+        }
+        
+        // Se ja existe um criado anteriormente.
+        if ( (void*) last_tri != NULL ){
+            last_tri->next = (struct gr_triandle_d *) tmp_tri;
+            last_tri = last_tri->next;
+            
+        // Se for o primeiro
+        }else if ( (void*) last_tri == NULL ){
+            m->last_triangle  = (struct gr_triandle_d *) tmp_tri;
+            last_tri          = (struct gr_triandle_d *) tmp_tri;
+            last_tri->next = NULL;
+        }; 
+
         // down
         tmp_tri->p[0].x = (0 -value);
         tmp_tri->p[0].y = 0;  //(0 +value);
@@ -512,12 +535,6 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
         tmp_tri->p[1].color = GRCOLOR_LIGHTBLUE; //COLOR_BLUE;
         
         value++;
-        
-        // Passa a ser o próximo do criado anteriormente.
-        last_tri->next = (struct gr_triandle_d *) tmp_tri;
-        // Passa a ser o anterior.
-        last_tri = (struct gr_triandle_d *) tmp_tri;
-        m->last_triangle = (struct gr_triandle_d *) last_tri;
     }
     };
 
