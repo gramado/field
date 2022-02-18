@@ -55,15 +55,13 @@ struct processor_d
     int magic;
     int id;
 
+// #todo: 
+// Processor State ???
 
-	// #todo: 
-	// Processor State ???
-	
-	
-	//@todo: Reservar espaço ???
+//@todo: Reservar espaço ???
 	//ULONG   KernelReserved[16];         // For use by the kernel
     //ULONG   HalReserved[16];            // For use by Hal
-	
+
 	//@todo: quantas vezes um processador foi interrompido.
 	// ULONG   InterruptCount;             // per precessor counts
 
@@ -86,70 +84,72 @@ struct processor_d
     int Extended_Family_ID;    // 8 bit extended family
     // 4bit reserved
 
-	//0x1(ebx)
-	//Brand Index
-	//CLFLUSH cache line size / 8
-	//APIC Physical ID
-	//...
-	
-	//0x1(ecx)
-	//0 SSE3 New Instructions
-	//1-2 Reserved
-	//3 MONITOR/MWAIT
-	//4 CPL Qualified Debug Store
-	//5-7 Reserved
-	//8 Thermal Monitor 2
-	//9 Reserved
-	//10 L1 Context ID
-	//11-31 Reserved
-	
-	//0x1(edx)
-    //0 FPU x87 FPU on Chip
+//0x1(ebx)
+// #todo: indicar os bits corretamente.
+//Brand Index
+//CLFLUSH cache line size / 8
+//APIC Physical ID
+//...
+
+//0x1(ecx)
+    unsigned int hasSSE3;  //0 SSE3 New Instructions
+//1-2 Reserved
+//3 MONITOR/MWAIT
+//4 CPL Qualified Debug Store
+//5-7 Reserved
+//8 Thermal Monitor 2
+//9 Reserved
+//10 L1 Context ID
+//11-31 Reserved
+
+//0x1(edx)
+    unsigned int hasX87FPU;  //0 - FPU x87 FPU on Chip
 	//1 VME Virtual-8086 Mode Enhancement
 	//2 DE Debugging Extensions
-	//3 PSE Page Size Extensions
-	//4 TSC Time Stamp Counter
-	//5 MSR RDMSR and WRMSR Support
-	//6 PAE Physical Address Extensions
+    unsigned int hasPSE;  //3 PSE Page Size Extensions
+    unsigned int hasTSC;  //4 TSC Time Stamp Counter
+    unsigned int hasMSR;  //5 MSR RDMSR and WRMSR Support
+    unsigned int hasPAE;  //6 PAE Physical Address Extensions
 	//7 MCE Machine Check Exception
 	//8 CX8 CMPXCHG8B Inst.
-    unsigned int isApic;    //O processador suporta APIC.	
+    unsigned int hasAPIC;    //O processador suporta APIC.	
 	//10 n/a Reserved
 	//11 SEP SYSENTER and SYSEXIT
-	//12 MTRR Memory Type Range Registers
+    unsigned int hasMTRR;  //12 MTRR Memory Type Range Registers
 	//13 PGE PTE Global Bit
 	//14 MCA Machine Check Architecture
 	//15 CMOV Conditional Move/Compare Instruction
-	//16 PAT Page Attribute Table
-	//17 PSE Page Size Extension
-	//18 PSN Processor Serial Number
+    unsigned int hasPAT;  //16 PAT Page Attribute Table
+    unsigned int hasPSE36;  //17 PSE Page Size Extension
+    unsigned int hasPSN;  //18 PSN Processor Serial Number
 	//19 CLFSH CFLUSH Instruction
 	//20 n/a Reserved
 	//21 DS Debug Store
 	//22 ACPI Thermal Monitor and Clock Ctrl
-	//23 MMX MMX Technology
+    unsigned int hasMMX;  //23 MMX MMX Technology
 	//24 FXSR FXSAVE/FXRSTOR
-	//25 SSE SSE Extensions
-	//26 SSE2 SSE2 Extensions
+    unsigned int hasSSE;  //25 SSE SSE Extensions
+    unsigned int hasSSE2;  //26 SSE2 SSE2 Extensions
 	//27 SS Self Snoop
-	//28 HTT Hyper-threading technology
+    unsigned int hasHTT;  //28 HTT Hyper-threading technology
 	//29 TM Thermal Monitor
-	//30 n/a Reserved
-	//31 PBE Pend. Brk. En.	
-	//...
+	//30 n/a Reserved (IA64)
+	//31 PBE Pend. Brk. En.
 
+//----
 
-    // hypervisor level 4000_0000h
+// hypervisor level 4000_0000h
     unsigned int hvName[4];
 
-    //0x80000000 (eax) (Max feature id.).
-    //Maximum meaningful value of InfoType for extended function CPUID information.
+// 0x80000000 (eax) (Max feature id.).
+// Maximum meaningful value of InfoType for 
+// extended function CPUID information.
     unsigned int MaxFeatureId;
 
-    //0x80000002,0x80000003,0x80000004 (Brand name)	
+// 0x80000002,0x80000003,0x80000004 (Brand name)	
     unsigned int BrandName[4*3];
 
-    //0x80000006(ecx) (L2 cache information (Intel)).
+// 0x80000006(ecx) (L2 cache information (Intel)).
     unsigned int L2LineSize;
     unsigned int L2Associativity;
     unsigned int L2Cachesize;
@@ -163,16 +163,13 @@ struct processor_d
     unsigned int L1Cachesize;
     unsigned int L3Cachesize;
 
-	
-	//0x80000008(eax??) (Virtual and physical memory sizes.)
+// 0x80000008(eax??) (Virtual and physical memory sizes.)
     unsigned int Physical_Address_Size;
     unsigned int Virtual_Address_Size;
-	//...
-	
-	
+    //...
+
 	//unsigned long MemorySize; 
-	
-	
+
 	// cada processador tem sua gdt, idt, tss.
 	// #todo usar ponteiro para estrutura.
 

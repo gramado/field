@@ -5,6 +5,7 @@
 #include <kernel.h>
 
 
+// #todo: Used during the initialization.
 int detect_IsQEMU(void)
 {
     g_is_qemu = FALSE;
@@ -25,13 +26,18 @@ int detect_IsQEMU(void)
 }
 
 
+// #todo: Used by system metrics.
+int isQEMU(void)
+{
+    return (int) g_is_qemu;
+}
+
+
 /*
- **********************************************************
  * hal_probe_cpu:
  *     Detectar qual é o tipo de processador. 
  *     Salva o tipo na estrutura.
- *
- * @todo: Estamos usando cpuid para testar os 2 tipos de arquitetura.
+ * #todo: Estamos usando cpuid para testar os 2 tipos de arquitetura.
  * nao sei qual ha instruções diferentes para arquiteturas diferentes.
  */
 
@@ -49,13 +55,16 @@ int hal_probe_cpu (void)
         x_panic ("hal_probe_cpu: [FAIL] processor\n");
     }
 
+// Unknown processor type.
+    processor->Type = Processor_NULL;
+
+//
 // Check vendor
+//
+
     cpuid ( 0, eax, ebx, ecx, edx ); 
 
-//=======================
-// Confere se é intel.
-// TestIntel:
-
+// TestIntel: Confere se é intel.
     if ( ebx == CPUID_VENDOR_INTEL_1 && 
          edx == CPUID_VENDOR_INTEL_2 && 
          ecx == CPUID_VENDOR_INTEL_3 )
@@ -64,10 +73,7 @@ int hal_probe_cpu (void)
         return 0;
     }
 
-//=======================
-// Confere se é Amd.
-// TestAmd:
-
+// TestAmd: Confere se é AMD.
     if ( ebx == CPUID_VENDOR_AMD_1 && 
          edx == CPUID_VENDOR_AMD_2 && 
          ecx == CPUID_VENDOR_AMD_3 )
@@ -75,21 +81,14 @@ int hal_probe_cpu (void)
         processor->Type = Processor_AMD;
         return 0;
     }
-
-// Fail:
-// Desconhecido.
-// todo: Aqui é um erro fatal.
-
-    processor->Type = Processor_NULL;
-
+    
+// fail:
     x_panic ("hal_probe_cpu: [FAIL] Processor not supported\n");
-
     return (int) (-1);
 }
 
 
 /*
- ********************************************************
  * hal_probe_processor_type:
  *     Sonda pra ver apenas qual é a empresa do processador.
  */
@@ -102,47 +101,44 @@ int hal_probe_processor_type (void)
     unsigned int ebx=0;
     unsigned int ecx=0;
     unsigned int edx=0;
-
     unsigned int name[32];
-
     int MASK_LSB_8 = 0xFF;  
-
-
 
 
     //debug.
     debug_print ("hal_probe_processor_type:\n");
     //printf("Scaning x86 CPU ...\n");
 
-    // vendor
-    // This is the same for intel and amd processors.
+
+// Check processor structure.
+    if ( (void *) processor == NULL ){
+        x_panic ("hal_probe_processor_type: [FAIL] processor\n");
+    }
+
+
+// Unknown processor type.
+    // processor->Type = Processor_NULL;
+
+// vendor
+// This is the same for intel and amd processors.
     cpuid( 0, eax, ebx, ecx, edx ); 
     name[0] = ebx;
     name[1] = edx;
     name[2] = ecx;
     name[3] = 0;
 
-//
-// process
-// 
-
-    // #bugbug
-    // struct validation
-
-
-	//salva na estrutura.
+// Salva na estrutura.
     processor->Vendor[0] = ebx;
     processor->Vendor[1] = edx;
     processor->Vendor[2] = ecx;
     processor->Vendor[3] = 0;
 
 
-    // #hackhack
-    
-    // FIXME
-    // Na verdade quando estamos rodando no qemu, é amd.
-    // #todo: Precisamos do nome certo usado pelo qemu.
-    
+// #hackhack
+// #fixme
+// Na verdade quando estamos rodando no qemu, é amd.
+// #todo: Precisamos do nome certo usado pelo qemu.
+
     return Processor_AMD;
 
 
@@ -228,6 +224,7 @@ static int get_model(void)
 }
 */
 
+
 /* Example: Check for builtin local APIC. */
 /*
 //  CPUID_FEAT_EDX_APIC = 1 << 9,  
@@ -239,6 +236,4 @@ static int check_apic(void)
     return edx & CPUID_FEAT_EDX_APIC;
 }
 */
-
-
 

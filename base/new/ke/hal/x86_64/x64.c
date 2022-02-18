@@ -3,6 +3,12 @@
 #include <kernel.h>    
 
 
+// FPU
+// To initialize the x87 FPU, 
+// set CR0.MP and CR0.NE, 
+// clear CR0.EM and CR0.TS, and 
+// execute FNINIT. 
+
 
 /*
  // 8259 isa irqs
@@ -227,7 +233,6 @@ void x64_load_ltr (int tr)
 
 
 /*
- ***************************************************
  * get_cpu_intel_parameters:
  *     Pega os parâmetros da cpu x64 através da instrução cpuid.
  *
@@ -245,7 +250,6 @@ void x64_load_ltr (int tr)
 // The CPUID.01h:EDX[bit 9] flag 
 // specifies whether a CPU has a built-in local APIC. 
 
-
 // According to the Intel CPUID application note, 
 // we should first check the Vendor ID String for "GenuineIntel" 
 // before taking out information, such as 
@@ -253,28 +257,23 @@ void x64_load_ltr (int tr)
 
 void get_cpu_intel_parameters (void)
 {
-
     unsigned long eax=0; 
     unsigned long ebx=0; 
     unsigned long ecx=0;
     unsigned long edx=0;
-
     unsigned long name[32];
-
     int MASK_LSB_8 = 0xFF;
-
 
     debug_print ("get_cpu_intel_parameters: [FIXME]\n");
 
-
-    //========================================
-    // EAX=0: Highest Function Parameter and Manufacturer ID
-    // #todo: eax
-    //eax = Maximum meaningful value for the InfoType parameter. 
-    // Vendor.
-    //ebx = Identification String (part 1)
-    //ecx = Identification String (part 3)
-    //edx = Identification String (part 2)
+//========================================
+// EAX=0: Highest Function Parameter and Manufacturer ID
+// #todo: eax
+// eax = Maximum meaningful value for the InfoType parameter. 
+// Vendor.
+// ebx = Identification String (part 1)
+// ecx = Identification String (part 3)
+// edx = Identification String (part 2)
 
     cpuid ( 0, eax, ebx, ecx, edx ); 
     name[0] = ebx;
@@ -288,9 +287,9 @@ void get_cpu_intel_parameters (void)
     processor->Vendor[3] = 0;
 
     hal_set_machine_type(Processor_NULL);
-    
-    // Intel?
-    // #todo: definir Intel como 1.
+
+// Intel?
+// #todo: definir Intel como 1.
     if ( ebx == CPUID_VENDOR_INTEL_1 && 
          edx == CPUID_VENDOR_INTEL_2 && 
          ecx == CPUID_VENDOR_INTEL_3 )
@@ -299,116 +298,181 @@ void get_cpu_intel_parameters (void)
     }
 
 
-    //========================================
-    // EAX=1: Processor Info and Feature Bits
+//========================================
+// EAX=1: Processor Info and Feature Bits
 
-	//
-	// Output para argumento 1. 
-	//
-	
-    //eax:
-    // 0- 3 Stepping ID
-    // 4- 7 Model
-    // 8-11 Family
-    //12-13 Processor Type
-    //14-15 Reserved
-    //16-19 Extended model
-    //20-27 Extended family
-    //28-31 Reserved
+//
+// Output para argumento 1. 
+//
 
-    //ebx:
-    // 0- 7 Brand Index
-    // 8-15 CLFLUSH cache line size / 8
-    //16-23 Reserved
-    //24-31 APIC Physical ID
+// eax:
+//  0- 3 Stepping ID
+//  4- 7 Model
+//  8-11 Family
+// 12-13 Processor Type
+// 14-15 Reserved
+// 16-19 Extended model
+// 20-27 Extended family
+// 28-31 Reserved
 
-	//ecx:
-	//0 SSE3 New Instructions
-	//1-2 Reserved
-	//3 MONITOR/MWAIT
-	//4 CPL Qualified Debug Store
-	//5-7 Reserved
-	//8 Thermal Monitor 2
-	//9 Reserved
-	//10 L1 Context ID
-	//11-31 Reserved
-	
-	//edx: 
-	//0 FPU x87 FPU on Chip
-	//1 VME Virtual-8086 Mode Enhancement
-	//2 DE Debugging Extensions
-	//3 PSE Page Size Extensions
-	//4 TSC Time Stamp Counter
-	//5 ~~> MSR RDMSR and WRMSR Support ***
-	//6 PAE Physical Address Extensions
-	//7 MCE Machine Check Exception
-	//8 CX8 CMPXCHG8B Inst.
-	//9 ~~~> APIC APIC on Chip ***
-	//10 n/a Reserved
-	//11 SEP SYSENTER and SYSEXIT
-	//12 MTRR Memory Type Range Registers
-	//13 PGE PTE Global Bit
-	//14 MCA Machine Check Architecture
-	//15 CMOV Conditional Move/Compare Instruction
-	//16 PAT Page Attribute Table
-	//17 PSE Page Size Extension
-	//18 PSN Processor Serial Number
-	//19 CLFSH CFLUSH Instruction
-	//20 n/a Reserved
-	//21 DS Debug Store
-	//22 ACPI Thermal Monitor and Clock Ctrl
-	//23 MMX MMX Technology
-	//24 FXSR FXSAVE/FXRSTOR
-	//25 SSE SSE Extensions
-	//26 SSE2 SSE2 Extensions
-	//27 SS Self Snoop
-	//28 HTT Hyper-threading technology
-	//29 TM Thermal Monitor
-	//30 n/a Reserved
-	//31 PBE Pend. Brk. En.
-	
-	
+// ebx:
+//  0- 7 Brand Index
+//  8-15 CLFLUSH cache line size / 8.
+// 16-23 Reserved
+// 24-31 APIC Physical ID.
+
+// ecx:
+//     0 SSE3 New Instructions
+// 1-  2 Reserved
+//     3 MONITOR/MWAIT
+//     4 CPL Qualified Debug Store
+// 5-  7 Reserved
+//     8 Thermal Monitor 2
+//     9 Reserved
+//    10 L1 Context ID
+// 11-31 Reserved
+
+// edx: 
+//  0 FPU x87 FPU on Chip.
+//  1 VME Virtual-8086 Mode Enhancement
+//  2 DE Debugging Extensions
+//  3 PSE Page Size Extensions
+//  4 TSC Time Stamp Counter
+//  5 MSR RDMSR and WRMSR Support.
+//  6 PAE Physical Address Extensions
+//  7 MCE Machine Check Exception
+//  8 CX8 CMPXCHG8B Inst.
+//  9 APIC APIC on Chip.
+// 10 n/a Reserved
+// 11 SEP SYSENTER and SYSEXIT
+// 12 MTRR Memory Type Range Registers
+// 13 PGE PTE Global Bit
+// 14 MCA Machine Check Architecture
+// 15 CMOV Conditional Move/Compare Instruction
+// 16 PAT Page Attribute Table
+// 17 PSE Page Size Extension (PSE36)
+// 18 PSN Processor Serial Number
+// 19 CLFSH CFLUSH Instruction
+// 20 n/a Reserved
+// 21 DS Debug Store
+// 22 ACPI Thermal Monitor and Clock Ctrl
+// 23 MMX MMX Technology
+// 24 FXSR FXSAVE/FXRSTOR
+// 25 SSE SSE Extensions
+// 26 SSE2 SSE2 Extensions
+// 27 SS Self Snoop
+// 28 HTT Hyper-threading technology.
+// 29 TM Thermal Monitor
+// 30 n/a Reserved
+// 31 PBE Pend. Brk. En.
 
     cpuid ( 1, eax, ebx, ecx, edx );
 
-	// eax:
-	// Processor Version Information 
-	processor->Stepping_ID        = (unsigned long)( eax        & 0xF);  //stepping
-	processor->Model              = (unsigned long)((eax >> 4)  & 0xf);  //model
-	processor->Family_ID          = (unsigned long)((eax >> 8)  & 0xf);  //family
-	processor->Processor_Type     = (unsigned long)((eax >> 12) & 0x3);  //processor type
-	processor->Extended_Model_ID  = (unsigned long)((eax >> 16) & 0xf);  //extended model
-	processor->Extended_Family_ID = (unsigned long)((eax >> 20) & 0xff); //extended family
+// eax:
+// Processor Version Information 
+    processor->Stepping_ID = 
+        (unsigned long)( eax        & 0xF);  //stepping
+    processor->Model = 
+        (unsigned long)((eax >> 4)  & 0xf);  //model
+    processor->Family_ID = 
+        (unsigned long)((eax >> 8)  & 0xf);  //family
+    processor->Processor_Type = 
+        (unsigned long)((eax >> 12) & 0x3);  //processor type
+    processor->Extended_Model_ID = 
+        (unsigned long)((eax >> 16) & 0xf);  //extended model
+    processor->Extended_Family_ID = 
+        (unsigned long)((eax >> 20) & 0xff); //extended family
     // 31 ~ 28 Reserved??
 
-	//ebx:
-	// Additional Information 
-	//processor->xx = (unsigned long)((ebx >> 9) & 0x0001);
+// ebx:
+// Additional Information 
+
+    //processor->xx = (unsigned long)((ebx >> 9) & 0x0001);
     //... 
 
 
-
-    // ecx e edx:
-    // Feature Information 
-
-	//edx:
-	// The CPUID.01h:EDX[bit 9] flag 
-	// specifies whether a CPU has a built-in local APIC. 
-    processor->isApic = (unsigned long)((edx >> 9) & 0x0001);
-	//processor->isApic = (unsigned long) edx;
-	
-	
-	//The presence of MSRs on your processor is 
-    //indicated by CPUID.01h:EDX[bit 5].
-    //processor->hasMSR = (unsigned long)((edx >> 5) & 0x0001);
-	//...
-	
-	// #todo:
-	// Mostrar uma mensagem, se tem ou não apic;
+// ecx e edx:
+// Feature Information 
 
 
-    //========================================
-    // EAX=2: Cache and TLB Descriptor information
+// ecx
+
+// SSE3 - bit 0.
+    processor->hasSSE3 = 
+        (unsigned long)( ecx & 0x0001);
+
+
+// edx:
+
+// The CPUID.01h:EDX[bit 0] flag.
+// Specifies whether a CPU has a built-in local x87 FPU. 
+    processor->hasX87FPU = 
+        (unsigned long)( edx & 0x0001);
+
+// PSE - bit 3.
+    processor->hasPSE = 
+        (unsigned long)((edx >> 3) & 0x0001);
+
+// TSC - bit 4.
+    processor->hasTSC = 
+        (unsigned long)((edx >> 4) & 0x0001);
+
+//The presence of MSRs on your processor is 
+//indicated by CPUID.01h:EDX[bit 5].
+    processor->hasMSR = 
+        (unsigned long)((edx >> 5) & 0x0001);
+
+// PAE - bit 6.
+    processor->hasPAE = 
+        (unsigned long)((edx >> 6) & 0x0001);
+
+// The CPUID.01h:EDX[bit 9] flag 
+// Specifies whether a CPU has a built-in local APIC. 
+    processor->hasAPIC = 
+        (unsigned long)((edx >> 9) & 0x0001);
+
+
+// MTRR Memory Type Range Registers
+    processor->hasMTRR = 
+        (unsigned long)((edx >> 12) & 0x0001);
+
+// PAT - Page Attribute Table
+    processor->hasPAT = 
+        (unsigned long)((edx >> 16) & 0x0001);
+
+// PSE - Page Size Extension (PSE36)
+    processor->hasPSE36 = 
+        (unsigned long)((edx >> 17) & 0x0001);
+
+// PSN - Processor Serial Number
+    processor->hasPSN = 
+        (unsigned long)((edx >> 18) & 0x0001);
+
+//---
+
+// MMX
+    processor->hasMMX = 
+        (unsigned long)((edx >> 23) & 0x0001);
+
+// SSE
+    processor->hasSSE = 
+        (unsigned long)((edx >> 25) & 0x0001);
+
+// SSE2
+    processor->hasSSE2 = 
+        (unsigned long)((edx >> 26) & 0x0001);
+
+
+// HTT - hyper-threading technology
+    processor->hasHTT = 
+        (unsigned long)((edx >> 28) & 0x0001);
+
+    // ...
+
+
+
+//========================================
+// EAX=2: Cache and TLB Descriptor information
     
     // ...
     
@@ -585,6 +649,15 @@ void get_cpu_intel_parameters (void)
 void x64_init_fpu (void) 
 {
     asm volatile ("fninit");
+}
+
+
+// These functions can be used with GCC (or TCC) 
+// to perform some FPU operations without 
+// resorting to dedicated assembly.
+void fpu_load_control_word(const uint16_t control)
+{
+    asm volatile ("fldcw %0;"::"m"(control)); 
 }
 
 

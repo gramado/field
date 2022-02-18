@@ -73,10 +73,15 @@
 // == prototypes ============================================
 //
 
+void get_cpu_intel_parameters(void);
 
-
+//
+// FPU
+//
 
 void x64_init_fpu (void);
+void fpu_load_control_word(const uint16_t control);
+
 void x64_disable_interrupts (void);
 void x64_enable_interrupts (void);
 
@@ -87,6 +92,10 @@ void x64_lret (void);
 
 void x64_cli_hlt(void);
 void x64_stop_cpu (void);
+
+//
+// Cache
+//
 
 void x64_enable_cache (void);
 

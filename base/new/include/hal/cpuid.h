@@ -1,15 +1,11 @@
 // cpuid.h 
 // Created by Fred Nora.
-
 // See:
 // https://en.wikipedia.org/wiki/CPUID
 // https://wiki.osdev.org/CPUID
 
-
-
 #ifndef ____CPUID_H
 #define ____CPUID_H    1
-
 
 
 // cpuid.
