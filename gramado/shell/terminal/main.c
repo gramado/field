@@ -113,6 +113,31 @@ void clear_terminal_client_window(int fd)
 }
 
 
+
+// local
+// maximize application window.
+// #bugbug: Covering the taskbar.
+void __winmax(int fd)
+{
+    int test_win = Terminal.main_window_id;
+
+    unsigned long w=rtl_get_system_metrics(1);
+    unsigned long h=rtl_get_system_metrics(2);
+                  h=h-40;
+
+    if(fd<0)
+        return;
+
+    gws_change_window_position(fd,test_win,0,0);
+
+    gws_resize_window(
+        fd, test_win, w, h );
+
+    gws_redraw_window(
+         fd, test_win, TRUE );
+}
+
+
 // local
 // command "window"
 void __test_gws(int fd)
@@ -154,6 +179,17 @@ void compareStrings(int fd)
     }
 
     //printf("\n");
+
+    if ( strncmp(prompt,"winmax",6) == 0 )
+    {
+        __winmax(fd);
+        goto exit_cmp;
+    }
+
+    if ( strncmp(prompt,"winmin",6) == 0 )
+    {
+        goto exit_cmp;
+    }
 
     //#test: testando serviços diversos.
     if ( strncmp(prompt,"window",6) == 0 )

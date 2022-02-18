@@ -1,8 +1,6 @@
 /*
  * File: wm.c 
- *
  *     The Window Manager.
- *
  * History:
  *     2020 - Create by Fred Nora.
  */
@@ -1703,134 +1701,139 @@ wmProcedure(
 // See:
 // globals.h
 
-    switch(msg)
-    {
-         case GWS_Create:
-             printf("wmProcedure: [1] GWS_Create\n");
-             break;
+    switch(msg){
 
-         case GWS_Destroy:
-             printf("wmProcedure: [2] GWS_Destroy\n");
-             break;
-         
-         case GWS_Move:
-             printf("wmProcedure: [3] GWS_Move\n");
-             break;
-         
-         case GWS_Size: //get size?
-             printf("wmProcedure: [4] GWS_Size\n");
-             break;
+    case GWS_Create:
+        printf("wmProcedure: [1] GWS_Create\n");
+        break;
 
-         case GWS_Resize: //set size ?
-             printf("wmProcedure: [5] GWS_Resize\n");
-             break;
-         
-         //...
-         case GWS_Close:
-             printf("wmProcedure: [7] GWS_Close\n");
-             if (long1==0){
-                 printf("Closing root window ...\n");
-                 //exit(0);
-             }
-             break;
+    case GWS_Destroy:
+        printf("wmProcedure: [2] GWS_Destroy\n");
+        break;
 
-         case GWS_Paint:
-             printf("wmProcedure: [8] GWS_Paint\n");
-             break;
-             
-         case GWS_SetFocus: // set focus
-             printf("wmProcedure: [9] GWS_SetFocus\n");
-             break;
+    case GWS_Move:
+        printf("wmProcedure: [3] GWS_Move\n");
+        break;
 
-         case GWS_KillFocus: //kill focus
-             printf("wmProcedure: [10] GWS_KillFocus\n");
-             break;
-         
-         case GWS_Activate:
-             printf("wmProcedure: [11] GWS_Activate\n");
-             break;
-         
-         case GWS_ShowWindow:
-             printf("wmProcedure: [12] GWS_ShowWindow\n");
-             break;
-         
-         case GWS_SetCursor:
-             printf("wmProcedure: [13] GWS_SetCursor\n");
-             break;
-         
-         case GWS_Hide:
-             printf("wmProcedure: [14] GWS_Hide\n");
-             break;
-         
-         case GWS_Maximize:
-             printf("wmProcedure: [15] GWS_Maximize\n");
-             break;
-         case GWS_Restore:
-             printf("wmProcedure: [16] GWS_Restore\n");
-             break;
-         
-         case GWS_ShowDefault:
-             printf("wmProcedure: [17] GWS_ShowDefault\n");
-             break;
+    case GWS_Size: //get size?
+        printf("wmProcedure: [4] GWS_Size\n");
+        break;
 
-         case GWS_SetFocus2:
-             printf("wmProcedure: [18] GWS_SetFocus2\n");
-             break;
-         
-         case GWS_GetFocus2:
-             printf("wmProcedure: [19] GWS_GetFocus2\n");
-             break;
+    case GWS_Resize: //set size ?
+        printf("wmProcedure: [5] GWS_Resize\n");
+        break;
 
-         // #bugbug
-         // Quando imprimir na tela e quando enviar para o cliente?
-         // Uma flag deve indicar se o sistema deve ou nao imprimir 
-         // previamente o char.
-         // Caixas de edição podem deixar todo o trabalho
-         // de teclas de digitação para o sistema, liberando o aplicativo
-         // desse tipo de tarefa. Mas editores de texto querem 
-         // processar cada tecla digitada.
-         case GWS_KeyDown:
-             // Imprime o char na janela indicada.
-             // Essa é a janela com foco de entrada.
-             //if( pre_print === TRUE)
-             __draw_char_into_the_window(window,(int)long1);
-             // Enfileirar a mensagem na fila de mensagens
-             // da janela com foco de entrada.
-             // O cliente vai querer ler isso.
-             __add_message_to_into_the_queue(
-                 (struct gws_window_d *)window,
-                 (int)msg,
-                 (unsigned long)long1,
-                 (unsigned long)long2);
-             
-             return 0;
-             break;
+    // ...
 
-         case GWS_SysKeyDown:
-             //printf("wmProcedure: [?] GWS_SysKeyDown\n");
-             // Enfileirar a mensagem na fila de mensagens
-             // da janela com foco de entrada.
-             // O cliente vai querer ler isso.
-             __add_message_to_into_the_queue(
-                 (struct gws_window_d *) window,
-                 (int)msg,
-                 (unsigned long)long1,
-                 (unsigned long)long2);
+    case GWS_Close:
+        printf("wmProcedure: [7] GWS_Close\n");
+        if (long1==0){
+            printf("Closing root window.\n");
+            //exit(0);
+        }
+        break;
 
-             //wm_update_desktop(); // 
-             return 0;
-             break;
-         
-         //
-         case GWS_SwitchFocus:
-             //printf("Switch "); fflush(stdout);
-             __switch_focus();
-             //printf("wmProcedure: [?] GWS_SwitchFocus\n");
-             //next = window->next;
-             //window->focus = TRUE;
-             //redraw_window(window,1);
-             return 0;
-             break;
+    case GWS_Paint:
+        printf("wmProcedure: [8] GWS_Paint\n");
+        break;
+
+    case GWS_SetFocus: // set focus
+        printf("wmProcedure: [9] GWS_SetFocus\n");
+        break;
+
+    case GWS_KillFocus: //kill focus
+        printf("wmProcedure: [10] GWS_KillFocus\n");
+        break;
+
+    case GWS_Activate:
+        printf("wmProcedure: [11] GWS_Activate\n");
+        break;
+
+    case GWS_ShowWindow:
+        printf("wmProcedure: [12] GWS_ShowWindow\n");
+        break;
+
+    case GWS_SetCursor:
+        printf("wmProcedure: [13] GWS_SetCursor\n");
+        break;
+
+    case GWS_Hide:
+        printf("wmProcedure: [14] GWS_Hide\n");
+        break;
+
+    case GWS_Maximize:
+        printf("wmProcedure: [15] GWS_Maximize\n");
+        break;
+
+    case GWS_Restore:
+        printf("wmProcedure: [16] GWS_Restore\n");
+        break;
+
+    case GWS_ShowDefault:
+        printf("wmProcedure: [17] GWS_ShowDefault\n");
+        break;
+
+    case GWS_SetFocus2:
+        printf("wmProcedure: [18] GWS_SetFocus2\n");
+        break;
+
+    case GWS_GetFocus2:
+        printf("wmProcedure: [19] GWS_GetFocus2\n");
+        break;
+
+    // #bugbug
+    // Quando imprimir na tela e quando enviar para o cliente?
+    // Uma flag deve indicar se o sistema deve ou nao imprimir 
+    // previamente o char.
+    // Caixas de edição podem deixar todo o trabalho
+    // de teclas de digitação para o sistema, liberando o aplicativo
+    // desse tipo de tarefa. Mas editores de texto querem 
+    // processar cada tecla digitada.
+
+    case GWS_KeyDown:
+        // Imprime o char na janela indicada.
+        // Essa é a janela com foco de entrada.
+        //if( pre_print === TRUE)
+        __draw_char_into_the_window(window,(int)long1);
+        // Enfileirar a mensagem na fila de mensagens
+        // da janela com foco de entrada.
+        // O cliente vai querer ler isso.
+        __add_message_to_into_the_queue(
+            (struct gws_window_d *)window,
+            (int)msg,
+            (unsigned long)long1,
+            (unsigned long)long2);
+        return 0;
+        break;
+
+    case GWS_SysKeyDown:
+        //printf("wmProcedure: [?] GWS_SysKeyDown\n");
+        // Enfileirar a mensagem na fila de mensagens
+        // da janela com foco de entrada.
+        // O cliente vai querer ler isso.
+        __add_message_to_into_the_queue(
+            (struct gws_window_d *) window,
+            (int)msg,
+            (unsigned long)long1,
+            (unsigned long)long2);
+        //wm_update_desktop(); // 
+        return 0;
+        break;
+
+    //
+    case GWS_SwitchFocus:
+        //printf("Switch "); fflush(stdout);
+        __switch_focus();
+        //printf("wmProcedure: [?] GWS_SwitchFocus\n");
+        //next = window->next;
+        //window->focus = TRUE;
+        //redraw_window(window,1);
+        return 0;
+        break;
+    
+    default:
+        return 0;
+        break;
     };
 
     return 0;
@@ -1856,7 +1859,7 @@ wmHandler(
     unsigned long long1=0;
     unsigned long long2=0;
 
-    debug_print ("wmHandler:-------------------------------\n");
+    debug_print ("wmHandler:-----------------------------\n");
 
 // #debug
     //printf("wmHandler: %x %x %x %x\n", 
@@ -1885,9 +1888,9 @@ wmHandler(
 // Refresh rectangles and exit.
 // GWS_RefreshDirtyRectangles
 
-    //#todo:
-    //This way the kernel is able to call the
-    // compositor at a given timer.
+// #todo:
+// This way the kernel is able to call the
+// compositor at a given timer.
     if ( msg == 9091 )
     {
         debug_print ("wmHandler: 9091\n");
@@ -1902,6 +1905,7 @@ wmHandler(
 
         return 0;  //important: We need to return.
     }
+
 
 // #test
 // Redraw all the windows. Back to front.
@@ -1954,8 +1958,11 @@ wmHandler(
     case GWS_KeyDown:
     case GWS_SysKeyDown:
     case GWS_SwitchFocus:
-        if( window_with_focus < 0 || window_with_focus >= WINDOW_COUNT_MAX )
-        { return 0; }
+        if( window_with_focus < 0 || 
+            window_with_focus >= WINDOW_COUNT_MAX )
+        { 
+            return 0; 
+        }
         w = windowList[window_with_focus];
         goto do_process_message;
         break;
@@ -3891,8 +3898,9 @@ void wm_Update_TaskBar( char *string )
         return;
 
 // Redraw the bar.
-    redraw_window(__taskbar_window,TRUE);
 // Redraw the button.
+
+    redraw_window(__taskbar_window,TRUE);
     redraw_window(__taskbar_startmenu_button_window,TRUE);
 
 //
@@ -3920,6 +3928,7 @@ void wm_Update_TaskBar( char *string )
 // Show the window.
     flush_window(__taskbar_window);
 }
+
 
 void wmInitializeGlobals(void)
 {

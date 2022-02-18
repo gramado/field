@@ -269,7 +269,6 @@ struct gws_surface_d *xxxCreateSurface(
 }
 
 
-
 // Strings
 //char *title_when_no_title = "Window";
 
@@ -1790,7 +1789,6 @@ void *CreateWindow (
     unsigned int clientcolor, 
     unsigned int color ) 
 {
-
    struct gws_window_d  *__w;
    unsigned long __rop_flags=0;
 
@@ -2449,16 +2447,15 @@ int serviceCreateWindow (int client_fd)
     if(name_len > 32){ name_len = 32; }
     char w_name[64];
     sprintf(w_name,":: ");
-    strncat(w_name,Window->name,name_len);
+    strncat(w_name, Window->name, name_len);
     w_name[63]=0;
 
+// Coloca na fila
+// #test: notifica na barra de tarefas
 
     if(Window->type == WT_OVERLAPPED)
     {
-        // coloca na fila
         wm_add_window_into_the_list(Window);
-    
-        // #test: notifica na barra de tarefas
         wm_Update_TaskBar((char *) w_name);
     }
 
@@ -2469,20 +2466,19 @@ int serviceCreateWindow (int client_fd)
     Window->client_pid = ClientPID;
     Window->client_tid = ClientTID;
 
-    //
-    // The client's fd.
-    //
+//
+// The client's fd.
+//
 
-    // #todo
-    // We need to register the client's fd.
-    // It is gonna be used to send replies, just like
-    // input events.
+// #todo
+// We need to register the client's fd.
+// It is gonna be used to send replies, just like
+// input events.
     
     // Window->client_fd = ?;
 
-
-    // Building the next response.
-    // It will be sent in the socket loop.
+// Building the next response.
+// It will be sent in the socket loop.
 
     next_response[0] = (unsigned long) id;        // window
     next_response[1] = SERVER_PACKET_TYPE_REPLY;  // msg code
@@ -2510,7 +2506,6 @@ int serviceCreateWindow (int client_fd)
 }
 
 
-
 struct gws_rect_d *clientrect_from_window(struct gws_window_d *window)
 {
     struct gws_rect_d *rect;
@@ -2529,6 +2524,7 @@ struct gws_rect_d *clientrect_from_window(struct gws_window_d *window)
     return (struct gws_rect_d *) rect;
 }
 
+
 struct gws_rect_d *rect_from_window(struct gws_window_d *window)
 {
     struct gws_rect_d *rect;
@@ -2546,8 +2542,6 @@ struct gws_rect_d *rect_from_window(struct gws_window_d *window)
 
     return (struct gws_rect_d *) rect;
 }
-
-
 
 
 //
