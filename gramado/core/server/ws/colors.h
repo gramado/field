@@ -9,6 +9,67 @@
 #define ____COLORS_H    1
 
 
+// #test
+/*
+0 
+| 1 
+| | 2 
+| | | 3 
+| | | | 4 
+| | | | | 5 
+| | | | | | 6 
+| | | | | | | 7 
+| | | | | | | |
+| | | | | | | 8 
+| | | | | | 9 
+| | | | | A 
+| | | | B 
+| | | C 
+| | D 
+| E 
+F
+
+0x000000,  // level 7: dark black
+0x0000BB,  // level 6: dark blue
+0x00BB00,  // level 5: dark green
+0xBB0000,  // level 4: dark red
+0x00BBBB,  // level 3: dark cyan
+0xBB00BB,  // level 2: dark magenta
+0xBBBB00,  // level 1: dark yellow
+0xBBBBBB,  // level 0: dark white
+-------
+0x444444,  // level 0: light black
+0x4444FF,  // level 1: light blue
+0x44FF44,  // level 2: light green
+0xFF4444,  // level 3: light red
+0x44FFFF,  // level 4: light cyan
+0xFF44FF,  // level 5: light magenta
+0xFFFF44,  // level 6: light yellow
+0xFFFFFF   // level 7: light white
+*/
+
+//-------
+#define GRCOLOR_DARKBLACK     0x000000  // level 7: dark black
+#define GRCOLOR_DARKBLUE      0x0000BB  // level 6: dark blue
+#define GRCOLOR_DARKGREEN     0x00BB00  // level 5: dark green
+#define GRCOLOR_DARKRED       0xBB0000  // level 4: dark red
+#define GRCOLOR_DARKCYAN      0x00BBBB  // level 3: dark cyan
+#define GRCOLOR_DARKMAGENTA   0xBB00BB  // level 2: dark magenta
+#define GRCOLOR_DARKYELLOW    0xBBBB00  // level 1: dark yellow
+#define GRCOLOR_DARKWHITE     0xBBBBBB  // level 0: dark white
+
+#define GRCOLOR_LIGHTBLACK    0x444444  // level 0: light black
+#define GRCOLOR_LIGHTBLUE     0x4444FF  // level 1: light blue
+#define GRCOLOR_LIGHTGREEN    0x44FF44  // level 2: light green
+#define GRCOLOR_LIGHTRED      0xFF4444  // level 3: light red
+#define GRCOLOR_LIGHTCYAN     0x44FFFF  // level 4: light cyan
+#define GRCOLOR_LIGHTMAGENTA  0xFF44FF  // level 5: light magenta
+#define GRCOLOR_LIGHTYELLOW   0xFFFF44  // level 6: light yellow
+#define GRCOLOR_LIGHTWHITE    0xFFFFFF   // level 7: light white
+//-------
+
+
+
 // #todo: We can define a default transparent color,
 // just like PINK
 // #define COLOR_TRANSPARENT ?

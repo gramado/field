@@ -21,7 +21,7 @@ struct cat_model_d CatModel;
 // == Prototypes ===============
 //
 
-void demoClearSurface(void);
+void demoClearSurface(unsigned int color);
 void demoFlushSurface(void);
 void demos_startup_animation(int i);
 

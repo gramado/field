@@ -46,7 +46,7 @@ void demoLines(void)
 
 
 // Start surface
-void demoClearSurface(void)
+void demoClearSurface(unsigned int color)
 {
     // #todo
     // We can do this for more resolutions. 
@@ -54,7 +54,7 @@ void demoClearSurface(void)
     //asm("cli");
     // Limpa em mostra na resolução 320x200
     rectBackbufferDrawRectangle ( 
-           0, 0, 320, 200, COLOR_BLACK, 1, 0 );
+           0, 0, 320, 200, color, 1, 0 );
     //asm("sti");
 }
 
@@ -100,36 +100,36 @@ void demoCat (void)
     for (i=0; i<8; i++){
 
 // Clear surface
-    demoClearSurface();
+    demoClearSurface(GRCOLOR_LIGHTCYAN);
 
 // Begin paint
     //asm("cli");
 
     // head
-    plotCircleZ ( 0, 12, 25, COLOR_WHITE, 0); 
+    plotCircleZ ( 0, 12, 25, GRCOLOR_LIGHTBLACK, 0); 
 
     // eyes
     if ( CatModel.eyesVisible == TRUE ){
-        plotCircleZ ( -10, 20, 1+i, COLOR_WHITE, 0); 
-        plotCircleZ (  10, 20, 1+i, COLOR_WHITE, 0); 
+        plotCircleZ ( -10, 20, 1+i, GRCOLOR_LIGHTBLACK, 0); 
+        plotCircleZ (  10, 20, 1+i, GRCOLOR_LIGHTBLACK, 0); 
     }
 
     // whiskers
     if ( CatModel.whiskersVisible == TRUE ){
         // =
-        plotLine3d ( -40, 8,0, -4, 5,0, COLOR_WHITE); 
-        plotLine3d ( -40, 5,0, -4, 4,0, COLOR_WHITE); 
-        plotLine3d ( -40, 2,0, -4, 3,0, COLOR_WHITE); 
+        plotLine3d ( -40, 8,0, -4, 5,0, GRCOLOR_LIGHTBLACK); 
+        plotLine3d ( -40, 5,0, -4, 4,0, GRCOLOR_LIGHTBLACK); 
+        plotLine3d ( -40, 2,0, -4, 3,0, GRCOLOR_LIGHTBLACK); 
 
         // =
-        plotLine3d ( 4, 5,0, 40, 8,0, COLOR_WHITE); 
-        plotLine3d ( 4, 4,0, 40, 5,0, COLOR_WHITE); 
-        plotLine3d ( 4, 3,0, 40, 2,0, COLOR_WHITE); 
+        plotLine3d ( 4, 5,0, 40, 8,0, GRCOLOR_LIGHTBLACK); 
+        plotLine3d ( 4, 4,0, 40, 5,0, GRCOLOR_LIGHTBLACK); 
+        plotLine3d ( 4, 3,0, 40, 2,0, GRCOLOR_LIGHTBLACK); 
     }
 
     // mouth
     if ( CatModel.mouthVisible == TRUE ){
-        plotLine3d ( -10, -2,0, 10, -2,0, COLOR_WHITE); 
+        plotLine3d ( -10, -2,0, 10, -2,0, GRCOLOR_LIGHTBLACK); 
     }
 
 // Begin paint
@@ -337,7 +337,7 @@ void demoSA1(void)
             //rectBackbufferDrawRectangle ( 
                //0, 0, 320, 200, COLOR_BLACK, 1,0 );
 
-           demoClearSurface();
+           demoClearSurface(COLOR_BLACK);
       
             // transform.
             multiply4 ( projection4x4, mat2, res );
@@ -410,7 +410,7 @@ void demoTriangle(void)
     if ( (void*) triangle != NULL )
     {
         // clear
-        demoClearSurface();
+        demoClearSurface(COLOR_BLACK);
 
         // down
         triangle->p[0].x = 0;   // +T translation in x
@@ -481,7 +481,7 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
     int value=0;
 
     // clear
-    //demoClearSurface();
+    //demoClearSurface(COLOR_BLACK);
 
 // loop: compose
 
@@ -497,19 +497,19 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
         tmp_tri->p[0].x = (0 -value);
         tmp_tri->p[0].y = 0;  //(0 +value);
         tmp_tri->p[0].z = 0;
-        tmp_tri->p[0].color = COLOR_RED;
+        tmp_tri->p[0].color = GRCOLOR_LIGHTRED; //COLOR_RED;
 
         // left
         tmp_tri->p[2].x = (-80 -value);
         tmp_tri->p[2].y = 80;  //( 80 +value);
         tmp_tri->p[2].z =   0;
-        tmp_tri->p[2].color = COLOR_BLUE;
+        tmp_tri->p[2].color = GRCOLOR_LIGHTGREEN; //COLOR_GREEN;
 
         // right
         tmp_tri->p[1].x = (80 -value);
         tmp_tri->p[1].y = 80;  //(80 -value);
         tmp_tri->p[1].z =  0;
-        tmp_tri->p[1].color = COLOR_GREEN;
+        tmp_tri->p[1].color = GRCOLOR_LIGHTBLUE; //COLOR_BLUE;
         
         value++;
         
@@ -602,7 +602,7 @@ void demoMesh1(void)
 
     for(j=0; j<80; j++)
     {
-        demoClearSurface();
+        demoClearSurface(GRCOLOR_LIGHTYELLOW);
 
         tmp_tri = (struct gr_triandle_d *) m->first_triangle;
             
@@ -719,7 +719,7 @@ void demoPolygon(void)
     //rectBackbufferDrawRectangle ( 
         //0, 0, 320, 200, COLOR_BLACK, 1,0 );
     
-    demoClearSurface();
+    demoClearSurface(COLOR_BLACK);
            
     TranslationOffset = (TranslationOffset+i);
     
@@ -858,7 +858,7 @@ void demoPolygon2(void)
     for (i=0; i<10; i++){
 
     // clear surface
-    demoClearSurface();
+    demoClearSurface(COLOR_BLACK);
     
     TranslationOffset = (TranslationOffset+i);
     
@@ -1037,7 +1037,6 @@ void demoCube2 (void)
     int zFar=0;
     int zMaxModulus=0; // máximo em qualquer das direções.
 
-
     struct gr_cube_d *cube;
     cube = (void *) malloc( sizeof( struct gr_cube_d ) );
     if ( (void*) cube != NULL )
@@ -1095,7 +1094,7 @@ void demoCube2 (void)
         // Drawing for the first time.
 
         //rectBackbufferDrawRectangle ( 0, 0, 320, 200, COLOR_BLACK, 1,0 );
-        demoClearSurface();
+        demoClearSurface(GRCOLOR_LIGHTCYAN);
     
         xxxCubeZ(cube);
         //string!
@@ -1122,7 +1121,7 @@ void demoCube2 (void)
         for (j=0; j < zMaxModulus; j++){
 
             //rectBackbufferDrawRectangle ( 0, 0, 320, 200, COLOR_BLACK, 1,0 ); 
-            demoClearSurface();
+            demoClearSurface(GRCOLOR_LIGHTCYAN);
             if (action==1000){
                 modelZ = (modelZ-j);    // o objeto se aproxima.
                 //if (modelZ > zNear)
@@ -1165,18 +1164,15 @@ void demoCurve(void)
 {
     register int i=0;
     register int j=0;
-
     int count=4;
 
-
-    
     while (count>0){
 
         count--;
 
     for (i=0; i<10; i++){
 
-        demoClearSurface();
+        demoClearSurface(GRCOLOR_LIGHTYELLOW);
         
         // line
         //a variaçao de y2 me pareceu certa.
@@ -1184,16 +1180,16 @@ void demoCurve(void)
             0,   0,  0,      //x0, y0, z0, 
             40,  40, 0,      //x1, y1, z1,
            100,  20+i+i, 0,  //x2, y2, z2, 
-           COLOR_YELLOW );
+           GRCOLOR_LIGHTBLACK );
 
         //string! char by char
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*0), 20+i+i, COLOR_RED, 'G', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*1), 20+i+i, COLOR_RED, 'R', 0 );   
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*2), 20+i+i, COLOR_RED, 'A', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*3), 20+i+i, COLOR_RED, 'M', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*4), 20+i+i, COLOR_RED, 'A', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*5), 20+i+i, COLOR_RED, 'D', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*6), 20+i+i, COLOR_RED, 'O', 0 );
+        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*0), 20+i+i, GRCOLOR_LIGHTRED, 'G', 0 );
+        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*1), 20+i+i, GRCOLOR_LIGHTRED, 'R', 0 );   
+        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*2), 20+i+i, GRCOLOR_LIGHTRED, 'A', 0 );
+        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*3), 20+i+i, GRCOLOR_LIGHTRED, 'M', 0 );
+        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*4), 20+i+i, GRCOLOR_LIGHTRED, 'A', 0 );
+        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*5), 20+i+i, GRCOLOR_LIGHTRED, 'D', 0 );
+        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*6), 20+i+i, GRCOLOR_LIGHTRED, 'O', 0 );
         
         // flush surface
         demoFlushSurface();
@@ -1270,7 +1266,7 @@ void demoMatrix1(void)
     for (i=0; i<8; i++){
 
        // Clear surface
-       demoClearSurface();
+       demoClearSurface(COLOR_BLACK);
         
        // See: Where is this projection?
        multiply4 ( projection4x4, mat2, res );
