@@ -59,17 +59,14 @@ void demoClearSurface(unsigned int color)
 }
 
 
+// #todo
+// We can do this for more resolutions. 
+// mostra na resolução 320x200
 void demoFlushSurface(void)
 {
-    // #todo
-    // We can do this for more resolutions. 
-
-    // mostra na resolução 320x200
-
     gws_refresh_rectangle(0,0,320,200);
     //rtl_invalidate_screen();
 }
-
 
 void setupCatModel(int eyes, int whiskers, int mouth )
 {

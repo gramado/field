@@ -1847,8 +1847,6 @@ __gws_drawtext_request (
 
     int n_writes = 0;   // For sending requests.
 
-
-    
     //#test
     //Tentando colocar a string no buffer de mensagem
     // no offset certo.
@@ -2443,12 +2441,11 @@ gws_draw_text (
     int window,
     unsigned long x,
     unsigned long y,
-    unsigned long color,
+    unsigned int color,
     char *string )
 {
     int response =0;
     int Value=0;
-
 
     gws_debug_print("gws_draw_text: [FIXME] sync\n");
 
@@ -2460,7 +2457,6 @@ gws_draw_text (
         return -1;
     }
 
-
     gws_debug_print("gws_draw_text: request\n");
 
 
@@ -2471,7 +2467,7 @@ gws_draw_text (
         (int) window,
         (unsigned long) x,
         (unsigned long) y,
-        (unsigned long) color,
+        (unsigned long) (color & 0xFFFFFFFF),
         (char *) string );
     rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
 

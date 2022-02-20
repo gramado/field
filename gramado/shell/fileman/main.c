@@ -1,8 +1,6 @@
 /*
  * File: main.c
- *
- *     File manager. (Gramado Shell)
- * 
+ * File manager. (Gramado Shell)
  * 2020 - Created by Fred Nora.
  */
 
@@ -27,27 +25,35 @@
 
 // ==================================================
 // Windows
+
 // :: main window
 static int Main_window = 0;
+
 // :: Header window
 // The top window has two windows: The address bar and the button.
 static int Header_window = 0;
 static int addressbar_window = 0;
 static int button = 0;
+
 // :: The menu window
 // That one at the left side.
 static int Menu_window = 0;
 // :: The logo window
 static int Logo_window = 0;
+static int lw_button1 = 0;
 // :: The navigation window
-static int Navigation_window = 0;
-static int nw_button1 = 0;
-static int nw_button2 = 0;
-static int nw_button3 = 0;
+//static int Navigation_window = 0;
+//static int nw_button1 = 0;
+//static int nw_button2 = 0;
+//static int nw_button3 = 0;
+
 // :: Client window
 static int Client_window = 0;
-static int cw_button1 = 0;
-// ==================================================
+// ============================================
+
+#define NUMBER_OF_WINDOWS  8
+int gMaxIndex=NUMBER_OF_WINDOWS;
+int windows[NUMBER_OF_WINDOWS];
 
 
 //
@@ -296,22 +302,20 @@ int filemanProcedure(
 // Main
 //
 
-int main ( int argc, char *argv[] ){
-
+int main ( int argc, char *argv[] )
+{
     int client_fd = -1;
-
     struct sockaddr_in addr_in;
-
     addr_in.sin_family = AF_INET;
     addr_in.sin_port   = PORTS_WS;
     addr_in.sin_addr.s_addr = IP(127,0,0,1);
 
+
+    debug_print ("fileman: Initializing ...\n");
+    
+// dc
     unsigned long w = gws_get_system_metrics(1);
     unsigned long h = gws_get_system_metrics(2);
-
-
-    debug_print ("-------------------------\n");
-    debug_print ("fileman: Initializing ...\n");
 
 // Gramado mode.
     current_mode = rtl_get_system_metrics(130);
@@ -325,7 +329,7 @@ int main ( int argc, char *argv[] ){
 // 
 
 // #debug
-    printf ("fileman: Creating socket\n");
+    //printf ("fileman: Creating socket\n");
 
     client_fd = socket ( AF_INET, SOCK_STREAM, 0 );
     if ( client_fd < 0 ){
@@ -340,7 +344,7 @@ int main ( int argc, char *argv[] ){
 // Nessa hora colocamos no accept um fd.
 // então o servidor escreverá em nosso arquivo.
 
-    printf ("fileman: Connecting to ws via inet ...\n");
+    //printf ("fileman: Connecting to ws via inet ...\n");
 
     while (1){
         if (connect (client_fd, (void *) &addr_in, sizeof(addr_in)) < 0){
@@ -352,25 +356,27 @@ int main ( int argc, char *argv[] ){
 
 
 //
-// == Main ==============
+// == Main window ==============
 //
-
-    // #hackhack
-    unsigned long titlebarHeight = 32;
 
     unsigned long wWidth  = (w >> 1);
     unsigned long wHeight = (h - 100);
     unsigned long wLeft   = (w - wWidth)  >> 1;
     unsigned long wTop    = (h - wHeight) >> 1;
 
+    // #hackhack
+    unsigned long titlebarHeight = 32;
+
+
 // Small screen
     if (current_mode == GRAMADO_JAIL)
     {
-        wLeft=0; 
-        wTop=0;  
-        wWidth=w;  
+        wLeft = 0;
+        wTop  = 0;
+        wWidth  = w;
         wHeight = (h-40);
     }
+
 
 // main window
 // Locked and maximized.
@@ -497,6 +503,24 @@ int main ( int argc, char *argv[] ){
         exit(1);
     }
 
+
+// [/] button
+    if ( Logo_window > 0 ){
+    lw_button1 = gws_create_window ( 
+                                   client_fd,
+                                   WT_BUTTON, BS_DEFAULT, 1, "/",
+                                   8, 8, 50, 24,
+                                   Logo_window, 
+                                   0, 
+                                   COLOR_WHITE, COLOR_WHITE );
+    }
+    if ( lw_button1 < 0 ){
+        debug_print("fileman: lw_button1 fail\n"); 
+    }
+
+
+
+
     /*
     gws_draw_text (
         (int) client_fd,      // fd,
@@ -511,6 +535,7 @@ int main ( int argc, char *argv[] ){
 // == Navigation_window ===============
 //
 
+/*
     unsigned long nwLeft   = 0;
     unsigned long nwTop    = (mwHeight -40);  // altura da menuwindow - 40
     unsigned long nwWidth  = mwWidth;         // largura da menuwindow
@@ -527,8 +552,9 @@ int main ( int argc, char *argv[] ){
         printf     ("fileman: Navigation_window fail\n"); 
         exit(1);
     }
+*/
 
-
+/*
 // [<] button
     if ( Navigation_window > 0 ){
     nw_button1 = gws_create_window ( 
@@ -545,8 +571,9 @@ int main ( int argc, char *argv[] ){
     if ( nw_button1 < 0 ){
         debug_print("fileman: nw_button1 fail\n"); 
     }
+*/
 
-
+/*
 // [?] button
     if ( Navigation_window > 0 ){
     nw_button2 = gws_create_window ( 
@@ -563,7 +590,9 @@ int main ( int argc, char *argv[] ){
     if ( nw_button2 < 0 ){
         debug_print("fileman: nw_button2 fail\n"); 
     }
+*/
 
+/*
 // [!] button
     if ( Navigation_window > 0 ){
     nw_button3 = gws_create_window ( 
@@ -580,7 +609,7 @@ int main ( int argc, char *argv[] ){
     if ( nw_button3 < 0 ){
         debug_print("fileman: nw_button3 fail\n"); 
     }
-
+*/
 
 //
 // == Client window =====================================
@@ -597,7 +626,7 @@ int main ( int argc, char *argv[] ){
                         WT_SIMPLE, 1, 1, "ClientWin",
                         cwLeft, cwTop, cwWidth, cwHeight,
                         Main_window, 
-                        0x0001,  // style: 0x0001=maximized | 0x0002=minimized | 0x0004=fullscreen 
+                        0,  // style: 0x0001=maximized | 0x0002=minimized | 0x0004=fullscreen 
                         COLOR_WHITE, 
                         COLOR_WHITE );
 
@@ -605,25 +634,62 @@ int main ( int argc, char *argv[] ){
         debug_print("fileman: Client_window fail\n"); 
     }
 
+//
+// =============================================================
+//
 
-// [/] button
-    if ( Client_window > 0 ){
-    cw_button1 = gws_create_window ( 
-                                   client_fd,
-                                   WT_BUTTON, BS_DEFAULT, 1, "/",
-                                   8, 8, 50, 24,
-                                   Client_window, 
-                                   0, 
-                                   COLOR_WHITE, COLOR_WHITE );
-    }
-    if ( cw_button1 < 0 ){
-        debug_print("fileman: cw_button1 fail\n"); 
+// Items
+
+    int index=0;
+    gMaxIndex=NUMBER_OF_WINDOWS;
+
+    if (current_mode==GRAMADO_JAIL)
+    {
+        gMaxIndex=3;
     }
 
+    unsigned long iLeft   = 0;
+    unsigned long iTop    = 0;
+    unsigned long iWidth  = cwWidth;  // mesma largura da client window.
+    unsigned long iHeight = (cwHeight/gMaxIndex);
+
+    unsigned int ItemColor=COLOR_WHITE;
+
+    for (index=0; index<gMaxIndex; index++)
+    {
+        ItemColor=COLOR_WHITE;
+        if( (index % 2) != 0 )
+            ItemColor = COLOR_GRAY;
+        
+        windows[index] = 
+            (int) gws_create_window ( 
+                      client_fd,
+                      WT_SIMPLE, 1, 1,"itemWin",
+                      iLeft, iTop, iWidth, iHeight, 
+                      Client_window, 
+                      0,
+                      ItemColor, ItemColor );
+
+        if ( windows[index] < 0 )
+        {
+            debug_print("fileman: windows[index] fail\n"); 
+            printf     ("fileman: windows[index] fail\n"); 
+            exit(1);
+        }
+        
+        gws_draw_text ( 
+            (int) client_fd, 
+            (int) windows[index], 
+            8, 8, COLOR_BLACK, "Item");
+        
+        // atualiza o top do próximo item.
+        iTop = (iTop + iHeight);
+    };
 
 //
 // =============================================================
 //
+
 
 // dir entries
 

@@ -1,6 +1,6 @@
-;-----------------------------------------------------
-; File: stage3/start.inc 
 ;
+; File: start.inc 
+;    stage3
 ; Descricao: 
 ;     Inicio do modo protegido. 
 ;     O modo protegido ja foi configurado e 
@@ -45,10 +45,7 @@
 ;;
 ;; Pega o modo de video passado pelo stage 2 atraves de AL e 
 ;; salva no contexto de 32 bits.
-;;
-
 ;; Called by pm32 in stage3/pm.inc
-
 
 start:
 
@@ -62,7 +59,6 @@ start:
     xor ecx, ecx
     xor ebx, ebx
     xor eax, eax
-
 
 ; ajusta_modo: 
 ; Inicia um modo da configura��o permanente.
@@ -133,106 +129,80 @@ startCLI:
     mov al, byte 1
     call set_fs_type
 
-
-    ; Limpa a tela em modo texto.
+; Limpa a tela em modo texto.
     ; call clear_screen
 
-
-;;
-;; == Enable all the interrupts ======================================
-;;
+;; Enable all the interrupts.
 
 .LenableInterrupts:
-
     mov al, 0
     out 0xA1, al 
     out 0x21, al 
-
     sti 
 
 
-;;
-;; ===============================================================
-;;
-
-;;==================================
 ;; startShellLoop:
-;;     The shell loop.
-;;
-
+;; The shell loop.
 ;; #importante
 ;; O shell esta em stage3/shell
 ;; Esse eh loop do shell do boot manager.
 
-startShellLoop:
+; Splash message.
+; See: stage3/shell/shmsg.inc
+;; Go to the loop.
+;; stage3/shell/shell.inc
 
-    ; Splash message.
-    ; See: stage3/shell/shmsg.inc
+startShellLoop:
 
     push esi
     mov esi, version_msg
     call os_output
     pop esi
-    
-    ;; Go to the loop.
-    ;; stage3/shell/shell.inc
 
     jmp os_command_line
     jmp $
 
-;;
-;; ===============================================================
-;;
-
-
-
 ;
-; == Strings ==========================================
+; Strings
 ;
 
-start_msg_saving_metafile db 'start: Saving metafile..',13,10,0
-start_msg_rebooting       db 'start: Rebooting..',      13,10,0
+start_msg_saving_metafile: 
+    DB 'start: Saving metafile..', 13, 10, 0
+start_msg_rebooting: 
+    DB 'start: Rebooting..',       13, 10, 0
 
 
-
-;================================================================
+; =================================
 ; startGUI:
-;
-;     Initializes BL.BIN in graphics mode.
-;     Inicia o BL.BIN no modo grafico.
-;
+; Initializes BL.BIN in graphics mode.
+; Inicia o BL.BIN no modo grafico.
 ; obs: 
 ; Quando retornamos para o modo real e ativamos o modo gr�fico,
 ; Saltamos para c� com a opçao de usamos mensagens em modo gr�fico 
 ; em modo protegido.
-
-
-;; IMPORTANTE:
-;; O OBJETIVO � CHEGARMOS AQUI COM O ARQUIVO BL.BIN CARREGADO NA MEM�RIA
-;; E PASSARMOS O COMANDO PARA ELE, SEM TERMOS QUE CARREGA LO 
-;; USANDO RECURSOS DE 32BIT.
-
-	;; *Importante:
-	;; Fazendo configura��es aqui mesmo ao inv�s de chamarmos 
-	;; 'setup_machine' ou ainda n�o fazendo essas configura��es, 
-	;; pois j� estamos em modo protegido com as interrup��es 
-	;; desabilitadas e em modo gr�fico ..
-	;; Podemos deixar que o boot loader fa�a suas inicializa��es. 
-	;; Obs: Isso est� funcionando bem.
-	;; Mas o timer foi configurado v�rias vezes.
-
-
-;; Called by s2modespm32 in s2modes.inc
+; IMPORTANTE:
+; O OBJETIVO � CHEGARMOS AQUI COM O ARQUIVO BL.BIN CARREGADO NA MEM�RIA
+; E PASSARMOS O COMANDO PARA ELE, SEM TERMOS QUE CARREGA LO 
+; USANDO RECURSOS DE 32BIT.
+; Importante:
+; Fazendo configura��es aqui mesmo ao inv�s de chamarmos 
+; 'setup_machine' ou ainda n�o fazendo essas configura��es, 
+; pois j� estamos em modo protegido com as interrup��es 
+; desabilitadas e em modo gr�fico ..
+; Podemos deixar que o boot loader fa�a suas inicializa��es. 
+; Obs: Isso est� funcionando bem.
+; Mas o timer foi configurado v�rias vezes.
+; Called by s2modespm32 in s2modes.inc
 
 startGUI:
 
-;===============
+;
 ; Setup machine
+;
+
+; Disable, GDT and IDT.
 
     cli
-
-; GDT and IDT
-
     lgdt [lgdt_opcode]
     lidt [lidt_opcode]
 
@@ -245,76 +215,67 @@ startGUI:
 ; Todos os componentes APIC s�o ignorados e o sistema opera
 ; no modo single-thread usando LINT0.
 
-	mov al, 00010001b    ; Begin PIC 1 initialization.
-	out 0x20, al
-	mov al, 00010001b    ; Begin PIC 2 initialization.
-	out 0xA0, al
-	mov al, 0x20         ; IRQ 0-7:  interrupts 20h-27h.
-	out 0x21, al
-	mov al, 0x28         ; IRQ 8-15: interrupts 28h-2Fh.
-	out 0xA1, al
-	mov al, 4
-	out 0x21, al
-	mov al, 2
-	out 0xA1, al
-	mov al, 1
-	out 0x21, al
-	out 0xA1, al
+    mov al, 00010001b  ; Begin PIC 1 initialization.
+    out 0x20, al
+    mov al, 00010001b  ; Begin PIC 2 initialization.
+    out 0xA0, al
+    mov al, 0x20       ; IRQ 0-7:  interrupts 20h-27h.
+    out 0x21, al
+    mov al, 0x28       ; IRQ 8-15: interrupts 28h-2Fh.
+    out 0xA1, al
+    mov al, 4
+    out 0x21, al
+    mov al, 2
+    out 0xA1, al
+    mov al, 1
+    out 0x21, al
+    out 0xA1, al
 
-	;;@todo:
-	;;Init RTC.
+; #todo:
+; Init RTC.
 
-	
-	;;step 
-    ;;@todo: memory caching control.	
-	
-	;;step 
-	;processor Discovery and initialization
-	;(cpuid threads and cores, start inter-processor interrupt sipi, ap wakeu pstate,
-	;wakeup vector alignment, caching consdarations,ap idle state)	
-	;apenas o b�sico para o boot manager.
-	
+;step 
+;#todo: 
+; memory caching control.
 
-	;;
-	;; Fazendo alguma inicializa��o de dispositivos de I/O suportados.
-	;;
+; step 
+; processor Discovery and initialization
+; (cpuid threads and cores, start inter-processor interrupt sipi, 
+; ap wakeu pstate,
+; wakeup vector alignment, caching consdarations,ap idle state)
+; apenas o b�sico para o boot manager.
 
-	;step
-	;i/o devices
-	;( embedded controller EC, super io SIO, legacy free systems, miscellaneous io devices)
-    ;Nesse momento os dispositivos de i/o suportados aqui s�o (keyboard, IDE, graphic card).
-	
-	;;
-	;; #bugbug
-	;; Cancelado.
-	;; N�o precisamos disso, pois vamos configurar o teclado 
-	;; durante a inicializa��o do i8042 no kernel.
-	;;	
-	
-	;KEYBOARD.
-	;call keyboardInit
-	
-	
-	;IDE0.   #BUGUBG NO QEMU
-	;;call init_ide0_master
-	
-		
-	
-	;LFB.   #BUGUBG NO QEMU
-	;;call configura_lfb   ;;?? onde est� essa rotina ??
-	
-	
+; Fazendo alguma inicializa��o de dispositivos de I/O suportados.
 
-	; #BUGBUG
-	; #todo:
-	; Aqui estamos usando constantes, porem esses valores precisam 
-	; serem detectados, pois variam � cada formata��o.
-	
-	
-	
-	;Detectar os par�metros do sistema de arquivos FAT16.
-	;fat lba, root lba ...
-	;call fat16DetectFSParameters  ;;fat16lib.inc
+; step
+; i/o devices
+; ( embedded controller EC, super io SIO, 
+; legacy free systems, miscellaneous io devices)
+; Nesse momento os dispositivos de i/o suportados 
+; aqui s�o (keyboard, IDE, graphic card).
+
+; #bugbug
+; Cancelado.
+; N�o precisamos disso, pois vamos configurar o teclado 
+; durante a inicializa��o do i8042 no kernel.
+
+;KEYBOARD.
+    ;call keyboardInit
+
+;IDE0.   #BUGUBG NO QEMU
+    ;call init_ide0_master
+
+;LFB.   #BUGUBG NO QEMU
+    ;call configura_lfb   ;;?? onde est� essa rotina ??
+
+; #BUGBUG
+; #todo:
+; Aqui estamos usando constantes, porem esses valores precisam 
+; serem detectados, pois variam � cada formata��o.
+
+;Detectar os par�metros do sistema de arquivos FAT16.
+;fat lba, root lba ...
+    ;call fat16DetectFSParameters  ;;fat16lib.inc
 
 ;
 ; ========================================================
@@ -322,29 +283,32 @@ startGUI:
 
 ; Set up LBA for first FAT, root dir and data area.
 
-    mov dword [g_current_fat_lba],        FAT16_FAT_LBA       ;Fat do volume atual
-    mov dword [g_current_directory_lba],  FAT16_ROOTDIR_LBA   ;Diretorio do volume atual.
-    mov dword [g_current_dataarea_lba],   FAT16_DATAAREA_LBA  ;?? ;lba do inicio da area de dados do volume atual.
-    ; Continua ...
+; Fat do volume atual
+    mov dword [g_current_fat_lba],  FAT16_FAT_LBA
 
+; Diretorio do volume atual.
+    mov dword [g_current_directory_lba],  FAT16_ROOTDIR_LBA
 
+;?? ;lba do inicio da area de dados do volume atual.
+    mov dword [g_current_dataarea_lba],  FAT16_DATAAREA_LBA 
 
-    ;; Configurando PCI. (O b�sico suportado pelo Boot Manager.)
-    ;; O boot manager est� carregando o BL utilizando recursos 
-    ;; do BIOS em modo real. Mas se o BM fosse carregar o BL 
-    ;; de um dispositivo SATA em 32bit teria que configurar o PCI.
-    ;; (Se poss�vel deixaremos para o BL o penoso trabalho de lidar
-    ;; com PCI, j� que o BL � feito em C, isso deve ser mais f�cil para
-    ;; o BL do que para o BM.)
+; Continua ...
 
-	;; step
-	;; PCI device descovery.
+;; Configurando PCI. (O b�sico suportado pelo Boot Manager.)
+;; O boot manager est� carregando o BL utilizando recursos 
+;; do BIOS em modo real. Mas se o BM fosse carregar o BL 
+;; de um dispositivo SATA em 32bit teria que configurar o PCI.
+;; (Se poss�vel deixaremos para o BL o penoso trabalho de lidar
+;; com PCI, j� que o BL � feito em C, isso deve ser mais f�cil para
+;; o BL do que para o BM.)
 
-    ; Cursor.
+; step
+; PCI device descovery.
+
+; Cursor.
     call reset_cursor 
 
-
-    ;; ...
+; ...
 
 ; Mask all interrupts.
 
@@ -357,68 +321,62 @@ startGUI:
     mov ax, word 0x10 
     mov ds, ax
     mov es, ax 
-	;mov fs, ax
-	;mov gs, ax 
-	;; #bugbug
-	;; Missing ss register. (This is a test) (out. 2020)
+    ;mov fs, ax
+    ;mov gs, ax 
+    ; #bugbug
+    ; Missing ss register. 
+    ; (This is a test) (out. 2020)
     mov ss, ax
     mov eax, stack_ptr
     mov esp, eax 
 
-    ;; #bugbug
-    ;; Determinando tipo de volume.
+; #bugbug
+; Determinando tipo de volume.
 
+; Configura volume.
+    mov al, byte 1
+    call set_fs_volume
 
-	; Configura volume.
-	mov al, byte 1
-	call set_fs_volume
-
-
-	;Configura fs type.
-	mov al, byte 1
-	call set_fs_type
-
+; Configura fs type.
+    mov al, byte 1
+    call set_fs_type
 
 ;
 ; LFB
 ;
-    ;; internas.
-    ;; Configura LFB e Buffer.
-    ;; #todo: Change this name.
+
+; internas.
+; Configura LFB e Buffer.
+; #todo: Change this name.
 
     call setup_lfb
 
-
-    ;; #bugbug
-    ;; Cancelando isso.
-    ;; Pois esses valores est�o acima do limite de 16MB.
-    ;; Qualquer coisa para sistemas acima de 16MB ser�o 
-    ;; configuradas pelo kernel depois de detectar a 
-    ;; quantidade de mem�ria.
-    ;; #todo: Change this name.
+; #bugbug
+; Cancelando isso.
+; Pois esses valores est�o acima do limite de 16MB.
+; Qualquer coisa para sistemas acima de 16MB ser�o 
+; configuradas pelo kernel depois de detectar a 
+; quantidade de mem�ria.
+; #todo: Change this name.
     
     ;call setup_buffer
 
+; Se configurar o modo 3 n�o tem como 
+; reconfigurar atravez desse modo ainda.
+; entao salva modo 1
 
-	;
-	;se configurar o modo 3 n�o tem como 
-	;reconfigurar atravez desse modo ainda.
-	;entao salva modo 1
-	;	
-	;mov eax, dword 1
-	;call blconfig_set_modo	
-	;call do_save
-	
+    ;mov eax, dword 1
+    ;call blconfig_set_modo	
+    ;call do_save
 
-    ; #todo: 
-    ; N�o � certo pintar um backgraund direto na mem�ria de video.
-    ; O Boot Manger n�o tem sincroniza��o vertical ainda.	 
-    ;background test!
+; #todo:
+; N�o � certo pintar um backgraund direto na mem�ria de video.
+; O Boot Manger n�o tem sincroniza��o vertical ainda.
+;background test!
     ;call _background
     ;call _background_teste       
     ;call _fade_screen
     ;jmp $
-
 
 ;
 ; == Testing strings ========================
@@ -436,15 +394,15 @@ startGUI:
 .LtestingStrings:
 
     nop
-    
-	; #todo: 
-	; Testar rotina de mostrar uma string.
+
+; #todo: 
+; Testar rotina de mostrar uma string.
 
 	;debug break
 	;jmp $
 	
-	;Debug:
-	;Pinta uma janela pra testar modo gr�fico.
+;Debug:
+;Pinta uma janela pra testar modo gr�fico.
 	
 	;mov eax, 0    ;x.
 	;mov ebx, 0    ;y.
@@ -453,18 +411,16 @@ startGUI:
     ;mov edi, dword  0x80808000    ;blue 
 	;call CreateWindow
 	;call _asm_refresh_screen
-	
   
-    ;; #BUGBUG
-    ;; O teste indicou que as rotinas de char e string est�o
-    ;; com mal funcionamento, travando o sistema.
-    ;; a segunda janale n�o aparece que sinaliza prograsso n�o aparece.
-  
-  
-    ;; @todo: Fazer debug da fun��o print char antes de tudo ...
-    ;; status: testando ...
+; #BUGBUG
+; O teste indicou que as rotinas de char e string est�o
+; com mal funcionamento, travando o sistema.
+; a segunda janale n�o aparece que sinaliza prograsso n�o aparece.
 
-  
+; #todo: 
+; Fazer debug da fun��o print char antes de tudo ...
+; status: testando ...
+
 ;Char.
 
     ; a =  cor (rrggbbaa)
@@ -473,7 +429,7 @@ startGUI:
     ; d =  Char.    
   
 .LTestingPrintChar:  
-	
+
 	;push eax
 	;push ebx
 	;push ecx 
@@ -648,38 +604,36 @@ startGUI:
 ; Boot block
 ;
 
+; LFB address.
+; Width in pixels.
+; Height in pixel.
+; BPP.
+; metafile address
+; ...
 
-	; LFB address.
-	; Width in pixels.
-	; Height in pixel.
-	; BPP.
-	; metafile address
-	; ...
-	
-	;; lfb
+; lfb
 	xor eax, eax
 	mov eax, dword [ModeInfo_PhysBasePtr]  
 	mov dword [BootBlock.lfb], eax
 	
-	;; screen width
+; screen width
 	xor eax, eax
 	mov ax, word [ModeInfo_XResolution]    
 	mov dword [BootBlock.x], eax 
 	
-	;; screen height
+; screen height
 	xor eax, eax
 	mov ax, word [ModeInfo_YResolution]    
 	mov dword [BootBlock.y], eax 
-	
 
-    ;; bpp
+; bpp
 	xor eax, eax
 	mov al, byte [ModeInfo_BitsPerPixel]   
 	mov dword [BootBlock.bpp], eax 
 
-    ;; #bugbug
-    ;; Algo nao permite enderecarmos os elementos do metafile.
-    ;; mas conseguimos passar seu endereco.
+; #bugbug
+; Algo nao permite enderecarmos os elementos do metafile.
+; mas conseguimos passar seu endereco.
 
     ;; == ?? ==================================================
     ;; metafile address
@@ -724,27 +678,24 @@ startGUI:
 ; Display mode. (Graphics)
 ;
 
-    ;Flag. (using graphics)
+;Flag. (using graphics)
 
     ;xor eax, eax
     mov al, byte  'G'
 
-
-    ;; #todo
-    ;; Passar isso para BL.BIN
+; #todo
+; Passar isso para BL.BIN
     ;; #mov ah, byte [META$FILE.GRAMADO_MODE]
 
-    ; LFB physical address.
-
+; LFB physical address.
     mov ebx, dword [ModeInfo_PhysBasePtr]
 
-    ; Boot block address.
-
+; Boot block address.
     mov ebp, dword BootBlock
     mov ecx, ebp                ; Table
     mov edx, ebp                ; Table
     
-    ; Gramado mode. (jail, p1, home ...)
+; Gramado mode. (jail, p1, home ...)
     mov edi, dword [tmp_gamemode]
 
 .LgoBL:
@@ -754,17 +705,16 @@ startGUI:
 ;; == \o/ =================================
 ;;
 
-    ; Go!
-    ; Jump to the entrypoint of the boot loader. (BL.BIN).
-    ; 0x00021000
-
-    ; IN:
-    ; al:  Boot mode.
-    ; ebx: LFB physical addres.
-    ; ecx: Boot block address.
-    ; edx: Boot block address.
-    ; ebp: Boot block address.
-    ; edi: Gramado mode. (jail, p1, home ...)
+; Go!
+; Jump to the entrypoint of the boot loader. (BL.BIN).
+; 0x00021000
+; IN:
+; al:  Boot mode.
+; ebx: LFB physical addres.
+; ecx: Boot block address.
+; edx: Boot block address.
+; ebp: Boot block address.
+; edi: Gramado mode. (jail, p1, home ...)
 
     jmp  8:IMAGE_ADDRESS_ENTRY_POINT
     JMP  $
@@ -773,11 +723,9 @@ startGUI:
 ;; == \o/ =================================
 ;;
 
-
-	;;
-	;; Fail.
-	;;
-
+;;
+;; Fail.
+;;
 
 ; O arquivo n�o est� presente na mem�ria.
 ; Muda a cor da string.	
@@ -798,13 +746,10 @@ startGUI:
     hlt
     jmp .peFailHalt
     
-
-	; #fim 
-	; Começam as rotinas internas do arquivo.
+; #fim 
+; Começam as rotinas internas do arquivo.
 
 ;; ================================================================
-
-
 
 
 ;
@@ -845,20 +790,20 @@ setup_lfb:
 
 setup_buffer:
 
-    ;; #bugbug
-    ;; Cancelando isso.
-	;; Pois esses valores est�o acima do limite de 16MB.
-	;; Qualquer coisa para sistemas acima de 16MB ser�o 
-	;; configuradas pelo kernel depois de detectar a 
-	;; quantidade de mem�ria.
-	
+;; #bugbug
+;; Cancelando isso.
+;; Pois esses valores est�o acima do limite de 16MB.
+;; Qualquer coisa para sistemas acima de 16MB ser�o 
+;; configuradas pelo kernel depois de detectar a 
+;; quantidade de mem�ria.
+
 	;buffer 1,2 e 3.
 	;push edx
-   	;mov edx, dword 0x01000000		
+   	;mov edx, dword 0x01000000
 	;mov dword [VIDEO.buffer1], edx
-   	;mov edx, dword 0x01500000		
+   	;mov edx, dword 0x01500000
 	;mov dword [VIDEO.buffer2], edx
-   	;mov edx, dword 0x01A00000		
+   	;mov edx, dword 0x01A00000
 	;mov dword [VIDEO.buffer3], edx 
 	;pop edx
 

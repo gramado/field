@@ -1,23 +1,19 @@
 ;;    
-;; File: lib16/s2modes.inc
-;;
-;;    stage2.
-;;
+;; File: s2modes.inc
+;;     stage2.
 ;;     Ativa um modo de inicializaçao definido para o Boot Manager.
 ;;     Opçoes:
-;;     +1 - Inicia o Shell do boot manager.  
-;;     +2 - Inicia o BL.BIN no modo GUI. 
-;;
+;;     +1 - Inicia o Shell do boot manager.
+;;     +2 - Inicia o BL.BIN no modo GUI.
 ;; History:
 ;;     2015 - Created by Fred Nora.
 ;;
 
- 
-;---------------------------------------
+
 ; set_boot_mode:
 ;     Configura um modo de inicializaçao.
 ;     in: al
-; 
+
 set_boot_mode:
     mov byte [META$FILE.INIT_MODE], al
     ret 
@@ -43,19 +39,13 @@ set_video_mode:
     ret 
  
  
-;-------------------------------------------
 ; get_video_mode:
 ;     Pega o modo de video.
 ;     out: ax
-;
 
 get_video_mode:
-    
     mov ax, word [META$FILE.VIDEO_MODE]
     ret 
-
-
-
 
 
 ;==================================================================

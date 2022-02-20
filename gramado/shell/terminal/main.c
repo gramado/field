@@ -1693,6 +1693,9 @@ int main ( int argc, char *argv[] )
 
     rewind(new_stdin);
 
+    // #test
+    rtl_yield();
+    
     while (1){
         C = fgetc(new_stdin);
         if (C > 0)
@@ -1704,6 +1707,8 @@ int main ( int argc, char *argv[] )
                 C,                    // long1 (ascii)
                 C );                  // long2 (ascii)
         }
+        //#test
+        rtl_yield();
     };
 
 //exit:

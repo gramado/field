@@ -235,7 +235,7 @@ gws_draw_text (
     int window,
     unsigned long x,
     unsigned long y,
-    unsigned long color,
+    unsigned int color,
     char *string );
 
 // Redraw a window.
