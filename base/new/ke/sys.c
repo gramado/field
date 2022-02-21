@@ -283,28 +283,31 @@ void *sys_create_thread (
 /*
  ************************************
  * sys_read:
- *     implementation os read() libc function.
+ *     ring0 read() implementation.
+ *     Called via syscall.
  */
 
 // Service 18.
 // #todo: There's a lot to do with synchronization.
-
 // #todo
 // We need to call one subfunctions for
 // each different kind of file intead of implementing
 // an internal sub-routine.
-
 // #todo
 // Isso deveria ser apenas um wrapper,
 // chamando as rotinas apropriadas para cada tipo 
 // de arquivo.
-
 // OUT:
 // 0 = Couldn't read.
 // -1 = Error.
 
-int sys_read (unsigned int fd, char *ubuf, int count)
+int 
+sys_read (
+    unsigned int fd, 
+    char *ubuf, 
+    int count )
 {
+
     struct process_d  *__P;
     file              *__file;
     struct socket_d   *s;

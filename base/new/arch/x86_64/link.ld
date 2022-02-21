@@ -1,15 +1,11 @@
 /* 
  * File: link.ld
- * 
  * ld script to make the x86_64 kernel image.
- *
  * Base:
  *     0x30000000
- *
  * Entry point: 
  *     0x30001000
  *     Kernel entry point in 1pump/arch/x86/boot.asm. 
- *
  * History:
  *     2021 - Created by Fred Nora.
  *     ...

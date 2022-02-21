@@ -1,22 +1,25 @@
 /*
  * gobject.h
- * 
- *     It's used for the file structure.
- *     2018 - Created by Fred Nora.
+ * It's used for the file structure.
+ * 2018 - Created by Fred Nora.
  */
 
 #ifndef ____GOBJECT_H
 #define ____GOBJECT_H  1
 
 
+// #todo
+// We need an index for serial devices.
+// /dev/ttyS...
+
+//Precisamos de um pouco de ordem nisso.
+//separar por grupos.
+//Talvez usarmos os prefixos e as pastas do kernel.
+
 typedef enum {
 
-    //Precisamos de um pouco de ordem nisso.
-    //separar por grupos.
-    //Talvez usarmos os prefixos e as pastas do kernel.
-
     ObjectTypeNull,               //0 Null. (Free)
-    
+
     // fs/
     ObjectTypeDirectory,          // diretório de arquivos
     ObjectTypeFile,               // (Regular file)
@@ -25,9 +28,12 @@ typedef enum {
     
     // metafile just like GRAMADO or BRAMADO.
     // or even a hidden lba with no entry in the directory
-    ObjectTypeMetafile,           
+    ObjectTypeMetafile,
 
     // hwi/
+    
+    //ObjectTypeSerialPort,    //COM ports.
+    
     ObjectTypeDevice,         // device ??
     ObjectTypeDisk,           //
     ObjectTypeDiskInfo,       // disk info,
@@ -124,25 +130,24 @@ typedef enum {
     ObjectTypeKM,             // ??
     ObjectTypeUM,             // ??
 
+// para validação de objetos não especificados 
+// ou até nulos, talvez. :)
     ObjectTypeGeneric       
 
-	// todo: 
-	// precisamos criar um tipo genérico
-	// para validação de objetos não especificados 
-	// ou até nulos, talvez. :)
 
 }object_type_t;
 
 
-typedef enum {
-	
-	ObjectClassKernelObjects,  // Kernel Objects.
-	ObjectClassUserObjects,    // User Objects.
-	ObjectClassGuiObjects,     // Graphical User Interface Objects.
-	ObjectClassCliObjects,     // Command Line Interface Objects.
-    
-    //...	
+//
+// Object class.
+//
 
+typedef enum {
+    ObjectClassKernelObjects,  // Kernel Objects.
+    ObjectClassUserObjects,    // User Objects.
+    ObjectClassGuiObjects,     // Graphical User Interface Objects.
+    ObjectClassCliObjects,     // Command Line Interface Objects.
+    //...
 }object_class_t;
 
 

@@ -1,12 +1,10 @@
 /*
  * File: stdlib.c
- * 
- *     stdlib
- * 
+ * stdlib
  * 2015
  */
 
- 
+
 #include <kernel.h>
 
 
@@ -41,7 +39,7 @@ int __ptsname (int fd, char *buf, size_t buflen)
 {
      char *ptsname_buffer = (char *) buf;
 
-     char test_str[50] = "klibc-stdlib-__ptsname:";
+     char test_str[50] = "new-__ptsname: test string";
 
     // 64 bytes limit
     strcpy ( ptsname_buffer, (const char *) test_str );
@@ -58,6 +56,7 @@ void *slab_alloc (size_t size);
 void *slab_alloc (size_t size)
 {}
 */
+
 
 /* 
  *****************************************
@@ -82,9 +81,9 @@ void *kmalloc (size_t size){
         s=1;
     }
 
-    // Alocar memória no heap do kernel.
-    // ps/x86/memory.c
-    
+// Alocar memória no heap do kernel.
+// ps/x86/memory.c
+
     h = (void *) heapAllocateMemory(s);
 
     if ( (void *) h == NULL ){
@@ -130,6 +129,7 @@ void kfree (void *ptr){
     FreeHeap (ptr);
 }    
 
+
 /*
  * kcalloc: alloca e preenche com zero.
  * @todo:
@@ -148,13 +148,6 @@ void *kcalloc (size_t count, size_t size)
   return value;
 };
 */
-
-
-
-
-
-
-
 
 
 

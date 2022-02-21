@@ -238,9 +238,8 @@ copy_process_struct(
     unsigned long BasePriority=0;
     unsigned long Priority=0;
 
-
-    // Balancing the priority.
-    // Please, don't inherit base priority!
+// Balancing the priority.
+// Please, don't inherit base priority!
 
     BasePriority = (unsigned long) PRIORITY_NORMAL; 
     Priority     = (unsigned long) PRIORITY_NORMAL;
@@ -299,15 +298,16 @@ copy_process_struct(
 // Copy
 //
 
-    // Object.
+// Object.
     Process2->objectType  = Process1->objectType;
     Process2->objectClass = Process1->objectClass;
 
-    // O clone não inicializa na seção crítica, pois senão teríamos
-    // dois processos na sessão crítica.
+// O clone não inicializa na seção crítica, pois senão teríamos
+// dois processos na sessão crítica.
     Process2->_critical = 0;
 
-    // Identificadores.
+// Identificadores.
+
     Process2->pid  = (pid_t) p2->pid;         // PID.  O pid do clone.
     Process2->ppid = (pid_t) Process1->pid;   // PPID. O parent do clone é o pid do pai. 
     
@@ -322,17 +322,17 @@ copy_process_struct(
     Process2->sgid = (gid_t) Process1->sgid;  // SGID. 
     Process2->pgrp = Process1->pgrp;
 
-    // validation.
+// validation.
     Process2->used  = Process1->used;
     Process2->magic = Process1->magic;
 
-    // State of process
+// State of process
     Process2->state = Process1->state;  
 
-    // Plano de execução.
+// Plano de execução.
     Process2->plane = Process1->plane;
 
-	//Process->name_address = NULL;
+    //Process->name_address = NULL;
 
     Process2->framepoolListHead = Process1->framepoolListHead;
 
@@ -340,29 +340,25 @@ copy_process_struct(
 // pml4
 //
 
-	// #bugbug
-	// Precisamos clonar o diret�rio de p�ginas
-	// sen�o alguma altera��o feita na pagetable da imagem pode
-	// corromper o processo que est� sendo clonado.
-
-    // #importante:
-    // Deve retornar o endere�o do diret�rio de p�ginas criado,
-    // que � um clone do diret�rio de p�ginas do kernel.
-    // Retornaremos o endere�o virtual, para que a fun��o create_process 
-    // possa usar tanto o endere�o virtual quanto o f�sico.
-
-	// #bugbug
-	// Na verdade precisamos clonar o diret�rio do processo e n�o o 
-	// diret�rio do kernel.
-
-	// #importante
-	// Isso clona o diret�rio de p�ginas do kernel. Isso facilita as coisas.
-	// Retorna o endere�o virtual do novo diret�rio de p�ginas.
-
-	// #importante:
-	// Vamos converter porque precisamos de endere�o f�sico para colocarmos no cr3.
-	// Mas o taskswitch faz isso pegando o endere�o que estiver na thread, ent�o
-	// esse endere�o precisa ir pra thread.
+// #bugbug
+// Precisamos clonar o diret�rio de p�ginas
+// sen�o alguma altera��o feita na pagetable da imagem pode
+// corromper o processo que est� sendo clonado.
+// #importante:
+// Deve retornar o endere�o do diret�rio de p�ginas criado,
+// que � um clone do diret�rio de p�ginas do kernel.
+// Retornaremos o endere�o virtual, para que a fun��o create_process 
+// possa usar tanto o endere�o virtual quanto o f�sico.
+// #bugbug
+// Na verdade precisamos clonar o diret�rio do processo e n�o o 
+// diret�rio do kernel.
+// #importante
+// Isso clona o diret�rio de p�ginas do kernel. Isso facilita as coisas.
+// Retorna o endere�o virtual do novo diret�rio de p�ginas.
+// #importante:
+// Vamos converter porque precisamos de endere�o f�sico para colocarmos no cr3.
+// Mas o taskswitch faz isso pegando o endere�o que estiver na thread, ent�o
+// esse endere�o precisa ir pra thread.
 
 
 /*
@@ -393,55 +389,47 @@ copy_process_struct(
     Process2->pd0_PA = Process1->pd0_PA;
 */
 
-
-    // #bugbug
-    // Lembrando que na rotina de fork() nos obtemos
-    // os endereços físicos da imagem do clone e de sua pilha.
-    // precisamos mapear esses endereços em 0x400000, caso contrário
-    // o processo filho apontará para a imagem do processo pai,
-    // como estava antes de copiarmos o diretório de páginas do kernel.
-
-
-	// ??
-	// #bugbug
-	// Se o endere�o for virtual, ok fazer isso. 
-	// Usaremos o mesmo endere�o virtual da imagem.
-	// #importante: se bem que esse endere�o virtual de imagem
-	// pode ser diferente para o kernel. Pois no momento
-	// que ele alocar mem�ria para a imagem ele ter� o
-	// endere�o l�gico retornado pelo alocador.
-
-    // #bugbug
-    // Conseguimos o endere�o da imagem copiada,
-    // mas teremos que refazer isso mais a frente quando
-    // carregarmos, (isso no caso da rotina de clonagem)
-    // Isso � v�lido s� para o fork.
-
-    // Atenção
-    // O processo pai armazenava o  novo endereço da imagem do processo
-    // filho. Isso foi criado durante a alocação de memória
-    // para o processo filho.
-    // porém esse endereço virtual não aponta para o 
-    // entry point da imagem do processo filho, e sim para
-    // o endereço virtual obtido na alocação.
-
+// #bugbug
+// Lembrando que na rotina de fork() nos obtemos
+// os endereços físicos da imagem do clone e de sua pilha.
+// precisamos mapear esses endereços em 0x400000, caso contrário
+// o processo filho apontará para a imagem do processo pai,
+// como estava antes de copiarmos o diretório de páginas do kernel.
+// ??
+// #bugbug
+// Se o endere�o for virtual, ok fazer isso. 
+// Usaremos o mesmo endere�o virtual da imagem.
+// #importante: se bem que esse endere�o virtual de imagem
+// pode ser diferente para o kernel. Pois no momento
+// que ele alocar mem�ria para a imagem ele ter� o
+// endere�o l�gico retornado pelo alocador.
+// #bugbug
+// Conseguimos o endere�o da imagem copiada,
+// mas teremos que refazer isso mais a frente quando
+// carregarmos, (isso no caso da rotina de clonagem)
+// Isso � v�lido s� para o fork.
+// Atenção
+// O processo pai armazenava o  novo endereço da imagem do processo
+// filho. Isso foi criado durante a alocação de memória
+// para o processo filho.
+// porém esse endereço virtual não aponta para o 
+// entry point da imagem do processo filho, e sim para
+// o endereço virtual obtido na alocação.
 
     Process2->Image   = (unsigned long) Process1->childImage; // #bugbug: Esse endereço não é 0x400000
     Process2->ImagePA = (unsigned long) Process1->childImage_PA;
     Process2->childImage    = 0;
     Process2->childImage_PA = 0;
 
+// #bugbug
+// We simply can't do this!
+// Every process need your own heap!
+// The function that called up is gonna fix this later. :)
+// Simply initialize for now!
 
-    // #bugbug
-    // We simply can't do this!
-    // Every process need your own heap!
-    // The function that called up is gonna fix this later. :)
-    // Simply initialize for now!
-
-
-    //#bugbug
-    // Não inicialize com 0, pois esses valores foram
-    // configurados por um worker chamado antes desse.
+//#bugbug
+// Não inicialize com 0, pois esses valores foram
+// configurados por um worker chamado antes desse.
 
     /*
     //heap
@@ -454,23 +442,23 @@ copy_process_struct(
     Process2->StackSize   = (unsigned long) 0; // Process1->StackSize;
     Process2->StackOffset = (unsigned long) 0; // Process1->StackOffset;
     */
-    
+
 
     Process2->iopl = Process1->iopl;
 
-
-    // Priority.
+// Priority.
 
     Process2->base_priority = (unsigned long) BasePriority;
     Process2->priority      = (unsigned long) Process1->priority;
 
-    // == Security ====================================
+// Security: 
+// usersession, room and desktop.
 
     Process2->usession = Process1->usession;
     Process2->room     = Process1->room;
     Process2->desktop  = Process1->desktop;
 
-    // absolute pathname and relative pathname. 
+// Absolute pathname and relative pathname. 
 
     Process2->file_root  = Process1->file_root;
     Process2->file_cwd   = Process1->file_cwd;
@@ -478,16 +466,17 @@ copy_process_struct(
     Process2->inode_root = Process1->inode_root;
     Process2->inode_cwd  = Process1->inode_cwd;
 
-    // =============
-    // #IMPORTANTE
-    // Herdar todos arquivos.
-    // #bugbug: 
-    // Lembrando que o fd 1 tem sido usado como dispositivo 
-    // console virtual.
-    
-    // #bugbug
-    // Imagine um processo que fechou um dos três arquivos e agora
-    // vamos clonar sem o fluxo padrão em ordem.
+// =============
+// #IMPORTANTE
+// Herdar todos arquivos.
+// #bugbug: 
+// Lembrando que o fd 1 tem sido usado como dispositivo 
+// console virtual.
+
+// #bugbug
+// Imagine um processo que fechou um dos três arquivos e agora
+// vamos clonar sem o fluxo padrão em ordem.
+
     file *__f;
 
     for (i=0; i<NUMBER_OF_FILES; i++)
@@ -506,9 +495,10 @@ copy_process_struct(
         }
     };
 
+// O fluxo padrão foi criando antes em klib/kstdio.c
+// #todo: 
+// Checar as características desses arquivos.
 
-    // O fluxo padrão foi criando antes em klib/kstdio.c
-    // #todo: Checar as características desses arquivos.
     Process2->Objects[0] = (unsigned long) stdin;
     Process2->Objects[1] = (unsigned long) stdout;
     Process2->Objects[2] = (unsigned long) stderr;
@@ -518,36 +508,29 @@ copy_process_struct(
 // Thread de controle
 //
 
+// Vamos clonar a thread de controle do processo pai.
+// obs:
+// Me parece que a fun��o que clona apenas a thread de controle 
+// chama-se fork1. #todo
+// #todo: Precisamos copiar todas as threads
+// vamos come�ar pela thread de controle.
+// teoriacamente elas precisam ter o mesmo endere�o virtual ...
+// mas est�o em endere�os f�sicos diferentes.
+// #bugbug precisamos clonar a thread.
+// ############### #IMPORTANTE #################
+// #bugbug
+// Ainda n�o temos um salvamento de contexto apropriado para essa system call.
+// S� o timer tem esse tipo de salvamento.
+// Precisamos salvar o contexto antes de chamarmos o servi�o fork()
+// Pois se n�o iremos retomar a thread clone em um ponto antes de 
+// chamarmos o fork, que � onde est� o �ltimo ponto de salvamento.
 
-	// Vamos clonar a thread de controle do processo pai.
-	
-	// obs:
-	// Me parece que a fun��o que clona apenas a thread de controle 
-	// chama-se fork1. #todo
-	
-	// #todo: Precisamos copiar todas as threads
-	// vamos come�ar pela thread de controle.
-	// teoriacamente elas precisam ter o mesmo endere�o virtual ...
-	// mas est�o em endere�os f�sicos diferentes.
-	// #bugbug precisamos clonar a thread.
-	
-	// ############### #IMPORTANTE #################
-	// #bugbug
-	// Ainda n�o temos um salvamento de contexto apropriado para essa system call.
-	// S� o timer tem esse tipo de salvamento.
-	// Precisamos salvar o contexto antes de chamarmos o servi�o fork()
-	// Pois se n�o iremos retomar a thread clone em um ponto antes de 
-	// chamarmos o fork, que � onde est� o �ltimo ponto de salvamento.
+//#todo: review
 
-
-
-    //#todo: review
-    
-    //?? herda a lista de threads ??
+//?? herda a lista de threads ??
     Process2->threadListHead = Process1->threadListHead;
     Process2->zombieChildListHead = Process1->zombieChildListHead;
     Process2->dialog_address = Process1->dialog_address;
-
 
 //
 // == TTY ======================
@@ -557,7 +540,6 @@ copy_process_struct(
 // Ela será uma tty privada, mas precisa ter um
 // uma estrutura de arquivo que aponte para ela
 // e um fd na lista de objetos abertos pelo processo.
-
 
     //++
     Process2->tty = ( struct tty_d *) tty_create();
@@ -587,8 +569,6 @@ fail:
 }
 
 
-
-
 /*
  * processObject:
  *     Cria uma estrutura do tipo processo, mas não inicializada.
@@ -607,11 +587,14 @@ struct process_d *processObject (void){
     if ( (void *) Tmp == NULL ){
         return NULL;
     }
-    // #todo
-    // Maybe we can clean up the structure
-    // or initialize some basic elements.
+
+// #todo
+// Maybe we can clean up the structure
+// or initialize some basic elements.
+
     return (struct process_d *) Tmp;
 }
+
 
 /*
  * getNewPID:
@@ -623,7 +606,8 @@ struct process_d *processObject (void){
 // de processos de usuário.
 // Se encontramos um slot vazio, retornaremos o índice.
  
-pid_t getNewPID (void){
+pid_t getNewPID (void)
+{
 
 // See:
 // gpid.h
@@ -632,12 +616,12 @@ pid_t getNewPID (void){
     
     struct process_d  *p;
 
-    while ( i < PROCESS_COUNT_MAX ){
-
+    while ( i < PROCESS_COUNT_MAX )
+    {
         p = (struct process_d *) processList[i];
 
         if ( (void *) p == NULL ){ return (pid_t) i; }
-        
+       
         i++;
     };
 
@@ -714,35 +698,36 @@ int processSendSignal (struct process_d *p, unsigned long signal){
 
 
 /*
- ***********************************************************
  * init_processes:
  *    Inicaliza o process manager.
- *   #todo: rever esse nome, pois na verdade estamos inicializando variaveis 
- * usadas no gerenciamento de processo.
+ *    #todo: rever esse nome, pois na verdade estamos 
+ * inicializando variaveis usadas no gerenciamento de processo.
  */
 
 // Called by init_microkernel in mk.c
 
-void init_processes (void){
-
+void init_processes (void)
+{
     register int i=0;
 
     debug_print("init_processes:\n");
 
-    // Globals
+// Globals
 
-	kernel_request = 0;    // O que fazer com a tarefa atual.
-	
-	
-	// ?? Contagem de tempo de execu��o da tarefa atual.
-	//n�o precisa, isso � atualizado pelo request()
-	//kernel_tick = 0;                                 
+// O que fazer com a tarefa atual.
+    kernel_request = 0;
 
-    kernel_switch = 0;     // ?? Ativa o kernel switch do scheduler.
+// ?? Contagem de tempo de execu��o da tarefa atual.
+// n�o precisa, isso � atualizado pelo request()
+    //kernel_tick = 0;
+
+// ?? Ativa o kernel switch do scheduler.
+    kernel_switch = 0;
 
     current_process = 0;
 
-    // Clear process list.
+// Clear process list.
+
     i=0;
     while (i < PROCESS_COUNT_MAX){
         processList[i] = (unsigned long) 0;
@@ -765,10 +750,10 @@ void CloseAllProcesses (void)
     int i=0;
     struct process_d  *P;
 
-	// #importante:
-	// Menos o 0, pois � o kernel. 
+// #importante:
+// Menos o 0, pois � o kernel. 
+// Pega, bloqueia e tira da lista.
 
-    //Pega, bloqueia e tira da lista.
     for ( i=1; i < PROCESS_COUNT_MAX; i++ )
     {
         P = (void *) processList[i];
@@ -780,15 +765,17 @@ void CloseAllProcesses (void)
         }
     };
 
-    //Check process 0.
-    P = (void *) processList[0];
+// Check process 0.
 
+    P = (void *) processList[0];
     if ( (void *) P == NULL ){
         panic ("CloseAllProcesses: P\n");
     }
 
-    // #bugbug
-    // The kernel is process 100.
+// #todo: validation?
+
+// #bugbug
+// The kernel is process 100.
 
     P = (void *) processList[100];
 
@@ -805,7 +792,6 @@ __ps_initialize_process_common_elements(
     struct process_d *p )
 {
     register int i=0;
-
 
     p->objectType  = ObjectTypeProcess;
     p->objectClass = ObjectClassKernelObjects;
@@ -824,48 +810,43 @@ __ps_initialize_process_common_elements(
 // Threads
 //
 
-    // The control thread.
+// The control thread.
     p->control = NULL;
-    
-    // List of threads.
+
+// List of threads.
     p->threadListHead = NULL;
 
-
-    // Absolute pathname and relative pathname. 
+// Absolute pathname and relative pathname. 
 
     p->file_root = (file *) 0;
     p->file_cwd  = (file *) 0;
     p->inode_root = (struct inode_d *) 0;
     p->inode_cwd  = (struct inode_d *) 0;
 
-    // wait4pid: 
-    // O processo esta esperando um processo filho fechar.
-    // Esse � o PID do processo que ele est� esperando fechar.
+// wait4pid: 
+// O processo esta esperando um processo filho fechar.
+// Esse � o PID do processo que ele est� esperando fechar.
 
     p->wait4pid = (pid_t) 0;
-        
-    // Número de processos filhos.
+
+// Número de processos filhos.
     p->nchildren = 0;
 
     p->zombieChildListHead = NULL;
     p->exit_code = 0;
 
-
-
 // ==========
 
-    // Standard stream.
-    // See: kstdio.c for the streams initialization.
-    // #todo: We need a flag.
-    
-    // #todo
-    // Melhorar esse nome.
-    
-    if (kstdio_standard_streams_initialized != TRUE )
-    {
+// Standard stream.
+// See: 
+// kstdio.c for the streams initialization.
+// #todo: We need a flag.
+// #todo: Melhorar esse nome.
+
+    if (kstdio_standard_streams_initialized != TRUE ){
         panic ("__ps_initialize_process_common_elements: [ERROR] Standard stream is not initialized\n");
     }
-    
+
     for ( i=0; i<NUMBER_OF_FILES; ++i ){ p->Objects[i] = (unsigned long) 0; }
 
     if ( (void *) stdin == NULL ){
@@ -890,9 +871,9 @@ __ps_initialize_process_common_elements(
 // == Socket ===================================
 //
 
-    // loop
-    // pending connections;
-    // Lista de conexoes pendentes do processo servidor.
+// loop
+// pending connections;
+// Lista de conexoes pendentes do processo servidor.
 
     for ( 
         i=0; 
@@ -919,13 +900,10 @@ __ps_initialize_process_common_elements(
     }
     tty_start(p->tty);
 
-
-
     // ...
 
     return;
 }
-
 
 
 // Create process
@@ -949,18 +927,15 @@ struct process_d *create_process (
     // Para a entrada vazia no array de processos.
     struct process_d *EmptyEntry; 
 
-
     unsigned long BasePriority=0;
     unsigned long Priority=0;
-
 
 
     debug_print ("create_process: #todo\n");
     printf      ("create_process: #todo\n");
 
-
-    //=================================
-    // check parameters
+//=================================
+// check parameters
 
     if( (void*) room == NULL ){
         debug_print ("create_process: [FIXME] room parameter is NULL\n");
@@ -974,8 +949,9 @@ struct process_d *create_process (
         debug_print ("create_process: [FIXME] window parameter is NULL\n");
     }
 
-    // #todo
-    // Maybe the virtual 0 is n option in the future. Maybe.
+// #todo
+// Maybe the virtual 0 is n option in the future. Maybe.
+
     if( base_address == 0 ){
         panic ("create_process: [ERROR] base_address\n");
     }
@@ -1009,10 +985,10 @@ struct process_d *create_process (
     // ...
     //=================================
 
-	// @todo:
-	// Melhorar esse esquema de numera��o e 
-	// contagem de processos criados.
-	// processNewPID � global ?
+// @todo:
+// Melhorar esse esquema de numera��o e 
+// contagem de processos criados.
+// processNewPID � global ?
 
     if ( processNewPID < GRAMADO_PID_BASE || 
          processNewPID >= PROCESS_COUNT_MAX )
@@ -1042,10 +1018,10 @@ struct process_d *create_process (
 
 //get_next:
 
-	// Get empty.
-	// Obt�m um �ndice para um slot vazio na lista de processos.
-	// Se o slot estiver ocupado tentaremos o pr�ximo.
-	// Na verdade podemos usar aquela fun��o que procura por um vazio. 
+// Get empty.
+// Obt�m um �ndice para um slot vazio na lista de processos.
+// Se o slot estiver ocupado tentaremos o pr�ximo.
+// Na verdade podemos usar aquela fun��o que procura por um vazio. 
 
     while (1){
 
@@ -1093,7 +1069,6 @@ struct process_d *create_process (
     Process->pid  = (int) PID; 
     Process->ppid = (int) ppid; 
 
-
     // sessão crítica.
     Process->_critical = 0;
 
@@ -1106,7 +1081,6 @@ struct process_d *create_process (
 
     //Error.
     //Process->error = 0;
-
 
 //
 // Name
@@ -1123,59 +1097,54 @@ struct process_d *create_process (
 
     Process->processName_len = sizeof(Process->__processname);
 
-
     //Process->terminal =
 
 //
 // Banco de dados
 //
-		//bancos de dados e contas do processo.
-		//Process->kdb =
-		//Process->gdbListHead =
-		//Process->ldbListHead =
-		//Process->aspaceSharedListHead =
-		//Process->aspacePersonalListHead =
-		//Process->dspaceSharedListHead =
-		//Process->dspacePersonalListHead =
-		
-		// Inicializando a lista de framepools do processo.
-		// @todo: Todo processo deve ser criado com pelo menos um 
-		// frame pool, o que � equivalente a 4MB. (uma parti��o)
-		// Obs: Um framepool indica onde � a �rea de mem�ria fisica
-		// que ser� usada para mapeamento das p�ginas usadas pelo processo.
+	//bancos de dados e contas do processo.
+	//Process->kdb =
+	//Process->gdbListHead =
+	//Process->ldbListHead =
+	//Process->aspaceSharedListHead =
+	//Process->aspacePersonalListHead =
+	//Process->dspaceSharedListHead =
+	//Process->dspacePersonalListHead =
+
+// Inicializando a lista de framepools do processo.
+// @todo: Todo processo deve ser criado com pelo menos um 
+// frame pool, o que � equivalente a 4MB. (uma parti��o)
+// Obs: Um framepool indica onde � a �rea de mem�ria fisica
+// que ser� usada para mapeamento das p�ginas usadas pelo processo.
 
     Process->framepoolListHead = NULL;
 
-		//Thread inicial.
-		//Process->thread =
-		
-		//Process->processImageMemory =
-		//Process->processHeapMemory =
-		//Process->processStackMemory =
+//Thread inicial.
+    //Process->thread =
 
-        // ORDEM: 
-        // O que segue � referenciado durante o processo de task switch.
+    //Process->processImageMemory =
+    //Process->processHeapMemory =
+    //Process->processStackMemory =
 
-		// Page Directory: 
-		//     Alocar um endere�o f�sico para o diret�rio de p�ginas do 
-		// processo a ser criado, depois chamar a fun��o que cria o diret�rio.
-		//
-		// @todo:
-		// *IMPORTANTE: Por enquanto os processos s�o criadas usando o 
-		// diret�rio de p�ginas do processo Kernel. Mas temos que criar 
-		// um diret�rio novo pra cada processo criado.
-		// O diret�rio de todos os processos de usu�rio ser�o iguais. 
-		// Ter�o uma �rea de us�rio particular e uma �rea compartilhada 
-		// em kernel mode.
-		//
-		//@todo: Alocar um endere�o f�sico antes, depois chamar a fun��o que 
-		// cria o pagedirectory.
-		//@todo: 
-        //op��o: KERNEL_PAGEDIRECTORY; //@todo: Usar um pra cada processo.
+// ORDEM: 
+// O que segue � referenciado durante o processo de task switch.
 
-		// #obs:
-		// Vari�vel recebida via argumento.
-
+// Page Directory: (em 64bit agora é pml4)
+//     Alocar um endere�o f�sico para o diret�rio de p�ginas do 
+// processo a ser criado, depois chamar a fun��o que cria o diret�rio.
+// @todo:
+// IMPORTANTE: Por enquanto os processos s�o criadas usando o 
+// diret�rio de p�ginas do processo Kernel. Mas temos que criar 
+// um diret�rio novo pra cada processo criado.
+// O diret�rio de todos os processos de usu�rio ser�o iguais. 
+// Ter�o uma �rea de us�rio particular e uma �rea compartilhada 
+// em kernel mode.
+//@todo: Alocar um endere�o f�sico antes, depois chamar a fun��o que 
+// cria o pagedirectory.
+//@todo: 
+//op��o: KERNEL_PAGEDIRECTORY; //@todo: Usar um pra cada processo.
+// #obs:
+// Vari�vel recebida via argumento.
 
 //
 // pml4_va
@@ -1189,134 +1158,119 @@ struct process_d *create_process (
         //return NULL;
     }
 
-
 // pml4
     Process->pml4_VA = (unsigned long) pml4_va;
     Process->pml4_PA = (unsigned long) virtual_to_physical ( 
                                                pml4_va, 
                                                gKernelPML4Address );
-
-
 // pdpt0
     Process->pdpt0_VA = (unsigned long) pdpt0_va;
     Process->pdpt0_PA = (unsigned long) virtual_to_physical ( 
                                                pdpt0_va, 
                                                gKernelPML4Address );
-
-//pd0
+// pd0
     Process->pd0_VA = (unsigned long) pd0_va;
     Process->pd0_PA = (unsigned long) virtual_to_physical ( 
                                                pd0_va, 
                                                gKernelPML4Address );
 
+// cancelados. 
+    // Process->mmBlocks[32]
+    // Process->mmblockList[32]
+    // Process->processMemoryInfo
 
-
-		// cancelados. 
-		// Process->mmBlocks[32]
-		// Process->mmblockList[32]
-
-		// Process->processMemoryInfo
-
-		// #todo: 
-		// Precisa alocar espa�o na mem�ria f�sica.
-		// Precisa criar page tables para essas areas de cada processo.
-		// Os endere�os virtuais dessas areas dos processos s�o sempre os mesmos.
-		// mas os endere�os f�sicos dessas areas variam de processo pra processo.
-
-		// Imagem do processo.
-		// ?? Provavelmente esse endere�o � virtual.
-		// Queremos que esse endere�o seja padronizado e que todos 
-		// os processos usem o mesmo endere�o.
-		
-		// #bugbug
-		// Todos os processos de usu�rio come�am no mesmo endere�o virtual.
-		// Por�m temos os processos em kernel mode e os processos do gramado core
-		// que usam endere�os virtuais diferentes.
-		// #todo: Rever isso.
-		// #todo: estamos suspendendo essa informa��o.
-		
-		//
-		// # IMPORTANTE 
-		//
-		
-		// Base da imagem do processo.
-		// Na verdade precisamos aceitar o endere�o passado via 
-		// argumento, pois nem todos processos come�am no endere�o 
-		// default.
+// #todo: 
+// Precisa alocar espa�o na mem�ria f�sica.
+// Precisa criar page tables para essas areas de cada processo.
+// Os endere�os virtuais dessas areas dos processos s�o sempre os mesmos.
+// mas os endere�os f�sicos dessas areas variam de processo pra processo.
+// Imagem do processo.
+// ?? Provavelmente esse endere�o � virtual.
+// Queremos que esse endere�o seja padronizado e que todos 
+// os processos usem o mesmo endere�o.
+// #bugbug
+// Todos os processos de usu�rio come�am no mesmo endere�o virtual.
+// Por�m temos os processos em kernel mode e os processos do gramado core
+// que usam endere�os virtuais diferentes.
+// #todo: Rever isso.
+// #todo: estamos suspendendo essa informa��o.
+// # IMPORTANTE 
+// Base da imagem do processo.
+// Na verdade precisamos aceitar o endere�o passado via 
+// argumento, pois nem todos processos come�am no endere�o 
+// default.
 
 //
 // Image
 //
 
-    // Endere�o virtual e endere�o f�sico.
+// Endereço virtual e endere�o f�sico.
+
     Process->Image   = (unsigned long) base_address;  
     Process->ImagePA = (unsigned long) virtual_to_physical ( 
                                            Process->Image, 
                                            gKernelPML4Address ); 
                                                
 
-
 //
 // Child image
 //
 
-    // Endere�o virtual e endere�o f�sico de um processo filho.
-    // Isso � usado durante a clonagem.
+// Endereço virtual e endere�o f�sico de um processo filho.
+// Isso � usado durante a clonagem.
+
     Process->childImage = 0;
     Process->childImage_PA = 0;
 
-
-    // #todo
-    // Precisamos saber o tamanho da imagem do processo para
-    // calcularmos quantas p�ginas ele vai usar.
-    // Precisamos dividir a imagem em code, data, heap e stack
-    // Pois a �rea de dados poder� sofrer swap.
-
-    // Tamanho da imagem do processo.
-    // Temos que chamar a fun��o que pega o tamanho de um arquivo,
-    // #bugbug: Porem, no momento o kernel n�o consegue ler arquivos
-    // que est�o em subdiret�rios corretamente e os programas est�o 
-    // em subdiret�rios.
-    // #obs: O tamanho tamb�m poderia ser passado por arguemento.
-    // #ou um argumento com ponteiro pra estrutura de informa��o 
-    // sobre uma imagem.
+// #todo
+// Precisamos saber o tamanho da imagem do processo para
+// calcularmos quantas p�ginas ele vai usar.
+// Precisamos dividir a imagem em code, data, heap e stack
+// Pois a �rea de dados poder� sofrer swap.
+// Tamanho da imagem do processo.
+// Temos que chamar a fun��o que pega o tamanho de um arquivo,
+// #bugbug: Porem, no momento o kernel n�o consegue ler arquivos
+// que est�o em subdiret�rios corretamente e os programas est�o 
+// em subdiret�rios.
+// #obs: O tamanho tamb�m poderia ser passado por arguemento.
+// #ou um argumento com ponteiro pra estrutura de informa��o 
+// sobre uma imagem.
 
     Process->ImageSize = 0;
 
-    // #todo: 
-    // Estrutura com informa��es sobre a imagem do processo.
+// #todo: 
+// Estrutura com informa��es sobre a imagem do processo.
     
     Process->image_info = NULL;
-
 
 //
 // == Heap and Stack ===========
 //
 
-    // #obs: 
-    // O 'endereço virtual' do heap e da stack dos processos serão 
-    // os mesmos para todos os processos, assim como o 'endereço virtual' 
-    // de carregamento da imagem.
+// #obs: 
+// O 'endereço virtual' do heap e da stack dos processos serão 
+// os mesmos para todos os processos, assim como o 'endereço virtual' 
+// de carregamento da imagem.
+// #todo:
+// #bugbug: 
+// O Heap e a Stack devem estar dentro da 
+// área de memória do processo.
+// #wrong: Uma pagetable do diretório é para o heap e outra para a stack.
+// #wrong: Cada pagetable no diretório do processo é pra uma coisa.
 
-    // #todo:
-    // #bugbug: 
-    // O Heap e a Stack devem estar dentro da 
-    // área de memória do processo.
-    // #wrong: Uma pagetable do diretório é para o heap e outra para a stack.
-    // #wrong: Cada pagetable no diretório do processo é pra uma coisa.
+// ## HEAP ##
 
-    // ## HEAP ##
+// directory va, index, region pa
 
-    // directory va, index, region pa
     //CreatePageTable ( Process->DirectoryVA, 512, 0 );
 
     //Process->Heap = (unsigned long) 0x00400000; //funciona
     //Process->Heap = (unsigned long) 0xC0C00000; //funciona
 
-    // g_heappool_va
-    // endere�o virtual do pool de heaps.
-    // os heaps nessa �rea ser�o dados para os processos.
-    // base + (n*size)
+// g_heappool_va
+// endere�o virtual do pool de heaps.
+// os heaps nessa �rea ser�o dados para os processos.
+// base + (n*size)
 
     if ( g_heap_count < 0 || 
          g_heap_count >= g_heap_count_max )
@@ -1325,21 +1279,20 @@ struct process_d *create_process (
         //panic ("create_process: [FAIL] g_heap_count limits\n");
     }
 
-    // #atenção
-    // Estamos usando o heappool pra pegarmos esses endereços.
-    // me parece que isso é memória compartilhada em ring3
-    // e que o malloc da libc está usando isso sem problemas.
-
-    // #todo: 
-    // #test: A stack de um process recem criado
-    // poderia ficar no fim de seu heap ???
+// #atenção
+// Estamos usando o heappool pra pegarmos esses endereços.
+// me parece que isso é memória compartilhada em ring3
+// e que o malloc da libc está usando isso sem problemas.
+// #todo: 
+// #test: A stack de um process recem criado
+// poderia ficar no fim de seu heap ???
 
     if (g_heappool_va == 0){
         debug_print ("clone_and_execute_process: g_heappool_va\n");
         panic ("clone_and_execute_process: g_heappool_va\n");
     }
 
-    // Ignoraremos esse pois vai falhar na criacao do primeiro heap.
+// Ignoraremos esse pois vai falhar na criacao do primeiro heap.
     //if (g_heap_count == 0)
         //panic("clone_and_execute_process: g_heap_count");
 
@@ -1357,28 +1310,25 @@ struct process_d *create_process (
     Process->HeapEnd   = (unsigned long) (Process->HeapStart + Process->HeapSize); 
     g_heap_count++;
 
-
-    // Endere�o do in�cio da Stack do processo.
-    // Endere�o do fim da stack do processo.
-    // Tamanho da pilha, dada em KB.
-    // #importante: 
-    // Deslocamento do endere�o do in�cio da pilha em rela��o 
-    // ao in�cio do processo. 
-
-    // #bugbug
-    // Isso indica que a stack será no endereço virtual tradicional,
-    // porém qual é o endereço físico da stack do processo criado
-    // com essa rotina.
-    // #bugbug: Com esse erro todos os processo criados
-    // estão usando a mesma stack, pois todas apontam para o mesmo
-    // endereço físico.
-
+// Endere�o do in�cio da Stack do processo.
+// Endere�o do fim da stack do processo.
+// Tamanho da pilha, dada em KB.
+// #importante: 
+// Deslocamento do endere�o do in�cio da pilha em rela��o 
+// ao in�cio do processo. 
+// #bugbug
+// Isso indica que a stack será no endereço virtual tradicional,
+// porém qual é o endereço físico da stack do processo criado
+// com essa rotina.
+// #bugbug: Com esse erro todos os processo criados
+// estão usando a mesma stack, pois todas apontam para o mesmo
+// endereço físico.
 
 //
 // #bugbug #bugbug #bugbug #bugbug
 //
 
-    // Wrong !!!!!!!!!!!!!!!!!!!!
+// Wrong !!!!!!!!!!!!!!!!!!!!
 
     Process->StackStart  = (unsigned long) UPROCESS_DEFAULT_STACK_BASE; 
     Process->StackSize   = (unsigned long) UPROCESS_DEFAULT_STACK_SIZE; //?? usamos isso na hora de criar a stack?? 
@@ -1390,7 +1340,9 @@ struct process_d *create_process (
 // PPL - (Process Permition Level).(gdef.h)
 //
 
-    // Determina as camadas de software que um processo ter� acesso irrestrito.
+// Determina as camadas de software que um processo 
+// tera acesso irrestrito.
+
     // Process->ppl = pplK0;
 
     //Process->callerq          //head of list of procs wishing to send.
@@ -1412,31 +1364,30 @@ struct process_d *create_process (
     Process->base_priority = (unsigned long) BasePriority;
     Process->priority      = (unsigned long) Priority;
 
-    //Que tipo de scheduler o processo utiliza. (rr, realtime ...).
+// Que tipo de scheduler o processo utiliza. (rr, realtime ...).
     //Process->scheduler_type = ; 
-    
 
-    // #todo
-    // Counters
+// #todo
+// Counters
 
     //Process->step
     //Process->quantum
     //Process->timeout
     //Process->ticks_remaining
 
-    //As threads do processo iniciam com esse quantum.
+// As threads do processo iniciam com esse quantum.
+
     //Process->ThreadQuantum   
 
     //Process->event
 
-    // #importante
-    // user session, room and desktop.
-
-    // #bugbug: 
-    // N�o temos informa��o sobre a user session, 
-    // devemos pegar a estrutura de current user session. 
-    // Para isso ela deve ser configurada na inicializa��o do gws,
-    // antes da cria��o dos processo.
+// #importante
+// user session, room and desktop.
+// #bugbug: 
+// Nao temos informaçao sobre a user session, 
+// devemos pegar a estrutura de current user session. 
+// Para isso ela deve ser configurada na inicializa��o do gws,
+// antes da cria��o dos processo.
 
 //
 // Security
@@ -1446,29 +1397,31 @@ struct process_d *create_process (
     Process->room     = room;                // Passado via argumento.
     Process->desktop  = desktop;             // Passado via argumento.
 
-
 //
 // Navigation
 //
     Process->prev = NULL; 
     Process->next = NULL; 
 
-    // Register
-    // List
-    // Coloca o processo criado na lista de processos.
+// Register
+// List
+// Coloca o processo criado na lista de processos.
 
     processList[PID] = (unsigned long) Process;
 
-    // #todo
+// #todo
+
     // last_created = PID;
     
     Process->state = INITIALIZED;
 
-    // Validation.
+// Validation.
+
     Process->used  = TRUE;
     Process->magic = PROCESS_MAGIC;
 
-    // #debug
+// #debug
+
     debug_print ("create_process: done\n");
     printf      ("create_process: done\n");
 
@@ -1585,8 +1538,8 @@ void set_caller_process_id (int pid)
     caller_process_id = (int) pid;
 }
 
+
 /*
- *************************************************
  * init_process_manager:
  *     Initialize process manager.
  *     processInitializeProcessManager();
@@ -1595,19 +1548,17 @@ void set_caller_process_id (int pid)
 int init_process_manager (void)
 {
     caller_process_id = (int) 0;
+
     processNewPID = (int) GRAMADO_PID_BASE;
 
-	//...
+    //...
 
     return 0;
 }
 
 
-
 /*
- ****************************
  * processCopyMemory:
- * 
  *     Copia a imagem de um processo.
  *     Isso é usado na implementação de fork() e
  * na implementação da rotina de clonagem.
@@ -1619,24 +1570,18 @@ int init_process_manager (void)
 // For now, all the processes has 4MB,
 // and the stack begins at CONTROLTHREAD_STACK.
 // We just use the control thread.
-
 // #bugbug
 // Imagem com limite de 200KB. (fail)
 // heap ?? Depois              (fail)
 // Stack de 32KB.              (ok)
-// 
-
-
-
-
 // Explicando:
 // Copia a imagem do processo atual e salva o endereço
 // da copia num elemento da estrutura passada como argumento.
-
 // OUT:
-// 
+// #bugbug: 
+// Na verdade não estamos mais copiando e 
+// sim criando um endereçamento novo.
 
-// #bugbug: na verdade não estamos mais copiando e sim criando um endereçamento novo.
 int __alloc_memory_for_image_and_stack( struct process_d *process )
 {
     unsigned long __new_base=0;    // base
@@ -1653,40 +1598,36 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
 // Image base
 //
 
-    // #bugbug
-    // Precisamos de memória física para a imagem e para a pilha.
-    // 4mb de memória física nos permite criarmos um processo
-    // com sua pilha no topo dos 4mb.
-    // Por isso que precisamos de um alocador de frames,
-    // que considere a memória ram inteira.
-    // E precisamos de uma rotina que mapeie esses frames individualmente,
-    // mesmos que eles sejam pegos esparçamente.
-
-    // #bugbug
-    // Esse alocador abaixo está limitado à uma região de 4MB,
-    // previamente mapeado.
-
-    // #obs:
-    // A não ser que a pilha possa ficar em endereço
-    // virtual aleatório.
-    // Me parece que endereço virtual aleatório é
-    // usado por questão de segurança.
-    // Podemos tentar usar pilha com endereço virtual aleatório.
-
-    // 200 KB.   200kb/4096 =  quantidade de páginas.
-    // Allocating memory for the process's image.
-    // #todo: We need this size.
-    // 1024*200 = 200k
-    // 50 páginas.
-    
-    // Retorna um endereço virtual.
-    // Mas usaremos apenas o endereço físico extraído desse endereço.
+// #bugbug
+// Precisamos de memória física para a imagem e para a pilha.
+// 4mb de memória física nos permite criarmos um processo
+// com sua pilha no topo dos 4mb.
+// Por isso que precisamos de um alocador de frames,
+// que considere a memória ram inteira.
+// E precisamos de uma rotina que mapeie esses frames individualmente,
+// mesmos que eles sejam pegos esparçamente.
+// #bugbug
+// Esse alocador abaixo está limitado à uma região de 4MB,
+// previamente mapeado.
+// #obs:
+// A não ser que a pilha possa ficar em endereço
+// virtual aleatório.
+// Me parece que endereço virtual aleatório é
+// usado por questão de segurança.
+// Podemos tentar usar pilha com endereço virtual aleatório.
+// 200 KB.   200kb/4096 =  quantidade de páginas.
+// Allocating memory for the process's image.
+// #todo: We need this size.
+// 1024*200 = 200k
+// 50 páginas.
+// Retorna um endereço virtual.
+// Mas usaremos apenas o endereço físico extraído desse endereço.
 
     int number_of_pages = 0;
 
 // 200 kb
+// Quantas páginas temos em 200KB?
 
-    // Quantas páginas temos em 200KB?
     number_of_pages = (int) (200*1024)/4096;
 
     __new_base = (unsigned long) allocPages(number_of_pages); 
@@ -1704,19 +1645,18 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
 // Image stack
 //
 
-    // 32 KB.
-    // Allocating memory for the process's stack.
-    // #todo: We need this size.
-
-    // Retorna um endereço virtual.
-    // Mas usaremos apenas o endereço físico extraído desse endereço.
+// 32 KB.
+// Allocating memory for the process's stack.
+// #todo: We need this size.
+// Retorna um endereço virtual.
+// Mas usaremos apenas o endereço físico extraído desse endereço.
 
 // 32 KB
+// Quantas páginas temos em 32KB?
 
-    // Quantas páginas temos em 32KB?
-    number_of_pages = (int) (32*1024)/4096;  // original
+    number_of_pages = (int) (32*1024)/4096;     // original
     //number_of_pages = (int) (128*1024)/4096;  // teste
- 
+
     __new_stack = (unsigned long) allocPages(number_of_pages); 
 
     if ( __new_stack == 0 )
@@ -1729,30 +1669,29 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
         return (int) (-1);
     }
 
-
 //
-// == Copying memory ======================================
+// == Copying memory ==========
 //
-
 
 // #todo
-// Faremos isso somente se a flag indicar que queremos realizar um fork()
+// Faremos isso somente se a flag indicar 
+// que queremos realizar um fork()
 
     //if ( clone_flags & DO_FORK ){ ... }
 
-    // Copying base and stack.
-    // Copiando do processo atual para o buffer que alocamos
-    // logo acima.
+// Copying base and stack.
+// Copiando do processo atual para o buffer que alocamos
+// logo acima.
 
-    // Copia a imagem do processo.
-    // Copia do início da imagem. 200KB.
+// Copia a imagem do processo.
+// Copia do início da imagem. 200KB.
     memcpy ( 
         (void *) __new_base,  
         (const void *) CONTROLTHREAD_ENTRYPOINT, 
         (200*1024) );
 
-    // Copia a pilha do process.
-    // Copia do fim da stack. 32KB.
+// Copia a pilha do process.
+// Copia do fim da stack. 32KB.
     memcpy ( 
         (void *) __new_stack, 
         (const void *) ( CONTROLTHREAD_STACK-(32*1024) ), 
@@ -1763,15 +1702,17 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
         //(const void *) ( CONTROLTHREAD_STACK-(128*1024) ), 
         //(128*1024) );
 
-
 //
 // Getting the physical addresses.
 //
 
 // Obtendo o edereço físico da base da imagem e da pilha.
 
-    unsigned long new_base_PA  = (unsigned long) virtual_to_physical ( __new_base, gKernelPML4Address ); 
-    unsigned long new_stack_PA = (unsigned long) virtual_to_physical ( __new_stack, gKernelPML4Address ); 
+    unsigned long new_base_PA  = 
+        (unsigned long) virtual_to_physical ( __new_base, gKernelPML4Address ); 
+
+    unsigned long new_stack_PA = 
+        (unsigned long) virtual_to_physical ( __new_stack, gKernelPML4Address ); 
 
     if ( new_base_PA == 0 )
     {
@@ -1796,31 +1737,34 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
     // #debug
     //refresh_screen();
     //while(1){}
-    
-    // #todo
-    // Agora temos que fazer esses endereços físicos serem
-    // mapeados em 0x400000 do diretório de páginas do processo filho.
-    // Lembrando que o diretório de páginas do processo filho
-    // será uma cópia do diretório do processo pai.
-    // Como a cópia do diretórios anda não foi feita,
-    // vamos salvar esses endereços para mapearmos depois.
 
-    // virtual
-    // Esse endereço virtual não nos server mais.
-    // precisamos substituir pelo endereço virtual padrão 
-    // para aplicativos. Faremos isso em clone.c quando retornarmos.
+// #todo
+// Agora temos que fazer esses endereços físicos serem
+// mapeados em 0x400000 do diretório de páginas do processo filho.
+// Lembrando que o diretório de páginas do processo filho
+// será uma cópia do diretório do processo pai.
+// Como a cópia do diretórios anda não foi feita,
+// vamos salvar esses endereços para mapearmos depois.
 
-    // Salvando os endereços virtuais onde carregamos a imagem e a pilha.
+// virtual
+// Esse endereço virtual não nos server mais.
+// precisamos substituir pelo endereço virtual padrão 
+// para aplicativos. Faremos isso em clone.c quando retornarmos.
+
+// Salvando os endereços virtuais onde 
+// carregamos a imagem e a pilha.
+
     process->childImage  = (unsigned long) __new_base;
     process->childStack  = (unsigned long) __new_stack;
 
-    // Salvando endereços físicos obtidos anteriormente.  
-    // Esses endereços representam a base da imagem e o inicio da pilha.
+// Salvando endereços físicos obtidos anteriormente.  
+// Esses endereços representam a base da imagem e o inicio da pilha.
+
     process->childImage_PA = (unsigned long) new_base_PA;
     process->childStackPA  = (unsigned long) new_stack_PA;
 
-    // #debug
-    // Showing the addresses of base and stack pointers.
+// #debug
+// Showing the addresses of base and stack pointers.
 
     //printf("processCopyMemory: new base PA %x | new stack PA %x \n",
         //new_base_PA, new_stack_PA );
@@ -1834,14 +1778,15 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
 }
 
 
-
 // Service 227
 // Entering critical section.
 // Close gate. Turn it FALSE.
+
 void process_close_gate(int pid)
 {
     struct process_d  *p;
 
+// #todo: max limit
     if (pid<0){
         panic ("process_close_gate: pid \n");
     }
@@ -1870,10 +1815,14 @@ void process_open_gate (int pid)
 {
     struct process_d  *p;
 
-    if (pid<0)
-        panic ("process_open_gate: pid \n");
+// #todo
+// max limit
 
-    // Process.
+    if (pid<0){
+        panic ("process_open_gate: pid \n");
+    }
+
+// Process.
 
     p = (void *) processList[pid];
 
@@ -1898,12 +1847,18 @@ file *process_get_file_from_pid ( pid_t pid, int fd )
     struct process_d *p;
     file *fp;
 
+// #todo: max limit
+
     if ( pid < 0){
         return NULL;
     }
 
     // Get process pointer.
     p = (struct process_d *) processList[ pid ];
+
+    //#todo: Check process validation.
+
+// #todo: max limit
 
     if (fd<0){
         return NULL;
@@ -1915,18 +1870,21 @@ file *process_get_file_from_pid ( pid_t pid, int fd )
     return ( file * ) p->Objects[fd];  
 }
 
+
 // Return the file pointer from a given fd.
 // the fd represents a index in the object list of the
 // current process.
 
 file *process_get_file ( int fd )
 {
+// #todo: max limit
     if( fd<0){
         return NULL;
     }
 
     return (file *) process_get_file_from_pid (current_process, fd );
 }
+
 
 // Get tty id.
 // Pega o número da tty de um processo, dado o pid.
@@ -1943,9 +1901,8 @@ int process_get_tty (int pid)
     //printf ("process_get_tty: pid %d \n", pid);
     //refresh_screen();
 
-
-    // #todo
-    // Overflow ?
+// #todo
+// Overflow ?
     
     if ( pid < 0 )
     {
@@ -1966,8 +1923,8 @@ int process_get_tty (int pid)
         return -1;
     }
 
-    // Get the private tty.
-    
+// Get the private tty.
+
     tty = p->tty;    
 
     if ( (void *) tty == NULL )
@@ -1978,13 +1935,13 @@ int process_get_tty (int pid)
         return -1;
     }
 
-
     //printf ("tty %d belongs to %d\n", tty->index, p->pid );
     //refresh_screen ();
 
-    // #bugbug
-    // Isso precisa ser o fd na lista de arquivos abertos 
-    // pelo processo.
+// #bugbug
+// Isso precisa ser o fd na lista de arquivos abertos 
+// pelo processo.
+
     //file *f;
     
     //f = ()
@@ -2133,103 +2090,5 @@ struct process_d *__create_and_initialize_process_object(void)
 fail:
     return NULL;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

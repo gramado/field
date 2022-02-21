@@ -397,25 +397,26 @@ void *CloneKernelPML4(void)
         panic ("CloneKernelPML4: destAddressVA\n");
     }
 
-
-    // The virtual address of the kernel page directory and
-    // the virtual address of the new page directory.
-    // #bugbug: What directory we are using right now? kernel?
+// The virtual address of the kernel page directory and
+// the virtual address of the new page directory.
+// #bugbug: 
+// What directory we are using right now? kernel?
 
     unsigned long *src = (unsigned long *) gKernelPML4Address;
     unsigned long *dst = (unsigned long *) destAddressVA;  
 
-    // Copy
+// Copy
 
     for ( i=0; i < 512; ++i ){
         dst[i] = (unsigned long) src[i];
     };
 
-    // Done.
-    // The virtual address of the new pml4. 
+// Done.
+// The virtual address of the new pml4. 
 
     return (void *) destAddressVA;
 }
+
 
 /*
  * clone_pml4:
@@ -449,10 +450,10 @@ void *clone_pml4 ( unsigned long pml4_va )
 
     // Get a target address for the directory.
     
-    // #bugbug:
-    // We are using that routine to get a poiter for a table.
-    // Is that a virtual address ?
-    // What about the size?
+// #bugbug:
+// We are using that routine to get a poiter for a table.
+// Is that a virtual address ?
+// What about the size?
 
     destAddressVA = (unsigned long) get_table_pointer(); 
     
@@ -460,19 +461,19 @@ void *clone_pml4 ( unsigned long pml4_va )
         panic ("CreatePageDirectory: destAddressVA\n");
     }
 
-    // Initialization
+// Initialization
 
     unsigned long *src = (unsigned long *) pml4_va;
     unsigned long *dst = (unsigned long *) destAddressVA;
 
-    // Copy
+// Copy
 
     for ( i=0; i < 512; ++i ){
         dst[i] = (unsigned long) src[i]; 
     };
 
-    // The address of the new pml4.
-
+// OUT:
+// The address of the new pml4.
     return (void *) destAddressVA;
 }
 
@@ -522,7 +523,6 @@ int I_initialize_frame_table (void)
 // This is because each page has 4096 bytes.
 
     FT.size_in_frames = (unsigned long) (FT.size_in_bytes/4096);
-
 
     FT.number_of_system_frames = (unsigned long) FT_NUMBER_OF_SYSTEM_FRAMES;
     FT.number_of_user_frames   = (unsigned long) FT_NUMBER_OF_USER_FRAMES;
@@ -589,15 +589,15 @@ void notfreePage (struct page_d *p)
 }
 
 
+// IN:
+// virtual_address
+// pml4_va
+
 unsigned long 
 virtual_to_physical ( 
     unsigned long virtual_address, 
     unsigned long pml4_va ) 
 {
-
-    //debug_print("virtual_to_physical: [TESTING] \n");
-
-    //panic ("virtual_to_physical: [TODO] \n");
     return (unsigned long) __virtual_to_physical (virtual_address,pml4_va);
 }
 
@@ -621,6 +621,8 @@ __virtual_to_physical (
     if ( virtual_address == 0 ){
         debug_print ("__virtual_to_physical: [?] virtual_address == 0 \n");
     }
+
+// Why is it limited to 'int' size?
 
     unsigned int a = (unsigned int) ((virtual_address >> 39) & 0x1FF);  // 9 bits de pml4
     unsigned int b = (unsigned int) ((virtual_address >> 30) & 0x1FF);  // 9 bits de pdpt
@@ -713,10 +715,11 @@ __virtual_to_physical (
     address = (tmp & 0xFFFFFFFFF000);
 
     //debug_print ("virtual_to_physical2: done\n");
-    // Physical address.
+
+// OUT:
+// Physical address.
     return (unsigned long) (address + o);
 }
-
 
 
 // #todo
@@ -729,7 +732,7 @@ void pages_calc_mem (void)
     int k=0;
     int free=0;
 
-    unsigned long *pml4 = (unsigned long *) gKernelPML4Address;
+    unsigned long *pml4 = (unsigned long *) gKernelPML4Address;  //pa
     unsigned long *pdpt;
     unsigned long *pg_dir;
     unsigned long *pg_tbl;
@@ -777,9 +780,11 @@ void pages_calc_mem (void)
 
 // 64bit ?
 // local
+// Precisa ser um endereço físico.
+
 void load_pml4_table(void *phy_addr)
 {
-    asm volatile ("movq %0,%%cr3"::"r"(phy_addr));
+    asm volatile ("movq %0, %%cr3"::"r"(phy_addr));
 }
 
 
@@ -802,7 +807,6 @@ void page_enable(void)
 }
 
 
-
 // #test
 // Cria uma page table com 512 entradas
 // para uma região de 2mb e configura uma
@@ -820,16 +824,17 @@ int mm_fill_page_table(
     unsigned long *pt  = (unsigned long *) pt_va;
     unsigned long pa   = (unsigned long) region_2mb_pa;
 
+// validation
     if ( directory_entry < 0 || directory_entry >= 512 ){ return -1; }
 
-    // Fill the pagetable with 512 entries.
+// Fill the pagetable with 512 entries.
     for ( i=0; i<512; ++i )
     {
         pt[i] = (unsigned long) (pa | flags);
         pa    = (unsigned long) (pa + 4096);
     };
-    
-    // Create a directory entry in the given index.
+
+// Create a directory entry in the given index.
     dir[directory_entry] = (unsigned long) &pt[0];
     dir[directory_entry] = (unsigned long) (dir[directory_entry] | flags);
 
@@ -1096,26 +1101,21 @@ int mmSetUpPaging (void)
 // podemos usar nomes que indiquem que esses são endereços físicos.
 // Como por exemplo, nomes terminados em _PA.
 
-// Início da memória RAM.
-    unsigned long kernel_address = (unsigned long) SYSTEM_ORIGIN;
 
-// Início da imagem do kernel. (1 MB mark)
-    unsigned long kernel_base = (unsigned long) KERNEL_BASE;
+// kernel_address_pa: Início da memória RAM.
+// kernel_base_pa:    Início da imagem do kernel. (1MB mark).
+// user_address_pa:   User area, (32MB mark) 0x02000000.
+// framebuffer_pa:    frontbuffer, VESA LFB from boot manager.
+// backbuffer_pa:     backbuffer, (16MB mark) 0x01000000.
 
-// User area, 0x02000000 (32 MB mark)
-// 32mb. (32*1024*1024) = 0x02000000.
-    unsigned long user_address = (unsigned long) USER_BASE;
+    unsigned long kernel_address_pa = (unsigned long) SYSTEM_ORIGIN;
+    unsigned long kernel_base_pa    = (unsigned long) KERNEL_BASE;
+    unsigned long user_address_pa   = (unsigned long) USER_BASE;
+    unsigned long framebuffer_pa    = (unsigned long) SavedLFB;
+    unsigned long backbuffer_pa     = (unsigned long) 0x01000000; 
 
-// frontbuffer
-// VESA LFB, foi passado pelo Boot Manager.
-    unsigned long framebuffer_pa = (unsigned long) SavedLFB;
-
-// backbuffer 
-// Endereço físico provisório para o backbuffer
-// (para sistemas com pouca memória.)
-// 16mb. (16*1024*1024) = 0x01000000.
-    unsigned long backbuffer_pa = (unsigned long) 0x01000000; 
-
+// #todo
+// No futuro mapearemos um framebuffer e um backbuffer maiores.
 
 
 // fast check
@@ -1219,7 +1219,7 @@ Entry_0:
     mm_used_ring0_area = (1024 * 1);  //1mb, pois seremos sobrepostos pela imagem do kernel.  
     // mm_used_ring0_area = (1024 * 2);  
 
-    // kernel_address = 0h;
+    // kernel_address_pa = 0h;
     // (0fis = 0virt)
     // Essa é a área do kernel. Começa no início da memória RAM
     // e possui 2MB de tamanho.
@@ -1237,11 +1237,11 @@ Entry_0:
 // Criamos a pagetable.
 // Criando a primeira entrada do diretório.
 // Isso mapeia os primeiros 2MB da memória RAM em ring0.
-// SMALL_origin_pa = kernel_address;
+// SMALL_origin_pa = kernel_address_pa;
 
     mm_fill_page_table( 
         (unsigned long) &kernel_pd0[0], (int) PD_ENTRY_RING0AREA, 
-        (unsigned long) &pt_ring0area[0], (unsigned long) kernel_address, 
+        (unsigned long) &pt_ring0area[0], (unsigned long) kernel_address_pa, 
         (unsigned long) 3 ); 
 
 // =======================================
@@ -1252,7 +1252,7 @@ Entry_0:
 Entry_1:
     mm_used_ring3_area = (1024 * 2);  //2mb
 
-    // user_address = 0x02000000
+    // user_address_pa = 0x02000000
     // 32MB mark
     // 0x02000000pys = 0x00200000vir  ?? 
     // Essa é uma área em user mode
@@ -1262,11 +1262,11 @@ Entry_1:
 // Criamos a pagetable.
 // Criando a entrada número 1 do diretório.
 // Isso mapeia 2 MB de memória em user mode.
-// SMALL_user_pa = user_address
+// SMALL_user_pa = user_address_pa
 
     mm_fill_page_table( 
         (unsigned long) &kernel_pd0[0], (int) PD_ENTRY_RING3AREA, 
-        (unsigned long) &pt_ring3area[0], (unsigned long) user_address, 
+        (unsigned long) &pt_ring3area[0], (unsigned long) user_address_pa, 
         (unsigned long) 7 ); 
 
 // =====================================
@@ -1278,21 +1278,21 @@ Entry_384:
     mm_used_kernelimage = (1024 * 2);  //2mb
 
 
-    // kernel_base = 0x100000pys
+    // kernel_base_pa = 0x100000pys
     // (0x100000pys = 0x30000000virt).
     // Configurando a área de memória onde ficará a imagem do kernel.
 
 // Isso mapeia 2MB começando do primeiro mega. 
 // (kernel mode).
 // Preenchendo a tabela pt_ring0area.
-// 'kernel_base' é o endereço físico da imagem do kernel.
+// 'kernel_base_pa' é o endereço físico da imagem do kernel.
 // Criamos a pagetable.
 // Criamos a entrada 384 apontando para a pagetable.
-// SMALL_kernel_base_pa = kernel_base;
+// SMALL_kernel_base_pa = kernel_base_pa;
 
     mm_fill_page_table( 
         (unsigned long) &kernel_pd0[0], (int) PD_ENTRY_KERNELIMAGE, 
-        (unsigned long) &pt_kernelimage[0], (unsigned long) kernel_base, 
+        (unsigned long) &pt_kernelimage[0], (unsigned long) kernel_base_pa, 
         (unsigned long) 3 ); 
 
 
@@ -1684,13 +1684,18 @@ initialize_frame_table:
     //printf ("SetUpPaging: load_pml4_table\n");
     //refresh_screen();
     
-    
-    // #importante
-    // O kernel já está em long mode,
-    // a única coisa que precisamos fazer é
-    // carregar o cr3, mas acho que agora usaremos
-    // endereços de 64bit?
-    
+
+// #importante
+// O kernel já está em long mode,
+// a única coisa que precisamos fazer é
+// carregar o cr3, mas acho que agora usaremos
+// endereços de 64bit?
+
+// Isso precisa ser um endereço físico.
+// Existe identidade.
+// Esse é um ponteiro para uma região da memória
+// abaixo de 1MB.
+
     load_pml4_table( (void *) &kernel_pml4[0] );
 
 

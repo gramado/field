@@ -1,4 +1,5 @@
 
+// mminit.c
 
 #include <kernel.h>    
 
@@ -13,78 +14,69 @@ unsigned long last_size;        // Último tamanho alocado.
 unsigned long mm_prev_pointer;  // Endereço da úntima estrutura alocada.
 
 
-
 /*
  *********************************************
  * init_heap:
- * 
  *     Iniciar a gerência de Heap do kernel. 
  *     @todo: Usar heapInit() ou heapHeap(). memoryInitializeHeapManager().
- *
  * Essa rotina controi a mão o heap usado pelo processo kernel.
  *     +Ela é chamada apenas uma vez.
  *     +Ela deve ser chamada entes de quelquer outra operação 
  * envolvendo o heap do processo kernel.
- * 
  * @todo: Rotinas de automação da criação de heaps para processos.
  */
 
 //int memoryInitializeHeapManager() 
 
-int init_heap (void){
-
+int init_heap (void)
+{
     int i=0;
 
     // #bugbug
     // não usar printf
     // printf ainda não funciona nesse momento.
 
-    //
-    // Globals
-    //
+//
+// Globals
+//
 
-    // start and end.
-
+// start and end.
     kernel_heap_start = (unsigned long) KERNEL_HEAP_START;
     kernel_heap_end   = (unsigned long) KERNEL_HEAP_END;
 
-
-    // Heap Pointer, Available heap and Counter.
-
+// Heap Pointer, Available heap and Counter.
     g_heap_pointer   = (unsigned long) kernel_heap_start; 
     g_available_heap = (unsigned long) (kernel_heap_end - kernel_heap_start);  
     heapCount = 0; 
 
-	// #importante
-	// Último heap pointer válido. 
+// #importante
+// Último heap pointer válido. 
     heap_pointer_last_valid = (unsigned long) g_heap_pointer;
     last_size = 0;
 
-
-    // Check Heap Pointer.
+// Check Heap Pointer.
     if ( g_heap_pointer == 0 ){
         //printf ("init_heap: [FAIL] g_heap_pointer\n");
         debug_print ("init_heap: [FAIL] g_heap_pointer\n");
         goto fail;
     }
 
-    // Check Heap Pointer overflow.
+// Check Heap Pointer overflow.
     if ( g_heap_pointer > kernel_heap_end ){
         //printf ("init_heap: [FAIL] Heap Pointer Overflow\n");
         debug_print ("init_heap: [FAIL] Heap Pointer Overflow\n");
         goto fail;
     }
 
-    // Heap Start
+// Heap Start
     if ( kernel_heap_start == 0 ){
         debug_print("init_heap: [FAIL] HeapStart\n");
         //printf ("init_heap: [FAIL] HeapStart={%x}\n", 
             //kernel_heap_start );
-            
         goto fail;
     }
 
-    // Heap End
+// Heap End
     if ( kernel_heap_end == 0 ){
         debug_print("init_heap: [FAIL] HeapEnd\n");
         //printf ("init_heap: [FAIL] HeapEnd={%x}\n", 
@@ -92,26 +84,25 @@ int init_heap (void){
         goto fail;
     }
 
-    // Check available heap.
-    // #todo: Tentar crescer o heap.
+// Check available heap.
+// #todo: Tentar crescer o heap.
     if ( g_available_heap == 0 ){
         debug_print ("init_heap: [FAIL] g_available_heap\n");
         //printf      ("init_heap: [FAIL] g_available_heap\n");
         goto fail;
     }
 
-	// Heap list: 
-	// Inicializa a lista de heaps.
+// Heap list: 
+// Inicializa a lista de heaps.
 
     while ( i < HEAP_COUNT_MAX ){
         heapList[i] = (unsigned long) 0;
         i++;
     };
 
+    //KernelHeap = (void*) x??;
 
-	//KernelHeap = (void*) x??;
-
-	//More?!
+    //More?!
 
 // Done.
 
@@ -160,12 +151,14 @@ fail:
 int init_stack (void)
 {
 
-    // Globals
+//
+// Globals
+//
 
     kernel_stack_end   = (unsigned long) KERNEL_STACK_END; 
     kernel_stack_start = (unsigned long) KERNEL_STACK_START; 
 
-    // End
+// End
     if ( kernel_stack_end == 0 ){
         debug_print ("init_stack: [FAIL] kernel_stack_end\n");
         //printf ("init_stack: [FAIL] kernel_stack_end %x \n", 
@@ -173,7 +166,7 @@ int init_stack (void)
         goto fail;
     }
 
-    // Start
+// Start
     if ( kernel_stack_start == 0 ){
         debug_print ("init_stack: [FAIL] kernel_stack_start\n");
         //printf ("init_stack: [FAIL] kernel_stack_start %x \n", 
@@ -181,14 +174,14 @@ int init_stack (void)
         goto fail;
     }
 
-    // Done.
+// Done.
     return 0;
 
 fail:
     refresh_screen();
     return (int) 1;
+    //return (int) -1;
 }
-
 
 
 int kernel_gc (void)
@@ -227,55 +220,47 @@ int mmInit(void)
 
     debug_print("mmInit: [TODO] [FIXME]\n");
 
-	// @todo: 
-	// Inicializar algumas variáveis globais.
-	// Chamar os construtores para inicializar o básico.
+// @todo: 
+// Inicializar algumas variáveis globais.
+// Chamar os construtores para inicializar o básico.
+// @todo: 
+// Clear BSS.
+// Criar mmClearBSS()
 
-	// @todo: 
-	// Clear BSS.
-	// Criar mmClearBSS()
-
-    // heap and stack
+// heap and stack
 
     Status = (int) init_heap();
-
     if (Status != 0){
         debug_print("mmInit: [FAIL] Heap\n");
         //printf ("mmInit: [FAIL] Heap\n");
         goto fail;
     }
 
-
     Status = (int) init_stack();
-
     if (Status != 0){
         debug_print ("mmInit: [FAIL] Stack\n");
         //printf ("mmInit: [FAIL] Stack\n");
         goto fail;
     }
 
+// Zerar a lista.
+// Lista de blocos de memória dentro do heap do kernel.
 
-	// Zerar a lista.
-	// Lista de blocos de memória dentro do heap do kernel.
-
-    while ( i < MMBLOCK_COUNT_MAX )
-    {
+    while ( i < MMBLOCK_COUNT_MAX ){
         mmblockList[i] = (unsigned long) 0;
         i++;
     };
 
+// Primeiro Bloco.
+    // current_mmblock = (void *) NULL;
 
-	//Primeiro Bloco.
-    //current_mmblock = (void *) NULL;
-	
-	//#importante:
-	//#inicializando o índice la lista de ponteiros 
-	//par estruturas de alocação.
+// #importante:
+// Inicializando o índice la lista de ponteiros 
+// para estruturas de alocação.
 
     mmblockCount = 0;
 
-
-   // ...
+    // ...
 
 //
 // MEMORY SIZES
@@ -290,9 +275,9 @@ int mmInit(void)
     memorysizeBaseMemory  = (unsigned long) memorysizeBaseMemoryViaCMOS;
     memorysizeOtherMemory = (unsigned long) (1024 - memorysizeBaseMemory);
 
-    // #todo
-    // New we have a new value from boot.
-    // We're gonna use this new value instead the one from cmos.
+// #todo
+// New we have a new value from boot.
+// We're gonna use this new value instead the one from cmos.
 
     unsigned long __total_memory_in_kb = (blSavedLastValidAddress/0x400);
 
@@ -303,47 +288,32 @@ int mmInit(void)
 // Size in KB.
     memorysizeTotal = (unsigned long) ( memorysizeBaseMemory + memorysizeOtherMemory + memorysizeExtendedMemory );
 
-    // #IMPORTANTE 
-    // Determinar o tipo de sistema de memória.
-    // small   pelo menos 32mb
-    // medium  pelo menos 64mb
-    // large   pelo menos 128mb
+// #IMPORTANTE 
+// Determinar o tipo de sistema de memória.
+// small   pelo menos 32mb
+// medium  pelo menos 64mb
+// large   pelo menos 128mb
 
 
-
-    // 0MB
-    // #atenção 
-    // Nesse caso devemos prosseguir e testar as outras opções.
+// 0MB
+// #atenção 
+// Nesse caso devemos prosseguir e testar as outras opções.
     if ( memorysizeTotal >= (0) ){
         g_mm_system_type = stNull;
         debug_print ("mmInit: stNull\n");
     }
 
-//
-// Small
-//
-
-    // 32 MB
+// Small. (32MB).
     if ( memorysizeTotal >= SMALLSYSTEM_SIZE_KB ){
         g_mm_system_type = stSmallSystem;
         debug_print ("mmInit: stSmallSystem\n");
     }
-
-//
-// Medium
-//
-
-    // 64 MB
+// Medium. (64MB).
     if ( memorysizeTotal >= MEDIUMSYSTEM_SIZE_KB ){
         g_mm_system_type = stMediumSystem;
         debug_print ("mmInit: stMediumSystem\n");
     }
-
-//
-// Large
-//
-
-    // 128 MB
+// Large. (128MB).
     if ( memorysizeTotal >= LARGESYSTEM_SIZE_KB ){
         g_mm_system_type = stLargeSystem;
         debug_print ("mmInit: stLargeSystem\n");
@@ -351,13 +321,11 @@ int mmInit(void)
 
     // #debug
     //while(1){}
-    
-    
-    // Inicializando o framepool (paged pool).
 
+// Inicializando o framepool (paged pool).
     initializeFramesAlloc();
 
-	// Continua...
+    // Continua...
 
     debug_print("mmInit: done\n");
 
@@ -376,27 +344,21 @@ fail:
 
 
 /*
- ****************************************************************
+ ****************************************
  * heapAllocateMemory:
  *     Aloca memória no heap do kernel.
- *
- * *IMPORTANTE: 
+ * IMPORTANTE: 
  *     Aloca BLOCOS de memória dentro do heap do processo Kernel.
- *
  * @todo: 
  *     ?? Ao fim dessa rotina, os valores da estrutura devem ser 
  * armazenas no header, lá onde foi alocado espaço para o header, 
  * assim tem-se informações sobre o header alocado. ??
- *
  *  A estrutura header do heap, é uma estrutura e deve ficar antes 
  * da área desejada. Partes={ header,client,footer }.
- *
  * Obs: 
  *     ?? A estrutura usada aqui é salva onde, ou não é salva ??
- *
  * IN:  size in bytes
  * OUT: address if success. 0 if fail.
- *
  * History:
  *     2015 - Created by Fred Nora.
  * ...
@@ -406,17 +368,16 @@ unsigned long heapAllocateMemory ( unsigned long size )
 {
     struct mmblock_d *Current;
 
-    // #todo: 
-    // Aplicar filtro.
-    // Aqui podemos checar se o quantidade de heap disponível
-    // está coerente com o tamanho do heap. Se essa quantidade
-    // for muito grande, maior que o heap total, então temos um problema.
- 
-    // Se não há espaço disponível no heap, não há muito o que fazer.
-    // Uma opção seria tentar almentar o heap, se isso for possível.
+// #todo: 
+// Aplicar filtro.
+// Aqui podemos checar se o quantidade de heap disponível
+// está coerente com o tamanho do heap. Se essa quantidade
+// for muito grande, maior que o heap total, então temos um problema.
+// Se não há espaço disponível no heap, não há muito o que fazer.
+// Uma opção seria tentar almentar o heap, se isso for possível.
 
-    // Available heap.
-	
+// Available heap.
+
     if (g_available_heap == 0)
     {
         // #todo: 
@@ -432,14 +393,10 @@ unsigned long heapAllocateMemory ( unsigned long size )
         goto fail;
     }
 
-
-    //
-    // Size limits. (Min, max).
-    //
-
-    // Se o tamanho desejado for igual a zero.
-    // @todo: Aqui podemos converter o size para o tamanho mínimo.
-    // não há problema nisso.
+// Size limits. (Min, max).
+// Se o tamanho desejado for igual a zero.
+// @todo: Aqui podemos converter o size para o tamanho mínimo.
+// não há problema nisso.
 
     if ( size == 0 )
     {
@@ -452,9 +409,9 @@ unsigned long heapAllocateMemory ( unsigned long size )
         return (unsigned long) g_heap_pointer;
     }
 
+// Se o tamanho desejado é maior ou 
+// igual ao espaço disponível.
 
-    // Se o tamanho desejado é maior ou 
-    // igual ao espaço disponível.
     if( size >= g_available_heap )
     {
         //
@@ -468,21 +425,20 @@ unsigned long heapAllocateMemory ( unsigned long size )
         goto fail;
     }
 
-	
-    //Salvando o tamanho desejado.
+// Salvando o tamanho desejado.
     last_size = (unsigned long) size;
 
-    //
-    // Contador de blocos.
-    //
+//
+// Contador de blocos.
+//
 
 try_again:
 
-    // #bugbug
-    // Mesmo tendo espaço suficiente no heap, estamos chegando 
-    // nesse limite de indices.
-    // #obs: 
-    // Temos um limite para a quantidade de índices na lista de blocos.
+// #bugbug
+// Mesmo tendo espaço suficiente no heap, estamos chegando 
+// nesse limite de indices.
+// #obs: 
+// Temos um limite para a quantidade de índices na lista de blocos.
 
     mmblockCount++;
 
@@ -490,29 +446,25 @@ try_again:
         x_panic ("heapAllocateMemory: mmblockCount\n");
     }
 
+// #importante
+// A variável 'Header', no header do bloco, 
+// é o início da estrutura que o define. 'b->Header'. 
+// Ou seja, o endereço da variável marca o início da estrutura.
+// Pointer Limits:
+// ( Não vamos querer um heap pointer fora dos limites 
+//   do heap do kernel ).
+// Se o 'g_heap_pointer' atual esta fora dos limites do heap, 
+// então devemos usar o último válido, que provavelmente está 
+// nos limites. ?? #bugbug: Mas se o último válido está sendo 
+// usado por uma alocação anterior. ?? Temos flags que 
+// indiquem isso ??
+// #importante: 
+// O HEAP POINTER TAMBÉM É O INÍCIO DE UMA ESTRUTURA. 
+// NESSA ESTRUTURA PODEMOS SABER SE O HEAP ESTA EM USO OU NÃO.
+// ISSO SE APLICA À TENTATIVA DE REUTILIZAR O ÚLTIMO HEAP 
+// POINTER VÁLIDO.
 
-    // #importante
-    // A variável 'Header', no header do bloco, 
-    // é o início da estrutura que o define. 'b->Header'. 
-    // Ou seja, o endereço da variável marca o início da
-    // estrutura.
-    //
-    // Pointer Limits:
-    // ( Não vamos querer um heap pointer fora dos limites 
-	//   do heap do kernel ).
-    // Se o 'g_heap_pointer' atual esta fora dos limites do heap, 
-	// então devemos usar o último válido, que provavelmente está 
-	// nos limites. ?? #bugbug: Mas se o último válido está sendo 
-	// usado por uma alocação anterior. ?? Temos flags que 
-	// indiquem isso ??
-    //
-    // #importante: 
-	// O HEAP POINTER TAMBÉM É O INÍCIO DE UMA ESTRUTURA. 
-    // NESSA ESTRUTURA PODEMOS SABER SE O HEAP ESTA EM USO OU NÃO.
-    // ISSO SE APLICA À TENTATIVA DE REUTILIZAR O ÚLTIMO HEAP 
-	// POINTER VÁLIDO.
-
-    // Se estiver fora dos limites.
+// Se estiver fora dos limites.
 
     if ( g_heap_pointer < KERNEL_HEAP_START || 
          g_heap_pointer >= KERNEL_HEAP_END )
@@ -528,36 +480,31 @@ try_again:
         }
 
         // #todo: 
-		// Checar a disponibilidade desse último válido.
+        // Checar a disponibilidade desse último válido.
         // Ele é válido, mas não sabemos se está disponível.
-		
-		//Havendo um last heap pointer válido.
-		//?? isso não faz sentido.
 
-        g_heap_pointer = (unsigned long) (heap_pointer_last_valid + last_size);
+        // Havendo um last heap pointer válido.
+        // ?? isso não faz sentido.
+
+        g_heap_pointer = 
+            (unsigned long) (heap_pointer_last_valid + last_size);
 
         goto try_again;
     }
 
-    // Agora temos um 'g_heap_pointer' válido, salvaremos ele.
-    // 'heap_pointer_last_valid' NÃO é global. Fica nesse arquivo.
+// Agora temos um 'g_heap_pointer' válido, salvaremos ele.
+// 'heap_pointer_last_valid' NÃO é global. Fica nesse arquivo.
     
     heap_pointer_last_valid = (unsigned long) g_heap_pointer;
-    
 
-    // #importante:
-    // Criando um bloco, que é uma estrutura mmblock_d.
-    // Estrutura mmblock_d interna.
-    // Configurando a estrutura para o bloco atual.
-    //
-    // Obs: A estutura deverá ficar lá no espaço reservado 
-    // para o header. (Antes da area alocada).
-    //
-    // Current = (void*) g_heap_pointer;
-
-
-	// #importante
-	// O endereço do ponteiro da estrutura será o pointer do heap.
+// #importante:
+// Criando um bloco, que é uma estrutura mmblock_d.
+// Estrutura mmblock_d interna.
+// Configurando a estrutura para o bloco atual.
+// Obs: A estutura deverá ficar lá no espaço reservado 
+// para o header. (Antes da area alocada).
+// #importante
+// O endereço do ponteiro da estrutura será o pointer do heap.
 
     Current = (void *) g_heap_pointer;    
 
@@ -568,28 +515,24 @@ try_again:
         // devem ser iguais. 
 
         // Identificadores básicos:
-		// Endereço onde começa o header.
-		// Tamanho do header. (*TAMANHO DA STRUCT).
-		// Id do mmblock. (Índice na lista)
-		// used and magic flags.
-		// 0=not free 1=FREE (*SUPER IMPORTANTE)
+        // Endereço onde começa o header.
+        // Tamanho do header. (*TAMANHO DA STRUCT).
+        // Id do mmblock. (Índice na lista)
+        // used and magic flags.
+        // 0=not free 1=FREE (*SUPER IMPORTANTE)
 
         Current->Header     = (unsigned long) g_heap_pointer; 
         Current->headerSize = (unsigned long) MMBLOCK_HEADER_SIZE; 
-
         Current->Id = (unsigned long) mmblockCount; 
-
         Current->Used  = 1;
         Current->Magic = 1234;
-
         Current->Free = 0;
 
-        //Continua...
+        // Continua...
 
         //
         // Mensuradores. (tamanhos) (@todo:)
         //
-
 
         // @todo:
         // Tamanho da área reservada para o cliente.
@@ -597,8 +540,8 @@ try_again:
         // Zera unused bytes, já que não foi calculado.
 
         // User Area base:
-        // *Onde começa a área solicitada. 
-        // *Fácil. Isso fica logo depois do header.
+        // Onde começa a área solicitada. 
+        // Fácil. Isso fica logo depois do header.
 
         // Obseve que 'Current->headerSize' é igual 
         // a 'MMBLOCK_HEADER_SIZE'
@@ -630,7 +573,6 @@ try_again:
         //	goto try_again;
         //}
 
-
         // obs: 
         // O limite da contagem de blocos foi checado acima.
 
@@ -645,10 +587,9 @@ try_again:
 
         mm_prev_pointer  = (unsigned long) g_heap_pointer; 
 
-
-        // *****************************************************
-        //                **** SUPER IMPORTANTE ****
-        // *****************************************************
+        // ===============================================
+        //                SUPER IMPORTANTE 
+        // ===============================================
         // Atualiza o ponteiro. 
         // Deve ser onde termina o último bloco configurado.
         // Isso significa que o próximo ponteiro onde começaremos 
@@ -659,23 +600,20 @@ try_again:
 
         g_heap_pointer = (unsigned long) Current->Footer;
 
-
         // Available heap:
         // Calcula o valor de heap disponível para as próximas alocações.
         // O heap disponível será o que tínhamos disponível menos o que 
         // gastamos agora.
-        // O que gastamos agora foi o tamanho do header mais o tamanho da área
-        // de cliente.
+        // O que gastamos agora foi o tamanho do header mais o 
+        // tamanho da área de cliente.
 
-        g_available_heap = (unsigned long) g_available_heap - (Current->Footer - Current->Header);
+        g_available_heap = 
+            (unsigned long) g_available_heap - (Current->Footer - Current->Header);
 
-        
         // #Finalmente
-        //
         // Retorna o ponteiro para o início da área alocada.
         // Essa área alocada chamado de user area.
         // Obs: Esse é o valor que será usado pela função kmalloc.
-        //
         // #Importante:
         // O que acontece se um aplicativo utilizar além da área alocada ??
         // O aplicativo invadirá a área do footer, onde está a estrutura do 
@@ -696,11 +634,11 @@ try_again:
         goto fail;
     };
 
-    // #todo: 
-    // Checar novamente aqui o heap disponível. Se esgotou, tentar crescer.
-    // Colocar o conteúdo da estrutura no lugar destinado para o header.
-    // O header conterá informações sobre o heap.
-    // Se falhamos, retorna 0. Que equivalerá à NULL.
+// #todo: 
+// Checar novamente aqui o heap disponível. Se esgotou, tentar crescer.
+// Colocar o conteúdo da estrutura no lugar destinado para o header.
+// O header conterá informações sobre o heap.
+// Se falhamos, retorna 0. Que equivalerá à NULL.
 
 fail:
     refresh_screen();
@@ -713,16 +651,17 @@ fail:
  * FreeHeap:
  */
 
-void FreeHeap (void *ptr){
-
+void FreeHeap (void *ptr)
+{
     struct mmblock_d *Header;
 
-
+// validation
     if ( (void *) ptr == NULL ){
         debug_print ("FreeHeap: [FAIL] ptr\n");
         return;
     }
 
+// validation
     if ( ptr < (void *) KERNEL_HEAP_START || 
          ptr >= (void *) KERNEL_HEAP_END )
     {
@@ -730,10 +669,9 @@ void FreeHeap (void *ptr){
         return;
     }
 
-
-	// Header
-	// Encontrando o endereço do header.
-	// O ponteiro passado é o endereço da área de cliente.
+// Header
+// Encontrando o endereço do header.
+// O ponteiro passado é o endereço da área de cliente.
 
     unsigned long UserAreaStart = (unsigned long) ptr; 
 
@@ -742,62 +680,64 @@ void FreeHeap (void *ptr){
     if ( (void *) Header == NULL ){
         debug_print ("FreeHeap: [FAIL] Header\n");
         return;
-    }else{
-        if ( Header->Used != 1 || Header->Magic != 1234 ){
-            debug_print ("FreeHeap: [FAIL] Header validation\n");
-            return;
-        }
+    }
 
-        // Check
-        if ( mmblockList[mmblockCount] == (unsigned long) Header && 
-             Header->Id == mmblockCount )
-        {
-            mmblockList[mmblockCount] = 0;
-            mmblockCount--;
-        }
+    if ( Header->Used != TRUE || 
+         Header->Magic != 1234 )
+    {
+        debug_print ("FreeHeap: [FAIL] Header validation\n");
+        return;
+    }
 
-        // Isso invalida a estrutura, para evitar mal uso.
+// Check
+    if ( mmblockList[mmblockCount] == (unsigned long) Header && 
+         Header->Id == mmblockCount )
+    {
+        mmblockList[mmblockCount] = 0;
+        mmblockCount--;
+    }
 
-        Header->Used  = 0;
-        Header->Magic = 0;
-        
-        g_heap_pointer = (unsigned long) Header;
-    };
-}  
+// Isso invalida a estrutura, para evitar mal uso.
+
+    Header->Used = 0;
+    Header->Magic = 0;
+
+// ??   
+    g_heap_pointer = (unsigned long) Header;
+}
+
 
 /*
- ***********************************************************
  * get_process_heap_pointer:
  *     ?? Pega o 'heap pointer' do heap de um processo. ??
  */
 
-unsigned long get_process_heap_pointer (int pid){
-
+unsigned long get_process_heap_pointer (int pid)
+{
     struct process_d *P;
-
     unsigned long heapLimit=0;
 
+// #todo: 
+// Limite máximo.
 
-    // #todo: 
-    // Limite máximo.
-
-    if (pid < 0){
+    if (pid < 0 || pid >= PROCESS_COUNT_MAX){
         printf ("get_process_heap_pointer: pid fail\n");
         goto fail;
     }
 
+// Process.
 
-    // Process.
     P = (void *) processList[pid];
-
     if ( (void *) P == NULL ){
         printf ("get_process_heap_pointer: struct fail\n");
         goto fail;
     }
 
-// #todo: 
-// Checar validade.
-
+// validation
+    if (P->used != TRUE || P->magic != 1234){
+        printf ("get_process_heap_pointer: struct validation\n");
+        goto fail;
+    }
 
 // #
 // Cada processo tem seu heap.

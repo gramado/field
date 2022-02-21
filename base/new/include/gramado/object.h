@@ -1,7 +1,11 @@
 
+// object.h
+// We also have the object types used by the file system.
+// See: gobject.h
 
 #ifndef __OBJECT_H
 #define __OBJECT_H    1
+
 
 /*
  ***********************************************
@@ -18,48 +22,43 @@ struct object_d
 {
     // haha !!
     // Objeto do tipo objeto.
-    object_type_t objectType;
+    object_type_t  objectType;
     object_class_t objectClass;
 
-
     int id; 
- 
     int used;  
     int magic; 
 
-
     char *path;             // '/root/user/(name)'
-    char __objectname[64];    // HOSTNAME_BUFFER_SIZE
-    size_t objectName_len;    // len 
-  
+    char __objectname[64];  // HOSTNAME_BUFFER_SIZE
+    size_t objectName_len;  // len 
 
     //Lista de processos que possuem o objeto.
     int pidList[32];
     int pidCount;
     int currentPID;
-   
- 
+
     //endereços
     unsigned long obj_address;
     unsigned long obj_procedure;
 
-    // Status do objeto.
+// Status do objeto.
 
-    int token; //algum processo 'pegou' o objeto e esta usando.
+    int token;    //algum processo 'pegou' o objeto e esta usando.
+    int task_id;  //id da tarefa que pegou o processo.
 
-    int task_id; //id da tarefa que pegou o processo.
+    //int signaled;
+    //struct process_d *waitListHead;
 
-
-	//int signaled;
-	//struct process_d *waitListHead;
-	
-	//channel	
+    //channel	
     //process
-	//thread
-	//window
-	
-	//continua...
+    //thread
+    //window
+    //continua...
+
+    //struct object_d *next;
 };
+
 
 // ??
 // Repensar isso.
