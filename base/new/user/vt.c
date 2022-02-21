@@ -1,9 +1,11 @@
 
+// vt.c
+// Virtual terminal support.
 
 #include <kernel.h>
 
 
-int fg_console;
+//extern int fg_console;
 
 
 /*

@@ -1792,12 +1792,16 @@ void __initialize_inode_table(void)
 void __initialize_virtual_consoles(void)
 {
 
+// #bugbug
+// Isso ja foi feito antes em VirtualConsole_initialize?
+// See console.c
+// Vamos refazer de forma personalizada.
+
     int i=0;
 
     // Char support.
     int cWidth=0;
     int cHeight=0;
-
 
 // Screen width and height
 
@@ -1815,35 +1819,48 @@ void __initialize_virtual_consoles(void)
         x_panic ("__initialize_virtual_consoles: [FAIL] cWidth cHeight\n");
     }
 
-    for (i=0; i<4; i++){
 
+    for (i=0; i<CONSOLETTYS_COUNT_MAX; i++)
+    {
+        // Make the standard initialization.
+        if( CONSOLE_TTYS[i].initialized == FALSE){
+                console_init_virtual_console(i);
+        }
+
+        // Set some personalized values.
+        
+        // Cursor.
         CONSOLE_TTYS[i].cursor_x = 0;
         CONSOLE_TTYS[i].cursor_y = 0;
         
-        // Full screen
+        // dc: Full screen
         CONSOLE_TTYS[i].fullscreen_flag = TRUE;
         CONSOLE_TTYS[i].cursor_left   = 0;
         CONSOLE_TTYS[i].cursor_top    = 0;
         CONSOLE_TTYS[i].cursor_right  = (SavedX/cWidth);
         CONSOLE_TTYS[i].cursor_bottom = (SavedY/cHeight);
         
-        CONSOLE_TTYS[i].cursor_color  = COLOR_WHITE;
-    
-        CONSOLE_TTYS[i].initialized = TRUE;
+        //Let's use the standard colors.
+        //CONSOLE_TTYS[i].cursor_color  = COLOR_WHITE;
     };
 
+// The foreground console.
+    jobcontrol_switch_console(0);
 
-    // #bugbug
-    // Testando o funcionamento das estruturas de console. tty.
+// #bugbug
+// Testando o funcionamento das estruturas de console. tty.
+
     //set_up_cursor(0,1);
     //console_outbyte('x',fg_console);
+
+// #breakpoint
     //refresh_screen();
     //while(1){}
     //Done !
 
-
     return;
 }
+
 
 /*
  ******************************************

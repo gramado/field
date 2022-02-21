@@ -4,9 +4,15 @@
 #include <kernel.h>
 
 
+// Foreground console.
+int fg_console=0;
+//extern int fg_console;
+
 // 
 // Imports
 //
+
+
 
 // from swlib.asm
 // Used to handle callbacks used by the window server.
@@ -384,10 +390,9 @@ void console_init_virtual_console (int n)
 
     debug_print ("console_init_virtual_console:\n");
 
-
 // Limits
 
-    ConsoleIndex = n;
+    ConsoleIndex = (int) n;
     if ( ConsoleIndex < 0 || 
          ConsoleIndex >= CONSOLETTYS_COUNT_MAX  )
     {
@@ -417,7 +422,7 @@ void console_init_virtual_console (int n)
     // Security stuff.
     // Nao sei se essas estruturas estao prontas para isso nesse momento
     // ou se esses ponteiros sao nulos.
-    CONSOLE_TTYS[ConsoleIndex].user_session = NULL;  //CurrentUserSession;
+    CONSOLE_TTYS[ConsoleIndex].user_session = NULL;  // CurrentUserSession;
     CONSOLE_TTYS[ConsoleIndex].room         = NULL;  // CurrentRoom;
     CONSOLE_TTYS[ConsoleIndex].desktop      = NULL;  // CurrentDesktop;
 
@@ -502,23 +507,23 @@ void console_init_virtual_console (int n)
     CONSOLE_TTYS[ConsoleIndex].cursor_right  = (SavedX/8);
     CONSOLE_TTYS[ConsoleIndex].cursor_bottom = (SavedY/8);
 
-//everyone.
+// Everyone has the same color.
     CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_WHITE; 
 
 
-    if ( ConsoleIndex == 0){
+// A different color for each console number.
+    if (ConsoleIndex == 0){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_WHITE; 
     }
-    if ( ConsoleIndex == 1){
+    if (ConsoleIndex == 1){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_RED; 
     }
-    if ( ConsoleIndex == 2){
+    if (ConsoleIndex == 2){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_GREEN; 
     }
-    if ( ConsoleIndex == 3){
+    if (ConsoleIndex == 3){
         CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_BLUE; 
     }
-
 
     //#todo
     // Buffers !!!
@@ -564,6 +569,8 @@ int console_get_current_virtual_console (void)
 
 // Called by: 
 // __local_ps2kbd_procedure in ps2kbd.c
+// VirtualConsole_initialize in console.c
+// __initialize_virtual_consoles in kstdio.c
 
 void jobcontrol_switch_console(int n)
 {
@@ -575,9 +582,11 @@ void jobcontrol_switch_console(int n)
         debug_print("jobcontrol_switch_console: Limits\n");
         return;
     }
-
+    
+// Change the foreground console.
     console_set_current_virtual_console(n);
 }
+
 
 /*
  * set_up_cursor:
@@ -2070,6 +2079,7 @@ void csi_at (int nr, int console_number)
 
 int VirtualConsole_initialize(void)
 {
+    register int i=0;
 
 // No shell for now.
 // No input in prompt[].
@@ -2079,26 +2089,13 @@ int VirtualConsole_initialize(void)
 // Virtual Console:
 // The kernel only have four virtual consoles.
 
-    fg_console = 0;
-
-    console_init_virtual_console(0);
-    console_init_virtual_console(1);
-    console_init_virtual_console(2);
-    console_init_virtual_console(3);
-    jobcontrol_switch_console(fg_console);
-
-    /*
-    int i=0;
-    for (i=0; i<4; i++){
-        CONSOLE_TTYS[i].cursor_x = 0;
-        CONSOLE_TTYS[i].cursor_y = 0;
-        CONSOLE_TTYS[i].cursor_left   = 0;
-        CONSOLE_TTYS[i].cursor_top    = 0;
-        CONSOLE_TTYS[i].cursor_right  = (SavedX/8);
-        CONSOLE_TTYS[i].cursor_bottom = (SavedY/8);
-        CONSOLE_TTYS[i].cursor_color = COLOR_WHITE;
+    for (i=0; i<CONSOLETTYS_COUNT_MAX; i++){
+        console_init_virtual_console(i);
     };
-    */
+
+// Setup foreground console.
+    jobcontrol_switch_console(0);
+
 
 // Obs: 
 // O video já foi inicializado em main.c.

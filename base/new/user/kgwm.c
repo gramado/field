@@ -310,7 +310,7 @@ wmProcedure (
                         refresh_screen();
                     }
                     if (shift_status == 1){
-                        //jobcontrol_switch_console(0);
+                        jobcontrol_switch_console(0);
                     }
                     return 0;
                     break;
@@ -324,7 +324,7 @@ wmProcedure (
                         refresh_screen();
                     }
                     if (shift_status == 1){
-                        //jobcontrol_switch_console(1);
+                        jobcontrol_switch_console(1);
                     }
                     return 0;
                     break;
@@ -338,7 +338,7 @@ wmProcedure (
                         refresh_screen();
                     }
                     if (shift_status == 1){
-                        //jobcontrol_switch_console(2);
+                        jobcontrol_switch_console(2);
                     }
                     return 0;
                     break;
@@ -352,7 +352,7 @@ wmProcedure (
                         refresh_screen();
                     }
                     if (shift_status == 1){
-                        //jobcontrol_switch_console(3);
+                        jobcontrol_switch_console(3);
                     }
                     return 0;
                     break;
