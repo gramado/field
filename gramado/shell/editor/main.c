@@ -1,12 +1,9 @@
 /*
  * File: main.c
- *
  *     Simple text editor for Gramado Window Server.
- * 
  * History:
  *     2020 - Created by Fred Nora.
  */
-
 
 // Connecting via AF_INET.
 
@@ -14,19 +11,15 @@
 // https://www.tutorialspoint.com/unix_sockets/socket_server_example.htm
  
 /*
-    To make a process a TCP server, you need to follow the steps given below −
-
+    To make a process a TCP server, you need to follow the steps 
+    given below −
     Create a socket with the socket() system call.
-
     Bind the socket to an address using the bind() system call. 
     For a server socket on the Internet, an address consists of a 
     port number on the host machine.
-
     Listen for connections with the listen() system call.
-
     Accept a connection with the accept() system call. 
     This call typically blocks until a client connects with the server.
-
     Send and receive data using the read() and write() system calls.
 */ 
 
@@ -34,7 +27,6 @@
 // https://wiki.osdev.org/Message_Passing_Tutorial
 // https://wiki.osdev.org/Synchronization_Primitives
 // ...
-
 
 // rtl
 #include <types.h>
@@ -47,7 +39,6 @@
 #include <sys/socket.h>
 #include <packet.h>
 #include <rtl/gramado.h>
-
 
 // The client-side library.
 #include <gws.h>
@@ -105,7 +96,6 @@ int tmp_ip_y=8;
 
 
 
-
 int fileman_init_globals(void)
 {
     gws_debug_print("fileman_init_globals:\n");
@@ -113,7 +103,6 @@ int fileman_init_globals(void)
     gScreenWidth  = gws_get_system_metrics(1);
     gScreenHeight = gws_get_system_metrics(2);
 
-    
     //...
     
     return 0;
@@ -268,8 +257,9 @@ editorProcedure (
                     break;
                 
                 default:
-                    if(long1 > 0)
+                    if(long1 > 0){
                         editorDrawChar(fd,long1);
+                    }
                     break;
             };
             break;
@@ -279,14 +269,13 @@ editorProcedure (
             //printf ("MSG_SYSKEYDOWN\n");
             //break;
 
-        case MSG_SYSKEYDOWN:
-            switch(long1)
-            {
-                case VK_F1:
-                    gws_clone_and_execute("terminal.bin");
-                    break;
-            }
-            break;
+        //#bugbug: Not working
+        //case MSG_SYSKEYDOWN:
+        //switch(long1){
+        //case VK_F1:  gws_clone_and_execute("terminal.bin"); break;
+        // ...
+        //};
+        //break;
 
 
         default:

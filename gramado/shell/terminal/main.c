@@ -377,8 +377,13 @@ void doPrompt(int fd)
     if(wid < 0){
         return;
     }
+
+// #bugbug
+// Refreshing the whole window is too much.
+// Refresh only the rectangle of the size of a char or line.
     gws_refresh_window(fd,wid);
 }
+
 
 
 // interna
@@ -652,7 +657,7 @@ terminal_write_char (
 
 // Circula
     cursor_x++;
-    if (cursor_x>__wlMaxColumns)
+    if (cursor_x > __wlMaxColumns)
     {
         cursor_y++;  //próxima linha.
         cursor_x=0;  //começo da linha
@@ -764,19 +769,21 @@ void del (void)
 /*
  ***************** 
  * tputc:
- * 
+ *     Draw a char into the client window?
+ *     ?? still not used ??
  */
 
 // #todo
-// See: https://github.com/gramado/st/blob/tlvince/st.c
+// See-github: tlvince/st.c
 
-// #Atenção: A libc do app foi configurada dinamicamente
+// #Atenção: 
+// A libc do app foi configurada dinamicamente
 // para que printf coloque chars no arquivo. Mas 
 // a libc desse terminal ainda não foi. Então a printf
 // desse terminal escreve no backbuffer e exibe na tela.
 // #bugbug: 
 // O problema é que dessa forma nada foi colocado no buffer de arquivo.
-//#todo
+// #todo
 // fazer essa função colocar os chars no buffer de arquivo. 
 // Usaremos no scroll.
 // void tputc (int fd, char *c, int len){
@@ -834,7 +841,7 @@ tputc (
              // como acontece nos caracteres digitados no shell interno.
              // #importante
              // Isso vai exibir o caractere mas também
-             // na colocar ele no buffer ba posição atual.
+             // na colocar ele no buffer da posição atual.
              default:
                  terminal_write_char ( fd, window, (int) ascii); 
                  //printf ("%c",ascii);  //debug
@@ -845,9 +852,9 @@ tputc (
 // Control codes. 
 // (dentro de um range)
 
-    if (control){
- 
-        switch(ascii)
+    if (control)
+    {
+        switch (ascii)
         {
             //case '\v':    /* VT */
             //case '\a':    /* BEL */    
@@ -878,7 +885,6 @@ tputc (
                 return;
                 break;
 
-
             case '\032':    /* SUB */
             case '\030':    /* CAN */
                 //csireset ();
@@ -908,7 +914,7 @@ tputc (
         // #todo parse csi
         if(term.esc & ESC_CSI){
 
-            switch(ascii)
+            switch (ascii)
             {
                 // Quando acaba a sequência.
                 case 'm':
@@ -923,7 +929,6 @@ tputc (
                  //case ';':
                      //return;
                      //break;
-
 
                 // Vamos apenas colocar no buffer
                 // para analizarmos depois.
@@ -948,7 +953,7 @@ tputc (
 
         } else if (term.esc & ESC_ALTCHARSET){
 
-            switch(ascii)
+            switch (ascii)
             {
                 case 'A':  /* UK (IGNORED) */
                 case '<':  /* multinational charset (IGNORED) */
@@ -1013,14 +1018,12 @@ tputc (
                 //printf (" {NEL} "); //debug
                 break;
 
-
             /* HTS -- Horizontal tab stop */
             case 'H':   
                 term.esc = 0;
                 terminal_write_char ( fd, window, (int) '$'); //debug
                  //printf (" {HTS} "); //debug
                 break;
-
 
             /* RI -- Reverse index */
             case 'M':     
@@ -1169,6 +1172,31 @@ void terminalClearBuffer (void)
 }
 
 
+/*
+//#test
+void
+__testPrintBuffer(void)
+{
+    register int i=0;
+    int j=0;
+    for ( i=0; i<32; i++ )
+    {
+        for ( j=0; j<80; j++ )
+        {
+            if ( LINES[i].CHARS[j] != 0 )
+            {
+            }
+            
+            //LINES[i].CHARS[j]      = (char) ' ';
+            //LINES[i].ATTRIBUTES[j] = (char) 7;
+        };
+        //LINES[i].left = 0;
+        //LINES[i].right = 0;
+        //LINES[i].pos = 0;
+    };
+}
+*/
+
 
 //Qual será a linha que estará no topo da janela.
 void textSetTopRow ( int number )
@@ -1218,7 +1246,6 @@ int textGetCurrentCol (void)
 {
     return (int) cursor_x; 
 }
-
 
 
 /*
@@ -1331,6 +1358,35 @@ void _draw(int fd, int c)
 }
 
 
+// worker
+void __on_return_key_pressed(int fd)
+{
+    unsigned long jiffie_start=0;
+    unsigned long jiffie_end=0;
+    unsigned long jiffie_delta=0;
+
+// Finalize the command line.
+
+    input('\0');
+
+    //jiffie_start = (unsigned long) rtl_get_system_metrics(118);
+
+    if(fd<0)
+        return;
+
+    compareStrings(fd);
+
+    //jiffie_end = (unsigned long) rtl_get_system_metrics(118);
+    //jiffie_delta = (jiffie_end-jiffie_start);
+
+// #bugbug: 
+// We do not have a function to print strings
+// into the terminal's client window.
+
+    //printf("speed: %d ms\n",jiffie_delta);
+}
+
+
 // local
 int 
 terminalProcedure ( 
@@ -1345,10 +1401,6 @@ terminalProcedure (
     if (window<0){return -1;}
     if (msg<0)   {return -1;}
 
-    unsigned long jiffie_start=0;
-    unsigned long jiffie_end=0;
-    unsigned long jiffie_delta=0;
-
 // ==================
 
     switch(msg)
@@ -1357,16 +1409,7 @@ terminalProcedure (
             switch(long1)
             {
                 case VK_RETURN:
-                    //printf("RETURN \n");
-                    //doPrompt(fd);
-                    input('\0');
-                    //jiffie_start = (unsigned long) rtl_get_system_metrics(118);
-                    compareStrings(fd);
-                    //jiffie_end = (unsigned long) rtl_get_system_metrics(118);
-                    //jiffie_delta = (jiffie_end-jiffie_start);
-                    //#bugbug: We do not have a function to print strings
-                    // into the terminal's client window.
-                    //printf("speed: %d ms\n",jiffie_delta);
+                    __on_return_key_pressed(fd);
                     return 0;
                     break;
 
@@ -1384,6 +1427,8 @@ terminalProcedure (
                         long1 );
 
                     // refresh window
+                    // #bugbug: Is it too much.
+                    // We need to refresh only the dirty rectangles.
                     gws_refresh_window(fd,window);
 
                     // update cursor positions
@@ -1401,7 +1446,19 @@ terminalProcedure (
             };
             break;
 
+        //#bugbug: Not working
+        //case MSG_SYSKEYDOWN:
+        //    switch(long1){
+        //    case VK_F1: gws_clone_and_execute("browser.bin");  break;
+        //    case VK_F2: gws_clone_and_execute("editor.bin");   break;
+        //    case VK_F3: gws_clone_and_execute("fileman.bin");  break;
+        //    case VK_F4: gws_clone_and_execute("shutdown.bin"); break;
+        //    };
+        //    return 0;
+        //    break;
+
         default:
+            return 0;
             break;
     };
 
@@ -1748,20 +1805,9 @@ void terminalTerminal (void)
 
 // Inicializando as estruturas de linha.
 // Inicializamos com espaços.
-
-    for ( i=0; i<32; i++ )
-    {
-        for ( j=0; j<80; j++ )
-        {
-            LINES[i].CHARS[j]      = (char) ' ';
-            LINES[i].ATTRIBUTES[j] = (char) 7;
-        };
-
-        LINES[i].left = 0;
-        LINES[i].right = 0;
-        LINES[i].pos = 0;
-    };
-
+// Limpa o buffer de linhas onde os caracteres são colocados.
+    
+    terminalClearBuffer();
 
 // Deve ser pequena, clara e centralizada.
 // Para ficar mais rápido.
@@ -1770,7 +1816,6 @@ void terminalTerminal (void)
 // retornadas pelo sistema.
 // Usar o get system metrics para pegar o 
 // tamanho da tela.
-
 
 //inicializa as metricas do sistema.
     terminalInitSystemMetrics();
@@ -1789,16 +1834,14 @@ void terminalTerminal (void)
 // É melhor que seja pequena por enquanto pra não ativar
 // o scroll do kernel e só usar o scroll desse terminal.
 
-	//textTopRow = 0;
-	//textBottomRow = 24;
+    //textTopRow = 0;
+    //textBottomRow = 24;
     //terminalNewVisibleArea ( 0, 19);
 
-	//...	
+    //...
 
-	// Obs:
-	// prompt[] - Aqui ficam as digitações. 
-
-	//terminalClearBuffer ();
+// Obs:
+// prompt[] - Aqui ficam as digitações. 
 
 	//shellBufferMaxColumns = DEFAULT_BUFFER_MAX_COLUMNS;
 	//shellBufferMaxRows    = DEFAULT_BUFFER_MAX_ROWS;
@@ -1806,15 +1849,15 @@ void terminalTerminal (void)
 	//buffersize = (shellBufferMaxColumns * shellBufferMaxRows);
 	
 
-	
-	//
-	// @todo: E o fluxo padrão. Quem configurou os arquivos ???
-	//        o kernel configuroru???
-	//
-	
+//
+// #todo: 
+// E o fluxo padrão. Quem configurou os arquivos ???
+// o kernel configuroru???
+//
+
     //...
-	
-	
+
+
 	//for ( i=0; i<WORKINGDIRECTORY_STRING_MAX; i++ ){
 	//	current_workingdiretory_string[i] = (char) '\0';
 	//};
@@ -1838,48 +1881,52 @@ void terminalTerminal (void)
 	//tentando posicionar o cursor dentro da janela
 	//terminalSetCursor( (shell_info.main_window->left/8) , (shell_info.main_window->top/8));	
 
-	//shellPrompt();
+    //shellPrompt();
 }
 
 
 void terminalInitSystemMetrics(void)
 {
-	//Tamanho da tela. (full screen)
-	smScreenWidth = gws_get_system_metrics(1);
-	smScreenHeight = gws_get_system_metrics(2); 
-	
-	//cursor
-	smCursorWidth = gws_get_system_metrics(3);
-	smCursorHeight = gws_get_system_metrics(4);
-	
-	//mouse
-	smMousePointerWidth = gws_get_system_metrics(5);
-	smMousePointerHeight = gws_get_system_metrics(6);
-	
-	//char
-	smCharWidth = gws_get_system_metrics(7);
-	smCharHeight = gws_get_system_metrics(8);
-	
-	
-	//#todo:
-	//vertical scroll size
-	//horizontal scroll size.
-	
-	//#importante
-	//#todo: pegar mais.
-	
-	//...
-	
-	//#todo: Temos que criar essa variável.
-	//InitSystemMetricsStatus = 1;
+
+// Screen width and height.
+    smScreenWidth = gws_get_system_metrics(1);
+    smScreenHeight = gws_get_system_metrics(2); 
+
+// Cursor width and height.
+    smCursorWidth = gws_get_system_metrics(3);
+    smCursorHeight = gws_get_system_metrics(4);
+
+// Mouse pointer width and height.
+    smMousePointerWidth = gws_get_system_metrics(5);
+    smMousePointerHeight = gws_get_system_metrics(6);
+
+// Char width and height.
+    smCharWidth = gws_get_system_metrics(7);
+    smCharHeight = gws_get_system_metrics(8);
+
+
+//#todo:
+//vertical scroll size
+//horizontal scroll size.
+
+//#importante
+//#todo: pegar mais.
+
+    //...
+
+// #todo: 
+// Temos que criar essa variável.
+
+    //InitSystemMetricsStatus = TRUE;
 } 
 
 
 void terminalInitWindowLimits (void)
 {
-	// #todo
-	// Tem variáveis aqui que não podem ser '0'.
-	
+
+// #todo
+// Tem variáveis aqui que não podem ser '0'.
+
 	//#todo: temos que criar essa variável.
 	/*
 	if (InitSystemMetricsStatus == 0)
@@ -1898,30 +1945,28 @@ void terminalInitWindowLimits (void)
 	//	 printf ...
 	//}
 
-    //full screen support
+
+// Fullscreen support.
     wlFullScreenLeft = 0;
     wlFullScreenTop  = 0;
     wlFullScreenWidth  = smScreenWidth;
     wlFullScreenHeight = smScreenHeight;
-	
-    //limite de tamanho da janela.
+
+//Limite de tamanho da janela.
     wlMinWindowWidth  = (smCharWidth * 80);
     wlMinWindowHeight = (smCharWidth * 25);
     wlMaxWindowWidth  = wlFullScreenWidth;
     wlMaxWindowHeight = wlFullScreenHeight;
 
-
-    //quantidade de linhas e colunas na área de cliente.
+// Quantidade de linhas e colunas na área de cliente.
     wlMinColumns = 80;
     wlMinRows = 1;
 
-
-	
-	//dado em quantidade de linhas.
+// Dado em quantidade de linhas.
     textMinWheelDelta = 1;  //mínimo que se pode rolar o texto
     textMaxWheelDelta = 4;  //máximo que se pode rolar o texto	
     textWheelDelta = textMinWheelDelta;
-	//...
+    //...
 }
 
 
@@ -1939,32 +1984,31 @@ void terminalInitWindowSizes(void)
 
     //wsWindowWidth = wlMinWindowWidth;
     //wsWindowHeight = wlMinWindowHeight;	
-	
-	//Tamanho da janela do shell com base nos limites 
-    //que ja foram configurados.	
-	
-	wsWindowWidth  = Terminal.width;
-	wsWindowHeight = Terminal.height;
 
-	if ( wsWindowWidth < wlMinWindowWidth ){
-		wsWindowWidth = wlMinWindowWidth;
-	}
-	
-	if ( wsWindowHeight < wlMinWindowHeight ){
-	    wsWindowHeight = wlMinWindowHeight;
-	}
+// Tamanho da janela do shell com base nos limites 
+// que ja foram configurados.
+
+    wsWindowWidth  = Terminal.width;
+    wsWindowHeight = Terminal.height;
+
+    if ( wsWindowWidth < wlMinWindowWidth ){
+        wsWindowWidth = wlMinWindowWidth;
+    }
+
+    if ( wsWindowHeight < wlMinWindowHeight ){
+        wsWindowHeight = wlMinWindowHeight;
+    }
 }
 
 
 void terminalInitWindowPosition(void)
 {
-    if (Terminal.initialized != TRUE )
-    {
+    if (Terminal.initialized != TRUE ){
         printf("terminalInitWindowPosition: Terminal.initialized\n");
         exit(1);
     }
 
-//window position
+// Window position
     wpWindowLeft = Terminal.left;
     wpWindowTop  = Terminal.top;
     //wpWindowLeft = (unsigned long) ( (smScreenWidth - wsWindowWidth)/2 );

@@ -1,11 +1,14 @@
 /*
  * File: gws.c
- * 
- *     gws - client-side library for gws window server.
- *     gws is a window server running in ring3, and this is
- *  a library used by the apps.
- *     
+ * gws - client-side library for gws window server.
+ * gws is a window server running in ring3, and this is
+ * a library used by the apps.
  */
+
+// #todo:
+// gws_refresh_rectangle
+// gws_refresh_char
+// ...
 
 // Devemos incluir o objeto gws.o nos aplicativos 
 // para fazermos as chamadas ao servidor.
