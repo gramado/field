@@ -118,8 +118,8 @@ int timerShowTextCursor;
 
 // It is up to the interrupt service routine to reset the latch. 
 // It does that by setting bit 7 of port 0x61 (system control port B).
-// See: ps/disp/ts.c
 // See: pic.h
+// See: ps/disp/ts.c
 
 __VOID_IRQ 
 irq0_TIMER (void)

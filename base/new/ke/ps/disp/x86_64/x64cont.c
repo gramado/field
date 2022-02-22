@@ -105,7 +105,8 @@ void save_current_context (void)
 
     // Structure ~ Colocando o contexto na estrutura.
 
-    if ( current_thread < 0 || current_thread >= THREAD_COUNT_MAX )
+    if ( current_thread < 0 || 
+         current_thread >= THREAD_COUNT_MAX )
     {
         printk ("save_current_context: TID=%d\n", current_thread );
         goto fail0;
@@ -167,11 +168,13 @@ void save_current_context (void)
     unsigned long tmp_cpl = (unsigned long) context_cpl[0];
     cpl = (int) (tmp_cpl & 3);  // 2 bits
 
-    if (cpl)
+    if (cpl){
         t->utime++;
-    else
+        t->iopl = 3;     // IOPL 3.
+    }else{
         t->stime++;
-
+        //t->iopl = ?;   // IOPL 0,1,2 ?
+    };
 
 
 // #todo

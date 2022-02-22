@@ -206,22 +206,23 @@ struct thread_d
 
     unsigned long input_flags;
 
- // #suspenso. Vamos usar as flags em 't->input_flags'
+// #suspenso. 
+// Vamos usar as flags em 't->input_flags'
+
     //thread_inputmodel_t input_model;
 
 //
 // Surface
 //
-
     struct rect_d *surface_rect;
-
 
     int position;
 
-    // #todo
-    // Other process can't take some actions on this thread
-    // if it is protected. 
-    // ex: It can't be killed by another process.
+// #todo
+// Other process can't take some actions on this thread
+// if it is protected. 
+// ex: It can't be killed by another process.
+
     int _protected;
 
 
@@ -244,27 +245,26 @@ struct thread_d
 // flag, Estado atual da tarefa. ( RUNNING, DEAD ... ).
     thread_state_t state;    
 
-    // The is the control thread of a new clone process.
+// The is the control thread of a new clone process.
     int new_clone;
 
-
-    // #todo
-    // Identifica uma thread como sendo uma thread que 
-    // pertence à um servidor. Então as threads desse tipo 
-    // ganham mais prioridade e mais tempo de processamento.
+// #todo
+// Identifica uma thread como sendo uma thread que 
+// pertence à um servidor. Então as threads desse tipo 
+// ganham mais prioridade e mais tempo de processamento.
 
     // int isServerThread;
 
 // flag. 
 // 1 = Sinaliza que a thread está dando a preferência
 // e que deve sair quando for seguro fazer isso.
+
     int _yield;
 
-	// error. @todo:
-	//unsigned long error;
-	
-	//ext.
+// error. @todo:
+    //unsigned long error;
 
+//ext.
 // plano de execução.
     int plane;
 
@@ -299,33 +299,31 @@ struct thread_d
 // See: https://en.wikipedia.org/wiki/Processor_affinity
     int affinity;
 
-	// ORDEM: 
-	// O que segue é referenciado durante a interrupção de timer.
+// ORDEM: 
+// O que segue é referenciado durante a interrupção de timer.
 
-	//...
+    //...
 
-	// ORDEM: 
-	// O que segue é referenciado durante o processo de task switch.
+// ORDEM: 
+// O que segue é referenciado durante o processo de task switch.
 
 //
 // == pml4 =======================================
 //
 
-    // COLOCAR O DIRETÓRIO DE PÁGINAS QUE A THREAD USA, 
-    // ISSO AJUDA NA HORA DO TASKSWITCH.
+// #todo
+// COLOCAR O DIRETÓRIO DE PÁGINAS QUE A THREAD USA, 
+// ISSO AJUDA NA HORA DO TASKSWITCH.
 
-
+// The pml4
     unsigned long pml4_VA;
     unsigned long pml4_PA;
-
-    // The first pdpt
+// The first pdpt
     unsigned long pdpt0_VA;
     unsigned long pdpt0_PA;
-
-    // The first pd
+// The first pd
     unsigned long pd0_VA;
     unsigned long pd0_PA;
-
 
 // pl
     unsigned long iopl;

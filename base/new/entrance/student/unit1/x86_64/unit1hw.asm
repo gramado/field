@@ -71,11 +71,12 @@ _irq0:
 
     cli
 
-    ; No caso do dispatcher lançar uma nova thread,
-    ; então ele deve acionar enviar um EIO.
+; No caso do dispatcher lançar uma nova thread,
+; então ele deve acionar enviar um EIO.
+
     ; mov dword [_irq0PendingEOI], 1
 
-    ;; == Save context ====================
+;; == Save context ====================
     
     ; Stack frame. (all double)
     pop qword [_contextRIP]     ; rip
@@ -143,7 +144,6 @@ _irq0:
 
     jmp unit3Irq0Release
 ; --------------------------------------
-
 
 
 
@@ -1555,57 +1555,78 @@ _fault_N31:
 
 
 ;---------------------------------------
-    ; provisório
+; One trampoline above jumps here.
+; rdi for first parameter.
+; New calling conventions for x86_64.
+; Chama código em C. 
+; (x64fault.c)
+
+; #todo
+; Temos que salvar o contexto,
+; pois vamos retornar após alguns tipos de fault,
+; como é o caso de PF.
 
 extern _faults
-extern _xxx_fault_number   ;; provisório: see: x64fault.c
-
-
-; One trampoline above jumps here.
 
 all_faults:
 
-    ; #todo
-    ; Temos uma rotina pra fazer aqui.
+; Save context.
+
+    cli
+
+    pop qword [_contextRIP]     ; rip
+    pop qword [_contextCS]      ; cs
+    pop qword [_contextRFLAGS]  ; rflags
+    pop qword [_contextRSP]     ; rsp
+    pop qword [_contextSS]      ; ss
+
+    mov qword [_contextRDX], rdx 
+    mov qword [_contextRCX], rcx 
+    mov qword [_contextRBX], rbx 
+    mov qword [_contextRAX], rax
+
+    mov qword [_contextRBP], rbp
+
+    mov qword [_contextRDI], rdi 
+    mov qword [_contextRSI], rsi 
+
+; Segments
+
+    xor rax, rax
     
-    ;;
-    ;; O número da falta.
-    ;;
+    ; Is it used?
+    mov ax, gs
+    mov word [_contextGS], ax
+    ; Is it used?
+    mov ax, fs
+    mov word [_contextFS], ax
     
-    ; Chama a rotina em C.
-    ; Passa o argumento via pilha.
-    ;push qword [_save_fault_number]
-    ;push qword 4
-    
-    ; Chama código em C. 
-    ; (x64fault.c)
-    
-    ;;xor rax, rax
-    ;push rax
-    
-    
-    ;
-    ; #bugbug
-    ; Nossa intenção é passar via parametro de função.
-    ; Como isso esta falhando, entao estamos passando provisoriamente
-    ; via memoria compartilhada.
-    ;
-    
+    mov ax, es
+    mov word [_contextES], ax
+    mov ax, ds
+    mov word [_contextDS], ax
+
+    ; cpl
+    ; see: x64cont.c
+
+    mov rax, qword [_contextCS]
+    and rax, 3
+    mov [_contextCPL], rax
+
+
+; Call c routine in x64fault.c.
     mov rax, qword [_save_fault_number]
-    
-    ; Via shared memory.
-    ;It is working
-    ;mov qword [_xxx_fault_number], rax
-    
-    ; #test
-    ; Firtst parameter.
-    ; New calling conventions for x86_64.
     mov rdi, rax 
-  
-    ; Call the C part.
-    
     call _faults 
 
+; #todo
+; We're gonna restore the execution in some cases,
+; just like PF.
+
+; Release a bandit.
+    ;jmp unit3Irq0Release
+    
+; Provisório
 _AllFaultsHang:
     cli
     hlt
