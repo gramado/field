@@ -40,6 +40,10 @@ static int count_mouse = 0;
 static char buffer_mouse[3];
 //=====================================================================
 
+// Estado atual dos botoes.
+unsigned int mbuttons_old_state[5];
+
+
 // i8042 mouse status bit.
 // The bit in the first byte.
 
@@ -235,15 +239,99 @@ void __ps2mouse_parse_data_packet (void)
     mouse_x = (mouse_x & 0x000003FF );
     mouse_y = (mouse_y & 0x000003FF );
 
-/*
+// Estado atual dos botoes.
+    unsigned int mbuttons_current_state[5];
+
 // #todo
-// buttons
-  mouse_buttons[0] = (Flags & MOUSE_LEFT_BUTTON   );
-  mouse_buttons[1] = (Flags & MOUSE_RIGHT_BUTTON  ) >> 1;
-  mouse_buttons[2] = (Flags & MOUSE_MIDDLE_BUTTON ) >> 2;
-  mouse_buttons[3] = (mouse_buf[3] & 0x10) >> 4;
-  mouse_buttons[4] = (mouse_buf[3] & 0x20) >> 5;
-*/
+// Pegamos o estado atual dos botoes.
+// Depois precisamos comparar com o antigo estado
+// dos botoes pra sabermos se houve
+// alguma alteração de estado.
+     mbuttons_current_state[0] = 
+         (int)(Flags & MOUSE_LEFT_BUTTON   ) ;
+     mbuttons_current_state[1] = 
+         (int)(Flags & MOUSE_RIGHT_BUTTON  ) >> 1;
+     mbuttons_current_state[2] = 
+         (int)(Flags & MOUSE_MIDDLE_BUTTON ) >> 2;
+     //mbuttons_current_state[3] = (mouse_buf[3] & 0x10) >> 4;
+     //mbuttons_current_state[4] = (mouse_buf[3] & 0x20) >> 5;
+
+    mbuttons_current_state[0] = (int) (mbuttons_current_state[0] & 0xFF);
+    mbuttons_current_state[1] = (int) (mbuttons_current_state[1] & 0xFF);
+    mbuttons_current_state[2] = (int) (mbuttons_current_state[2] & 0xFF);
+
+//
+//  Compare
+//
+    int button0_changed=FALSE;
+    int button1_changed=FALSE;
+    int button2_changed=FALSE;
+    
+// button 0 changed
+    if( mbuttons_current_state[0] != mbuttons_old_state[0] )
+        button0_changed=TRUE;
+// button 1 changed
+    if( mbuttons_current_state[1] != mbuttons_old_state[1] )
+        button1_changed=TRUE;
+// button 2 changed
+    if( mbuttons_current_state[2] != mbuttons_old_state[2] )
+        button2_changed=TRUE;
+
+//
+// It was pressed or released?
+//
+
+// Salva os atuais
+// Serão usados para a próxima comparação.
+    mbuttons_old_state[0] = mbuttons_current_state[0];
+    mbuttons_old_state[1] = mbuttons_current_state[1];
+    mbuttons_old_state[2] = mbuttons_current_state[2];
+
+
+// Houve mudança no botao 0.
+    if( button0_changed == TRUE )
+    {
+        // houve mudança e ele foi pressionado.
+        if( mbuttons_current_state[0] == TRUE ){
+            xxxMouseEvent( MSG_MOUSEPRESSED, 0, 0 );
+        }
+        
+        // houve mudança e ele foi liberado.
+        if( mbuttons_current_state[0] == FALSE ){
+            xxxMouseEvent( MSG_MOUSERELEASED, 0, 0 );
+        }
+        return;
+    }
+
+// Houve mudança no botao 1.
+    if( button1_changed == TRUE )
+    {
+        // houve mudança e ele foi pressionado.
+        if( mbuttons_current_state[1] == TRUE ){
+            xxxMouseEvent( MSG_MOUSEPRESSED, 1, 1 );
+        }
+        
+        // houve mudança e ele foi liberado.
+        if( mbuttons_current_state[1] == FALSE ){
+            xxxMouseEvent( MSG_MOUSERELEASED, 1, 1 );
+        }
+        return;
+    }
+
+// Houve mudança no botao 2.
+    if( button2_changed == TRUE )
+    {
+        // houve mudança e ele foi pressionado.
+        if( mbuttons_current_state[2] == TRUE ){
+            xxxMouseEvent( MSG_MOUSEPRESSED, 2, 2 );
+        }
+        
+        // houve mudança e ele foi liberado.
+        if( mbuttons_current_state[2] == FALSE ){
+            xxxMouseEvent( MSG_MOUSERELEASED, 2, 2 );
+        }
+        return;
+    }
 
 
 // Screen limits.
@@ -319,10 +407,12 @@ void __ps2mouse_parse_data_packet (void)
         //xxxMouseEvent(0,mouse_x,mouse_y);
     //}
     
-    //#todo: event id 
-    xxxMouseEvent(0,mouse_x,mouse_y);
-    //xxxMouseEvent(1,mouse_x,mouse_y);
-    //...
+//#todo: event id 
+    
+    if (ps2_mouse_moving==TRUE){
+        // IN: event id, x, y.
+        xxxMouseEvent( MSG_MOUSEMOVE, mouse_x, mouse_y );
+    }
 
     debug_print ("__ps2mouse_parse_data_packet: Done\n");
 }

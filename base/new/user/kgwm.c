@@ -205,6 +205,22 @@ wmProcedure (
 
     switch (msg){
 
+        case MSG_MOUSEMOVE:
+            wmSendInputToWindowManager(0,msg,long1,long2);
+            return 0;
+            break;
+
+        case MSG_MOUSEPRESSED:
+            wmSendInputToWindowManager(0,msg,long1,long2);
+            return 0;
+            break;
+
+        case MSG_MOUSERELEASED:
+            wmSendInputToWindowManager(0,msg,long1,long2);
+            return 0;
+            break;
+
+
         case MSG_KEYDOWN:
 
             // Para todas as teclas quando o console não está ativo.
@@ -1011,7 +1027,13 @@ xxxKeyEvent (
         
     } // FI
 
-// == Dispatch =======================================================
+
+
+
+//
+// == Dispatch ====
+//
+
 
 // Done.
 // Para finalizar, vamos enviar a mensagem para fila certa.
@@ -1084,7 +1106,7 @@ done:
 
 // Process the event using the system's window procedures.
 // It can use the kernel's virtual console or
-// sent the evento to the loadable window server.
+// send the event to the loadable window server.
 // See: kgwm.c
 
     wmProcedure(
@@ -1096,11 +1118,20 @@ done:
     return 0;
 }
 
+
 //==========
 
+// For mouse events, see: window.h
 
-int xxxMouseEvent(int event_id,long x, long y)
+// #todo: change parameters.
+// we need more information about the mouse event.
+int 
+xxxMouseEvent(
+    int event_id,
+    long x, 
+    long y )
 {
+
     //old: for ereasing
     static long old_x=0;
     static long old_y=0;
@@ -1123,6 +1154,7 @@ int xxxMouseEvent(int event_id,long x, long y)
     if ( y > (deviceHeight-1) ){ y = (deviceHeight-1); }
 
 
+//----
 
 // #test
 // Draw rectangle.
@@ -1134,29 +1166,23 @@ int xxxMouseEvent(int event_id,long x, long y)
 // é um código portado da arquitetura de 32bit 
 // para a arquitetura de 64bit.
 
-//
-// Erease cursor.
-//
+    if ( event_id == MSG_MOUSEMOVE )
+    {
 
+// Erease cursor.
 // Ereasing the cursor by refreshing a little
 // part of the backbuffer into the front buffer.
+        refresh_rectangle ( old_x, old_y, 10, 10 );
 
+        old_x = x;
+        old_y = y;
 
-    refresh_rectangle ( old_x, old_y, 10, 10 );
-
-    old_x = x;
-    old_y = y;
-
-//
 // Drawing the cursor.
-//
-
 // Drawing the cursor directly into
 // the framebuffer.
 
-    frontbuffer_draw_rectangle( 
-        x, y, 
-        10, 10, COLOR_RED, 0 );
+        frontbuffer_draw_rectangle( 
+            x, y, 10, 10, COLOR_RED, 0 );
 
     //backbuffer_draw_rectangle( 
     //    x, y, 
@@ -1172,6 +1198,26 @@ int xxxMouseEvent(int event_id,long x, long y)
     //    0 );          // rop_flags
 
     //refresh_rectangle ( x, y, 10, 10 );
+
+    }
+//----
+
+
+//
+// == Dispatch ====
+//
+
+// Process the event using the system's window procedures.
+// It can use the kernel's virtual console or
+// send the event to the loadable window server.
+// See: kgwm.c
+// For mouse events, see: window.h
+
+    wmProcedure(
+        (struct window_d *) 0,         // opaque pointer
+        (int)               event_id,  // msg code
+        (unsigned long)     x,         // x
+        (unsigned long)     y );       // y
 
 done:
     debug_print ("xxxMouseEvent: Done\n");

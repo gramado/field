@@ -1694,6 +1694,8 @@ wmProcedure(
     unsigned long long2 )
 {
 
+    int Status=FALSE;
+    
 // #debug
     //printf("wmProcedure: w=? m=%d l1=%d l2=%d\n", 
         //msg, long1, long2 );
@@ -1780,6 +1782,55 @@ wmProcedure(
     case GWS_GetFocus2:
         printf("wmProcedure: [19] GWS_GetFocus2\n");
         break;
+
+    case GWS_MouseMove:
+        // O ponteiro esta dentro do botao do menu iniciar?
+        Status = is_within(
+            (struct gws_window_d *) __taskbar_startmenu_button_window,
+            long1,
+            long2 );
+        
+        // Sim
+        if(Status==TRUE){
+            yellow_status("oops");
+        }
+        return 0;
+        break;
+
+    case GWS_MousePressed:
+        if(long1==0){ yellow_status("P0"); }
+        if(long1==1){ yellow_status("P1"); }
+        if(long1==2){ yellow_status("P2"); }
+        //#bugbug: Os parametros estão nos mostrando
+        // o número do botao pressionado e não seu posicionamento.
+        // O ponteiro esta dentro do botao do menu iniciar?
+        //Status = is_within(
+        //    (struct gws_window_d *) __taskbar_startmenu_button_window,
+        //    long1, long2 );
+        
+        //if(Status==TRUE){ yellow_status("P"); }
+        //if(Status==FALSE){ yellow_status("p"); }
+        return 0;
+        break;
+
+        
+    case GWS_MouseReleased:
+        if(long1==0){ yellow_status("R0"); }
+        if(long1==1){ yellow_status("R1"); }
+        if(long1==2){ yellow_status("R2"); }
+
+        //#bugbug: Os parametros estão nos mostrando
+        // o número do botao pressionado e não seu posicionamento.
+        // O ponteiro esta dentro do botao do menu iniciar?
+        //Status = is_within(
+        //    (struct gws_window_d *) __taskbar_startmenu_button_window,
+        //    long1, long2 );
+        
+        //if(Status==TRUE){ yellow_status("R"); }
+        //if(Status==FALSE){ yellow_status("r"); }
+        return 0;
+        break;
+
 
     // #bugbug
     // Quando imprimir na tela e quando enviar para o cliente?
@@ -1951,8 +2002,21 @@ wmHandler(
 //
     switch (msg){
 
+    case GWS_MouseMove:
+    case GWS_MousePressed:
+    case GWS_MouseReleased:
+        r = (unsigned long) wmProcedure(
+                (struct gws_window_d *) 0,
+                (int) msg,
+                (unsigned long) long1,
+                (unsigned long) long2 ); 
+        return r;
+        break;
+
+
 // #important:
-// Mandaremos input somente para a janela com foco de entrada,
+// Mandaremos input de teclado somente para 
+// a janela com foco de entrada,
 // seja ela de qualquer tipo.
 
     case GWS_KeyDown:

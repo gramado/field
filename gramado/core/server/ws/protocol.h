@@ -137,23 +137,27 @@ typedef struct _gRep gRep;
 #define GWS_SysKeyUp   23
 
 
-// mouse (30 - 39)
-// tem uma lista de eventos de mouse em events.h
+// Mouse (30 - 39)
+// Tem uma lista de eventos de mouse em events.h
+// O kernel tambem obedece essa mesma ordem.
 #define GWS_MouseKeyDown     30 
 #define GWS_MouseKeyUp       31
+//The event occurs when the user presses a mouse button over an element.
 #define GWS_MouseButtonDown  30
+//The event occurs when a user releases a mouse button over an element.
 #define GWS_MouseButtonUp    31
+// The event occurs when the pointer is moving while it is over an element.   
 #define GWS_MouseMove        32
 #define GWS_MouseOver        33
 #define GWS_MouseWheel       34
 #define GWS_MousePressed     35
 #define GWS_MouseReleased    36
+// The event occurs when the user clicks on an element.
 #define GWS_MouseClicked     37
 #define GWS_MouseEntered     38
 #define GWS_MouseExited      39
 //#define GWS_MouseMoveByOffset
 //#define GWS_MouseMoveToElement
-
 
 
 //outros (40 - ...)

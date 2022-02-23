@@ -96,20 +96,21 @@
 #define MSG_SYSKEYDOWN    22
 #define MSG_SYSKEYUP      23
 
-//mouse (30 - 39)
-//tem uma lista de eventos de mouse em events.h
-#define MSG_MOUSEKEYDOWN  30
-#define MSG_MOUSEKEYUP    31
-#define MSG_MOUSEBUTTONDOWN	30
-#define MSG_MOUSEBUTTONUP	31 
-#define MSG_MOUSEMOVE	    32
-#define MSG_MOUSEOVER	    33
-#define MSG_MOUSEWHEEL	    34
-#define MSG_MOUSEPRESSED	  35
-#define MSG_MOUSERELEASED	  36
-#define MSG_MOUSECLICKED	  37
-#define MSG_MOUSEENTERED	  38    //?? capturou ??
-#define MSG_MOUSEEXITED	       39   //?? descapturou ??
+
+
+// mouse (30 - 39)
+#define MSG_MOUSEKEYDOWN     30
+#define MSG_MOUSEKEYUP       31
+#define MSG_MOUSEBUTTONDOWN  30
+#define MSG_MOUSEBUTTONUP    31 
+#define MSG_MOUSEMOVE        32
+#define MSG_MOUSEOVER        33
+#define MSG_MOUSEWHEEL       34
+#define MSG_MOUSEPRESSED     35
+#define MSG_MOUSERELEASED    36
+#define MSG_MOUSECLICKED     37
+#define MSG_MOUSEENTERED     38    //?? capturou ??
+#define MSG_MOUSEEXITED      39   //?? descapturou ??
 //#define MSG_MOUSEMOVEBYOFFSET
 //#define MSG_MOUSEMOVETOELEMENT
 
