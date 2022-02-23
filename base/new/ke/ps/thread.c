@@ -198,8 +198,8 @@ void *FindReadyThread (void)
 
 // Get State 
 // (Zero e' tipo NULL?).
-int GetThreadState (struct thread_d *thread){
-
+int GetThreadState (struct thread_d *thread)
+{
     if ( (void *) thread == NULL ){
         // Message
         return 0;   //#bugbug: This is a valid state.
@@ -208,20 +208,23 @@ int GetThreadState (struct thread_d *thread){
     return (int) thread->state;
 }
 
+
 // Get Type
 // (Zero e' tipo NULL?).
 int GetThreadType (struct thread_d *thread)
 {
-    if ( (void *) thread == NULL ){
+    if ( (void *) thread == NULL )
+    {
         //Message
         return 0;   // #bugbug: This is a valid type.
+        //return -1;
     }
   
     return (int) thread->type;
 }
 
+
 /*
- *******************************************************
  * init_threads:
  *     Inicializa o thread manager.
  *     Inicializa as estruturas e vari�veis 
@@ -289,21 +292,18 @@ int init_threads (void){
     return 0;
 }
 
-/*
- *****************************
- * GetCurrentTID
- *     Pega o id da thread atual.
- */
+
+// GetCurrentTID
+//      Pega o id da thread atual.
 
 int GetCurrentTID (void)
 {
     return (int) current_thread;
 }
 
-/*
- * GetCurrentThread:
- *     Retorna o endere�o da estrutura da thread atual.
- */
+
+// GetCurrentThread:
+//     Retorna o endereço da estrutura da thread atual.
 
 void *GetCurrentThread (void){
 
@@ -322,12 +322,10 @@ void *GetCurrentThread (void){
 
 
 /*
- ********************************************************
  * SelectForExecution:
- *     Um thread entra em standby, sinalizando que está pronto 
+ * Um thread entra em standby, sinalizando que está pronto 
  * para entrar em execução.
- * 
- *     Nesse caso, durante a rotina de taskswitch, checar-se-a se 
+ * Nesse caso, durante a rotina de taskswitch, checar-se-a se 
  * existe um thread em estado standby, caso haja, a thread é colocada 
  * pra executar pelo método spawn. 
  * Esse m�todo de spawn j� foi testado, segundo a contagem, duas thread 
@@ -335,29 +333,26 @@ void *GetCurrentThread (void){
  * Provavelmente as threads 'shell' e 'taskman', pois a thread 'idle' � 
  * chamada com um spawn exclusivo para ela, o que � desnecess�rio e 
  * poder� ser revisto. @todo
- *     
- *  *** MOVIMENTO 1, (Initialized --> Standby).
+ * MOVIMENTO 1, (Initialized --> Standby).
  */
 
-void SelectForExecution ( struct thread_d *Thread ){
-
+void SelectForExecution ( struct thread_d *Thread )
+{
     if ( (void *) Thread == NULL){
         debug_print ("SelectForExecution: Thread fail\n");
         return;
     }
 
-    // #todo
-    // Validation ??
-
-	// @todo: if initialized ---> Standby.
-	// @todo: if zombie ---> Standby.
-	//
-	// Talvez aqui seja necess�rio checar o estado da thread.
-	// Quem pode entrar no estado standby??
-	// >> Uma thread no estado initialized pode entrar no estado standby 
-	// >> Uma thread no estado zombie pode entrar no estado standby.
-	// >> @todo: se uma thread estiver em qualquer um dos outros estados ela 
-	// não pode entrar em standby.
+// #todo
+// Validation ??
+// @todo: if initialized ---> Standby.
+// @todo: if zombie ---> Standby.
+// Talvez aqui seja necess�rio checar o estado da thread.
+// Quem pode entrar no estado standby??
+// >> Uma thread no estado initialized pode entrar no estado standby 
+// >> Uma thread no estado zombie pode entrar no estado standby.
+// >> @todo: se uma thread estiver em qualquer um dos outros estados ela 
+// não pode entrar em standby.
 
 //setState:
 
@@ -365,7 +360,6 @@ void SelectForExecution ( struct thread_d *Thread ){
 //
 // MOVIMENT 1, (Initialized --> Standby).
 //
-
     Thread->state = (int) STANDBY;
 
 //
@@ -380,12 +374,10 @@ void SelectForExecution ( struct thread_d *Thread ){
     //queue_insert_data ( queue, (unsigned long) Thread, QUEUE_STANDBY );
 }
 
-
-void thread_show_profiler_info (void){
-
+void thread_show_profiler_info (void)
+{
     struct thread_d *thread;
     int i=0;
-
 
     printf ("\n");
 

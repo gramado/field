@@ -158,19 +158,31 @@ struct gr_mesh_list_d
 // a vector with a starting point.
 struct gr_ray_d
 {
-    // primary ray, reflection ray, shadow ray.
-    
-    //int type;
-    
+
+// Type of ray.
+// primary ray, reflection ray, shadow ray.
+
+    int type;
+
     //int intensity;
-    
+
     //int gradation;
-    
+
+    //int interpolation;
+
     // ...
-    
+
+// The starting point is the source of light.
+//#define RAY_ORIGIN  0
+//#define RAY_TARGET  1
+
     // 0 = starting point
     // 1 = vector
     struct gr_vec3D_d p[2];
+    
+    // Distance between the starting point and
+    // the target.
+    int distance;
 };
 
 
@@ -194,12 +206,12 @@ struct gr_mesh_d
 // Camera
 struct gr_camera_d
 {
-    // position
+
+// position
     struct gr_vec3D_d position;
     struct gr_vec3D_d upview;
     struct gr_vec3D_d lookat;
     // ...
-    
     
     struct gr_projection_d *projection;
 
@@ -219,7 +231,8 @@ struct gr_projection_d
     // perspective or orthographic
     int type;
 
-// fovy   Number The angle between the upper and lower sides of the viewing frustum.
+// fovy   Number The angle between the upper and lower 
+// sides of the viewing frustum.
 // aspect Number The aspect ratio of the viewing window. (width/height).
  
 // The frustrum:   
@@ -232,23 +245,19 @@ struct gr_projection_d
     int zFar;    // Distance to the far clipping plane along the -Z axis.
     int zRange;  // zRange = zNear - zFar;
 
-
-    // fov: field of view.
+// fov: field of view.
     int angle_of_view;
-    
 
-    // The apex.
+// The apex.
     // mid_x = (left + right) * 0.5;
     // mid_y = (bottom + top)  * 0.5;
     struct gr_vec3D_d *frustrum_apex;
 
 
-
-    // apsect ratio
+ // aspect ratio
     // ar = screen width / screen height
     // #bugbug: We are using int, not float.
     int ar;
-
 
     // talvez precisamos aqui uma matrix de transformaçao.
 };

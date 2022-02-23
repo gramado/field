@@ -2114,7 +2114,10 @@ sys_open (
     int flags, 
     mode_t mode )
 {
-    int _ret=-1;
+    int _ret = -1;
+
+// #todo:
+// check arguments.
 
 // ??
 // creat chama open.
@@ -2320,40 +2323,36 @@ void sys_shutdown (void)
 // Usada por vários serviços de debug.
 // Usada para debug.
 
-void sys_show_system_info ( int n ){
-
+void sys_show_system_info ( int n )
+{
     if (n<0){
         debug_print("sys_show_system_info: [FAIL] n\n");
         return;
     }
 
-    switch (n){
 
-        case 1:  
-            disk_show_info();        
-            break;
-        case 2:  
-            volume_show_info();      
-            break;
-        case 3:  
-            //memoryShowMemoryInfo();  
-            break;
-        
-        case 4:
-            //systemShowDevicesInfo();
-            //pciInfo();
-            break;
-            
-        case 5:  
-            //KiInformation(); 
-            break;
-        
-        // See: detect.c
-        case 6:
-            //show_cpu_info();
-            break;
-            
-        // ...
+    switch (n){
+    case 1:  
+        disk_show_info();        
+        break;
+    case 2:  
+        volume_show_info();      
+        break;
+    case 3:  
+        //memoryShowMemoryInfo();  
+        break;
+    case 4:
+        //systemShowDevicesInfo();
+        //pciInfo();
+        break;
+    case 5:  
+        //KiInformation(); 
+        break;
+    // See: detect.c
+    case 6:
+        //show_cpu_info();
+        break;
+    // ...
     };
 
     refresh_screen();
@@ -2361,21 +2360,26 @@ void sys_show_system_info ( int n ){
 
 
 // IN: fd
-// OUT: -1= error; FALSE= nao pode ler; TRUE= pode ler.
+// OUT: 
+// -1= error; 
+// FALSE= nao pode ler; 
+// TRUE= pode ler.
+
 int sys_sleep_if_socket_is_empty ( int fd )
 {
-
     struct process_d *p;
     file *object;
 
-    if (fd<0)
-        return -1;
 
-    if ( fd < 0 || fd >= NUMBER_OF_FILES )
+    if ( fd < 0 || 
+         fd >= NUMBER_OF_FILES )
     {
         debug_print("sys_sleep_if_socket_is_empty: fd\n");
         return (int) (-1);
+        //return -EINVAL;
     }
+
+// #todo: max lim.
 
     if ( current_process < 0 ){
         debug_print("sys_sleep_if_socket_is_empty: current_process\n");
@@ -2439,114 +2443,53 @@ int sys_sleep_if_socket_is_empty ( int fd )
     return -1;
 }
 
+
 // service 377.
 int sys_uname (struct utsname *ubuf)
 {
 
+    debug_print("sys_uname:\n");
+
     if ( (void *) ubuf == NULL ){
-        //#todo: message.
-        return -1;
+        debug_print("sys_uname: ubuf\n");
+        return -EINVAL;
     }
 
-    memcpy ( (void *)  ubuf->sysname, 
-        (const void *) OS_NAME, 
-        sizeof(OS_NAME) );    
+// Copy
 
-    memcpy ( (void *)  ubuf->nodename, 
+    memcpy ( 
+        (void *)  ubuf->sysname, 
+        (const void *) OS_NAME, 
+        sizeof(OS_NAME) );
+    memcpy ( 
+        (void *)  ubuf->nodename, 
         (const void *) NODE_NAME, 
-        sizeof(NODE_NAME) );    
-        
-    memcpy ( (void *)  ubuf->release, 
+        sizeof(NODE_NAME) );
+    memcpy ( 
+        (void *)  ubuf->release, 
         (const void *) RELEASE_NAME, 
         sizeof(RELEASE_NAME) );    
-        
-    memcpy ( (void *)  ubuf->version, 
+    memcpy ( 
+        (void *)  ubuf->version, 
         (const void *) VERSION_NAME, 
-        sizeof(VERSION_NAME) );    
-
-    memcpy ( (void *)  ubuf->machine, 
+        sizeof(VERSION_NAME) ); 
+    memcpy ( 
+        (void *)  ubuf->machine, 
         (const void *) MACHINE_NAME, 
         sizeof(MACHINE_NAME) );    
 
+//done:
+    debug_print("sys_uname: done\n");
     return 0;
 }
 
 
-
-
-/*
- * sys_vsync:
- *     Sincroniza o retraço vertical do monitor.
- */
-
+// sys_vsync:
+//     Sincroniza o retraço vertical do monitor.
+// #bugbug: Slow
 void sys_vsync(void)
 {
     hal_vsync();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 

@@ -1255,7 +1255,6 @@ void create_taskbar (void)
         exit(1);
     }
 
-
 // Taskbar.
 // Create  window.
 

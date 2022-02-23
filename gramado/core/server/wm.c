@@ -2112,6 +2112,18 @@ void invalidate_window (struct gws_window_d *window)
 }
 
 
+void invalidate_root_window(void)
+{
+    invalidate_window ( (struct gws_window_d *) __root_window );
+}
+
+
+void invalidate_taskbar_window(void)
+{
+    invalidate_window ( (struct gws_window_d *) __taskbar_window );
+}
+
+
 void __begin_paint(struct gws_window_d *window)
 {
     if( (void*) window == NULL )

@@ -445,8 +445,6 @@ void demoTriangle(void)
 
 
 
-
-
 struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
 {
 
@@ -517,20 +515,20 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
         tmp_tri->p[0].x = (0 -value);
         tmp_tri->p[0].y = 0;  //(0 +value);
         tmp_tri->p[0].z = 0;
-        tmp_tri->p[0].color = GRCOLOR_LIGHTRED; //COLOR_RED;
+        tmp_tri->p[0].color = GRCOLOR_LIGHTRED; 
 
         // left
         tmp_tri->p[2].x = (-80 -value);
         tmp_tri->p[2].y = 80;  //( 80 +value);
         tmp_tri->p[2].z =   0;
-        tmp_tri->p[2].color = GRCOLOR_LIGHTGREEN; //COLOR_GREEN;
+        tmp_tri->p[2].color = GRCOLOR_LIGHTGREEN; 
 
         // right
         tmp_tri->p[1].x = (80 -value);
         tmp_tri->p[1].y = 80;  //(80 -value);
         tmp_tri->p[1].z =  0;
-        tmp_tri->p[1].color = GRCOLOR_LIGHTBLUE; //COLOR_BLUE;
-        
+        tmp_tri->p[1].color = GRCOLOR_LIGHTBLUE; 
+
         value++;
     }
     };
