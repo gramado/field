@@ -1,9 +1,7 @@
 /*
  * File: init.c
- *
  * Descrição:
  *     Rotinas de inicialização do Boot Loader.
- *
  * History:
  *     2015 - Created by Fred Nora.
  *     2016 - Revision.
@@ -70,107 +68,105 @@ set_up_text_color (
  *     @Mudar para BlInitGlobals();
  *     o retorno por ser int.
  */
+
 //void BlInitGlobals() 
+void init_globals ()
+{
 
-void init_globals (){
+// Próximo procedimento, status and file system type.
+// 1=fat16.
 
-	// Próximo procedimento, status and file system type.
-	// 1=fat16.
+    g_next_proc = (unsigned long) bl_procedure;
+    g_proc_status = 0;
+    g_file_system_type = 1;
+    //...
 
-	g_next_proc = (unsigned long) bl_procedure;
-	g_proc_status = 0;
-	g_file_system_type = 1;
-	//Continua...
+// Procedure structure. 
+// @todo Check.
 
-	// Procedure structure. 
-	// @todo Check.
-
-	procedure_info.next = (unsigned long) bl_procedure;
-	procedure_info.status = 0;
-    //Continua...
+    procedure_info.next = (unsigned long) bl_procedure;
+    procedure_info.status = 0;
+    //...
 }
 
 
 /*
- ***************************************************
  * init:
  *     Função principal do arquivo init.c.
  */
  
+// Called by OS_Loader_Main in main.c
+
 //int init (int ?){ 
-
-int init (){
-
+int init ()
+{
     g_cursor_x = 0;
     g_cursor_y = 0;
 
-	// Inicializando o vídeo.
-
-
-	// #todo: 
-	// Inicializar estruturas de vídeo.
-
-    //Selecionando modo de vídeo.	
+// Inicializando o vídeo.
+// #todo: 
+// Inicializar estruturas de vídeo.
+// Selecionando modo de vídeo.
 
     if (SavedBootMode == 1){
-        VideoBlock.useGui = 1;
+        VideoBlock.useGui = TRUE;
     }else{
-        VideoBlock.useGui = 0;
+        VideoBlock.useGui = FALSE;
     };
 
-
-#ifdef BL_VERBOSE	
+//#ifdef BL_VERBOSE
     //Debug Message.
     //Se estivermos usando modo gráfico (GUI.)	
-    if (VideoBlock.useGui == 1)
+    if (VideoBlock.useGui == TRUE)
     {
         // #importante
         // Essa é a primeira mensagem, ela aparece nos modos 0x115 e 0x118
-        printf("init: Using GUI\n");
+        //printf("init: Using GUI\n");
     }
-#endif
+//#endif
 
+// Se não estivermos usando GUI.(text mode).
+// Limpa a tela.
+// Branco em preto.
 
-	// Se não estivermos usando GUI.(text mode).
-	// Limpa a tela.
-	// Branco em preto.
-
-    if (VideoBlock.useGui != 1)
+    if (VideoBlock.useGui != TRUE)
     {
         bl_clear (0);
         set_up_text_color (0x0F, 0x00);
-
-        printf ("init: Text Mode\n");
+        printf ("BL.BIN-init: Text Mode\n");
+        refresh_screen();
+        //#hang
+        while(1){
+            asm("cli");
+        };
     }
 
+//
+// Inicializando o Boot Loader.
+//
 
-
-	//
-	// Inicializando o Boot Loader.
-	//
-
-	//Título.
-#ifdef BL_VERBOSE
-	printf ("init: Boot Loader Version %s \n", BL_VERSION );	
-#endif
+//Título.
+//#ifdef BL_VERBOSE
+    printf ("BL.BIN: Initializing ...\n");
+    // printf ("init: Boot Loader Version %s \n", BL_VERSION );	
+    refresh_screen();
+//#endif
 
     //globais.	
-#ifdef BL_VERBOSE	
-	printf("init: Globals..\n");
-#endif	
-    init_globals ();
+//#ifdef BL_VERBOSE	
+	//printf("init: Globals..\n");
+//#endif	
+    init_globals();
 
+//
+// == boot block ===========================
+//
 
-
-    //
-    // == boot block ===========================
-    //
-    
-    // Vamos pegar as informaçoes no boot block passado pelo
-    // BM e salvarmos na estrutura no BL.
-    // Eh melhor copiar do que simplesmente fazer referencia.
-    // Vamos copiar em ordem.
-    // See: gdef.h
+// Vamos pegar as informaçoes no boot block passado pelo
+// BM e salvarmos na estrutura no BL.
+// Eh melhor copiar do que simplesmente fazer referencia.
+// Vamos copiar em ordem.
+// See: gdef.h
     
     unsigned long *base = (unsigned long *) SavedBootBlock;
     
@@ -187,58 +183,32 @@ int init (){
     BootBlock.boot_mode          = (unsigned long) base[10]; // 40
     BootBlock.gramado_mode       = (unsigned long) base[11]; //  44
 
-    // #debug
-    // vamos mostrar as informaçoes do boot block
+// #debug
+// vamos mostrar as informaçoes do boot block
     
     // OK
     //printf ("Gramado mode %d\n",BootBlock.gramado_mode);
+
     //refresh_screen();
     //while(1){}
 
+    fsInit();       // File system.
+    shellInit();    // Embedded shell.
+    BltimerInit();  // Timer.
 
+// Type:
+//     CD, HD, PXE, FLASH, FAT16 ...
 
-    //sistema de arquivos.
-#ifdef BL_VERBOSE	
-	printf("init: file system..\n");
-#endif
-    fsInit();
-
-
-
-    //inicia o shell do bootloader.
-    //Inicializando variáveis.
-#ifdef BL_VERBOSE	
-	printf("init: BL-Shell..\n");
-#endif
-	shellInit();    
-
-
-
-#ifdef BL_VERBOSE
-	printf("init: Timer..\n");
-#endif
-	BltimerInit();
-
-
-
-
-	// Type:
-	//     CD, HD, PXE, FLASH, FAT16 ...
-	
-/*	
+/*
 	switch(BootType)
 	{
 	    case BOOT_TYPE1:
             break; 		
-
 		case BOOT_TYPE1:
             break; 		
-
 	    case BOOT_TYPE1:
             break;
-
-        //...			
-
+        //...
 		default:
 		    //printf("init: Boot type unknow!\n");
             //BlAbort();
@@ -247,21 +217,17 @@ int init (){
 */
 
 
+// Inicializar os segmentos do sistema.(GDT).
+// (data e code)
 
-	// Inicializar os segmentos do sistema.(GDT).
-	// (data e code)
+// #todo:
+// Pega o valor herdado do Boot Manager.
+    // LegacyCR3 = (unsigned long) GetCR3();
 
-	// #todo:
-	// Pega o valor herdado do Boot Manager.
-	// LegacyCR3 = (unsigned long) GetCR3();	
-
-
-
-	//
-	// Continua ?
-	//
-
-    g_initialized = (int) 1; 
+//
+// Continua ?
+//
+    g_initialized = (int) TRUE;
     return 0;  
 }
 

@@ -114,13 +114,13 @@ void task_switch (void)
 // Quanto tempo ela está rodando antes de parar.
     CurrentThread->runningCount++;
 
+//
+// == #bugbug =========================
+//
 
-    //
-    // == #bugbug ==============================================
-    //
+// #bugbug
+// Rever essa contagem
 
-	// #bugbug
-	// Rever essa contagem
 /*
 The variables i have are:
 Current->step = How many timer the thread already ran.
@@ -140,15 +140,14 @@ The remainder ??
 ----
 */
 
-	//quanto tempo em ms ele rodou no total.
+// Quanto tempo em ms ele rodou no total.
     CurrentThread->total_time_ms = 
         (unsigned long) CurrentThread->total_time_ms + (DEFAULT_PIT_FREQ/sys_time_hz);
 
-	//incrementa a quantidade de ms que ela está rodando antes de parar.
-	//isso precisa ser zerado quando ela reiniciar no próximo round.
+// Incrementa a quantidade de ms que ela está rodando antes de parar.
+// isso precisa ser zerado quando ela reiniciar no próximo round.
     CurrentThread->runningCount_ms = 
         (unsigned long) CurrentThread->runningCount_ms + (DEFAULT_PIT_FREQ/sys_time_hz);
-
 
 
 //
@@ -165,25 +164,19 @@ The remainder ??
     }
 
 
-//
-// == Unlocked ? ==============================
-//
-
+// Unlocked?
 // Nesse momento a thread atual sofre preempção por tempo
 // Em seguida tentamos selecionar outra thread.
 // Save the context.
+// Not unlocked?
 
-
-// Not unlocked.
-    if ( task_switch_status != UNLOCKED )
-    {
+    if ( task_switch_status != UNLOCKED ){
         panic ("ts: task_switch_status != UNLOCKED\n");
     }
 
 //
 // Save context
 //
-
     save_current_context();
     CurrentThread->saved = TRUE;
 
@@ -194,7 +187,6 @@ The remainder ??
 // A preempção acontecerá por dois possíveis motivos.
 // + Se o timeslice acabar.
 // + Se a flag de yield foi acionada.
-
 
 // Ainda não esgotou o timeslice.
 // Yield support.
@@ -241,9 +233,7 @@ The remainder ??
 // ->preempted permitisse. 
 // talvez o certo seja ->preenptable.
 
-    //else{
     else if ( CurrentThread->runningCount >= CurrentThread->quantum ){
-
 
         if ( CurrentThread->state == RUNNING )
         {
@@ -253,16 +243,19 @@ The remainder ??
 
         //debug_print (" ok ");
 
-//
-// == EXTRA ==========
-//
+        //
+        // == EXTRA ==========
+        //
+
         // Call extra routines scheduled to this moment.
 
         // #hackhack
         // Vamos validar isso, pois isso é trabalho de uma rotina
         // do timer qua ainda não esta pronta.
+        
         //extra = TRUE;
         extra = FALSE;
+        
         if (extra == TRUE)
         {
             //#debug
@@ -276,18 +269,15 @@ The remainder ??
         //KiRequest();
         //request();
  
-		// Dead thread collector
-		// Avalia se é necessário acordar a thread do dead thread collector.
-		// É uma thread em ring 0.
-		// Só chamamos se ele ja estiver inicializado e rodando.
-		
-		// #bugbug
-		// precismos rever essa questão pois isso pode estar
-		// fazendo a idle thread dormir. Isso pode prejudicar
-		// a contagem.
-
-        // See: core/ps/threadi.c
-
+        // Dead thread collector
+        // Avalia se é necessário acordar a thread do dead thread collector.
+        // É uma thread em ring 0.
+        // Só chamamos se ele ja estiver inicializado e rodando.
+        // #bugbug
+        // precismos rever essa questão pois isso pode estar
+        // fazendo a idle thread dormir. Isso pode prejudicar
+        // a contagem.
+        // See: ps/threadi.c
         // #bugbug
         // #todo: This is a work in progress!
 
@@ -312,10 +302,7 @@ The remainder ??
     };
 
 
-//
-// == Crazy Fail ===========================
-//
-
+// Crazy Fail!
 // #bugbug
 // Não deveríamos estar aqui.
 // Podemos abortar ou selecionar a próxima provisóriamente.
@@ -325,18 +312,18 @@ The remainder ??
     goto dispatch_current; 
 
 //
-// == TRY NEXT THREAD ========================================
+// == TRY NEXT THREAD =====
 //
 
 try_next: 
 
-#ifdef TS_DEBUG
-    debug_print(" N ");
-#endif
+//#ifdef TS_DEBUG
+    // debug_print(" N ");
+//#endif
 
-    // We have only ONE thread.
-    // Is that thread the idle thread?
-    // Can we use the mwait instruction ?
+// We have only ONE thread.
+// Is that thread the idle thread?
+// Can we use the mwait instruction ?
 
     if (UPProcessorBlock.threads_counter == 1)
     {
@@ -352,31 +339,25 @@ try_next:
         goto go_ahead;
     }
 
-    //
-    // ==== Reescalonar se chegamos ao fim do round. ====
-    //
-
-	// #bugbug
-	// Ao fim do round estamos tendo problemas ao reescalonar 
-	// Podemos tentar repedir o round só para teste...
-	// depois melhoramos o reescalonamento.
-		
-	// #importante:
-	// #todo: #test: 
-	// De pempos em tempos uma interrupção pode chamar o escalonador,
-	// ao invés de chamarmos o escalonador ao fim de todo round.
-	
-	// #critério:
-	// Se alcançamos o fim da lista encadeada cujo ponteiro é 'Conductor'.
-	// Então chamamos o scheduler para reescalonar as threads.
-
+// Reescalonar se chegamos ao fim do round.
+// #bugbug
+// Ao fim do round estamos tendo problemas ao reescalonar 
+// Podemos tentar repedir o round só para teste...
+// depois melhoramos o reescalonamento.
+// #importante:
+// #todo: #test: 
+// De pempos em tempos uma interrupção pode chamar o escalonador,
+// ao invés de chamarmos o escalonador ao fim de todo round.
+// #critério:
+// Se alcançamos o fim da lista encadeada cujo ponteiro é 'Conductor'.
+// Então chamamos o scheduler para reescalonar as threads.
 
     if ( (void *) Conductor->next == NULL )
     {
 
-#ifdef TS_DEBUG
-        debug_print(" LAST ");
-#endif
+//#ifdef TS_DEBUG
+//        debug_print(" LAST ");
+//#endif
 
         //printf ("ts: scheduler 1\n");
         
@@ -387,7 +368,6 @@ try_next:
         goto go_ahead;
     }
 
-
 // Circular.
 // #critério
 // Se ainda temos threads na lista encadeada, então selecionaremos
@@ -397,9 +377,9 @@ try_next:
     if ( (void *) Conductor->next != NULL )
     {
 
-#ifdef TS_DEBUG
-        debug_print(" Q ");
-#endif
+//#ifdef TS_DEBUG
+//        debug_print(" Q ");
+//#endif
 
         Conductor = (void *) Conductor->next;
         goto go_ahead;
@@ -408,26 +388,22 @@ try_next:
 // #bugbug
     panic ("ts: Unspected");
 
-//
-// == Go ahead ========================================
-//
-	// #importante:
-	// Nesse momento já temos uma thread selecionada,
-	// vamos checar a validade e executar ela.
-	// #importante:
-	// Caso a thread selecionada não seja válida, temos duas opções,
-	// ou chamamos o escalonador, ou saltamos para o início dessa rotina
-	// para tentarmos outros critérios.
+// Go ahead
+// #importante:
+// Nesse momento já temos uma thread selecionada,
+// vamos checar a validade e executar ela.
+// #importante:
+// Caso a thread selecionada não seja válida, temos duas opções,
+// ou chamamos o escalonador, ou saltamos para o início dessa rotina
+// para tentarmos outros critérios.
 
 go_ahead:
 
-//################################//
-//                                //
-//    # We have a thread now #    //
-//                                //
-//################################//
+//############################//
+//  # We have a thread now #  //
+//############################//
 
-    // Esse foi o ponteiro configurado pelo scheduler.
+// Esse foi o ponteiro configurado pelo scheduler.
 
     TargetThread = (void *) Conductor;
 
@@ -442,7 +418,8 @@ go_ahead:
 
     }else{
 
-        if ( TargetThread->used != TRUE || TargetThread->magic != 1234 )
+        if ( TargetThread->used != TRUE || 
+             TargetThread->magic != 1234 )
         {
             debug_print ("ts: val ");
             //KiScheduler ();
@@ -458,9 +435,10 @@ go_ahead:
             goto try_next;
         }
 
-//
-// == Dispatcher =================================
-//
+        //
+        // == Dispatcher ====
+        //
+        
         // Current selected.
 
         current_thread = (int) TargetThread->tid;
@@ -474,34 +452,31 @@ go_ahead:
 //superCrazyFail:
     goto dispatch_current; 
 
-
-// ===========================
-//   # Dispatch current #
-// ============================
+// =================
+// Dispatch current 
+// =================
 
 dispatch_current:
 
-#ifdef TS_DEBUG
-    debug_print (" ts-dispatch_current: ");
-#endif
+//#ifdef TS_DEBUG
+//    debug_print (" ts-dispatch_current: ");
+//#endif
 
 // Validation
 // Check current thread limits.
+// The target thread will be the current.
 
-    if ( current_thread < 0 || current_thread >= THREAD_COUNT_MAX )
+    if ( current_thread < 0 || 
+         current_thread >= THREAD_COUNT_MAX )
     {
         panic ("ts: [Dispatch current] current_thread\n");
     }
-
-// The target thread will be the current.
 
     TargetThread = (void *) threadList[current_thread];
 
     if ( (void *) TargetThread == NULL ){
         panic ("ts-dispatch_current: TargetThread\n");
     }
-
-// Validation
 
     if ( TargetThread->used  != TRUE || 
          TargetThread->magic != 1234 || 
@@ -510,40 +485,31 @@ dispatch_current:
         panic ("ts-dispatch_current: validation\n");
     }
 
-//
 // Counters
-//
-
 // Clean
 // The spawn routine will do something more.
 
     TargetThread->standbyCount = 0;
     TargetThread->standbyCount_ms = 0;
-    
     TargetThread->runningCount = 0;
     TargetThread->runningCount_ms = 0;
-    
     TargetThread->readyCount = 0;
     TargetThread->readyCount_ms = 0;
-    
     TargetThread->waitingCount = 0;
     TargetThread->waitingCount_ms = 0;
-    
     TargetThread->blockedCount = 0;
     TargetThread->blockedCount_ms = 0;
 
-
 // E se o limite estiver errado?
+
 //    if ( TargetThread->quantum > TargetThread->quantum_limit_max )
 //        TargetThread->quantum = TargetThread->quantum_limit_max;
 
 
-//
 // Call dispatcher.
-//
-    // #bugbug
-    // Talvez aqui devemos indicar que a current foi selecionada. 
-        
+// #bugbug
+// Talvez aqui devemos indicar que a current foi selecionada. 
+
     IncrementDispatcherCount (SELECT_DISPATCHER_COUNT);
 
 //
@@ -551,34 +517,35 @@ dispatch_current:
 //
     dispatcher(DISPATCHER_CURRENT); 
 
-//
-// == DONE =====================
-//
-   // We will return in the end of this function.
 
 //done:
+// We will return in the end of this function.
 
-    // Owner validation.
+// Owner validation.
+// Owner PID.
 
-    if ( TargetThread->ownerPID < 0 || 
-         TargetThread->ownerPID >= THREAD_COUNT_MAX )
+    pid_t OwnerPID = (pid_t) TargetThread->ownerPID;
+
+    if ( OwnerPID < 0 || 
+         OwnerPID >= THREAD_COUNT_MAX )
     {
-       printf ("ts: ownerPID ERROR \n", 
-            TargetThread->ownerPID );
+       printf ("ts: ownerPID ERROR \n", OwnerPID );
        die();
     }
 
 //
 // Target process 
 //
-    TargetProcess = (void *) processList[TargetThread->ownerPID];
+
+    TargetProcess = (void *) processList[OwnerPID];
 
     if ( (void *) TargetProcess == NULL ){
         printf ("ts: TargetProcess %s struct fail \n", TargetProcess->name );
         die();
     }
 
-    if ( TargetProcess->used != 1 || TargetProcess->magic != 1234 ){
+    if ( TargetProcess->used != TRUE || 
+         TargetProcess->magic != 1234 ){
         printf ("ts: TargetProcess %s validation \n", TargetProcess->name );
         die();
     }
@@ -587,21 +554,20 @@ dispatch_current:
 
     current_process = (int) TargetProcess->pid;
 
-    if ( (unsigned long) TargetProcess->pml4_PA == 0 )
-    {
+    if ( (unsigned long) TargetProcess->pml4_PA == 0 ){
         printf ("ts: Process %s pml4 fail\n", TargetProcess->name );
         die();
     }
 
-    // #bugug
-    // #todo
+// #bugug
+// #todo
 
     // current_process_pagedirectory_address = (unsigned long) P->DirectoryPA;
     // ?? = (unsigned long) P->pml4_PA;
 
-#ifdef TS_DEBUG
-    debug_print ("ts: done $\n");
-#endif 
+//#ifdef TS_DEBUG
+//    debug_print ("ts: done $\n");
+//#endif 
 
     return;
 
@@ -629,17 +595,15 @@ fail:
  */
  
 /*
-	// @todo: Fazer alguma rotina antes aqui ?!
-	
-	// Obs: A qui poderemos criar rotinas que não lidem com a troca de 
-	// threads propriamente, mas com atualizações de variáveis e gerenciamento 
-	// de contagem.
-	// >> Na entrada da rotina podemos atualizar a contagem da tarefa que acabou de rodar.
-	// >> A rotina task_switch fica responsável apenas troca de contexto, não fazendo 
-	// atualização de variáveis de contagem.
-	// >> ?? Na saída ??
-	
-	// ?? quem atualizou as variáveis de critério de escolha ??? o dispacher ??
+// @todo: Fazer alguma rotina antes aqui ?!
+// Obs: A qui poderemos criar rotinas que não lidem com a troca de 
+// threads propriamente, mas com atualizações de variáveis e gerenciamento 
+// de contagem.
+// >> Na entrada da rotina podemos atualizar a contagem da tarefa que acabou de rodar.
+// >> A rotina task_switch fica responsável apenas troca de contexto, não fazendo 
+// atualização de variáveis de contagem.
+// >> ?? Na saída ??
+// ?? quem atualizou as variáveis de critério de escolha ??? o dispacher ??
 */
 
 

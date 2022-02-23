@@ -4,7 +4,6 @@
  */
 
 
-
 #include <bootloader.h>
 
 
@@ -442,73 +441,62 @@ void FreeHeap (void *ptr){
 }
 
 
-
 /*
- ********************************************
  * init_heap:
  *     Iniciar a gerência de Heap do bl. 
  *     @todo: Usar heapInit() ou heapHeap(). memoryInitializeHeapManager().
- *
  * Essa rotina controi a mão o heap usado pelo bl.
  *     +Ela é chamada apenas uma vez.
  *     +Ela deve ser chamada entes de quelquer outra operação 
  * envolvendo o heap do processo bl.
- * 
  * @todo: Rotinas de automação da criação de heaps para processos.
  */
 
-int init_heap(void){
+// Called by OS_Loader_Main in main.c.
 
+int init_heap(void)
+{
     int i=0;
 
-    //Globals.
+// Globals.
     bl_heap_start = (unsigned long) BL_HEAP_START;  
     bl_heap_end = (unsigned long)   BL_HEAP_END;  
 
-
-	//Heap Pointer, Available heap and Counter.
+// Heap Pointer, Available heap and Counter.
     g_heap_pointer = (unsigned long) bl_heap_start;  
     g_available_heap = (unsigned long) (bl_heap_end - bl_heap_start); 
     heapCount = 0;      
 
-
-	// #importante
-	// Último heap pointer válido. 
+// #importante
+// Último heap pointer válido. 
     last_valid = (unsigned long) g_heap_pointer;
     last_size = 0;
 
-	//Check Heap Pointer.
+// Check Heap Pointer.
     if ( g_heap_pointer == 0 ){
         printf ("init_heap fail: Heap pointer\n");
         goto fail;
     }
 
-
-	//Check Heap Pointer overflow.
-    if ( g_heap_pointer > bl_heap_end )
-    {
+// Check Heap Pointer overflow.
+    if ( g_heap_pointer > bl_heap_end ){
         printf ("init_heap fail: Heap Pointer Overflow\n");
         goto fail;
     }
 
-
-    // Heap Start.
-    if ( bl_heap_start == 0 )
-    {
+// Heap Start.
+    if ( bl_heap_start == 0 ){
         printf ("init_heap fail: HeapStart={%x}\n", bl_heap_start );
         goto fail;
     }
 
-
-	// Heap End.
-    if ( bl_heap_end == 0 )
-    {
+// Heap End.
+    if ( bl_heap_end == 0 ){
         printf ("init_heap fail: HeapEnd={%x}\n", bl_heap_end );
         goto fail;
     }
 
-
-	// Check available heap.
+// Check available heap.
     if ( g_available_heap == 0 )
     {
        //@todo: Tentar crescer o heap.
@@ -517,12 +505,12 @@ int init_heap(void){
         goto fail;
     }
 
+// Heap list:
+// Inicializa a lista de heaps.
+// #bugbug suspensa a lista de heaps;
+//só tem um. 
 
-	// Heap list:
-	// Inicializa a lista de heaps.
-	// #bugbug suspensa a lista de heaps;
-	//só tem um. 
-	
+
 	/*
 	while ( i < HEAP_COUNT_MAX )
 	{
@@ -530,30 +518,19 @@ int init_heap(void){
 		i++;
     };
 	*/
-	
+
  
-	
-	//More?!
-	
-// Done.
+//More?!
+
 //done:
-
-
-#ifdef MK_VERBOSE
-    printf("Done\n");
-#endif
-
     return 0;
 
-
-	// Fail. 
-	// Falha ao iniciar o heap do bl.
-
+// Fail. 
+// Falha ao iniciar o heap do bl.
 fail:
 
     printf ("init_heap: Fail\n");
     refresh_screen ();
-
 
 	/*
 	// #debug
@@ -563,6 +540,6 @@ fail:
 	*/
 
     return 1;
+    //return -1;
 }
-
 

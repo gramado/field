@@ -1545,10 +1545,9 @@ uint32_t diskPCIScanDevice ( int class )
 
 
 /*
- ********************
  * diskATAInitialize:
  *     Inicializa o IDE e mostra informações sobre o disco.
- * Credits: Nelson Cole;
+ * Credits: Nelson Cole.
  */
 
 int diskATAInitialize ( int ataflag )
@@ -1563,11 +1562,7 @@ int diskATAInitialize ( int ataflag )
 
     _u32 data=0;
 
-
-
-//
-// ===============================================================
-//
+// ================================================
 
 // #importante 
 // HACK HACK
@@ -1585,73 +1580,63 @@ int diskATAInitialize ( int ataflag )
     g_current_ide_channel =  __IDE_PORT;
     g_current_ide_device  =  __IDE_SLAVE;
 
-//
 // ===============================================================
-//
 
-
-//
 // Configurando flags do driver.
-//
 
-	ATAFlag = (int) ataflag;
-	
-	//
-	// Messages
-	//
-	
-#ifdef KERNEL_VERBOSE
-    printf ("sm-disk-disk-diskATAInitialize:\n");
-    printf ("Initializing IDE/AHCI support ...\n");
-	//refresh_screen();
-#endif
+    ATAFlag = (int) ataflag;
+
+// Messages
+
+//#ifdef KERNEL_VERBOSE
+    //printf ("sm-disk-disk-diskATAInitialize:\n");
+    //printf ("Initializing IDE/AHCI support ...\n");
+    //refresh_screen();
+//#endif
 
 // Sondando a interface PCI para encontrarmos um dispositivo
 // que seja de armazenamento de dados.
 
-	//PCI_CLASSCODE_MASS
+    //PCI_CLASSCODE_MASS
 
     data = (_u32) diskPCIScanDevice(PCI_CLASSE_MASS);
-    
-	// Error.
-	if( data == -1 )
-	{
 
-		printf ("diskATAInitialize: pci_scan_device fail. ret={%d} \n", 
-		    (_u32) data );
+// Error.
+    if ( data == -1 )
+    {
+        printf ("diskATAInitialize: pci_scan_device fail. ret={%d} \n", 
+            (_u32) data );
 
-	    // Abortar.
-		Status = (int) (PCI_MSG_ERROR);
-		goto fail;
-	};
+        // Abortar.
+        Status = (int) (PCI_MSG_ERROR);
+        goto fail;
+    }
 
-
-// b,d,f
+// PCI:  b,d,f
 
     bus = ( data >> 8 & 0xff );
     dev = ( data >> 3 & 31 );
     fun = ( data      & 7 );
 
-
-//
 // Vamos saber mais sobre o dispositivo enconrtado. 
-//
 
     data = (_u32) diskATAPCIConfigurationSpace ( bus, dev, fun );
 
-	// Error.
+    // Error.
     if( data == PCI_MSG_ERROR ){
-        printf ("diskATAInitialize: Error Driver [%X]\n", data );
+
+        printf ("diskATAInitialize: Error Driver [%x]\n", data );
         Status = (int) 1;
         goto fail;  
 
+    // ?? Review that flag.
+    // RAID not supported?
     }else if( data == PCI_MSG_AVALIABLE )
           {
               printf ("diskATAInitialize: RAID Controller Not supported.\n");
               Status = (int) 1;
               goto fail;  
           };
-
 
 // ==============================
 // BARs
@@ -1687,7 +1672,6 @@ int diskATAInitialize ( int ataflag )
 // Type ATA
     if ( ata.chip_control_type == ATA_IDE_CONTROLLER )
     {
-
         //Soft Reset, defina IRQ
         
         out8 ( ATA_BAR1, 0xff );
@@ -1699,124 +1683,105 @@ int diskATAInitialize ( int ataflag )
         ata_record_channel = 0xff;
 
 
-#ifdef KERNEL_VERBOSE
-        printf ("Initializing IDE Mass Storage device ...\n");
-        refresh_screen ();
-#endif    
+//#ifdef KERNEL_VERBOSE
+        //printf ("Initializing IDE Mass Storage device ...\n");
+        //refresh_screen ();
+//#endif    
 
+        // As estruturas de disco serão colocadas em 
+        // uma lista encadeada.
 
-	    //
-	    // As estruturas de disco serão colocadas em uma lista encadeada.
-	    //
-	
-	    //ide_mass_storage_initialize();
+        //ide_mass_storage_initialize();
 
-        //
         // Vamos trabalhar na lista de dispositivos.
-        //
-	
-	    // Iniciando a lista.
-	    ready_queue_dev = ( struct st_dev * ) malloc ( sizeof( struct st_dev) );
-		
-	    if ( (void *) ready_queue_dev == NULL )
-	    {
-	        printf ("diskATAInitialize: ready_queue_dev struct fail");
-		    die();
-	    }
 
-	    //#todo:
-	    //Checar a validade da estrutura.
-	
+        // Iniciando a lista.
+        ready_queue_dev = 
+            ( struct st_dev * ) malloc ( sizeof( struct st_dev) );
+
+        if ( (void *) ready_queue_dev == NULL )
+        {
+            printf ("diskATAInitialize: ready_queue_dev struct fail\n");
+            die();
+        }
+
+        // #todo:
+        // Checar a validade da estrutura.
+
         current_dev = ( struct st_dev * ) ready_queue_dev;
     
         current_dev->dev_id = dev_next_pid++;
     
-        current_dev->dev_type = -1;
-        current_dev->dev_num = -1;
+        current_dev->dev_type    = -1;
+        current_dev->dev_num     = -1;
         current_dev->dev_channel = -1;
-        current_dev->dev_nport = -1;
+        current_dev->dev_nport   = -1;
         current_dev->next = NULL;
 
         // ??
         ata_identify_dev_buf = ( _u16 * ) malloc (4096);
 
-	    if ( (void *) ata_identify_dev_buf == NULL )
-	    {
-	        printf ("diskATAInitialize: ata_identify_dev_buf fail");
-		    die();
-	    }
+        if ( (void *) ata_identify_dev_buf == NULL )
+        {
+            printf ("diskATAInitialize: ata_identify_dev_buf fail\n");
+            die();
+        }
 
-	    // Sondando dispositivos
-	
+        // Sondando dispositivos
         // As primeiras quatro portas do controlador IDE.    
-	    for ( port=0; port < 4; port++ ){
+
+        for ( port=0; port < 4; port++ )
+        {
             ide_dev_init (port);
-	    };
-
-
-
+        };
 
 // =========================
 // Type AHCI.
 
     }else if( ata.chip_control_type == ATA_AHCI_CONTROLLER )
         {
-  
-              //
-              // Nothing for now !!!
-              //
+            //
+            // Nothing for now !!!
+            //
 
-              // Aqui, vamos mapear o BAR5
-              // Estou colocando na marca 28MB
+            // Aqui, vamos mapear o BAR5
+            // Estou colocando na marca 28MB
     
-//#ifdef KERNEL_VERBOSE	
-              // printf("ata_initialize: mem_map para ahci\n");
-              // refresh_screen();
+//#ifdef KERNEL_VERBOSE
+            // printf("ata_initialize: mem_map para ahci\n");
+            // refresh_screen();
 //#endif
-	
-	          //mem_map( (uint32_t*)0x01C00000, (uint32_t*) ATA_BAR5, 0x13, 2);
+
+              //mem_map( (uint32_t*)0x01C00000, (uint32_t*) ATA_BAR5, 0x13, 2);
 
               //kputs("[ AHCI Mass Storage initialize ]\n");
               //ahci_mass_storage_init();
 
-              printf (" # Panic! # \n");
-              printf ("diskATAInitialize: AHCI not found \n");
+              printf ("diskATAInitialize: AHCI not supported\n");
               die();
 
           // Panic!
           }else{
-              printf (" # Panic! # \n");
-              printf ("diskATAInitialize: IDE and AHCI not found \n");
+              printf ("diskATAInitialize: IDE and AHCI not found\n");
               die();
           };
-
 // Ok
-
     Status = 0;
     goto done;
-
-// fail
-
 fail:
     printf ("diskATAInitialize: fail\n");
-
-// done
-
+    refresh_screen();
 done:
-
-    // #debug
-    // printf ("diskATAInitialize: done\n");
-
     return (int) Status;
 }
 
 
-
 /*
- *******************************************
  * diskATADialog:
  *     Rotina de diálogo com o driver ATA.
  */
+
+// Called by init_hdd in hdd.c
 
 int 
 diskATADialog ( 
@@ -1827,42 +1792,35 @@ diskATADialog (
 
     int Status = 1;    //Error.
 
-
-
     switch (msg)
     {
-		//ATAMSG_INITIALIZE
-		//Initialize driver.
-		case 1:
-		    diskATAInitialize ( (int) long1 );
-		    Status = 0;
-			goto done;
-			break;
-			
-		//ATAMSG_REGISTER
-        //registra o driver. 
-		//case 2:
-		//    break;
-			
-		default:
-		    goto fail;
-			break;
-    };
+        //ATAMSG_INITIALIZE
+        //Initialize driver.
+        case 1:
+            diskATAInitialize ( (int) long1 );
+            Status = 0;
+            goto done;
+            break;
 
-//
-// Done:
-//
+        //ATAMSG_REGISTER
+        //registra o driver. 
+        //case 2:
+        //    break;
+
+       default:
+           goto fail;
+           break;
+    };
 
 fail:
     printf ("diskATADialog: fail\n");
-
+    refresh_screen();
 done:
     return (int) Status;
 }
 
 
 /*
- ***********************************
  * diskATAIRQHandler1
  *     irq 14 handler
  */

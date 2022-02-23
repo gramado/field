@@ -51,7 +51,7 @@ int I_x64CreateInitialProcess (void)
     int fileret = -1;
 
 // #debug
-    debug_print ("I_x64CreateInitialProcess: \n");
+    //debug_print ("I_x64CreateInitialProcess: \n");
     //printf      ("I_x64CreateInitialProcess:\n");
     //refresh_screen();
 
@@ -185,11 +185,10 @@ int I_x64CreateInitialProcess (void)
     InitProcess->position = SPECIAL_GUEST;
     fs_initialize_process_cwd ( InitProcess->pid, "/" );
 
-
 //====================================================
 // Create thread
 
-// #
+
 // Criamos um thread em ring3.
 // O valor de eflags é 0x3200.
 // The control thread of the first ws's client.
@@ -235,7 +234,6 @@ int I_x64CreateInitialProcess (void)
     InitThread->pd0_VA   = InitProcess->pd0_VA;
     InitThread->pd0_PA   = InitProcess->pd0_PA;
 
-
     InitThread->position = SPECIAL_GUEST;
 
     //IdleThread->ownerPID = (int) InitProcess->pid;
@@ -256,24 +254,20 @@ int I_x64CreateInitialProcess (void)
     // [Scheduler stuff]
     next_thread = InitThread->tid;
 
-
 // ===========================
 
-
-    // #importante
-    // A thread de controle do processo init2.bin.
+// #importante
+// A thread de controle do processo init2.bin.
     InitProcess->control = InitThread;
 
-
-    // #todo #bugbug
-    //registra um dos servidores do gramado core.
+// #todo #bugbug
+//registra um dos servidores do gramado core.
     //server_index, process, thread
 
     //ipccore_register ( 
         //(int) 0, 
         //(struct process_d *) InitProcess, 
         //(struct thread_d *) InitThread ); 
-    
 
 // Agora ja temos um processo em user mode devidamente 
 // configurado. Então a rotina de inicialização em init/
@@ -282,6 +276,7 @@ int I_x64CreateInitialProcess (void)
     InitialProcessInitialized = TRUE;
     return TRUE;
 }
+
 
 // Passa o comando para o primeiro processo em user mode.
 // Esse processo ja foi previamente configurado.
@@ -293,7 +288,11 @@ void I_x64ExecuteInitialProcess (void)
     int i=0;
 
     //#todo
-    debug_print ("I_x64ExecuteInitialProcess: [TODO]\n");
+    debug_print ("I_x64ExecuteInitialProcess:\n");
+
+// #debug
+// For real machine.
+
     //printf      ("I_x64ExecuteInitialProcess: [TODO]\n");
     //refresh_screen();
    
@@ -403,11 +402,11 @@ void I_x64ExecuteInitialProcess (void)
 // Setup cr3.
 // This is a Physical address.
 // See: hal/
-    x64_load_pml4_table( Thread->pml4_PA );
-
 // Reload tlb.
 // See: https://en.wikipedia.org/wiki/Translation_lookaside_buffer
 // #bugbug: rever isso.
+
+    x64_load_pml4_table( Thread->pml4_PA );
 
     asm ("movq %cr3, %rax");
     asm ("movq %rax, %cr3");
@@ -466,12 +465,11 @@ void I_x64ExecuteInitialProcess (void)
 // ==============
 // #debug
 
-    debug_print("I_x64ExecuteInitialProcess: [x64] Go to user mode! IRETQ\n");
+    //debug_print("I_x64ExecuteInitialProcess: [x64] Go to user mode! IRETQ\n");
     //printf     ("I_x64ExecuteInitialProcess: [x64] Go to user mode! IRETQ\n");
     //refresh_screen();
 
-    // Here is where the boot routine ends.
-
+// Here is where the boot routine ends.
     system_state = SYSTEM_RUNNING;
 
 // =============
@@ -495,7 +493,7 @@ void I_x64ExecuteInitialProcess (void)
         panic ("I_x64ExecuteInitialProcess: iopl");
     }
 
-    PROGRESS("-- Fly ----------------\n");
+    PROGRESS("Go to ring3! \n");
 
     unsigned long entry = (unsigned long) 0x0000000000201000;
     unsigned long rsp3  = (unsigned long) 0x00000000002FFFF0;
@@ -533,8 +531,7 @@ int I_x64CreateKernelProcess(void)
     unsigned long fileret=1;
     unsigned long BUGBUG_IMAGE_SIZE_LIMIT = (512 * 4096);
 
-
-    debug_print ("I_x64CreateKernelProcess:\n");
+    //debug_print ("I_x64CreateKernelProcess:\n");
 
 //
 // Window server image.
@@ -598,7 +595,6 @@ int I_x64CreateKernelProcess(void)
         return FALSE;
     }
 
-
 // The kernel process is a system program.
 // KERNEL.BIN and GWSSRV.BIN
 
@@ -627,14 +623,11 @@ int I_x64CreateKernelProcess(void)
     KernelProcess->pd0_PA = kernel_mm_data.pd0_pa; 
 
 // position
-
     KernelProcess->position = KING;
 
 // cwd
-
     fs_initialize_process_cwd ( KernelProcess->pid, "/" ); 
 
-    
 // ==================
 // The control thread.
 // This is the control thread for the 
@@ -667,7 +660,6 @@ int I_x64CreateKernelProcess(void)
         printf ("I_x64CreateKernelProcess: m\n");
         return FALSE;
     }
-
 
 // name
 
@@ -713,7 +705,7 @@ int I_x64CreateKernelProcess(void)
 // It belongs to the kernel process.
 int I_x64CreateWSThread(void)
 {
-    debug_print ("I_x64CreateWSThread:\n");
+    //debug_print ("I_x64CreateWSThread:\n");
 
 //
 // Thread
@@ -761,11 +753,9 @@ int I_x64CreateWSThread(void)
     ws_thread->pd0_VA   = KernelProcess->pd0_VA;
     ws_thread->pd0_PA   = KernelProcess->pd0_PA;
 
-
 // ?
 // Set position.
     ws_thread->position = KING;
-
 
 //
 // tss
@@ -776,13 +766,11 @@ int I_x64CreateWSThread(void)
     
     // ws_thread->tss = current_tss;
 
-
 // Priority
 
     set_thread_priority ( 
         (struct thread_d *) ws_thread,
         PRIORITY_MAX );
-
 
 // Qauntum
 
@@ -794,7 +782,6 @@ int I_x64CreateWSThread(void)
 // Esse status só muda quando a thread rodar.
 
     dead_thread_collector_status = FALSE;
-
 
 //
 // Idle thread
@@ -825,9 +812,8 @@ void init_globals (void)
     int Status=FALSE;
     int i=0;
 
-
 //#ifdef EXECVE_VERBOSE
-    debug_print("init_globals:\n");
+    //debug_print("init_globals:\n");
     //printf     ("init_globals:\n");
 //#endif
 
@@ -845,7 +831,7 @@ void init_globals (void)
 
     screenInit();
 
-    debug_print("init_globals: [printf] WE HAVE MESSAGES NOW!\n");
+    //debug_print("init_globals: [printf] WE HAVE MESSAGES NOW!\n");
     //printf     ("init_globals: [printf] WE HAVE MESSAGES NOW!\n");
 
 // ===================
@@ -973,7 +959,7 @@ int I_init (void)
     unsigned char ProcessorType=0;
 
 // #debug
-    debug_print ("I_init:\n");
+    //debug_print ("I_init:\n");
     //printf      ("I_init:\n");
 
 // ==================
@@ -988,7 +974,7 @@ int I_init (void)
 // Globals
 
     PROGRESS("Kernel:2:1\n"); 
-    debug_print ("I_init: Globals\n");
+    //debug_print ("I_init: Globals\n");
     init_globals();
 
 
@@ -1009,9 +995,9 @@ int I_init (void)
 // fazer um refresh da tela se a flag de verbose estiver ligada.
 
     PROGRESS("Kernel:2:3\n"); 
-    debug_print ("I_init: Object manager\n");
+    //debug_print ("I_init: Object manager\n");
     //init_object_manager ();
-    debug_print ("I_init: io manager\n");
+    //debug_print ("I_init: io manager\n");
     //ioInit ();
 
 // ===============================
@@ -1020,7 +1006,7 @@ int I_init (void)
 // Inicializa a lista de dispositivos.
 
     PROGRESS("Kernel:2:4\n"); 
-    debug_print ("I_init: device manager\n");
+    //debug_print ("I_init: device manager\n");
     init_device_manager();
 
 // ===============================
@@ -1031,7 +1017,7 @@ int I_init (void)
 // É nela que as outras partes devem se basear.
 
     PROGRESS("Kernel:2:5\n"); 
-    debug_print ("I_init: storage structure\n");
+    //debug_print ("I_init: storage structure\n");
     storage = (void *) kmalloc ( sizeof(struct storage_d) );
     if ( (void *) storage == NULL )
     {
@@ -1054,7 +1040,7 @@ int I_init (void)
 // See: network.c
 
     PROGRESS("Kernel:2:6\n"); 
-    debug_print ("I_init: network [FIXME]\n");
+    //debug_print ("I_init: network [FIXME]\n");
     networkInit();
 
 // ==========================
@@ -1062,7 +1048,7 @@ int I_init (void)
 // #todo
 
     PROGRESS("Kernel:2:7\n"); 
-    debug_print ("I_init: Platform struct\n");
+    //debug_print ("I_init: Platform struct\n");
 
 //++
 // ====================================================================
@@ -1136,7 +1122,7 @@ int I_init (void)
 // hal
 
     PROGRESS("Kernel:2:8\n"); 
-    debug_print ("I_init: hal\n");
+    //debug_print ("I_init: hal\n");
     Status = init_hal();
     if (Status != TRUE){
         printf ("I_init: init_hal fail\n");
@@ -1296,10 +1282,9 @@ int I_init (void)
     // Talvez essa seja a hora de criarmos a estrutura para
     // o diretorio raiz, mas ainda nao temos estrutura de processo.
 
-    debug_print ("I_init: load rootdir.\n");
-	// Carregando o diretório raiz.
+    //debug_print ("I_init: load rootdir.\n");
+    // Carregando o diretório raiz.
     //fs_load_rootdir( VOLUME1_ROOTDIR_ADDRESS, VOLUME1_ROOTDIR_LBA, 32 );
-
 
     // Disable interrupts, lock task switch and scheduler.
 
@@ -1324,7 +1309,7 @@ int I_init (void)
 // done:
 
     PROGRESS("Kernel:2:16\n"); 
-    debug_print ("I_init: done\n");
+    //debug_print ("I_init: done\n");
     //printf      ("I_init: done\n");
 
 // ok
@@ -1368,16 +1353,9 @@ int I_x64main (void)
 {
     int Status = FALSE;
 
-
-// ============================
-// Phase counter
-
-// Starting phase 0.
-
+// Phase counter: Starting phase 0.
     InitializationPhase = 0;
 
-
-// ============================
 // The first ring3 process.
 // Ainda não configuramos qual será o primeiro processo
 // a rodar em user mode.
@@ -1395,7 +1373,11 @@ int I_x64main (void)
 // Mudamos isso para o momento em que inicializamos os consoles.
  
     // #debug
-    debug_print ("I_x64main: [TODO]\n");
+    debug_print ("I_x64main:\n");
+
+// #debug
+// For real machine.
+
     //printf      ("I_x64main: [TODO]\n");
     //refresh_screen();
 
@@ -1425,7 +1407,7 @@ int I_x64main (void)
 // sse support.
 
     PROGRESS("Kernel:1:1\n"); 
-    debug_print ("[x64] I_x64main: [TODO] SSE support\n");
+    //debug_print ("[x64] I_x64main: [TODO] SSE support\n");
     // x86_sse_init();
 
 // Status Flag and Edition flag.
@@ -1455,7 +1437,7 @@ int I_x64main (void)
 // See: sysinit.c
 
     PROGRESS("Kernel:1:2\n"); 
-    debug_print ("I_x64main: Calling I_init()\n");
+    //debug_print ("I_x64main: Calling I_init()\n");
 
     if ( InitializationPhase != 0 )
     {
@@ -1491,11 +1473,10 @@ int I_x64main (void)
 
     KGWS_initialize();
 
-    // debug
+// debug
     //printf("~kgws\n");
     //refresh_screen();
     //while(1){}
-
 
 // ================================
 // user/ ?
@@ -1507,6 +1488,7 @@ int I_x64main (void)
 // Vamos avançar
 // Quem chamou essa funçao foi o começo da inicializaçao do kernel.
 // Retornamos para x86main.c para arch x86.
+// See: drivers/ws.c
 
     PROGRESS("Kernel:1:4\n"); 
     ws_init();
@@ -1519,17 +1501,17 @@ int I_x64main (void)
 // Lets create a TSS and setup a GDT.
 // This way we can use 'current_tss' when we create threads.
 // This function creates a TSS and sets up a GDT.
-// See: hal/arch/x86/x86.c
 // #todo
 // Depois de renovarmos a GDT precisamos
 // recarregar os registradores de segmento?
+// See: hal/arch/x86/x86.c
 
 //
 // DANGER !!!
 //
 
     PROGRESS("Kernel:1:5\n"); 
-    debug_print ("[x64] I_x64main: [DANGER] Initializing GDT\n");
+    //debug_print ("[x64] I_x64main: [DANGER] Initializing GDT\n");
     //printf      ("[x86] I_x64main: Initializing GDT\n");      
     x64_init_gdt();
 
@@ -1624,7 +1606,7 @@ int I_x64main (void)
 // See: i8042.c
 
     PROGRESS("Kernel:1:10\n"); 
-    debug_print ("[x64] I_x64main: ps2\n"); 
+    //debug_print ("[x64] I_x64main: ps2\n"); 
 
 // ================
 // Early initialization
@@ -1684,8 +1666,9 @@ int I_x64main (void)
 // The expected return value is 1234.
 
     PROGRESS("Kernel:1:14\n"); 
-    debug_print ("[x64] I_x64main: done\n");
-    debug_print ("==============\n");
+
+    //debug_print ("[x64] I_x64main: done\n");
+    //debug_print ("==============\n");
 
     return TRUE;
 

@@ -939,6 +939,7 @@ void gwssrv_show_backbuffer (void)
 
 // Called by the main routine for now.
 // Its gonne be called by the timer.
+// See: comp.c
 void wmCompose(void)
 {
     // #todo: Working on this thing.
@@ -948,9 +949,7 @@ void wmCompose(void)
 }
 
 
-
 /*
- ***********************************************
  * wmRefreshDirtyRectangles: 
  */
 
@@ -970,12 +969,10 @@ void wmRefreshDirtyRectangles(void)
 // #debug
     //gwssrv_debug_print("wmRefreshDirtyRectangles:\n");
 
-
-//===================================================================
+//==========================================================
 // ++  Start
 
     //t_start = rtl_get_progress_time();
-    
 
 //
 // == Update screen ====================
@@ -986,7 +983,6 @@ void wmRefreshDirtyRectangles(void)
 // refresh using zorder.
 // Invalidating all the windows ... 
 // and it will be flushed into the framebuffer for the ring0 routines.
-
 
 //
 // Update
@@ -1026,10 +1022,8 @@ void wmRefreshDirtyRectangles(void)
     //int UpdateScreenFlag=FALSE;
     int UpdateScreenFlag=TRUE;
 
-
     if(UpdateScreenFlag == TRUE)
     {
-
         // Lookup the main window list.
 
         for (i=0; i<WINDOW_COUNT_MAX; ++i)
@@ -1053,8 +1047,8 @@ void wmRefreshDirtyRectangles(void)
             }
         };
     }
-// ========================================================
-}   
+// =======================
+}
 
 
 void flush_frame(void)
@@ -1910,16 +1904,14 @@ wmHandler(
     unsigned long long1=0;
     unsigned long long2=0;
 
-    debug_print ("wmHandler:-----------------------------\n");
+// #debug
+//    debug_print ("wmHandler:-----------------------------\n");
 
 // #debug
     //printf("wmHandler: %x %x %x %x\n", 
         //arg1_rdi, arg2_rsi, arg3_rdx, arg4_rcx );
 
-//
 // wid
-//
-
 // Ignoring this parameter
 // We ware called by the kernel, and the kernel has no information
 // about the windows. So, the messages sent by the kernel are able
@@ -1929,9 +1921,7 @@ wmHandler(
     //int wid=-1;
     //wid = (int) (arg1_rdi & 0xFFFF);
 
-//
 // Message
-//
     msg = (int) (arg2_rsi & 0xFFFF);
 
 
@@ -1942,9 +1932,11 @@ wmHandler(
 // #todo:
 // This way the kernel is able to call the
 // compositor at a given timer.
+// Called by the kernel in pit.c
+
     if ( msg == 9091 )
     {
-        debug_print ("wmHandler: 9091\n");
+        // debug_print ("wmHandler: 9091\n");
         wmCompose();  
         
         //#test: Mostrar a quantidade de
@@ -1991,15 +1983,15 @@ wmHandler(
     }
 // ==============================================
 
-//
 // Data
-//
+
     long1 = (unsigned long) arg3_rdx;
     long2 = (unsigned long) arg4_rcx;
 
 //
 // Calling wmProcedure()
 //
+
     switch (msg){
 
     case GWS_MouseMove:
@@ -2012,7 +2004,6 @@ wmHandler(
                 (unsigned long) long2 ); 
         return r;
         break;
-
 
 // #important:
 // Mandaremos input de teclado somente para 
@@ -2066,12 +2057,12 @@ do_process_message:
                             (unsigned long) long2 ); 
 
 done:
-    debug_print ("wmHandler: done\n");
+
+// #debug
+    // debug_print ("wmHandler: done\n");
+    
     return (unsigned long) r;
 }
-
-
-
 
 
 // yellow bar. (rectangle not window)

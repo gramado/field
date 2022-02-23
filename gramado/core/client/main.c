@@ -1,10 +1,8 @@
 /*
  * File: main.c
- *
  *    Client side application for Gramado Window Server.
  *    Using socket to connect with gws.
  *    AF_GRAMADO family.
- *
  * History:
  *     2020 - Created by Fred Nora.
  */
@@ -13,26 +11,19 @@
 // We can have a custom status bar in this client.
 // goal: Identity purpose.
 
-
-
 // tutorial example taken from. 
 // https://www.tutorialspoint.com/unix_sockets/socket_server_example.htm
  
 /*
-    To make a process a TCP server, you need to follow the steps given below −
-
-    Create a socket with the socket() system call.
-
-    Bind the socket to an address using the bind() system call. 
-    For a server socket on the Internet, an address consists of a 
-    port number on the host machine.
-
-    Listen for connections with the listen() system call.
-
-    Accept a connection with the accept() system call. 
-    This call typically blocks until a client connects with the server.
-
-    Send and receive data using the read() and write() system calls.
+ To make a process a TCP server, you need to follow the steps given below −
+ Create a socket with the socket() system call.
+ Bind the socket to an address using the bind() system call. 
+ For a server socket on the Internet, an address consists of a 
+ port number on the host machine.
+ Listen for connections with the listen() system call.
+ Accept a connection with the accept() system call. 
+ This call typically blocks until a client connects with the server.
+ Send and receive data using the read() and write() system calls.
 */ 
 
 // See:
@@ -50,50 +41,47 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-
 #include <rtl/gramado.h>
-
-
 // libgws - The client-side library.
 #include <gws.h>
 
 
-
 #define MYGREEN 0x0b6623
-
 
 unsigned long savedW=0;
 unsigned long savedH=0;
 
-    
+int game_status=0;
+
+// area de jogo
+int game_window=0;
+int game_width=0;
+int game_height=0;
+int player_x=0;
+int player_y=0;
+int prize_x=0;
+int prize_y=0;
+
+// barra de status
+int status_window=0;
+
+
 //
 // == prototypes =============
 //
 
-int gws (void);
+int gws(void);
 
-
-int game_status;
-
-// area de jogo
-int game_window;
-int game_width;
-int game_height;
-int player_x;
-int player_y;
-int prize_x;
-int prize_y;
-
-
-
-// barra de status
-int status_window;
-
+//====================
 
 void init_cursor(int fd)
 {
+
     player_x = game_width >> 1;
     player_y = game_height >> 1;
+
+    if(fd<0)
+        return;
 
     gws_draw_char ( 
         fd, 
@@ -109,6 +97,9 @@ void init_prize(int fd)
     prize_x = (rand() % 50) << 3;
     prize_y = (rand() % 50) << 3;
 
+    if(fd<0)
+        return;
+
     gws_draw_char ( 
         fd, 
         game_window, 
@@ -118,11 +109,20 @@ void init_prize(int fd)
         '+' );
 }
 
-void gameTestASCIITable(int fd,unsigned long w, unsigned long h)
+
+void 
+gameTestASCIITable(
+    int fd,
+    unsigned long w, 
+    unsigned long h )
 {
+
     int i=0;
     int j=0;
     int c=0;
+
+    if(fd<0)
+        return;
     
     for(i=0; i<4; i++)
     {
@@ -148,6 +148,9 @@ void you_win(int fd)
 
 void check_victory(int fd)
 {
+    if(fd<0)
+        return;
+
     int p1 = prize_x - 10;
     int p2 = prize_x + 10;
 
@@ -166,6 +169,9 @@ void check_victory(int fd)
 
 void game_redraw(int fd)
 {
+    if(fd<0)
+        return;
+
     gws_redraw_window(fd, game_window, TRUE); 
     gws_redraw_window(fd, status_window, TRUE);
     gws_refresh_window(fd, game_window);
@@ -176,6 +182,9 @@ void game_redraw(int fd)
 
 void game_reinitialize(int fd)
 {
+    if(fd<0)
+        return;
+
     int status=0;
     status=gameInitialize(fd,game_width,game_height);
     if(status<0)
@@ -189,8 +198,10 @@ void game_reinitialize(int fd)
 
 int gameInitialize(int fd,unsigned long w, unsigned long h)
 {
-
     game_status = FALSE;
+
+    if(fd<0)
+        return;
 
     init_cursor(fd);
     init_prize(fd);
@@ -259,9 +270,9 @@ updateStatusBar(
 int gws(void)
 {
 
-    // Vamos nos concetar com o processo identificado 
-    // com o nome 'ws'
-    // The port name is 'port:/ws'
+// Vamos nos concetar com o processo identificado 
+// com o nome 'ws'
+// The port name is 'port:/ws'
 
     //==============================
     struct sockaddr addr; 
@@ -276,15 +287,12 @@ int gws(void)
     
     
     int client_fd = -1;
+ 
     
-    
-    
-    
-    gws_debug_print ("-------------------------\n"); 
+    //gws_debug_print ("-------------------------\n"); 
     //printf          ("-------------------------\n"); 
     gws_debug_print ("gws.bin: Initializing ...\n");
     //printf          ("gws.bin: Initializing ...\n");
-
 
 //
 // Socket
@@ -339,6 +347,8 @@ gwsProcedure (
 
     int f12Status = -1;
 
+    if(fd<0)
+        return -1;
 
     if(msg<=0){
         return (-1);
@@ -483,9 +493,7 @@ gwsProcedure (
     // consumiu o evento passado à ele.
 
 done:
-
     check_victory(fd);
-
     return 0;
     //return (int) gws_default_procedure(fd,0,msg,long1,long2);
 }
@@ -499,42 +507,36 @@ int main ( int argc, char *argv[] )
 {
 
 // #config
-
     int ShowCube = FALSE;
     int launchChild = TRUE;
     // ...
 
-
     int client_fd = -1;
     int main_window = -1;
-    
 
 // hello
-    gws_debug_print ("gws.bin: Hello world \n");
-    printf          ("gws.bin: Hello world \n");
-
+    gws_debug_print ("gws.bin: First client \n");
+    printf          ("gws.bin: First client \n");
 
 // interrupts
-    gws_debug_print ("gws.bin: Enable interrupts \n");
-    printf          ("gws.bin: Enable interrupts \n");
+    //gws_debug_print ("gws.bin: Enable interrupts \n");
+    //printf          ("gws.bin: Enable interrupts \n");
     asm ("int $199 \n");
-
 
 // interrupts
 // Unlock the taskswitching support.
 // Unlock the scheduler embedded into the base kernel.
 // Only the init process is able to do this.
 
-    gws_debug_print ("gws.bin: Unlock taskswitching and scheduler \n");
-    printf          ("gws.bin: Unlock taskswitching and scheduler \n");
+    //gws_debug_print ("gws.bin: Unlock taskswitching and scheduler \n");
+    //printf          ("gws.bin: Unlock taskswitching and scheduler \n");
     gramado_system_call (641,0,0,0);
     gramado_system_call (643,0,0,0);
 
 // Create the rectangle.
-    gws_debug_print ("gws.bin: Create rectangle \n");
-    printf          ("gws.bin: Create rectangle \n");
+    //gws_debug_print ("gws.bin: Create rectangle \n");
+    //printf          ("gws.bin: Create rectangle \n");
     gramado_system_call(897,0,0,0);
-
 
 //
 // hang
@@ -561,15 +563,13 @@ int main ( int argc, char *argv[] )
          exit(1);
     }
 
-
 //========================================
-    
-    // Waiting ...
-    // Wait for the moment where the server says: 'yes'
 
-    gws_debug_print ("gws.bin:  \n");
+// Waiting ...
+// Wait for the moment where the server says: 'yes'
+
+    //gws_debug_print ("gws.bin:  \n");
     //         printf ("gws.bin:  \n");
-
 
     /*
     rtl_set_file_sync( client_fd, SYNC_REQUEST_SET_ACTION, ACTION_ERROR );
@@ -658,7 +658,7 @@ int main ( int argc, char *argv[] )
 //
 
     //===============================
-    gws_debug_print ("gws.bin: 1 Creating main window \n");
+    //gws_debug_print ("gws.bin: 1 Creating main window \n");
     //printf          ("gws.bin: Creating main window \n");
 
     main_window = gws_create_window (client_fd,
@@ -685,7 +685,7 @@ int main ( int argc, char *argv[] )
 
 
     //===============================
-    gws_debug_print ("gws.bin:  Creating  window \n");
+    //gws_debug_print ("gws.bin:  Creating  window \n");
     //printf          ("gws.bin: Creating main window \n");
     int tmp1;
     tmp1 = gws_create_window (client_fd,
@@ -700,7 +700,6 @@ int main ( int argc, char *argv[] )
     status_window = tmp1;
     //========================
 
-
     //printf("gws.bin: [2] after create simple gray bar window :)\n");
 
     // #debug
@@ -710,25 +709,24 @@ int main ( int argc, char *argv[] )
     // Drawing a char just for fun,not for profit.
 
     //===================
-    gws_debug_print ("gws.bin: 2 Drawing a char \n");
+    //gws_debug_print ("gws.bin: 2 Drawing a char \n");
     //printf          ("gws.bin: Drawing a char \n");
-    if(main_window>0){
-        gws_draw_char ( 
-            client_fd, 
-            main_window, 0, 0, COLOR_YELLOW, 'G' );
-    }
+    //if(main_window>0){
+    //    gws_draw_char ( 
+    //        client_fd, 
+    //        main_window, 0, 0, COLOR_YELLOW, 'G' );
+    //}
     //====================   
-
 
     // #debug
     //gws_refresh_window (client_fd, tmp1);
     //asm ("int $3");
 
-    
-    /*
-    //
-    // == stdin ===================================================
-    //
+
+/*
+//
+// == stdin ===============================================
+//
     char evBuf[32];
     int ev_nreads=0;
     unsigned long lMessage[8];
@@ -749,22 +747,20 @@ int main ( int argc, char *argv[] )
         gws_draw_char ( client_fd, main_window, 
         32, 8, COLOR_RED, 'I' );
     };
-    // ============================================================
-    */
-    
+// ============================================================
+*/
     
 
-    // Create a little window in the top left corner.
+// Create a little window in the top left corner.
     //gws_create_window (client_fd,
         //WT_SIMPLE,1,1,"gws-client",
         //2, 2, 8, 8,
         //0, 0, COLOR_RED, COLOR_RED);
 
-    // Draw a char.
+// Draw a char.
     // IN: fd, window id, x, y, color, char.
     //gws_draw_char ( client_fd, 0, 
         //16, 8, COLOR_RED, 'C' );
-
 
     /*
     gws_debug_print ("gws.bin: 3 Testing Plot0 4x\n");
@@ -782,13 +778,12 @@ int main ( int argc, char *argv[] )
 // == cube ==================================
 //
 
-    // #maybe
-    // The custon status bar?
-    // Maybe the custon status bar can be a window.
+// #maybe
+// The custon status bar?
+// Maybe the custon status bar can be a window.
 
-    gws_debug_print ("gws.bin: 4 Testing Plot cube \n");
+    //gws_debug_print ("gws.bin: 4 Testing Plot cube \n");
     //printf        ("gws.bin: 4 Testing Plot cube \n");
-
 
 // back
     int backLeft   = (-(w/8)); 
@@ -868,11 +863,11 @@ int main ( int argc, char *argv[] )
     //}; //for
 
 
-    //
-    // == rectangle ==================================
-    //
+//
+// == rectangle ==================================
+//
 
-    /*
+/*
     gws_debug_print ("gws.bin: 5 Testing Plot rect \n");
     printf          ("gws.bin: 5 Testing Plot rect \n");
 
@@ -906,19 +901,19 @@ int main ( int argc, char *argv[] )
         // plot rectangle 
         gws_plotrectangle ( client_fd, (struct gr_rectangle_d *) rect );
     }
-    */
+*/
    
-    gws_debug_print("LOOP:\n");
+    //gws_debug_print("LOOP:\n");
     //printf ("LOOP:\n");
 
     // #debug
     //while (1){
 
-    if( main_window > 0 ){
-        gws_draw_char ( 
-            client_fd, 
-            main_window, 8, 8, COLOR_YELLOW, 'x' );
-    }
+    //if( main_window > 0 ){
+    //    gws_draw_char ( 
+    //        client_fd, 
+    //        main_window, 8, 8, COLOR_YELLOW, 'x' );
+    //}
 
         // ...
 
@@ -936,11 +931,8 @@ int main ( int argc, char *argv[] )
     //}
 
 
-    // #test: Chamando um demo.
+// #test: Chamando um demo.
     // gws_async_command(client_fd,4,9,0); //cat
-
-
-
 
 
 /*
@@ -994,9 +986,9 @@ int main ( int argc, char *argv[] )
 //============================================================
     */
 
-    //
-    // Loop
-    //
+//
+// Loop
+//
 
     // #test
     //gws_refresh_window (client_fd, main_window);
@@ -1066,9 +1058,8 @@ int main ( int argc, char *argv[] )
 // Input
 //
 
-    //=================================
-    
-    // get current thread
+//=================================
+// get current thread
     // set foreground thread.
     // #todo: We need to create a rtl function for this.
     // See: rtl.c
@@ -1081,8 +1072,8 @@ int main ( int argc, char *argv[] )
     // Event queue in the current thread.
 
     //gws_enable_input_method(1);
-
 // =================================
+
 
 // The event loop.
 // Podemos chamar mais de um diálogo
@@ -1118,7 +1109,9 @@ int main ( int argc, char *argv[] )
     //gws_async_command(client_fd,2,0,0);
 
 
-    while(1){}
+    while(1){
+        //
+    }
     // ...
 
     /*

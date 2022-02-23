@@ -162,17 +162,13 @@ int videoVideo(void)
 
 int Video_initialize(void)
 {
+    //debug_print ("Video_initialize: [TODO]\n");
+    
     g_driver_video_initialized = FALSE;
-
-    debug_print ("Video_initialize: [TODO]\n");
-
     videoVideo();
     videoInit();
     // ...
-
-    // Done
     g_driver_video_initialized = TRUE;
-
     return 0;
 }    
 
@@ -204,19 +200,15 @@ void videoSetMode (unsigned long mode)
     unsigned long Height;
     //continua...(outros parametros)
 
+    debug_print ("videoSetMode: [FIXME] This routine is wrong\n");
 
-    debug_print ("videoSetMode: [BUGBUG] This routine is wrong\n");
+    VideoMode = (unsigned long) mode;
 
+//
+// todo: Check limits.
+//
 
-	
-	VideoMode = (unsigned long) mode;
-	
-    //
-	// todo: Check limits.
-	//
-	
-	//if (){}
-
+    //if (){}
 
 // Se estiver nos limites.
     if ( VideoMode > 0 && VideoMode < 9000)

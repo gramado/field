@@ -1,4 +1,5 @@
 
+// x64.c
 
 #include <kernel.h>    
 
@@ -20,13 +21,14 @@ unsigned char isa_irqs[16] = {
 
 
 /*
- ***********************************
  * x64_init_gdt:
  *     It creates a TSS and sets up some entries in the GDT.
  *     See: x86gdt.h
  */
 
+// Called by I_x64main in init.c.
 // See: head_64.asm
+
 extern void rsp0Stack(void);
 extern void gdt_flush(unsigned long gdtr_address);
 
@@ -34,9 +36,7 @@ int x64_init_gdt (void)
 {
     struct tss_d  *tss;
 
-
-    debug_print ("[x64] x64_init_gdt: [DANGER] \n");
-
+    // debug_print ("[x64] x64_init_gdt: [DANGER] \n");
 
     memset(
         &xxx_gdt[GNULL_SEL],
@@ -44,7 +44,7 @@ int x64_init_gdt (void)
         sizeof(struct segment_descriptor_d)*32 );
 
 
-    // Creating a TSS and initializing it.
+// Creating a TSS and initializing it.
 
     tss = (void *) kmalloc ( sizeof(struct tss_d) );
 
@@ -77,13 +77,12 @@ int x64_init_gdt (void)
              //panic( ...
     };
 
-
 //
 // Initializing the GDT.
 //
 
-    // IN: 
-    // (n, limit, base, type, s, dpl, p, avl, l, db, g)
+// IN: 
+// (n, limit, base, type, s, dpl, p, avl, l, db, g)
 
     // null
     set_gdt_entry ( &xxx_gdt[GNULL_SEL], 
@@ -126,24 +125,15 @@ int x64_init_gdt (void)
 // Load tr   [DANGER]
 //
 
-    // Load TR.
-    // 0x2B = (0x28+3).
-
-    // #bugbug
-    // Falha quando carregamos isso.
+// Load TR.
+// 0x2B = (0x28+3).
+// #bugbug
+// Falha quando carregamos isso.
 
     x64_load_ltr(0x2B);
 
-
-// Done
     return 0;
 }
-
-
-// ===================
-
-
-
 
 
 // Set segment.
@@ -216,9 +206,6 @@ tss_init (
 }
 
 
-
-
-
 // # not tested yet
 void x64_load_ltr (int tr)
 {
@@ -264,7 +251,7 @@ void get_cpu_intel_parameters (void)
     unsigned long name[32];
     int MASK_LSB_8 = 0xFF;
 
-    debug_print ("get_cpu_intel_parameters: [FIXME]\n");
+    //debug_print ("get_cpu_intel_parameters: [FIXME]\n");
 
 //========================================
 // EAX=0: Highest Function Parameter and Manufacturer ID
@@ -679,21 +666,25 @@ void x64_iretq (void)
     asm ("iretq");
 }
 
+
 void x64_iret (void)
 {
     asm ("iret");
 }
+
 
 void x64_lret (void)
 {
     asm ("lret");
 }
 
+
 void x64_cli_hlt(void)
 {
     asm (" cli \n \t "); 
     asm (" hlt \n \t ");
 }
+
 
 void x64_stop_cpu (void)
 {
@@ -724,8 +715,7 @@ void x64_enable_cache (void)
 
 int x64_init_intel (void)
 {
-    debug_print ("[x64] x64_init_intel:");
-
+    //debug_print ("[x64] x64_init_intel:");
 
     //x64fault_initialize();
 
@@ -749,20 +739,8 @@ int x64_init_intel (void)
 
 void x64_load_pml4_table(unsigned long phy_addr)
 {
+    //debug_print("x64_load_pml4_table: DANGER\n");
+
     asm volatile ("movq %0,%%cr3"::"r"(phy_addr));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

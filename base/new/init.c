@@ -109,28 +109,22 @@ void preinit_Globals(int arch_type)
 {
     asm ("cli");
 
-    // This is the first time we do the in the C part.
-    // See: head_64.asm
+// This is the first time we do the in the C part.
+// See: head_64.asm
 
     system_state = SYSTEM_BOOTING;
 
-    // Initializing the global spinlock.
+// Initializing the global spinlock.
 
     __spinlock_ipc = TRUE;
 
-
-//
 // IO Control
-//
 
     IOControl.useTTY = FALSE;        // Model not implemented yet.
     IOControl.useEventQueue = TRUE;  // The current model.
     IOControl.initialized = TRUE;    // IO system initialized.
 
-//
 // Scheduler policies
-//
-
 // Early initialization.
 // See: 
 // sched.h, sched.c.
@@ -142,33 +136,28 @@ void preinit_Globals(int arch_type)
 }
 
 
-
 void preinit_Serial(void)
 {
     serial_init();
-
-    debug_print("\n");
-    debug_print("== X ========\n");
-    debug_print("preinit_Serial: Serial debug initialized!\n");
+    debug_print("preinit_Serial: Initialized\n");
 }
+
 
 void preinit_OutputSupport(void)
 {
+
 // Virtual Console.
 // See: user/console.c
-
-    debug_print ("[Kernel] kernel_main: Initializing virtual consoles ...\n");
+    //debug_print ("preinit_OutputSupport:\n");
 
 // O refresh ainda não funciona, 
 // precisamos calcular se a quantidade mapeada é suficiente.
 
     refresh_screen_enabled = FALSE;
 
-// #
 // As estruturas de console sao estruturas de tty,
 // mas sao um array de estruturas, nao precisa de malloc,
 // por isso podem ser chamadas nesse momento.
-
 // #test
 // We need to test it better.
 
@@ -183,13 +172,11 @@ void preinit_OutputSupport(void)
 // main
 // Called by START in 
 // entrance/warden/unit0/x86_64/head_64.asm.
-
-int kernel_main(int arch_type)
-{
-
 // See:
 // init.h
 
+int kernel_main(int arch_type)
+{
     Initialization.phase1 = FALSE;
     Initialization.phase2 = FALSE;
     Initialization.phase3 = FALSE;
@@ -201,7 +188,6 @@ int kernel_main(int arch_type)
 
     Initialization.serial_log = FALSE;
     Initialization.console_log = FALSE;
-
 
 /*
     char hostname[64];
@@ -243,27 +229,27 @@ int kernel_main(int arch_type)
     //unsigned long MemorySyze=0;
     int i=0;
 
-    // Magic
-    unsigned long bootMagic = (unsigned long) (magic & 0x00000000FFFFFFFF); 
+// Magic
+    unsigned long bootMagic = 
+        (unsigned long) (magic & 0x00000000FFFFFFFF); 
 
-    // The boot block address. 0x0000000000090000.
-    // Each entry has 8 bytes.
-    // virtual = physical.
+// The boot block address. 0x0000000000090000.
+// Each entry has 8 bytes.
+// virtual = physical.
     unsigned long *xxxxBootBlock = (unsigned long*) BootBlockVA; 
 
 //
 // lfb
 //
 
-    // #test
-    // isso não é possivel porque a paginação feita pelo bootloader
-    // ainda não esta pronta.
-    // #todo:
-    // Talvez possamos refazer a paginação usada pelo kernel.
+// #test
+// isso não é possivel porque a paginação feita pelo bootloader
+// ainda não esta pronta.
+// #todo:
+// Talvez possamos refazer a paginação usada pelo kernel.
 
     unsigned long *fb = (unsigned long *) FRONTBUFFER_VA; 
     fb[0] = 0x00FFFFFF;
-
 
 // Check magic
 // Paint a white screen if magic is ok.
@@ -320,7 +306,6 @@ int kernel_main(int arch_type)
 // Memory size in KB.
     blSavedPhysicalMemoryInKB = (blSavedLastValidAddress / 1024);
 
-
 // #todo
 // Setup the real boot block structure at gdef.h
 // BootBlock
@@ -332,70 +317,53 @@ int kernel_main(int arch_type)
 
     if ( xBootBlock.deviceWidth == 320 )
     {
-        for (i=0; i<40*40; i++){
+        for (i=0; i<40*40; i++)
+        {
             fb[i] = 0;
         };
     }
 
-
-// =================================================
-// Globals
 // We do not have output yet
 
-    //preinit_Globals(arch_type);
-    preinit_Globals(0);
-
-// =================================================
-// Serial
-// We do not have output yet
-
+    preinit_Globals(0);  // IN: arch_type
     preinit_Serial();
-
 
     //if ( system_state != SYSTEM_BOOTING ){
     //    debug_print ("FAIL");
     //    while(1){}
     //}
 
-    //
-    // #progress
-    // name:level:sublevel
-    //
+// ============================
+// #progress
+// name:level:sublevel
+// ============================
 
-    PROGRESS("--------------------\n");
-    PROGRESS(" Initializing newos \n");
-    // Now we have serial port output.
+// Now we have serial port output.
 
+    PROGRESS("kernel_main: Initializing ...\n");
 
 // =================================================
 // Initialize the virtual console structures.
-// #IMPORTAT: 
 // We do not have all the runtime support yet.
 // We can't use printf yet.
 
     PROGRESS("Kernel:0:1\n");
-
     preinit_OutputSupport();
-
 
 // =================================================
 // Show some basic info.
 
     PROGRESS("Kernel:0:2\n");
 
-    debug_print ("Initializing landos kernel ...\n");
+// #todo
+// The mode.
+    //debug_print ("mode: ");
+    //debug_print ("\n");
 
-
-    // #todo
-    // The mode.
-    debug_print ("mode: ");
-    debug_print ("\n");
-
-    // #todo
-    // The architecture.
-    debug_print ("arch: ");
-    debug_print ("\n");
-
+// #todo
+// The architecture.
+    //debug_print ("arch: ");
+    //debug_print ("\n");
 
 //
 // Pixel
@@ -409,35 +377,25 @@ int kernel_main(int arch_type)
 //
 // Refresh sceen
 //
-
     //refresh_screen();
 
-
-// ====================================
 // Video support
+// See: drivers/video/video.c
 
     PROGRESS("Kernel:0:3\n");
-
-    debug_print ("[Kernel] kernel_main: Initializing video support ...\n");
     Video_initialize();
 
-
-
-// ====================================
 // Runtime
 // #bugbug:
 // We need the runtime initialization for the messages.
 // What about to initialize it early?! now!!!!
-// See: runtime.c
 // #bugbug
 // Here the background is not initialized yet,
 // so, we have a lot of dirty things.
+// See: ke/runtime.c
 
     PROGRESS("Kernel:0:4\n");
-
-    debug_print ("[Kernel] kernel_main: Initializing runtime\n");
     Runtime_initialize();
-
 
 // =========================
 // Clear the screen.
@@ -466,8 +424,6 @@ int kernel_main(int arch_type)
 // Ok, agora podemos usar o console virtual
 // para verbose.
 
-
-
 // ++
 // ======================================
 // Screen size
@@ -483,7 +439,8 @@ int kernel_main(int arch_type)
     refresh_screen_enabled = FALSE;
     screen_size_in_kb = 0;
 
-    if ( xBootBlock.bpp == 24 || xBootBlock.bpp == 32 )
+    if ( xBootBlock.bpp == 24 || 
+         xBootBlock.bpp == 32 )
     {
         bytes_per_pixel = (xBootBlock.bpp / 8); 
         pitch = (xBootBlock.deviceWidth * bytes_per_pixel);
@@ -495,28 +452,33 @@ int kernel_main(int arch_type)
         debug_print("Screen size fail. pitch\n");
     }
 
-    if (pitch != 0)
-    {
-        sz_in_kb = (unsigned long) (( pitch * xBootBlock.deviceHeight )/ 1024 );
-        screen_size_in_kb = sz_in_kb;
-        
-        // #debug
-        //printf ("Screen size: %d KB\n", sz_in_kb);
-        
-        // fail
-        if ( sz_in_kb >= 2048 ){
-            refresh_screen_enabled = FALSE;
-            debug_print ("Screen size fail sz_in_k\n");
-        }
+// Valid pitch.
+
+    sz_in_kb = 
+        (unsigned long) (( pitch * xBootBlock.deviceHeight )/ 1024 );
     
-        // ok
-        // Ok We can use the refresh routine.
-        // Because we have memory enough for that.
-        if ( sz_in_kb < 2048 )
-        {
-            refresh_screen_enabled = TRUE;  
-        }
+    screen_size_in_kb = sz_in_kb;
+
+    // #debug
+    //printf ("Screen size: %d KB\n", sz_in_kb);
+ 
+// fail
+// #provisorio
+
+    if ( sz_in_kb >= 2048 )
+    {
+        refresh_screen_enabled = FALSE;
+        debug_print ("Screen size fail sz_in_k\n");
     }
+    
+// ok
+// Ok We can use the refresh routine.
+// Because we have memory enough for that.
+
+    if ( sz_in_kb < 2048 ){
+        refresh_screen_enabled = TRUE;  
+    }
+    
 // ======================================
 // --
 
@@ -526,8 +488,7 @@ int kernel_main(int arch_type)
 
 // We can't live without this.
 
-    if( refresh_screen_enabled != TRUE )
-    {
+    if ( refresh_screen_enabled != TRUE ){
         debug_print("kernel_main: refresh_screen_enabled != TRUE\n");
         Initialization.console_log = FALSE;
         die();
@@ -538,17 +499,16 @@ int kernel_main(int arch_type)
 
     Initialization.console_log = TRUE;
 
-
 // BANNER!
 // Welcome message.
 // This is the first message in the screen
+// See: user/console.c
 
     console_banner(0);
 
     //printf("gcc: %d\n",GCC_VERSION);
     //refresh_screen();
     //while(1){}
-
 
 // Show gramado mode.
 
@@ -576,7 +536,6 @@ int kernel_main(int arch_type)
     //refresh_screen();
     //while(1){}
 
-
 // ================================================
 
 // #test
@@ -589,31 +548,30 @@ int kernel_main(int arch_type)
     unsigned long KernelImage_CODE_Size=0;
     unsigned long KernelImage_Size=0;
 
-
 // #todo
 // Isso deve ter uma flag no aquivo de configuração.
 // config.h i guess.
 
     if ( ImportDataFromLinker == TRUE )
     {
-        printf("\n");
+        //printf("\n");
  
         // #bugbug
         // Something is wrong here.
         KernelImage_Size = (kernel_end - kernel_begin);
-        printf ("Image Size %d KB \n",KernelImage_Size/1024);
+        //printf ("Image Size %d KB \n",KernelImage_Size/1024);
 
         KernelImage_CODE_Size = (code_end - code_begin);
-        printf ("CODE Size %d KB \n",KernelImage_CODE_Size/1024);
+        //printf ("CODE Size %d KB \n",KernelImage_CODE_Size/1024);
 
         KernelImage_RODATA_Size = (rodata_end - rodata_begin);
-        printf ("RODATA Size %d KB \n",KernelImage_RODATA_Size/1024);
+        //printf ("RODATA Size %d KB \n",KernelImage_RODATA_Size/1024);
 
         KernelImage_DATA_Size = (data_end - data_begin);
-        printf ("DATA Size %d KB \n",KernelImage_DATA_Size/1024);
+        //printf ("DATA Size %d KB \n",KernelImage_DATA_Size/1024);
 
         KernelImage_BSS_Size = (bss_end - bss_begin);
-        printf ("BSS Size %d KB \n",KernelImage_BSS_Size/1024);
+        //printf ("BSS Size %d KB \n",KernelImage_BSS_Size/1024);
 
         // Limit 1 MB
         // The kernel image is too long.
@@ -626,7 +584,6 @@ int kernel_main(int arch_type)
         // refresh_screen();
         // while(1){}
     }
-
 
 //
 // char
@@ -669,14 +626,16 @@ int kernel_main(int arch_type)
     //console_outbyte('\n',fg_console);
     //console_outbyte('a',fg_console);
 
-
+/*
     printf ("#test\n");
     printf ("LFB PA = %x \n",xBootBlock.lfb_pa );
     printf ("Width  = %d \n",xBootBlock.deviceWidth );
     printf ("Height = %d \n",xBootBlock.deviceHeight );
     printf ("BPP    = %d \n",xBootBlock.bpp );
     printf ("last valid pa = %x \n", xBootBlock.last_valid_pa);
+*/
 
+/*
 // See: mmInit() in memory.c
     printf ("memorysizeBaseMemory %d\n",memorysizeBaseMemory);
     printf ("memorysizeOtherMemory %d\n",memorysizeOtherMemory);
@@ -686,9 +645,10 @@ int kernel_main(int arch_type)
 // See: pages.c
     printf ("memorysizeUsed %d\n",memorysizeUsed);
     printf ("memorysizeFree %d\n",memorysizeFree);
-    
-    // #debug
-    refresh_screen();
+*/
+
+// #debug
+    //refresh_screen();
     //while(1){}
 
 // =====================================
@@ -707,23 +667,28 @@ int kernel_main(int arch_type)
         x_panic ("Error: 0x05");
     }
 
+// framebuffer address.
     GramadoDisplayDevice->framebuffer_pa = (unsigned long) xBootBlock.lfb_pa;
     GramadoDisplayDevice->framebuffer_va = (unsigned long) FRONTBUFFER_VA;
  
+// w, h, bpp.
     GramadoDisplayDevice->framebuffer_width  = (unsigned long) xBootBlock.deviceWidth;
     GramadoDisplayDevice->framebuffer_height = (unsigned long) xBootBlock.deviceHeight;
     GramadoDisplayDevice->framebuffer_bpp    = (unsigned long) xBootBlock.bpp;
 
+// pitch
     GramadoDisplayDevice->framebuffer_pitch = 
         (unsigned long) ( xBootBlock.deviceWidth * xBootBlock.bpp );
 
+// size in bytes.
     GramadoDisplayDevice->framebuffer_size_in_bytes =
         (unsigned long) ( GramadoDisplayDevice->framebuffer_pitch * GramadoDisplayDevice->framebuffer_height );
 
-    
-    // Is it a valid screen pointer?
+
+// Is it a valid screen pointer?
     GramadoDisplayDevice->screen = (struct screen_d *) CurrentScreen;
 
+// validation
     GramadoDisplayDevice->used = TRUE;
     GramadoDisplayDevice->magic = 1234;
 
@@ -749,14 +714,14 @@ int kernel_main(int arch_type)
     // See: x64init.c in ke/arch/x86_64/
 
     case CURRENT_ARCH_X86_64:
-        debug_print ("kernel_main: [CURRENT_ARCH_X86_64] calling x64main() ...\n");
+        //debug_print ("kernel_main: [CURRENT_ARCH_X86_64] calling x64main() ...\n");
         Background_initialize();
         Status = (int) I_x64main();
         if (Status != TRUE){
             x_panic("Panic: Error 0x01");
         }
         if (Status == TRUE){
-            debug_print ("kernel_main: Calling I_x64ExecuteInitialProcess()\n");
+            //debug_print ("kernel_main: Calling I_x64ExecuteInitialProcess()\n");
             Background_initialize();
             I_x64ExecuteInitialProcess();
         }
@@ -885,9 +850,9 @@ int kernel_main(int arch_type)
     printf("8 done\n");
     */
 
+// #debug
+// Show current process info.
 
-    // #debug
-    // Show current process info.
     printf("\n");
     printf("KernelProcess:\n");
     current_process = KernelProcess->pid;

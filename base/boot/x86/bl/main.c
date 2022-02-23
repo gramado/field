@@ -1,27 +1,23 @@
 /*
- * Gramado Boot Loader
+ * BL.BIN
  * 
+ * Gramado Boot Loader
  * (c) Copyright 2015-2020 Fred Nora.
- *
  * File: main.c 
- *
  * + It loads the kernel image.
  * + ... initializes the paging.
  * + passes the command to the kernel.
- *
  * The boot loader was loaded in the address 0x00020000, and
  * has the entry point in the address 0x00021000.
- *
  * The kernel image will be loaded in the address 0x00100000
  * and  the entry point will be in the address 0x00101000.
  * The virtual addresses are 0xC0000000 for the base and
  * 0xC0001000 for the entry point.
- *
  * History:
  *     2015 - Created by Fred Nora.
  *     2020 - Revision.
- *     ... 
  */
+
 
 #include <bootloader.h>
 
@@ -29,7 +25,6 @@
 //char kernel_file_name[] = "kernel.bin";
 //static char **argv = { NULL, NULL, NULL };
 //static char **envp = { NULL, NULL, NULL };
-
 
 
 // == Prototypes =================
@@ -75,7 +70,7 @@ void blShowMenu (void)
 void
 BlMenu(void)
 {
-    
+
     char Key=0;
     
     
@@ -153,11 +148,9 @@ void OS_Loader_Main (void)
 
     int Status = (-1);
 
-
 // root and fat not loaded yet.
     g_fat16_root_status = FALSE;
     g_fat16_fat_status = FALSE;
-
 
 // main flags.
     gdefLegacyBIOSBoot  = FALSE;
@@ -167,31 +160,28 @@ void OS_Loader_Main (void)
     gdefShowProgressBar = FALSE;
     // ...
 
-
-    // Set GUI.
+// Set GUI.
     // VideoBlock.useGui = 1;
     // VideoBlock.useGui = 0;
 
-    // Init.
-    // See: init.c
-    
+// Init.
+// See: init.c
+
     Status = (int) init();
 
     if (Status != 0 ){
         // #todo
     }
 
-
 //++
 // == Memory size ===============================
-
-    // #test
-    // Sondando quanta mem�ria f�sica tem instalada.
-    // Faremos isso antes de mapearmos qualquer coisa e
-    // antes de carregarmos qualquer arquivo.
-    // #todo:
-    // Temos v�rias quest�es � se considerar, como o fato de sujarmos
-    // a IVT no in�cio da mem�ria.
+// #test
+// Sondando quanta mem�ria f�sica tem instalada.
+// Faremos isso antes de mapearmos qualquer coisa e
+// antes de carregarmos qualquer arquivo.
+// #todo:
+// Temos v�rias quest�es � se considerar, como o fato de sujarmos
+// a IVT no in�cio da mem�ria.
 
     unsigned long __address = 0;
 
@@ -207,28 +197,32 @@ void OS_Loader_Main (void)
     //para testar na m�quina real com 2048 mb instalado.
     __address = (unsigned long) init_testing_memory_size(2048);   
     
-    // #todo
-    // Temos que passar esses valores para o kernel,
-    // juntamente com os valores que passsamos durante a inicialização
-    // em assembly, através do boot buffer em 0x0000000000090000. 
-    // See: head.s
+// #todo
+// Temos que passar esses valores para o kernel,
+// juntamente com os valores que passsamos durante a inicialização
+// em assembly, através do boot buffer em 0x0000000000090000. 
+// See: head.s
+// LFB_VA:      0x00090000 + 0
+// WIDTH:       0x00090000 + 8
+// HEIGHT:      0x00090000 + 16
+// BPP:         0x00090000 + 24
+// LAST_VALID:  0x00090000 + 32
+// LAST_VALID:  0x00090000 + 40 (complement)
+// ...
 
-    // LFB_VA:      0x00090000 + 0
-    // WIDTH:       0x00090000 + 8
-    // HEIGHT:      0x00090000 + 16
-    // BPP:         0x00090000 + 24
-    // LAST_VALID:  0x00090000 + 32
-    // LAST_VALID:  0x00090000 + 40 (complement)
-    // ...
-
-    unsigned long *LastValid           = (unsigned long*) (0x00090000 + 32); 
-    unsigned long *LastValidComplement = (unsigned long*) (0x00090000 + 36); 
+    unsigned long *LastValid = 
+        (unsigned long*) (0x00090000 + 32); 
+    
+    unsigned long *LastValidComplement = 
+        (unsigned long*) (0x00090000 + 36); 
 
     LastValid[0]           = (unsigned long) __address;
     LastValidComplement[0] = (unsigned long) 0;
 
-    printf ("BlMain: Las valid PA = %x \n", __address);
-    refresh_screen();
+//#debug
+
+    //printf ("BlMain: Las valid PA = %x \n", __address);
+    //refresh_screen();
     //while(1){}
 // =======================================
 //--
@@ -237,80 +231,59 @@ void OS_Loader_Main (void)
 //++
 // =======================================
 
-//
 // Cleaning the RAM.
-//
-
 // Vamos limpar somente a parte que será usada pelos 
 // primeiros componentes do sistema.
 // Mas mesmo assim precisamos limpar o bss das imagens
 // e limpar as áreas alocadas.
 // 32 mb, começando de 1mb.
+// Is it slow?
 
     unsigned long *CLEARBASE = (unsigned char *) 0x100000;  
-    register int i=0;
-    // 32mb/4
-    int max = ( (1024*1024*32) / 4 );
 
-    for(i=0; i<max ; i++)
+    register int i=0;
+    int max = ( (1024*1024*32) / 4 );    // (32mb/4)
+
+//  Limpamos somente se está dentro da área
+// previamente descoberta.
+// 4 bytes per time.
+
+    for ( i=0; i<max; i++ )
     {
-        //  Limpamos somente se está dentro da área
-        // previamente descoberta.
         if( &CLEARBASE[i] < __address )
         {
-            // 4 bytes per time.
             CLEARBASE[i] = (unsigned long) 0;
         }
     };
 // =======================================
 //--
 
+// #todo
+// Precisamos reconsiderar a necessidade de fazermos isso.
+// O timer ira atrazar a inicializa��o ?
+// Precisamos dessas interrup��es para alguma coisa como
+// o driver de ata ?
 
-
-    // #todo
-    // Precisamos reconsiderar a necessidade de fazermos isso.
-    // O timer ira atrazar a inicializa��o ?
-    // Precisamos dessas interrup��es para alguma coisa como
-    // o driver de ata ?
-
-    // #debug
+// #debug
     // printf("habilitando as interrupcoes\n");
     // refresh_screen();
 
-    // #todo:
-    // Talvez devamos adiar esse sti.
-
-//
 // Interrupts
-//
-
 // #todo
 // Podemos adiar isso ?
+// #todo:
+// Talvez devamos adiar esse sti.
 
     asm ("sti");
 
-// Initializes heap;
-// Used for malloc() and ide driver.
+    init_heap();  // malloc support.
+    init_hdd();   // IDE driver.
 
-    printf ("OS_Loader_Main: init_heap..\n");
-    refresh_screen();
-    
-    init_heap();
+// #todo: 
+// Clean the screen.
 
-    printf ("OS_Loader_Main: init_hdd..\n");
-    refresh_screen();
-
-// Initializes ide support.
-    init_hdd();
-
-
-    // #todo: 
-    // Clean the screen.
-
-
-    // Welcome Message.
-    // banner
-
+// Welcome Message.
+// banner
 
 //#ifdef BL_VERBOSE
     //printf ("BlMain: Starting Boot Loader..\n");
@@ -348,8 +321,9 @@ void OS_Loader_Main (void)
 // #slow
 // Load root dir.
 
-    printf ("OS_Loader_Main: Loading rootdir ..\n");
-    refresh_screen();
+    //#debug
+    //printf ("OS_Loader_Main: Loading rootdir ..\n");
+    //refresh_screen();
 
     fs_load_rootdirEx();
     g_fat16_root_status = TRUE;
@@ -357,20 +331,20 @@ void OS_Loader_Main (void)
 // ========
 // #slow
 // Load FAT.
-
-    printf ("OS_Loader_Main: Loading fat ..\n");
-    refresh_screen();
+    
+    //#debug
+    //printf ("OS_Loader_Main: Loading fat ..\n");
+    //refresh_screen();
 
     fs_load_fatEx();
     g_fat16_fat_status = TRUE;
 
-
-    // #todo
-    // Podemos mostrar o menu de opções
-    // imediatamente antes da opção de carregarmos o kernel.
-    // Dessa forma o boot loader carregará o kernel adequado
-    // de acordo com o ítem selecionado no menu, que pode ser
-    // uma aplicação ou modo diferente de inicialização.
+// #todo
+// Podemos mostrar o menu de opções
+// imediatamente antes da opção de carregarmos o kernel.
+// Dessa forma o boot loader carregará o kernel adequado
+// de acordo com o ítem selecionado no menu, que pode ser
+// uma aplicação ou modo diferente de inicialização.
 
     /*
      #bugbug: It hangs the system.
@@ -379,39 +353,36 @@ void OS_Loader_Main (void)
     refresh_screen();
     while(1){}
     */
-    
-    
-    
+
 //
 // Loading files.
 //
 
-
-    // ?? maybe.
+// ?? maybe.
     // BlLoadConfigFiles ();   
-
 
 // #slow
 // Loading the kernel image.
 // Helper function in this document.
 
-    printf ("OS_Loader_Main: Loading kernel image ..\n");
-    refresh_screen();
+    //#debug
+    //printf ("OS_Loader_Main: Loading kernel image ..\n");
+    //refresh_screen();
 
     Status = newOSLoadKernelImage();
 
     if (Status<0){
          printf("OS_Loader_Main: newOSLoadKernelImage fail. \n");
          refresh_screen();
-         while(1){}    
+         while(1){
+             asm("cli");
+         };
          //goto run_rescue_shell;
     }
-
 
 // ok, depois de carregarmos a imagem do kernel de 64bit
 // então devemos configurar o long mode e a paginação para
 // 64bit ... para por fim saltarmos para o kernel.
-
 
 /*
   #todo:
@@ -423,20 +394,18 @@ void OS_Loader_Main (void)
  E por fim salta para o kernel de 64bit.
 */
 
-    // Nesse momento ja carregamos a imagem do kernel.
-    // No momento é uma imagem fake.
-   
-    //#todo
-    //precisamos limpara a tela,
-    //para visualizarmos essa mensagem na resolução 320x200
+// Nesse momento ja carregamos a imagem do kernel.
+// No momento é uma imagem fake.
+// #todo
+// precisamos limpara a tela,
+// para visualizarmos essa mensagem na resolução 320x200
 
-    // #test
-    // background preto.
-    g_cursor_x = 0;
-    g_cursor_y = 0;
+// #test
+// background preto.
+
+    g_cursor_x=0;
+    g_cursor_y=0;
     clear_backbuffer();
-
-
 
 /*
     printf ("\n");
@@ -450,60 +419,57 @@ void OS_Loader_Main (void)
     printf("======================\n");
 */
 
+//#debug
+    //printf ("\n");
+    //printf ("The kernel image is already loaded\n");
+    //printf ("Let's setup long mode, paging and jump to the kernel.\n");
 
-    printf ("\n");
-    printf ("The kernel image is already loaded\n");
-    printf ("Let's setup long mode, paging and jump to the kernel.\n");
-
+//#debug
     //refresh_screen();
     //while(1){}
 
+
 /*
     How do I enable Long Mode ?
-
     The steps for enabling long mode are:
-
     + Disable paging
     + Set the PAE enable bit in CR4
     + Load CR3 with the physical address of the PML4
     + Enable long mode by setting the EFER.LME flag in MSR 0xC0000080
     + Enable paging
-
     Now the CPU will be in compatibility mode, and 
 instructions are still 32-bit. To enter long mode, 
 + the D/B bit (bit 22, 2nd 32-bit value) of the GDT code segment 
 must be clear (as it would be for a 16-bit code segment), and 
 the L bit (bit 21, 2nd 32-bit value) of the GDT code segment 
 must be set. Once that is done, the CPU is in 64-bit long mode.
-
-See:
-    https://wiki.osdev.org/X86-64
-    ...
+See: https://wiki.osdev.org/X86-64
 */
 
 
 // ================================
 // Check x86_64 support.
 // Test LM-bit
-    
+
     unsigned long a=0;
     unsigned long b=0;
     unsigned long c=0;
     unsigned long d=0;
 
-    cpuid ( 
-        0x80000001, 
-        a, b, c, d );
+    cpuid ( 0x80000001, a, b, c, d );
 
     unsigned long data = (unsigned long) (d >> 29 );
 
-// YES
-    if ( (data & 1) != 0 ){
+/*
+// x86_64 is supported.
+    if ( (data & 1) != 0 )
+    {
         printf("OS_Loader_Main: x86_64 hardware supported\n");
         refresh_screen();
     }
+*/
 
-// NO
+// x86_64 is not supported.
     if ( (data & 1) == 0 ){
         printf("OS_Loader_Main: [ERROR] x86_64 hardware not supported\n");
         refresh_screen();
@@ -520,22 +486,18 @@ See:
     //refresh_screen();
     //while(1){}
 
-//
 // No interrupts
-//
 
     asm ("cli");
 
-
-
 // ====
 // Paging:
-//     Depois carregar o kernel e os m�dulos 
-//     nos seus endere�os f�sicos, 
-//     configura a pagina��o e 
-//     volta para o assembly para 
-//     configurar os registradores e 
-//     passar o comando para o kernel.
+// Depois carregar o kernel e os modulos 
+// nos seus endereços fisicos, 
+// configura a paginaçao e 
+// volta para o assembly para 
+// configurar os registradores e 
+// passar o comando para o kernel.
 // #obs:
 // Essa configuraçao basica nao impede
 // que o kernel faça uma reconfiguraçao completa.
@@ -543,17 +505,22 @@ See:
 // #debug
 // In this document.
     
-    printf ("OS_Loader_Main: Setup paging ...\n");
-    refresh_screen();
+    
+//#debug
+    //printf ("OS_Loader_Main: Setup paging ...\n");
+    //refresh_screen();
 
     BlSetupPaging();
 
-    // nao podemos chamar rotina alguma aqui,
-    // somente retornar.
-    // os registradores estao bagunçados.
+// Nao podemos chamar rotina alguma aqui,
+// somente retornar.
+// Pois os registradores estao bagunçados.
     
 // Not reached
-    while(1){}
+    while (1){
+        asm("cli");
+        asm("hlt");
+    };
 
     //return;
 }
@@ -647,38 +614,30 @@ void BlSetupPaging(void)
 
 void BlAbort()
 {
-
-	//@todo: 
-	//    Talvez poderia ter uma interface antes de chamar a rotina abort().
-	//
-	//ex:
-	//checks()
+//@todo: 
+//Talvez poderia ter uma interface antes de chamar a rotina abort().
+//ex:
+    //checks()
 
     abort(); 
 }
 
 
 /*
- *****************************************************************
  * BlKernelModuleMain:
  *     Se � o kernel que est� chamando o Boot Loader na forma de 
  * m�dulo do kernel em kernel mode.
- *
  */
  
 void BlKernelModuleMain()
 {
-    printf ("BlKernelModuleMain: Boot Loader\n");
-    refresh_screen();
+    //printf ("BlKernelModuleMain: Boot Loader\n");
+    //refresh_screen();
 }
 
-
-
-//
 //================================================================
 // begin - Testing memory size
 //================================================================
-//
 
 //interna
 unsigned long init_testing_memory_size (int mb)
@@ -688,11 +647,10 @@ unsigned long init_testing_memory_size (int mb)
     int offset=0; 
     int i=0;
 
-    // Salvando os valores durante o test.
+// Salvando os valores durante o test.
     unsigned char ____value1 = 0;
     unsigned char ____value2 = 0;
 
-    
 //
 // Flag.
 //
@@ -701,16 +659,17 @@ unsigned long init_testing_memory_size (int mb)
     ____testing_memory_size_flag = 1;
 
 
-
+//#debug
+/*
     printf ("=========================================\n");
     printf ("init_testing_memory_size: Looking for %d MB base...\n", mb);
     refresh_screen();
+*/
 
 
 // Começamos em 1MB porque o primeiro mega contem coisa do bios.
     for (i=1; i< (mb+1); i++)
     {
-
         //printf ("i=%d \n", i);
         //refresh_screen();
 
@@ -718,15 +677,13 @@ unsigned long init_testing_memory_size (int mb)
         
         //printf ("coloca \n");
         //refresh_screen();
-         
-         
+
          // #bugbug
          // cuidado com ponteiro nulo.
-         
+
         //coloca.
         BASE[offset +0] = 0xAA;  //1
         BASE[offset +1] = 0x55;  //2
-        
         
         //printf ("retira \n");
         //refresh_screen();
@@ -734,9 +691,6 @@ unsigned long init_testing_memory_size (int mb)
         //retira dois chars.
         ____value1 = BASE[offset +0];
         ____value2 = BASE[offset +1];
-        
-        
-        
         
         // Se retiramos os mesmos bytes que colocamos.
         if (____value1 == 0xAA && ____value2 == 0x55)
@@ -771,27 +725,23 @@ unsigned long init_testing_memory_size (int mb)
         }
     };
 
-
      ____testing_memory_size_flag = 0;        
             
-    // ok temos um endere�o de mem�ria
-    // tamb�m ser� salvo em uma vari�vel global para o caso de panic.
+// ok temos um endereço de memoria
+// tambem sera salvo em uma variavel global 
+// para o caso de panic.
+
     return __last_valid_address;
 }
- 
-//
+
 //================================================================
 // end - Testing memory size
 //================================================================
-//
 
 
 
-/*
- * die:
- *     CLI HLT routine.
- */
-
+// die:
+// CLI HLT routine.
 // No return!
 // See: bootloader.h
 

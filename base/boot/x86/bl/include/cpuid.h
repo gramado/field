@@ -1,6 +1,6 @@
+
 // cpuid.h 
 // Created by Fred Nora.
-
 // See:
 // https://en.wikipedia.org/wiki/CPUID
 // https://wiki.osdev.org/CPUID
@@ -10,11 +10,9 @@
 #define ____CPUID_H    1
 
 
-
 //cpuid.
 #define cpuid( in, a, b, c, d)\
     asm ("cpuid": "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (in));
-
 
 
 // Vendor Strings. 

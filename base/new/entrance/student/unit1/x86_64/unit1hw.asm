@@ -1,17 +1,13 @@
 
 ; unit1hw.asm
 ; This file handles the traps for the x86_64 processors.
-;
-
 
 ;;=====================================================
 ;;  ## TIMER ##
 ;;=====================================================
 ;; _irq0: 
-;;
 ;; IRQ 0. 
 ;; Timer interrupt handler
-;;
 ;; See:
 ;; 1pump/arch/x86_64/pit.c
 ;; 0mem/core/ps/disp/ts.c
@@ -22,7 +18,7 @@
 ;
 
 ;;
-;; == Context =============================================
+;; == Context =================
 ;;
 
 ; See:
@@ -113,14 +109,13 @@ _irq0:
     mov ax, ds
     mov word [_contextDS], ax
 
-    ;; #todo
-    ;; Media, float pointers, debug.
-
-    ;; #important:
-    ;; We are using the kernel segment registers.
-    ;; Kernel data segments and stack.
-    ;; #bugbug: sempre a mesma pilha?
-    ;; Que pilha as interrupçoes de softwar estao usando?
+; #todo
+; Media, float pointers, debug.
+; #important:
+; We are using the kernel segment registers.
+; Kernel data segments and stack.
+; #bugbug: sempre a mesma pilha?
+; Que pilha as interrupçoes de softwar estao usando?
 
 
 ;

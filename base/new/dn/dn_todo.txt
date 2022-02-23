@@ -1,7 +1,8 @@
 
+Old associations.
 
 	mm = 0mem
-	kernel = 1pump
+	ke = 1pump
 	fs = 2io
 
 

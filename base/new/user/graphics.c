@@ -1013,9 +1013,8 @@ int grInit (void)
 
 int KGWS_initialize(void)
 {
-    debug_print("KGWS_initialize:[TODO]\n");
+    //debug_print("KGWS_initialize:[TODO]\n");
 
-// =================
 // Display
 
     CurrentDisplay = (void *) kmalloc (sizeof(struct gws_display_d));
@@ -1032,7 +1031,6 @@ int KGWS_initialize(void)
     CurrentDisplay->used = TRUE; 
     CurrentDisplay->magic = 1234; 
 
-// =================
 // Screen
     
     DeviceScreen  = (void *) kmalloc (sizeof(struct gws_screen_d));

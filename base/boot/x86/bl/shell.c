@@ -70,43 +70,39 @@ void debug ();
 
 
 /*
- *************************************************
  * blShellMain:
  *     Função principal do Shell do Boot Loader.
  *     Auxilia a instalacao do sistema.
  *     #todo: usar delimtador e separador de tokens igual no app shell.
  */
  
-int blShellMain ( int argc, char *argv[] ){
-	
-    unsigned long ret_proc;
-	
-	// Title.	
-	
+int blShellMain ( int argc, char *argv[] )
+{
+    unsigned long ret_proc=0;
+
+// Title.
     bl_clear (0);
-	
     printf ("blShellMain:\n");
-	
-	//
-    // Ativa o procedimento do shell.      
-	//
-	
-	//@todo registrar procedimento.
+
+//
+// Ativa o procedimento do shell.      
+//
+
+//@todo registrar procedimento.
     //ret_proc = registra_procedimento( (unsigned long) shell_proc, 1, 0, 0);	
-	
-	if (ret_proc != 0)
-	{
-	    goto fail_shell;
-	};
-	
-	//
-	// Status - Inicia o shell.
-	//
-	
-	shell_status = 1;
-	
-	
-//Loop	
+
+    if (ret_proc != 0)
+    {
+        goto fail_shell;
+    }
+
+//
+// Status - Inicia o shell.
+//
+
+    shell_status = 1;
+
+//Loop
 sh_loop:
     
 	//status.
@@ -134,23 +130,24 @@ fail_shell:
 	
 exit_shell:	    
 	return (int) 0;     
-};
+}
 
 
 /*
- ************************************************
  * shellProcedure: 
  *     Procedimento de janela do Shell do Boot Loader. 
  */
  
 int 
-shellProcedure ( unsigned long window, 
-                 unsigned long msg, 
-				 unsigned long long1, 
-				 unsigned long long2 )
+shellProcedure ( 
+    unsigned long window, 
+    unsigned long msg, 
+    unsigned long long1, 
+    unsigned long long2 )
 {
-    unsigned long input_ret;    
-	
+
+    unsigned long input_ret=0;
+
     switch (msg)
     {      
         case MSG_KEYDOWN:
@@ -180,13 +177,10 @@ shellProcedure ( unsigned long window,
 		    //@todo: Bug Bug, isso pode ser problema.
 			bl_procedure ( window, msg, long1, long2 );
 		    break;	         
-    };	
-
+    };
 //done:
-
     return 0;
 }
-
 
 
 /*
@@ -475,22 +469,26 @@ void reboot (){
 }
 
 
-/* init_shell: 
-       Inicializa o shell do Boot Loader. */
+/* 
+ * init_shell: 
+ *     Inicializa o shell do Boot Loader. 
+ */
+// Called by init() in init.c
+void shellInit()
+{
 
-void shellInit (){
-	
-    // Checa quem esta tentando inicializar o shell.
-	
-	//Prompt
-	prompt[0] = (char) '\0';
-	prompt_pos = 0;
-	
-	//cursor
-	//g_cursor_y = 0;
-	//g_cursor_x = 0;
+// #todo
+// Checa quem esta tentando inicializar o shell.
 
-    ShellInitialized = 1;
+// Prompt
+    prompt[0] = (char) '\0';
+    prompt_pos = 0;
+
+//cursor
+    //g_cursor_y = 0;
+    //g_cursor_x = 0;
+
+    ShellInitialized = TRUE;
 }
 
 

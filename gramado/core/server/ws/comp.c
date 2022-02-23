@@ -12,15 +12,12 @@
 
 // Flush
 // The compositor.
-// #todo: Called by the timer.
+// Called by wmCompose
 void compose(void)
 {
     int Dirty = FALSE;
 
-//
-// == Dirty background ==============================
-//
-
+// Dirty background.
 // Check the background validation.
 // The background is dirty.
 // Show the whole screen.
@@ -37,12 +34,11 @@ void compose(void)
         return;
     }
 
-
 //
 // Rectangles.
 //
 
-    // refresh the rectangles of the windows.
+// Refresh the rectangles of the windows.
     wmRefreshDirtyRectangles();
 
 //flush all the screens?
@@ -50,17 +46,12 @@ void compose(void)
     //for( ...
     //gws_show_backbuffer();
 
-    // #todo
-    // call a helper function for that.
-
-
+// #todo
+// call a helper function for that.
 
     //__update_fps();
-
 
 // Validate the frame.
     validate();
 }
-
-
 

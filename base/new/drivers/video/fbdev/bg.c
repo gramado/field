@@ -15,7 +15,6 @@ void backgroundDraw (unsigned int color)
     unsigned long deviceWidth  = (unsigned long) screenGetWidth();
     unsigned long deviceHeight = (unsigned long) screenGetHeight();
 
-
     if ( deviceWidth == 0 || deviceHeight == 0 )
     {
         debug_print ("backgroundDraw: [PANIC] w h\n");
@@ -31,11 +30,9 @@ void backgroundDraw (unsigned int color)
         0 );   //rop_flags
 
 
-    /*
-
+/*
     //loop
     register unsigned long i=0;
-
 
     if (VideoBlock.useGui != 1){
         debug_print ("backgroundDraw: No GUI\n");
@@ -57,9 +54,7 @@ void backgroundDraw (unsigned int color)
 // Called by kernel_main().
 int Background_initialize(void)
 {
-
     // printf ("Background_initialize: TODO\n");
-
     backgroundDraw ( (unsigned int) COLOR_BLACK );
     return 0;
 }

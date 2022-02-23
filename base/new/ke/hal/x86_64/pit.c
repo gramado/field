@@ -1,20 +1,16 @@
 /*
  * File: pit.c 
- *  
  * Descrição:
  *     Arquivo principal do driver do PIT. 
  *     Trata a irq0.
  *     Rotinas envolvendo tempo.
- *
  *  Ambiente: 
  *     (RING 0).
  *      Módulo interno, dentro do kernenel base.
- *
  * @todo: Criar funções que criam a estrutura timer ...
  * que será usada peloa aplicativos na forma de objeto .
  * elas devem ter um contador que enviará mensagens para o 
  * aplicativo sempre que se esgota a contagem.
- *
  * History:
  *     2013 - Created by Fred Nora.
  */
@@ -52,9 +48,7 @@ Bits         Usage
                  1 1 1 = Mode 3 (square wave generator, same as 011b)
  0            BCD/Binary mode: 0 = 16-bit binary, 1 = four-digit BCD
 */ 
- 
- 
- 
+
 /*
  PIT info:
  ========
@@ -62,13 +56,11 @@ Bits         Usage
  PIT: mode=3 count=0x10000 (65536) - 18.20 Hz (ch=0) (Oracle, Virtualbox).
  PIT: mode=3 count=0x2e9a (11930) - 100.01 Hz (ch=0) (Oracle, Virtualbox).
  PIT: mode=3 count=0x2e9b (11931) - 100.00 Hz (ch=0) (Oracle, Virtualbox).
- */ 
-
+ */
 
 
 
 #include <kernel.h>  
-
 
 
 //Status do módulo.
@@ -97,17 +89,12 @@ int timerError;
 int timerShowTextCursor;  
 
 
-
 //??
 //unsigned long timerCountSeconds;  //Count Seconds.
 //...
 
 
-
-
-
 /*
- ************************************
  * irq0_TIMER:
  *     Chama o handler do kernel que está no kernel base.
  * #todo: Observar alguns procedimentos antes de chamar a rotina.
@@ -115,7 +102,6 @@ int timerShowTextCursor;
 
 // Called by:
 // _irq0 in hw.asm
-
 // It is up to the interrupt service routine to reset the latch. 
 // It does that by setting bit 7 of port 0x61 (system control port B).
 // See: pic.h
@@ -149,12 +135,14 @@ void DeviceInterface_PIT(void)
 // #test 60fps com o pit a 1000.
 // 1000/16 = 62
 // Chamando o compositor dentro do window server.
+// Se os callbacks do window server ja foram configurados
+// anteriormente, então chamamos um deles.
+// 9091 = Compositor.
+// See: In window server, see wmHandler() in wm.c.
 
     //if ( (jiffies % DEFAULT_PIT_FREQ) == 0 )
     if ( (jiffies % 16) == 0 )
     {
-        // Se os callbacks do window server ja foram configurados
-        // anteriormente.
         if ( gUseWMCallbacks == TRUE )
             wmSendInputToWindowManager(0,9091,0,0);
     }

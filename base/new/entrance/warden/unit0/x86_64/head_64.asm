@@ -1,20 +1,16 @@
 
-
 ; See: 
-; kernel/include/gramado/
+; include/gramado/
 
 %include "gramado/head.inc"
-
 
 ; segment .head_x86_64
 __HEAD
 
 [bits 64]
 
-
 extern _magic
 extern _kernel_main
-
 
 ; See:
 ; kernel.h
@@ -23,44 +19,30 @@ extern _system_state
 
 ;========================================================
 ; _kernel_begin:
-;
-;     Entry point.
-;     This is the entry point of the 64bit kernel image.
-;     The boot loader jumps here in long mode using a
-;     64bit gdt.
-;
-;     #todo: 
-;     We need to check the bit in CS when the boot loader
-;     makes the jump.
-;
-
-;
+; Entry point.
+; This is the entry point of the 64bit kernel image.
+; The boot loader jumps here in long mode using a 64bit gdt.
+; #todo: 
+; We need to check the bit in CS when the boot loader
+; makes the jump.
 ; + The Stack Register (rsp) will be loaded with the 
 ;   ring 0 base kernel stack pointer.
-; +
-;
-
 ; IN:
 ; The boot loader delivers a magic value in edx and
 ; a boot block in 0x90000.
-
 ; unit 0: Kernel begin.
+; Jump
+; Th CS stuff.
+; Do a proper 64-bit jump. Should not be needed as the ...
+; jmp GDT64.Code:0x30001000 in the boot loader would have sent us ...
+; out of compatibility mode and into 64-bit mode.
+
 global _kernel_begin 
 _kernel_begin:
 
     cli
     cld 
-;
-; Jump
-;
-
-    ; Th CS stuff.
-    ; Do a proper 64-bit jump. Should not be needed as the ...
-    ; jmp GDT64.Code:0x30001000 in the boot loader would have sent us ...
-    ; out of compatibility mode and into 64-bit mode.
-
     jmp START
-
     nop
     DB 'GRAMADO X'
 
@@ -68,11 +50,15 @@ align 4
     %include "header.inc"
 align 4
 
+
+;
+; START
+;
+
+; #todo
+; We can save some values just for debug purpose.
+
 START:
-
-    ; #todo
-    ; We can save some values just for debug purpose.
-
     mov dword [_magic], edx
     ; ...
 
@@ -91,19 +77,18 @@ START:
     xor rcx, rcx
     xor rdx, rdx
 
-
     lgdt [GDT64.Pointer]
 
     mov ax, GDT64.Data
     mov ds, ax
     mov es, ax
-
     mov ss, ax
+
     mov rsp, _xxxStack
 
-;
+
+; LDT
 ; Initialize ldt with a NULL selector.
-;
 
     xor rax, rax
     lldt ax
@@ -114,22 +99,16 @@ START:
     mov rsi, rax
     mov rdi, rax
 
+; IDT
+; Uma falta, ou excessão gera uma interrupção não-mascaravel ... certo?
+; então mesmo que eu deixe as interrupções do pic mascaradas elas vão acontecer?
+; Sendo assim, esses vetores precisam ser 
+; tratados mesmo antes de tratarmos os vetores das interrupções mascaraves.
 
-;
-; == IDT ================================================
-;
-
-;Uma falta, ou excessão gera uma interrupção não-mascaravel ... certo?
-;então mesmo que eu deixe as interrupções do pic mascaradas elas vão acontecer?
-;Sendo assim, esses vetores precisam ser 
-;tratados mesmo antes de tratarmos os vetores das interrupções mascaraves.
-
-    ; Disable IRQs
-    ; Out 0xFF to 0xA1 and 0x21 to disable all IRQs.
-
-
-;; Esse rotina existe mais pra frente,
-;; mas poderíamos antecipa-la.
+; Disable IRQs
+; Out 0xFF to 0xA1 and 0x21 to disable all IRQs.
+; Esse rotina existe mais pra frente,
+; mas poderíamos antecipa-la.
 
     ;mov al, 0xFF  
     ;out 0xA1, al
@@ -142,12 +121,11 @@ START:
     call setup_faults   ; Setup vectors for faults and exceptions.
     call setup_vectors  ; Some new vectors.
 
-    ; #danger:
+; #danger:
     lidt [_IDT_register] 
 
-;
-; == TR (tss) ======================================
-;
+; TR
+; tss stuff.
  
     ;mov rax, qword tss0
 
@@ -156,17 +134,15 @@ START:
     ;mov [GDT64.tssData + 4],  al
     ;mov [GDT64.tssData + 7],  ah
 
-    ; Load TR.
-    ; 0x2B = (0x28+3).
+; Load TR.
+; 0x2B = (0x28+3).
 
     ;mov ax, word 0x2B
     ;ltr ax
 
-;
-; Early PIC initialization.
-;
 
-; ??
+; PIC
+; Early PIC initialization.
 ; PIC MODE
 ; Selecting the 'Processor Interrup Mode'.
 ; All the APIC components are ignored here, and
@@ -200,10 +176,8 @@ START:
     out 0xA1, al
     IODELAY
 
-
-;
 ; Mask all interrupts.
-;
+
     cli
     mov  al, 255
     out  0xA1,  al
@@ -211,25 +185,22 @@ START:
     out  0x21,  al
     IODELAY
 
-
-;
+; PIT
 ; Early PIT initialization.
-;
-
-; ??
 ; Setup system timers.
 ; Some frequencies to remember.
 ; PIT 8253 e 8254 = (1234DD) 1193181.6666 / 100 = 11930. ; 1.19MHz.
 ; APIC timer      = 3,579,545 / 100 = 35796  3.5 MHz.
 ; 11931    ; (1193181.6666 / 100 = 11930) timer frequency 100 HZ.
 
+; Send 0x36 to 0x43.
+; Send 11931 to 0x40.
+
     xor rax, rax
-    ;Send 0x36 to 0x43
     mov al, byte 0x36
     mov dx, word 0x43
     out dx, al
     IODELAY
-    ; Send 11931 to 0x40
     mov eax, dword 11931
     mov dx, word 0x40
     out dx, al
@@ -238,32 +209,22 @@ START:
     out dx, al
     IODELAY
 
+; #todo: 
+; RTC
 
-;
-; #todo: RTC
-;
-
-
-
-;
 ; Unmask all maskable interrupts.
-;
+
     mov al, 0
     out 0xA1, al
     IODELAY
     out 0x21, al
     IODELAY
 
-;
 ; No interrupts
-;
 
     cli
 
-;
-; == Set up registers ==================================
-;
-
+; Set up registers.
 ; See:
 ; https://wiki.osdev.org/CPU_Registers_x86-64
 
@@ -271,7 +232,6 @@ START:
 ; DR0 ~ DR7
 ; Debug registers.
 ; Disable break points.
-
 ; Debug registers:
 ; DR0 ~ DR7
 ; Debug registers.
@@ -283,11 +243,10 @@ START:
     ;mov dr7, eax
     ;; ...
 
-
 ; Use the calling convention for this compiler.
 ; rdi
 ; No return
-; See: init.c
+; See: new/init.c
 
     xor rax, rax
     mov rdi, rax          ; #todo: arch type (2) ??
@@ -297,113 +256,92 @@ START:
 
     call _kernel_main
 
-Loop:
-    sti ;cli
+dieLoop:
+    cli
     hlt
-    jmp Loop
+    jmp dieLoop
 
 ; =======================================================
 align 8
 
-;
 ; =======================================================
 ; _x64_64_initialize_machine
 ;    Called by main() to make the early initialization.
-;
-
 
 global _x84_64_initialize_machine
 _x84_64_initialize_machine:
     ret
 
-
 align 8
 
-;;
-;; == GDT ====================================================
-;;
-
-
+;; GDT
 ;; See:
 ;; https://wiki.osdev.org/Setting_Up_Long_Mode
 ;; Entry size ?
-GDT64:                           ; Global Descriptor Table (64-bit).
-.Null: equ $ - GDT64         ; The null descriptor.
-    dw 0xFFFF                    ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 0                         ; Access.
-    db 1                         ; Granularity.
-    db 0                         ; Base (high).
-.Code: equ $ - GDT64         ; The code descriptor.
-    dw 0                         ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 10011010b                 ; Access (exec/read).
-    db 10101111b                 ; Granularity, 64 bits flag, limit19:16.
-    db 0                         ; Base (high).
-.Data: equ $ - GDT64         ; The data descriptor.
-    dw 0                         ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 10010010b                 ; Access (read/write).
-    db 00000000b                 ; Granularity.
-    db 0                         ; Base (high).
 
-; #test
-.Ring3Code: equ $ - GDT64         ; The code descriptor.
-    dw 0                         ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 11111010b                 ; Access (exec/read).
-    db 10101111b                 ; Granularity, 64 bits flag, limit19:16.
-    db 0                         ; Base (high).
-
-; #test
-.Ring3Data: equ $ - GDT64        ; The data descriptor.
-    dw 0                         ; Limit (low).
-    dw 0                         ; Base (low).
-    db 0                         ; Base (middle)
-    db 11110010b                 ; Access (read/write).
-    db 00000000b                 ; Granularity.
-    db 0                         ; Base (high).
-
-; #test
-;.tssData: equ $ - GDT64          ; The data descriptor.
-;    dw 0                         ; Limit (low).
-;    dw 0                         ; Base (low).
-;    db 0                         ; Base (middle)
-;    db 0x89                      ; Access (read/write).
-;    db 0x10                      ; Granularity.
-;    db 0                         ; Base (high).
-
-.Pointer:                    ; The GDT-pointer.
-    dw $ - GDT64 - 1             ; Limit.
-    dq GDT64                     ; Base.
-    
+GDT64:                  ; Global Descriptor Table (64-bit).
+.Null: equ $ - GDT64    ; The null descriptor.
+    dw 0xFFFF           ; Limit (low).
+    dw 0                ; Base (low).
+    db 0                ; Base (middle)
+    db 0                ; Access.
+    db 1                ; Granularity.
+    db 0                ; Base (high).
+.Code: equ $ - GDT64    ; The code descriptor.
+    dw 0                ; Limit (low).
+    dw 0                ; Base (low).
+    db 0                ; Base (middle)
+    db 10011010b        ; Access (exec/read).
+    db 10101111b        ; Granularity, 64 bits flag, limit19:16.
+    db 0                ; Base (high).
+.Data: equ $ - GDT64    ; The data descriptor.
+    dw 0                ; Limit (low).
+    dw 0                ; Base (low).
+    db 0                ; Base (middle)
+    db 10010010b        ; Access (read/write).
+    db 00000000b        ; Granularity.
+    db 0                ; Base (high).
+.Ring3Code: equ $ - GDT64    ; The code descriptor.
+    dw 0                     ; Limit (low).
+    dw 0                     ; Base (low).
+    db 0                     ; Base (middle)
+    db 11111010b             ; Access (exec/read).
+    db 10101111b             ; Granularity, 64 bits flag, limit19:16.
+    db 0                     ; Base (high).
+.Ring3Data: equ $ - GDT64    ; The data descriptor.
+    dw 0                     ; Limit (low).
+    dw 0                     ; Base (low).
+    db 0                     ; Base (middle)
+    db 11110010b             ; Access (read/write).
+    db 00000000b             ; Granularity.
+    db 0                     ; Base (high).
+;.tssData: equ $ - GDT64     ; The data descriptor.
+;    dw 0                    ; Limit (low).
+;    dw 0                    ; Base (low).
+;    db 0                    ; Base (middle)
+;    db 0x89                 ; Access (read/write).
+;    db 0x10                 ; Granularity.
+;    db 0                    ; Base (high).
+.Pointer:               ; The GDT-pointer.
+    dw $ - GDT64 - 1    ; Limit.
+    dq GDT64            ; Base.
 
 align 8
 
-;;
-;; == IDT ====================================================
-;;
+;; IDT
 
-
-;
 ; Usadas nas entradas da idt.
-;
 
 sys_interrupt equ    0x8E 
 sys_code      equ    8     ;Code selector.
 
-;==================================================;
-;  Idt.                                            ;
-;  Interrupt vectors for intel x86_64              ;
-;==================================================;
+;=====================================;
+; IDT.                                ;
+; Interrupt vectors for intel x86_64  ;
+;=====================================;
 ; IDT in IA-32e Mode (64-bit IDT)
 ; See:
 ; https://wiki.osdev.org/Interrupt_Descriptor_Table
-
 ; Nesse momento criamos apenas o esqueleto da tabela,
 ; Uma rotina vai ser chamada para preencher o que falta.
 
@@ -420,13 +358,13 @@ _idt:
     dd 0              ; Zero
 
 ;1 interrupt 1h, debug exception.
-	dw 0 
-	dw sys_code
-	db 0
-	db sys_interrupt
-	dw 0
-	dd 0
-	dd 0
+    dw 0 
+    dw sys_code
+    db 0
+    db sys_interrupt
+    dw 0
+    dd 0
+    dd 0
 
 ;2 interrupt 2h, non maskable interrupt.
 	dw 0

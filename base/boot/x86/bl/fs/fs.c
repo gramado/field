@@ -1,27 +1,21 @@
 /*
  * File: fs/fs.c
- *
  * Descrição:
- *     Arquivo principal do sistema de arquivos usado no Boot Loader.
- *     
+ * Arquivo principal do sistema de arquivos usado no Boot Loader.
  * Sobre o sistema de arquivos:
  *    + HD IDE.
  *    + Partição 0. 
- *    
  *      Meus Discos:
  *    + FAT16, 8MB, cluster size = 512 bytes. (VHD)
  *    + FAT16, 255 heads, 63 spt, cylinder 243. (Pen Drive, Kingstone DT 2GB).
  *    + FAT16, 255 heads, 63 spt, cylinder 1946. (Pen Drive, SanDisk 16GB).
  *    + ...
- *
  *  Sobre o Boot Loader:   
  *      O propósito do Boot Loader é fazer inicializações, carregar o Kernel, 
  * alguns módulos, aplicativos a GUI. Depois passa o comando para o Kernel.
- *
  * Observação: 
  *     Os valores das estruturas podem ser salvos em um registro. No registro 
  * pode ter um registro das operações efetuadas no sistema de arquivo.
- *
  * History:
  *     2015 - Created by Fred Nora.
  */
@@ -36,8 +30,9 @@
  */
  
 /* 
-int fs_load_file ( unsigned char *file_name, unsigned long file_address ){    
-	return (int) 0;    //Ainda não implementada.
+int fs_load_file ( unsigned char *file_name, unsigned long file_address )
+{
+    return (int) 0;    //Ainda não implementada.
 }; 
 
 */
@@ -108,7 +103,6 @@ fatLoadCluster (
     unsigned long address, 
     unsigned long spc )
 {
-
     unsigned long i=0;
 
     for ( i=0; i < spc; i++ )
@@ -305,7 +299,7 @@ unsigned long fs_check_cluster (unsigned long id)
  *          o objetivo do Boot Loader é apenas
  *          carregar arquivos e não salvar arquivos.       
  */
- 
+
 void fsSaveRootDir ()
 {
 }
@@ -329,7 +323,7 @@ void fs_save_dir (unsigned long id)
 	//return;    //Ainda não implementada.
 }
 
-/* */
+
 void fs_save_structure ()
 {
 }
@@ -452,39 +446,33 @@ fsLoadFile (
     unsigned long file_address, 
     unsigned long dir_address )
 {
-
     int Status = 0;
 
     unsigned long i = 0;
     unsigned long j = 0;
     unsigned short next=0;
 
-
     //dir support.
     //unsigned short *root = (unsigned short *) FAT16_ROOTDIR_ADDRESS;
     unsigned short *dir = (unsigned short *) dir_address;
-
 
     unsigned long max = 512;    //Número máximo de entradas no root dir.
     unsigned long z = 0;        //Deslocamento no diretório raiz.
     unsigned long n = 0;        //Deslocamento no nome.
     char name_x[13];
 
-    // FAT support.
-    
-    // OK. Fat is constant.
-    // We need a structure of 'device context' passed via argument.
-    // 'dc->fat_address'
+// FAT support.
+
+// OK. Fat is constant.
+// We need a structure of 'device context' passed via argument.
+// 'dc->fat_address'
     
     unsigned short *fat  = (unsigned short *) FAT16_FAT_ADDRESS;
-    
-    // Cluster inicial.
-    
+
+// Cluster inicial.
     unsigned short cluster=0;
 
-
-
-    // Check
+// Check
 
     if ( (void*) name == NULL ){
         printf("fsLoadFile: [FAIL] name\n");
@@ -496,17 +484,14 @@ fsLoadFile (
         goto fail;
     }
 
+//#bugbug
+//Essa refresh screen leva muito tempo.
 
-	//#bugbug
-	//Essa refresh screen leva muito tempo.
-
-    // #debug
-
-    printf ("fsLoadFile: [DEBUG] Loading %s\n", (unsigned char*) name );
+// #debug
+    //printf ("fsLoadFile: [DEBUG] Loading %s\n", (unsigned char*) name );
     //refresh_screen();
 
-
-    // check
+// check
 
     if ( file_address == 0 ){
         printf("fsLoadFile: [FAIL] file_address\n");
@@ -521,28 +506,22 @@ fsLoadFile (
 
 //loadRoot:
 
-    //#test: 
-	// Suspendendo o carregamento do root.
-	// Ele será previamente carregado em main().
-	// Carrega o diretório raiz na memória.
-	//fs_load_rootdirEx();
-
+//#test: 
+// Suspendendo o carregamento do root.
+// Ele será previamente carregado em main().
+// Carrega o diretório raiz na memória.
+    //fs_load_rootdirEx();
 
     if ( g_fat16_root_status != 1 ){
         printf ("fsLoadFile: Root Status \n");
         goto fail;
     }
 
+//#debug 
+    //printf("carregar_arquivo: Searching File=[%s]\n",file_name);
 
-	//#debug 
-	//printf("carregar_arquivo: Searching File=[%s]\n",file_name);
-
-
-    // ================================
-    // Search.
-    // Procura o arquivo no diretório raiz.
-
-
+// Search.
+// Procura o arquivo no diretório raiz.
 //search_file:
 
     while (max > 0)
@@ -576,72 +555,64 @@ fsLoadFile (
 // =======================
 // not found
 // Se o arquivo não for encontrado.
-
 file_not_found:
     printf ("fsLoadFile: [FAIL] File not found\n"); 
     goto fail;
 
-
 // ===========================
 // found
 // Se o arquivo for encontrado.    
-
 found: 
-    
-    // Pega cluster inicial (unsigned short).
-    // Limites: 
-    // 16 entradas por setor, 32 setores de tamanho.
-    // (0x1A/2) = 13.
-    // Check limits.
+
+// Pega cluster inicial (unsigned short).
+// Limites: 
+// 16 entradas por setor, 32 setores de tamanho.
+// (0x1A/2) = 13.
+// Check limits.
 
     cluster = (unsigned short) dir[z +13];
 
-    // #bugbug
-    // It is unsigned short.
+// #bugbug
+// It is unsigned short.
     // if ( cluster == 0 || cluster > 0xFFF0 )
     
-    if ( cluster <= 0 || cluster > 0xFFF0 )
+    if ( cluster <= 0 || 
+         cluster > 0xFFF0 )
     {
         printf ("fsLoadFile: [FAIL] Cluster limits File=[%s] Cluster=[%d]\n", 
-            &dir[z], 
-            cluster );
-
+            &dir[z], cluster );
         goto fail;
     }
 
-
-    // Obs: 
-    // root[z] é o início da entrada. 
-    // Podemos pegar várias informações sobre o arquivo. 
-    // #todo: 
-    // Precisamos alocar uma estrutura para salvarmos as informações
-    // sobre o arquivo.
-
+// Obs: 
+// root[z] é o início da entrada. 
+// Podemos pegar várias informações sobre o arquivo. 
+// #todo: 
+// Precisamos alocar uma estrutura para salvarmos as informações
+// sobre o arquivo.
 
 //loadFAT:
-	
-	//#debug. 
-	//printf("carregar_arquivo: Loading FAT ...\n");
 
-	
-    //#test: 
-	// Suspendendo o carregamento do root.
-	// Ele será previamente carregado em main().
-    // Carrega a FAT na memória. 
-	//fs_load_fatEx();
+//#debug. 
+    //printf("carregar_arquivo: Loading FAT ...\n");
+
+//#test: 
+// Suspendendo o carregamento do root.
+// Ele será previamente carregado em main().
+// Carrega a FAT na memória. 
+    //fs_load_fatEx();
 
     if ( g_fat16_fat_status != 1 ){
         printf("fsLoadFile: [FAIL] FAT Status \n");
         goto fail;
     }
 
-	//#debug. 
-	//printf("carregar_arquivo: Loading file ...\n"); 
+//#debug. 
+    //printf("carregar_arquivo: Loading file ...\n"); 
 
-
-	//
-	// Carregar o arquivo.
-	//
+//
+// Carregar o arquivo.
+//
 
 //Loop.
 
@@ -676,42 +647,44 @@ while(1)
  
  *	
  */
- 
-    // Read one sector.
- 
-    // Ler um setor. 
-    // (data_area_base + next_cluster - 2)
-    // 512 bytes por cluster.
+
+
+// Read one sector.
+// Ler um setor. 
+// (data_area_base + next_cluster - 2)
+// 512 bytes por cluster.
 
     read_lba ( 
         file_address, 
         (FAT16_DATAAREA_LBA + cluster -2) ); 
 
+// Incrementa o buffer. +512;
+// #todo: 
+// SECTOR_SIZE deveria ser variavel e nao constante.
 
-    // Incrementa o buffer. +512;
-    // #todo: SECTOR_SIZE deveria ser variavel e nao constante.
-    
     file_address = (unsigned long) (file_address + SECTOR_SIZE);
 
-    // Pega o próximo cluster na FAT.
+// Pega o próximo cluster na FAT.
     next = (unsigned short) fat[cluster];
 
-    // Configura o cluster atual.
+// Configura o cluster atual.
     cluster = (unsigned short) next;
 
-    // Ver se o cluster carregado era o último cluster do arquivo.
-    if ( cluster == 0xFFFF || cluster == 0xFFF8 )
+// Ver se o cluster carregado era o último cluster do arquivo.
+    if ( cluster == 0xFFFF || 
+         cluster == 0xFFF8 )
     {
         goto done; 
     }
 
-    // #debug.
+// #debug.
     // printf("%d ", cluster);
 
-    // Loop: 
-    // Vai para próxima entrada na FAT.
+// Loop: 
+// Vai para próxima entrada na FAT.
 
     goto LOOP_next_entry;
+
 
 // ===================================
 // O arquivo não pode ser carregado.
@@ -723,17 +696,10 @@ fail:
 // ==============================
 // Done: 
 // Arquivo carregado com sucesso.
-
 done:
-
-#ifdef BL_VERBOSE
-    printf ("Done\n");
-    refresh_screen (); 
-#endif
-
-    // #debug
-    
-    printf ("BL.BIN: File LOADED!\n");
+// #debug
+    //printf ("BL.BIN: File LOADED!\n");
+    //refresh_screen (); 
     return 0;
 }
 
@@ -1062,7 +1028,6 @@ fail:
 
 
 /*
- *****************************************
  * fsSearchFile: 
  *    Procura um arquivo no diretório raiz.
  */
@@ -1070,23 +1035,23 @@ fail:
 unsigned long fsSearchFile (unsigned char *name)
 {
     int Status=0;
-    unsigned long z = 0;        //Deslocamento no rootdir. 
-    unsigned long n = 0;        //Deslocamento no nome.
-    
-    // Contando entradas.
-    int i=0;
-    unsigned long max = 512;    //Número máximo de entradas no diretório raiz.
 
+    unsigned long z=0;  //Deslocamento no rootdir. 
+    unsigned long n=0;  //Deslocamento no nome.
+
+// Contando entradas.
+    int i=0;
+    unsigned long max = 512;  //Número máximo de entradas no diretório raiz.
 
     char name_x[13];
+
     unsigned short *root = (unsigned short *) FAT16_ROOTDIR_ADDRESS;
 
-
-    // Quando encontrarmos a 'ultima e
+// Quando encontrarmos a ultima e.
     int EndOfDir = FALSE;
     int FoundInThisEntry = -1;
 
-    // Check args.
+// Check args.
 
     if ( (void*) name == NULL ){
         printf("fsSearchFile: [ERROR] invalid name\n");
@@ -1098,10 +1063,8 @@ unsigned long fsSearchFile (unsigned char *name)
         goto file_not_found;
     }
 
-
-    // Load root dir.
+// Load root dir.
     fs_load_rootdirEx();
-
 
 // Fixa o número máximo de entradas de acordo 
 // com o tipo de sistema de arquivos.
@@ -1158,7 +1121,10 @@ file_not_found:
     FoundInThisEntry = -1;
     printf("bl-fsSearchFile: [FAIL] File not found\n"); 
     if ( EndOfDir == TRUE ){
-        printf("We reached the end of dir\n"); 
+        printf("We reached the end of dir\n");
+        refresh_screen();
+        //#??
+        //panic??
     }
     return (unsigned long) 1;
 
@@ -1730,7 +1696,7 @@ fail:
  * fsInitFat:
  *    Inicializa as estruturas da FAT.
  */
-
+// Called by fsInit.
 void fsInitFat()
 {
 	//return;  //Ainda não implementada.
@@ -1742,41 +1708,29 @@ void fsInitFat()
  *     +Limpa as estruturas para primeiro uso.
  *     +@todo: Configura as estruturas com os falores encontrados
  *             no mbr, no rootdir.
- *
  * OBS: Quem vai usar essas estuturas é o bootloader.
  */
 
+// Called by fsInit.
 void fsInitStructures()
 {
-	//return;  //Ainda não implementada.
+    //return;  //Ainda não implementada.
 }
 
 
 /*
- ***********************
  * fsInit:
- * 
  *     Inicializa o sistema de arquivos da partição do sistema.
  *     Obs: Isso deve ficar no fim do arquivo. 
  */
 
+// Called by init() in init.c
+
 int fsInit()
 {
-
-#ifdef BL_VERBOSE
-    printf ("fsInit: Initializing structures..\n");
-#endif
-    fsInitStructures ();
-
-
-#ifdef BL_VERBOSE
-    printf ("fsInit: Initializing FAT file system..\n");
-#endif
-    fsInitFat ();
-
-
-	//More?!
-
+    fsInitStructures();
+    fsInitFat();
+    // ...
     return 0;
 }
 

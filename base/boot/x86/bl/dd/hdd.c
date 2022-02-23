@@ -1,27 +1,20 @@
 /*
  * File: hdd.c 
- * 
  * Descrição:
- *     Interface de acesso a discos do tipo HDD.
- *     Deve haver um driver para cada marca suportada.
- *     Driver IDE presente dentro do kernel.
- *
- *     Rotinas de hardware. Não são operações no
- *     sistema de arquivos.
- *
- *     O sistema de arquivos chama essas rotinas.
- *     O gerenciamento de discos chama essas rotinas.
- *
+ * Interface de acesso a discos do tipo HDD.
+ * Deve haver um driver para cada marca suportada.
+ * Driver IDE presente dentro do kernel.
+ * Rotinas de hardware. Não são operações no
+ * sistema de arquivos.
+ * O sistema de arquivos chama essas rotinas.
+ * O gerenciamento de discos chama essas rotinas.
  * Obs: Esse módulo é um gerenciador de controlador de hard disk
- *      Aqui não importa se é ATA ou Serial ATA. Rotinas específicas
+ * Aqui não importa se é ATA ou Serial ATA. Rotinas específicas
  * serão executadas pela classe apropriada de interface, aqui é ais geral.
  * Por exemplo: Sondagem por tipos de dispositivos de armazenamento.
  * Há muitos tipos de hard drive. Esse módulo é somente para hard drives.
- *
- *     Ambiente: (RING 0).
- *
+ * Ambiente: (RING 0).
  * #obs: Vamos montar dispositivos em /DEV
- *
  * History:
  *    2013 - Created by Fred Nora.
  */
@@ -445,20 +438,22 @@ my_write_hd_sector (
 
 
 /*
- ***************************************
  * init_hdd:
  *     Inicializa o driver de hd.
  */
 
+// Called by OS_Loader_Main in main.c.
+
 int init_hdd(void)
 {
-    // #todo: 
-    // We need to do something here. haha
 
+// #todo: 
+// We need to do something here. haha
+
+// See: ide.c
     diskATADialog ( 1, FORCEPIO, FORCEPIO );
 
-    g_driver_hdd_initialized = (int) 1;
-
+    g_driver_hdd_initialized = (int) TRUE;
     return 0;
 }
 

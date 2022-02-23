@@ -2131,21 +2131,20 @@ void console_banner(unsigned long banner_flags)
     }
 
 // Virtual console
+// #todo
+// Print some more basic info
+// just like the processor brand and the size of the ram.
     if( Initialization.console_log == TRUE )
     {
         set_up_cursor (0,0);
         printf ("Welcome to Gramado OS!\n");
-    
-        // #todo
-        // Print some more basic info
-        // just like the processor brand and the size of the ram.
     }
+    
+    refresh_screen();
 }
 
 
-
 /*
- ********************************************** 
  * console_ioctl:
  * 
  */

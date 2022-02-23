@@ -1,4 +1,5 @@
 
+// ws.c
 
 #include <kernel.h>
 
@@ -6,20 +7,19 @@
 // the window server struct with the embedded window server info.
 int ws_init (void)
 {
-
-    debug_print ("ws_init: \n");
+    //debug_print ("ws_init: \n");
 
     //#todo
     //WindowServer.desktop = (struct desktop_d *) __desktop;
 
-    // The system starts with the embedded window server.
+// The system starts with the embedded window server.
     WindowServer_type = WindowServerTypeEmbedded;
-    
-    // #todo
-    // Use the pid of the kernel process.
+
+// #todo
+// Use the pid of the kernel process.
     //WindowServer.pid = (pid_t) current_process;
 
-    // name.
+// name.
     WindowServer_name[0] = 'k';
     WindowServer_name[1] = 'g';
     WindowServer_name[2] = 'w';
@@ -33,6 +33,7 @@ int ws_init (void)
     WindowServer_initialized = TRUE;
     return 0;
 }
+
 
 // Let's setup the window server.
 // See:
@@ -50,6 +51,7 @@ ws_ioctl (
     debug_print("ws_ioctl: [TODO]\n");
     return -1;
 }
+
 
 void ws_show_info(void)
 {
