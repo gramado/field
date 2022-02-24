@@ -1792,22 +1792,18 @@ void *CreateWindow (
    struct gws_window_d  *__w;
    unsigned long __rop_flags=0;
 
-
-    // This function is able to create some few 
-    // kinds of windows for now:
-    // overlapped, editbox, button and simple.
+// This function is able to create some few 
+// kinds of windows for now:
+// overlapped, editbox, button and simple.
 
     int ValidType=FALSE;
 
-
     gwssrv_debug_print ("CreateWindow: :)\n");
-
 
 
 //
 // name
 //
-
 
 // =================
 // Duplicate
@@ -2013,15 +2009,15 @@ void *CreateWindow (
 
 draw_frame:
 
-    // #IMPORTANTE
-    // DESENHA O FRAME DOS TIPOS QUE PRECISAM DE FRAME.
-    // OVERLAPED, EDITBOX, CHECKBOX ...
+// #IMPORTANTE
+// DESENHA O FRAME DOS TIPOS QUE PRECISAM DE FRAME.
+// OVERLAPED, EDITBOX, CHECKBOX ...
 
-    // draw frame.
-    // #todo:
-    // Nessa hora essa rotina podera criar a barra de títulos.
-    // o wm poderá chamar a rotina de criar frame.
-    // See: window.c
+// draw frame.
+// #todo:
+// Nessa hora essa rotina podera criar a barra de títulos.
+// o wm poderá chamar a rotina de criar frame.
+// See: window.c
 
     if ( type == WT_OVERLAPPED || 
          type == WT_EDITBOX || 

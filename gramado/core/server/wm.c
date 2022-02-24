@@ -392,7 +392,6 @@ __draw_window_border(
 // Dependendo do estilo do frame, podemos ou nao criar a caption bar.
 // Por exemplo: Uma editbox tem um frame mas não tem uma caption bar.
 
-
 // IN:
 // parent = parent window ??
 // window = The window where to build the frame.
@@ -469,11 +468,7 @@ wmCreateWindowFrame (
     //unsigned long Width = (width & 0xFFFF);
     //unsigned long Height = (height & 0xFFFF);
 
-
     gwssrv_debug_print ("wmCreateWindowFrame:\n");
-
-
-
 
 // #todo
 // Se estamos minimizados ou a janela mãe está minimizada,
@@ -486,7 +481,6 @@ wmCreateWindowFrame (
 // #todo
 // Cada elemento da frame que incluimos, incrementa
 // o w.top do retângulo da área de cliente.
-
 
 // check parent
 
@@ -516,14 +510,13 @@ wmCreateWindowFrame (
     window->width  = (window->width  & 0xFFFF);
     window->height = (window->height & 0xFFFF);
 
+// #todo
+// Desenhar o frame e depois desenhar a barra de títulos
+// caso esse estilo de frame precise de uma barra.
 
-    // #todo
-    // Desenhar o frame e depois desenhar a barra de títulos
-    // caso esse estilo de frame precise de uma barra.
-
-    // Editbox
-    // EDITBOX NÃO PRECISA DE BARRA DE TÍTULOS.
-    // MAS PRECISA DE FRAME ... QUE SERÃO AS BORDAS.
+// Editbox
+// EDITBOX NÃO PRECISA DE BARRA DE TÍTULOS.
+// MAS PRECISA DE FRAME ... QUE SERÃO AS BORDAS.
     
 //
 // Type
@@ -639,7 +632,6 @@ wmCreateWindowFrame (
 
 
 
-
     if ( Type == WT_OVERLAPPED )
     {
 
@@ -733,7 +725,7 @@ wmCreateWindowFrame (
             window->titlebar_color = TitleBarColor; //0x00AC81
 
             tbWindow = (void *) xxxCreateWindow ( 
-                                    WT_SIMPLE, 0, 1, 1, "Titlebar", 
+                                    WT_SIMPLE, 0, 1, 1, "TitleBar", 
                                     BorderSize, 
                                     BorderSize, 
                                     (window->width - BorderSize - BorderSize), 
@@ -790,16 +782,22 @@ wmCreateWindowFrame (
             // O posicionamento em relação
             // à janela é consistente por questão de estilo.
             // See: bmp.c
-            // IN: index, x, y.
+            // IN: index, left, top.
 
             window->titlebarHasIcon = FALSE;
             window->frame.icon_id = 1;
-            if( useIcon == TRUE ){
+            if( useIcon == TRUE )
+            {
+                // Decode the bmp that is in a buffer
+                // and display it directly into the framebuffer. 
+                // IN: index, left, top
                 gwssrv_display_system_icon( 
                     (int) window->frame.icon_id, 
                     (tbWindow->left + METRICS_ICON_LEFT), 
-                    (tbWindow->top  + METRICS_ICON_TOP) );
-                    window->titlebarHasIcon = TRUE;
+                    (tbWindow->top  + METRICS_ICON_TOP) 
+                    );
+                
+                window->titlebarHasIcon = TRUE;
              }
 
             //

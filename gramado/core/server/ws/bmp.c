@@ -452,21 +452,18 @@ fail:
 */
 
 
-
 /*
- ********************************************************
  * bmpDisplayBMP:
- *
  *     Mostra na tela uma imagem BMP que j� est� 
  * carregada na mem�ria. (pinta no backbuffer)
- * 
  * IN:
  *     address = endere�o base onde o bmp j� est� carregado.
  *     x       = posicionamento 
  *     y       = posicionamento
- *
  *     @todo: Criar defines para esses deslocamentos.
  */
+
+// Paint into the backbuffer, but refresh after that.
 
 int 
 bmpDisplayBMP ( 
@@ -474,7 +471,8 @@ bmpDisplayBMP (
     unsigned long x, 
     unsigned long y )
 {
-    // Endereço base do BMP que foi carregado na memoria
+
+// Endereço base do BMP que foi carregado na memoria
     unsigned char *bmp = (unsigned char *) address;
 
     struct gws_bmp_header_d      *bh;
@@ -484,16 +482,15 @@ bmpDisplayBMP (
 
     unsigned int left, top, bottom;
 
+// Zoom support.
+// It is working.
+// But we need to work in the 'position' thing
+// and accept some function parameters for that effect.
 
-    // Zoom support.
-    // It is working.
-    // But we need to work in the 'position' thing
-    // and accept some function parameters for that effect.
     int useZoom=FALSE;
     int ZoomFactor=8;
     int iwZoom=0;
     int ihZoom=0;
-
 
     unsigned int X=0;
     unsigned int Y=0;
@@ -509,8 +506,7 @@ bmpDisplayBMP (
     unsigned int color2=0;
     unsigned long pal_address=0;
 
-
-    // Vari�vel para salvar rgba.
+// Variável para salvar rgba.
     unsigned char *c  = (unsigned char *) &color;
     unsigned char *c2 = (unsigned char *) &color2;
 
@@ -518,47 +514,48 @@ bmpDisplayBMP (
     unsigned char *palette_index = (unsigned char *) &pal_address;
 
 
-    // Limits
+// Limits
 
-    // #todo: 
-    // Get system metrics.
+// #todo: 
+// #bugbug: Isso é provisório.
+// Get system metrics.
 
     xLimit = 800;
     yLimit = 600;
 
-
+// #debug:
     gwssrv_debug_print ("bmpDisplayBMP:\n");
 
-
-    // Limits.
-    if ( x > xLimit || y > yLimit ){
+// Limits.
+    if ( x > xLimit || 
+         y > yLimit )
+    {
         gwssrv_debug_print ("bmpDisplayBMP: Limits \n");
         printf             ("bmpDisplayBMP: Limits \n");
         goto fail;
     }
 
-
-    // #todo:
-    // Testar validade do endereço.
-    if ( address == 0 ){
+// #todo:
+// Testar validade do endereço.
+    if ( address == 0 )
+    {
         gwssrv_debug_print ("bmpDisplayBMP: address fail \n");
         printf             ("bmpDisplayBMP: address fail \n");
         goto fail;
     }
 
 
+//
+// struct for Info header
+//
 
-	//
-	// struct for Info header
-	//
-
-    // #todo: 
-    // Podemos usar malloc?
+// #todo: 
+// Podemos usar malloc?
     
-    // Buffer para as estruturas.
+// Buffer para as estruturas.
+
     //char buffer[512];
     //char buffer2[512];
-
 
     bh = (struct gws_bmp_header_d *) malloc ( sizeof(struct gws_bmp_header_d) );
 
@@ -569,9 +566,7 @@ bmpDisplayBMP (
         goto fail;
     }
 
-    //
-    // Signature.
-    //
+// Signature
 
     sig = *(unsigned short *) &bmp[0];
     bh->bmpType = sig;
@@ -585,69 +580,71 @@ bmpDisplayBMP (
         goto fail;
     }
 
-    //
-    // Size. ( 2 bytes )
-    //
+// Size. ( 2 bytes )
 
     unsigned short Size = *(unsigned short *) &bmp[2];
     bh->bmpSize = Size;
     //printf ("Size={%x}\n",Size);
 
 
+//
+// struct for Info header
+//
 
-	//
-	// struct for Info header
-	//
+// Windows bmp.
 
-    //Windows bmp.
     bi = (struct gws_bmp_infoheader_d *) malloc ( sizeof(struct gws_bmp_infoheader_d) );
 
-    if ( (void *) bi == NULL ){
+    if ( (void *) bi == NULL )
+    {
         gwssrv_debug_print ("bmpDisplayBMP: bi fail \n");
         printf             ("bmpDisplayBMP: bi fail \n");
         goto fail;
     }
 
-    // The size of this header.
+// The size of this header.
+// #todo: tipagem (type) xxx;
+
     bi->bmpSize = *( unsigned long * ) &bmp[14];
     //printf ("HeaderSize={%x}\n",bi->bmpSize);
 
-    // X and Y.
+// X and Y.
+// #todo: tipagem (type) xxx;
     X = (x & 0xFFFF);
     Y = (y & 0xFFFF);
-    
-    // Width and height.
+
+// Width and height.
+// #todo: tipagem (type) xxx;
     Width  = *( unsigned long * ) &bmp[18];
     Height = *( unsigned long * ) &bmp[22];
 
-    // Salvar.
+// Salva
     bi->bmpWidth  = (unsigned long) (Width  & 0xFFFF);
     bi->bmpHeight = (unsigned long) (Height & 0xFFFF);
 
     //printf ("w=%d h=%d\n",Width,Height);
 
+// Number of bits per pixel.
+// 1, 4, 8, 16, 24 and 32.
+// #todo: tipagem (type) xxx;
 
-    // Number of bits per pixel.
-    // 1, 4, 8, 16, 24 and 32.
     bi->bmpBitCount = *( unsigned short * ) &bmp[28];
 
     //printf ("Count={%d}\n", bi->bmpBitCount );
     
-    
-    
-    //#limits
+//#limits
+
     //if( bi->bmpBitCount != 24 )
     //{
     //    printf("bmpDisplayBMP: Count fail\n");
     //    goto fail;
     // }
 
+//
+// Compression
+//
 
-    //
-    // Compression.
-    //
-
-    // 0 = No compression.
+// 0 = No compression.
 
     /*
     if ( bi->bmpCompression != 0 ){
@@ -656,16 +653,17 @@ bmpDisplayBMP (
         goto fail;
     }
     */
-    
 
-    //
-    // Draw
-    //
+//
+// Draw
+//
 
-    gwssrv_debug_print ("bmpDisplayBMP: Draw!\n");
+    //#debug
+    //gwssrv_debug_print ("bmpDisplayBMP: Draw!\n");
     //printf             ("bmpDisplayBMP: Draw!\n");
 
-    // Top, Left, Bottom.
+// Top, Left, Bottom.
+// #todo: tipagem.
 
     left = (x & 0xFFFF);
     top  = (y & 0xFFFF);
@@ -676,9 +674,8 @@ bmpDisplayBMP (
 // Data area.
 //
 
-    // bpp
-    // The begin of the data area depends on the bpp value.
-
+// bpp
+// The begin of the data area depends on the bpp value.
 // #tutorial:
 //1     -  1 bpp (Mono)
 //4     -  4 bpp (Indexed)
@@ -690,56 +687,59 @@ bmpDisplayBMP (
 //32    - 32 bpp (True color, RGB)
 //320   - 32 bpp (True color, RGBA)	
 
-
     switch ( bi->bmpBitCount ){
 
-        // ??
-        //case 1:  base = (0x36 + 0x40); break;
+    // ??
+    //case 1:  base = (0x36 + 0x40); break;
 
-        // ??
-        //case 2: base = (0x36 + 0x40); break;
+    // ??
+    //case 2: base = (0x36 + 0x40); break;
 
-        // 4 bytes pra cada cor, 16 cores. Total 64 bytes.
-        case 4:  
-            base = (0x36 + 0x40); 
-            gwssrv_debug_print ("bmpDisplayBMP: bmpBitCount 4\n"); 
-            break; 
+    // 4 bytes pra cada cor, 16 cores. Total 64 bytes.
+    case 4:  
+        base = (0x36 + 0x40); 
+        //gwssrv_debug_print ("bmpDisplayBMP: bmpBitCount 4\n"); 
+        break; 
 
-        // 4 bytes pra cada cor, 256 cores. Total 1024 bytes.
-        case 8:  
-            base = (0x36 + 0x400); 
-            gwssrv_debug_print ("bmpDisplayBMP: bmpBitCount 8\n"); 
-            break;
+    // 4 bytes pra cada cor, 256 cores. Total 1024 bytes.
+    case 8:  
+        base = (0x36 + 0x400); 
+        //gwssrv_debug_print ("bmpDisplayBMP: bmpBitCount 8\n"); 
+        break;
 
-        // #todo: Onde fica a base??
-        case 16:
-            base = 0x36;
-            gwssrv_debug_print ("bmpDisplayBMP: [FIXME] bmpBitCount 16\n"); 
-            break;
+    // #todo: Onde fica a base??
+    case 16:
+        base = 0x36;
+        //gwssrv_debug_print ("bmpDisplayBMP: [FIXME] bmpBitCount 16\n"); 
+        break;
 
-        // #todo: Onde fica a base??
-        case 24:
-            base = 0x36;
-            gwssrv_debug_print ("bmpDisplayBMP: [FIXME] bmpBitCount 24\n"); 
-            break;
+    // #todo: Onde fica a base??
+    case 24:
+        base = 0x36;
+        //gwssrv_debug_print ("bmpDisplayBMP: [FIXME] bmpBitCount 24\n"); 
+        break;
 
-        // #todo: Onde fica a base??
-        case 32:
-            base = 0x36;
-            gwssrv_debug_print ("bmpDisplayBMP: [FIXME] bmpBitCount 32\n"); 
-            break;
+    // #todo: Onde fica a base??
+    case 32:
+        base = 0x36;
+        //gwssrv_debug_print ("bmpDisplayBMP: [FIXME] bmpBitCount 32\n"); 
+        break;
 
-        // #bugbug
-        // We need to abort.
-        default:  
-            base = 0x36;
-            gwssrv_debug_print ("bmpDisplayBMP: [FAIL] bmpBitCount fail\n"); 
-            break;
+    // #bugbug
+    // We need to abort.
+    default:  
+        base = 0x36;
+        gwssrv_debug_print ("bmpDisplayBMP: [FAIL] bmpBitCount fail\n"); 
+        break;
     };
 
     //#debug
-    gwssrv_debug_print ("bmpDisplayBMP: for\n");
+    //gwssrv_debug_print ("bmpDisplayBMP: for\n");
     //printf             ("bmpDisplayBMP: for\n");
+
+//
+// Draw
+//
 
     for ( i=0; i < bi->bmpHeight; i++ )
     {
@@ -750,7 +750,6 @@ bmpDisplayBMP (
             if (bi->bmpBitCount == 4 )
             {
                 offset = base;
-    
                 palette_index[0] = bmp[offset];
 
                 // Segundo nibble.
@@ -779,7 +778,6 @@ bmpDisplayBMP (
             {   
                 offset = base;
                 color = (unsigned int) palette[  bmp[offset] ];
-
                 base = base + 1; 
             }
 
@@ -845,61 +843,55 @@ bmpDisplayBMP (
                 base = base + 4;    
             }
 
-			//
-			// # Put pixel #
-			//
-				
-			//Nesse momento j� temos a cor selecionada 
-			//no formato 0xaarrggbb ... 
-			//Agora se a flag de mascara estiver selecionada,
-			//ent�o devemos ignora o pixel e n�o pint�-lo.	
+            // Put pixel.
+            // Nesse momento ja temos a cor selecionada 
+            // no formato 0xaarrggbb ... 
+            // Agora se a flag de mascara estiver selecionada,
+            // entao devemos ignora o pixel e nao pinta-lo.
 
             switch (bmp_change_color_flag)
             {
-				//1000
-				//flag para ignorarmos a cor selecionada.
-				//N�o pinte nada.
-				//Devemos pintar caso a cor atual seja  
-				//diferente da cor selecionada.
+                // 1000
+                // flag para ignorarmos a cor selecionada.
+                // Nao pinte nada.
+                // Devemos pintar caso a cor atual seja  
+                // diferente da cor selecionada.
+
                 case BMP_CHANGE_COLOR_TRANSPARENT:
                     if ( color != bmp_selected_color )
                     {
-
+                        // Zoom support.
                         if (useZoom==FALSE)
                         {
                             grBackBufferPutpixel ( 
                                 (unsigned int) color, 
                                 (unsigned long) left, 
-                                (unsigned long) bottom);
+                                (unsigned long) bottom );
                         }
 
                         // #test
                         // Testing zoom support.
                         
-                        // zoom.
+                        // zoom support
                         if (useZoom==TRUE)
                         {
                             for (ihZoom=0; ihZoom < (ZoomFactor+1); ihZoom++){
                             for (iwZoom=0; iwZoom < (ZoomFactor+1); iwZoom++){ 
-
                             grBackBufferPutpixel ( 
                                 (unsigned int) color, 
                                 (unsigned long) left   + (j * ZoomFactor) + iwZoom, 
                                 (unsigned long) bottom - (i * ZoomFactor) + ihZoom );
-                            
                             };};
                         }
-
-
                     }
                     break;
 
-				//2000	
-				//Substitua pela cor indicada.
-				//Se a cor atual � igual a cor selecionada,
-				//devemos substituir a cor atual pela substituta.
-				//Mas se a cor atual for diferente da cor selecionada,
-				//pintamos normalmente a cor atual.
+                // 2000
+                // Substitua pela cor indicada.
+                // Se a cor atual eh igual a cor selecionada,
+                // devemos substituir a cor atual pela substituta.
+                // Mas se a cor atual for diferente da cor selecionada,
+                // pintamos normalmente a cor atual.
                 case BMP_CHANGE_COLOR_SUBSTITUTE:
                     if ( color == bmp_selected_color )
                     {
@@ -908,15 +900,17 @@ bmpDisplayBMP (
                             (unsigned long) left, 
                             (unsigned long) bottom );
 
-						//my_buffer_put_pixel ( (unsigned long) bmp_substitute_color, 
-			            //    (unsigned long) left, 
-						//    (unsigned long) bottom, 
-						//     0 );
-							 
-						//backbuffer_putpixel ( (unsigned long) bmp_substitute_color, 
-			            //    (unsigned long) left, 
-						//    (unsigned long) bottom, 
-						//     0 );
+                        // old?
+                        //my_buffer_put_pixel ( (unsigned long) bmp_substitute_color, 
+                        //    (unsigned long) left, 
+                        //    (unsigned long) bottom, 
+                        //     0 );
+ 
+                        // old?
+                        //backbuffer_putpixel ( (unsigned long) bmp_substitute_color, 
+                        //    (unsigned long) left, 
+                        //    (unsigned long) bottom, 
+                        //     0 );
 
                     }else{
 
@@ -925,16 +919,17 @@ bmpDisplayBMP (
                             (unsigned long) left, 
                             (unsigned long) bottom );
 
-						//my_buffer_put_pixel( (unsigned long) color, 
-			            //    (unsigned long) left, 
-						//    (unsigned long) bottom, 
-						//    0 );
-							
-						//backbuffer_putpixel ( (unsigned long) color, 
-			            //    (unsigned long) left, 
-						//    (unsigned long) bottom, 
-						//    0 );
+                        // old?
+                        //my_buffer_put_pixel( (unsigned long) color, 
+                        //    (unsigned long) left, 
+                        //    (unsigned long) bottom, 
+                        //    0 );
 
+                        // old?
+                        //backbuffer_putpixel ( (unsigned long) color, 
+                        //    (unsigned long) left, 
+                        //    (unsigned long) bottom, 
+                        //    0 );
                     }; 
                     break;
 
@@ -951,22 +946,22 @@ bmpDisplayBMP (
                         (unsigned long) left, 
                         (unsigned long) bottom );
 
-			        //my_buffer_put_pixel( (unsigned long) color, 
-			        //    (unsigned long) left, 
-					//	(unsigned long) bottom, 
-					//	0 );				
-				    
-			        //backbuffer_putpixel ( (unsigned long) color, 
-			        //    (unsigned long) left, 
-					//	(unsigned long) bottom, 
-					//	0 );
+                    // old?
+                    //my_buffer_put_pixel( (unsigned long) color, 
+                    //    (unsigned long) left, 
+                    //    (unsigned long) bottom, 
+                    //    0 );
+
+                    // old?
+                    //backbuffer_putpixel ( (unsigned long) color, 
+                    //    (unsigned long) left, 
+                    //    (unsigned long) bottom, 
+                    //    0 );
 
                     break;
             };
 
-            // next pixel
-
-            left++; 
+            left++;    // next pixel.
         };
 
         // Vamos para a linha anterior.
@@ -977,31 +972,34 @@ bmpDisplayBMP (
     };
 
 
-	// ## test palette 
-	//int p;
-	
-	//if(bi->bmpBitCount == 8 )
-	//{
-	//    printf("\n");
-	//    for( p=0; p<16; ++p )
-	//    {
-	//        printf("%x\n",palette[p]);
-	//    }
-	//    printf("\n");
-	//};
+// ## test palette 
+    //int p;
 
+    //if(bi->bmpBitCount == 8 )
+    //{
+    //    printf("\n");
+    //    for( p=0; p<16; ++p )
+    //    {
+    //        printf("%x\n",palette[p]);
+    //    }
+    //    printf("\n");
+    //};
 
 done:
 
-    //#todo
-    //Invalidate, not show.
+//#todo
+//Invalidate, not show.
 
+// #todo
+// Create a flag in the function's parameter.
+    //if(flag==TRUE)
     gws_refresh_rectangle (X,Y,Width,Height);
 
-    // #debug
-    gwssrv_debug_print ("bmpDisplayBMP: done \n");
+// #debug
+    //gwssrv_debug_print ("bmpDisplayBMP: done \n");
     //printf            ("bmpDisplayBMP: done \n");
     //printf("w={%d} h={%d}\n", bi->bmpWidth, bi->bmpHeight );
+    
     return 0;
 
 fail:
@@ -1128,6 +1126,7 @@ void *gwssrv_get_system_icon (int n)
  */
  
 // Called by createwDrawFrame on createw.c
+// >> Called by wmCreateWindowFrame in wm.c
 
 int 
 gwssrv_display_system_icon ( 
@@ -1144,18 +1143,13 @@ gwssrv_display_system_icon (
 
     char *sm_buffer;
 
-    // #todo: 
-    // limits for x and y.
-
+// #todo: 
+// limits for x and y.
 
     unsigned long bmp_x = (x & 0xFFFF);
     unsigned long bmp_y = (y & 0xFFFF);
 
-
-
-//
 // Get buffer address.
-//
 
     sm_buffer = (char *) gwssrv_get_system_icon(index);
     //sm_buffer = gwssrv_get_system_icon(2);
@@ -1194,7 +1188,7 @@ gwssrv_display_system_icon (
         while(1);
     }
 
-    // Check BM header. Again.
+// Check BM header. Again.
 
     if ( sm_buffer[0] == 'B' && sm_buffer[1] == 'M' )
     {
@@ -1204,10 +1198,7 @@ gwssrv_display_system_icon (
         //bmp_change_color_flag = BMP_CHANGE_COLOR_NULL;
         bmp_selected_color = COLOR_WHITE;
 
-        // Decode on backbuffer ?
- 
-        // See:
-        // ??
+        // Paint into the backbuffer, but refresh after that.
         
         bmpDisplayBMP( 
             (char *) sm_buffer, 
