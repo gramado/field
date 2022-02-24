@@ -11,6 +11,7 @@
 
 #define WM_DEFAULT_BACKGROUND_COLOR   COLOR_GRAY
 
+int mousehover_window=0;
 
 // Local structure
 
@@ -1687,7 +1688,6 @@ wmProcedure(
     unsigned long long1,
     unsigned long long2 )
 {
-
     int Status=FALSE;
     
 // #debug
@@ -1785,9 +1785,16 @@ wmProcedure(
             long2 );
         
         // Sim
-        if(Status==TRUE){
+        if(Status==TRUE)
+        {
             yellow_status("oops");
+            //rtl_reboot();
+            // Register the hover window.
+            mousehover_window=(int)__taskbar_startmenu_button_window->id;
         }
+        
+        if(Status==FALSE){ mousehover_window=0; }
+        
         return 0;
         break;
 
@@ -1795,33 +1802,17 @@ wmProcedure(
         if(long1==0){ yellow_status("P0"); }
         if(long1==1){ yellow_status("P1"); }
         if(long1==2){ yellow_status("P2"); }
-        //#bugbug: Os parametros estão nos mostrando
-        // o número do botao pressionado e não seu posicionamento.
-        // O ponteiro esta dentro do botao do menu iniciar?
-        //Status = is_within(
-        //    (struct gws_window_d *) __taskbar_startmenu_button_window,
-        //    long1, long2 );
-        
-        //if(Status==TRUE){ yellow_status("P"); }
-        //if(Status==FALSE){ yellow_status("p"); }
         return 0;
         break;
 
-        
     case GWS_MouseReleased:
         if(long1==0){ yellow_status("R0"); }
         if(long1==1){ yellow_status("R1"); }
         if(long1==2){ yellow_status("R2"); }
-
-        //#bugbug: Os parametros estão nos mostrando
-        // o número do botao pressionado e não seu posicionamento.
-        // O ponteiro esta dentro do botao do menu iniciar?
-        //Status = is_within(
-        //    (struct gws_window_d *) __taskbar_startmenu_button_window,
-        //    long1, long2 );
-        
-        //if(Status==TRUE){ yellow_status("R"); }
-        //if(Status==FALSE){ yellow_status("r"); }
+        if(mousehover_window==__taskbar_startmenu_button_window->id)
+            wm_update_desktop();
+        //if(mousehover_window==__root_window->id)
+            //wm_update_desktop();
         return 0;
         break;
 
