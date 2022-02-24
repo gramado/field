@@ -1321,21 +1321,18 @@ void create_taskbar (void)
 // ========================================
 // start menu button
 
-    unsigned long Space=4;
-
-    unsigned long b_width = (8*10);
-    unsigned long b_height = 40-(Space*2);
-    
-    //unsigned long b_left = (unsigned long) (__taskbar_window->width - b_width) >> 1;
-    unsigned long b_left = Space;
-    unsigned long b_top = Space;
+    //unsigned long Space = TB_BUTTON_PADDING;   //4;
+    unsigned long b_width  = TB_BUTTON_WIDTH;    //(8*10);
+    unsigned long b_height = TB_BUTTON_HEIGHT;   //40-(Space*2);
+    unsigned long b_left   = TB_BUTTON_PADDING;  //Space;
+    unsigned long b_top    = TB_BUTTON_PADDING;  //Space;
 
 
 // Create the button on taskbar.
 
     __taskbar_startmenu_button_window = 
         (struct gws_window_d *) CreateWindow ( 
-            WT_BUTTON, 0, 1, 1, "Start",  
+            WT_BUTTON, 0, 1, 1, "1",  
             b_left, b_top, b_width, b_height,   
              __taskbar_window, 0, COLOR_GRAY, COLOR_GRAY );    
 
@@ -1364,12 +1361,20 @@ void create_taskbar (void)
         exit(1);
     }
 
+// Clean the button list.
+    int b=0;
+    for(b=0; b<8; b++){
+        tb_buttons[b]=0;
+    };
+    
+    tb_buttons[0] = (int) menu_wid;
+    tb_buttons_count=1;
+
 // Show.
+    flush_window_by_id(__taskbar_window->id);
+    //flush_window_by_id(__taskbar_startmenu_button_window->id);
+    //flush_window(__taskbar_window);
     //flush_window(__taskbar_startmenu_button_window);
-
-// Show window.
-    flush_window(__taskbar_window);
-
 
 // #debug
 

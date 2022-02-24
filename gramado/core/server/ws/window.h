@@ -10,6 +10,7 @@
 #define ____WINDOW_H    1
 
 
+
 // z-order ?
 // But we can use multiple layers.
 // ex-wayland: background, bottom, top, overlay.
@@ -1128,6 +1129,18 @@ struct gws_window_d  *cursor_window;  // Where cursor came from.
 struct gws_window_d  *button_window;  // Where button was pressed.
 // ...
 
+//
+// Taskbar buttons
+//
+
+#define TB_HEIGHT  40
+#define TB_BUTTON_PADDING  4
+#define TB_BUTTON_HEIGHT  (TB_HEIGHT - (TB_BUTTON_PADDING*2))
+#define TB_BUTTON_WIDTH  TB_BUTTON_HEIGHT
+#define TB_BUTTONS_MAX  8
+int tb_buttons[TB_BUTTONS_MAX];
+int tb_buttons_count;  // Quantos botões ja temos.
+
 
 // #todo
 // We need to define the root window.
@@ -1474,7 +1487,7 @@ copy_offset_rect (
     
 int gws_show_window_rect (struct gws_window_d *window);
 int flush_window (struct gws_window_d *window);
-
+int flush_window_by_id(int wid);
 
 void *xxxCreateSurfaceWindow( 
     unsigned long type,        // 1, Tipo de janela (popup,normal,...)
@@ -1617,6 +1630,8 @@ int
 redraw_window (
     struct gws_window_d *window, 
     unsigned long flags ); 
+
+int redraw_window_by_id(int wid, unsigned long flags);
 
 int 
 update_window ( 

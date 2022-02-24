@@ -2579,8 +2579,7 @@ redraw_window (
 {
     unsigned int __tmp_color=0;
 
-
-    gwssrv_debug_print ("redraw_window:\n");
+    //gwssrv_debug_print ("redraw_window:\n");
 
     if ( (void *) window == NULL ){ return -1; }
 
@@ -2659,7 +2658,7 @@ redraw_window (
 // à sua janela mãe. Já uma overlapped pode ser relativo a janela 
 // gui->main ou relativo à janela mãe.
 
-    gwssrv_debug_print ("redraw_window: Background\n");
+    //gwssrv_debug_print ("redraw_window: Background\n");
     if ( window->backgroundUsed == 1 )
     {
 
@@ -2731,7 +2730,7 @@ redraw_window (
     unsigned int border1=0;
     unsigned int border2=0;
 
-    gwssrv_debug_print ("redraw_window: Type Button\n");
+    //gwssrv_debug_print ("redraw_window: Type Button\n");
     if ( (unsigned long) window->type == WT_BUTTON )
     {
         //if ( (void*) window->parent == NULL )
@@ -2881,6 +2880,24 @@ draw_frame:
     }
 
     return 0;
+}
+
+
+
+int redraw_window_by_id(int wid, unsigned long flags)
+{
+    struct gws_window_d *w;
+    
+    if(wid<0 || wid>=WINDOW_COUNT_MAX)
+        return -1;
+    
+    w = (void*) windowList[wid];
+    
+    if( (void*) w != NULL ){
+        redraw_window(w,flags);
+        return 0;
+    }
+    return -1;
 }
 
 
@@ -3235,6 +3252,24 @@ int flush_window (struct gws_window_d *window)
 {
     return (int) gws_show_window_rect(window);
 }
+
+
+int flush_window_by_id(int wid)
+{
+    struct gws_window_d *w;
+    
+    if(wid<0 || wid>=WINDOW_COUNT_MAX)
+        return -1;
+    
+    w = (void*) windowList[wid];
+    
+    if( (void*) w != NULL ){
+        flush_window(w);
+        return 0;
+    }
+    return -1;
+}
+
 
 /*
 // #todo
@@ -3963,6 +3998,12 @@ int get_window_tid( struct gws_window_d *window)
 void wm_Update_TaskBar( char *string )
 {
 
+    if( (void*) string == NULL )
+        return;
+    
+    if(*string == 0)
+        return;
+
 // Fail
     if ( (void*) __taskbar_window == NULL )
         return;
@@ -3970,8 +4011,22 @@ void wm_Update_TaskBar( char *string )
 // Redraw the bar.
 // Redraw the button.
 
-    redraw_window(__taskbar_window,TRUE);
-    redraw_window(__taskbar_startmenu_button_window,TRUE);
+    redraw_window_by_id(
+        __taskbar_window->id,TRUE);
+    //redraw_window_by_id(
+    //    __taskbar_startmenu_button_window->id,TRUE);
+    //redraw_window(__taskbar_window,TRUE);
+    //redraw_window(__taskbar_startmenu_button_window,TRUE);
+
+// Redraw, all the valid buttons in the list.
+    int i=0;
+    for(i=0; i<TB_BUTTONS_MAX; i++)
+    {
+        if(tb_buttons[i] != 0){
+            redraw_window_by_id(tb_buttons[i],TRUE);
+        }
+    };
+
 
 //
 // String
@@ -3996,7 +4051,8 @@ void wm_Update_TaskBar( char *string )
     }
 
 // Show the window.
-    flush_window(__taskbar_window);
+    flush_window_by_id(__taskbar_window->id);
+    //flush_window(__taskbar_window);
 }
 
 
