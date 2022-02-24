@@ -1128,9 +1128,25 @@ done:
 int 
 xxxMouseEvent(
     int event_id,
-    long x, 
-    long y )
+    long long1, 
+    long long2 )
 {
+
+    debug_print ("xxxMouseEvent:\n");
+
+// pressionado ou liberado
+    if( event_id == MSG_MOUSEPRESSED ||
+        event_id == MSG_MOUSERELEASED )
+    {
+        wmProcedure(
+            (struct window_d *) 0,         // opaque pointer
+            (int)               event_id,  // msg code
+            (unsigned long)     long1,         // x
+            (unsigned long)     long2 );       // y
+        
+        return 0;
+    }
+
 
     //old: for ereasing
     static long old_x=0;
@@ -1140,18 +1156,16 @@ xxxMouseEvent(
     unsigned long deviceHeight = (unsigned long) screenGetHeight();
 
 
-    debug_print ("xxxMouseEvent:\n");
-
     deviceWidth  = (deviceWidth & 0xFFFF);
     deviceHeight = (deviceHeight & 0xFFFF);
 
-    if ( x < 1 ){ x = 1; }
-    if ( y < 1 ){ y = 1; }
+    if ( long1 < 1 ){ long1 = 1; }
+    if ( long2 < 1 ){ long2 = 1; }
     //if ( x > (SavedX-16) ){ x = (SavedX-16); }
     //if ( y > (SavedY-16) ){ y = (SavedY-16); }
 
-    if ( x > (deviceWidth-1)  ){ x = (deviceWidth-1);  }
-    if ( y > (deviceHeight-1) ){ y = (deviceHeight-1); }
+    if ( long1 > (deviceWidth-1)  ){ long1 = (deviceWidth-1);  }
+    if ( long2 > (deviceHeight-1) ){ long2 = (deviceHeight-1); }
 
 
 //----
@@ -1174,15 +1188,15 @@ xxxMouseEvent(
 // part of the backbuffer into the front buffer.
         refresh_rectangle ( old_x, old_y, 10, 10 );
 
-        old_x = x;
-        old_y = y;
+        old_x = long1;
+        old_y = long2;
 
 // Drawing the cursor.
 // Drawing the cursor directly into
 // the framebuffer.
 
         frontbuffer_draw_rectangle( 
-            x, y, 10, 10, COLOR_RED, 0 );
+            long1, long2, 10, 10, COLOR_RED, 0 );
 
     //backbuffer_draw_rectangle( 
     //    x, y, 
@@ -1199,6 +1213,11 @@ xxxMouseEvent(
 
     //refresh_rectangle ( x, y, 10, 10 );
 
+        wmProcedure(
+            (struct window_d *) 0,         // opaque pointer
+            (int)               event_id,  // msg code
+            (unsigned long)     long1,         // x
+            (unsigned long)     long2 );       // y
     }
 //----
 
@@ -1213,12 +1232,13 @@ xxxMouseEvent(
 // See: kgwm.c
 // For mouse events, see: window.h
 
+/*
     wmProcedure(
         (struct window_d *) 0,         // opaque pointer
         (int)               event_id,  // msg code
-        (unsigned long)     x,         // x
-        (unsigned long)     y );       // y
-
+        (unsigned long)     long1,         // x
+        (unsigned long)     long2 );       // y
+*/
 done:
     debug_print ("xxxMouseEvent: Done\n");
     return 0;

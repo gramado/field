@@ -242,31 +242,41 @@ void __ps2mouse_parse_data_packet (void)
 // Estado atual dos botoes.
     unsigned int mbuttons_current_state[5];
 
-// #todo
-// Pegamos o estado atual dos botoes.
-// Depois precisamos comparar com o antigo estado
-// dos botoes pra sabermos se houve
-// alguma alteração de estado.
-     mbuttons_current_state[0] = 
-         (int)(Flags & MOUSE_LEFT_BUTTON   ) ;
-     mbuttons_current_state[1] = 
-         (int)(Flags & MOUSE_RIGHT_BUTTON  ) >> 1;
-     mbuttons_current_state[2] = 
-         (int)(Flags & MOUSE_MIDDLE_BUTTON ) >> 2;
-     //mbuttons_current_state[3] = (mouse_buf[3] & 0x10) >> 4;
-     //mbuttons_current_state[4] = (mouse_buf[3] & 0x20) >> 5;
+// ======================================
 
-    mbuttons_current_state[0] = (int) (mbuttons_current_state[0] & 0xFF);
-    mbuttons_current_state[1] = (int) (mbuttons_current_state[1] & 0xFF);
-    mbuttons_current_state[2] = (int) (mbuttons_current_state[2] & 0xFF);
+    if ( ( Flags & MOUSE_LEFT_BUTTON ) == 0 ){
+        mbuttons_current_state[0] = FALSE;
+    }else if( ( Flags & MOUSE_LEFT_BUTTON ) != 0 ){
+        mbuttons_current_state[0] = TRUE;
+    };
+
+
+    if ( ( Flags & MOUSE_RIGHT_BUTTON ) == 0 ){
+        mbuttons_current_state[1] = FALSE;
+    }else if( ( Flags & MOUSE_RIGHT_BUTTON ) != 0 ){
+        mbuttons_current_state[1] = TRUE;
+    };
+
+
+    if ( ( Flags & MOUSE_MIDDLE_BUTTON ) == 0 ){
+        mbuttons_current_state[2] = FALSE;
+    }else if( ( Flags & MOUSE_MIDDLE_BUTTON ) != 0 ){
+        mbuttons_current_state[2] = TRUE;
+    };
+
+   // mbuttons_current_state[0] = (int) (mbuttons_current_state[0] & 0xFF);
+   // mbuttons_current_state[1] = (int) (mbuttons_current_state[1] & 0xFF);
+   // mbuttons_current_state[2] = (int) (mbuttons_current_state[2] & 0xFF);
 
 //
 //  Compare
 //
+
+// não hou mudanças.
     int button0_changed=FALSE;
     int button1_changed=FALSE;
     int button2_changed=FALSE;
-    
+
 // button 0 changed
     if( mbuttons_current_state[0] != mbuttons_old_state[0] )
         button0_changed=TRUE;
@@ -291,6 +301,7 @@ void __ps2mouse_parse_data_packet (void)
 // Houve mudança no botao 0.
     if( button0_changed == TRUE )
     {
+        //printf("0 \n");
         // houve mudança e ele foi pressionado.
         if( mbuttons_current_state[0] == TRUE ){
             xxxMouseEvent( MSG_MOUSEPRESSED, 0, 0 );
@@ -303,9 +314,11 @@ void __ps2mouse_parse_data_packet (void)
         return;
     }
 
+
 // Houve mudança no botao 1.
     if( button1_changed == TRUE )
     {
+        //printf("1 \n");
         // houve mudança e ele foi pressionado.
         if( mbuttons_current_state[1] == TRUE ){
             xxxMouseEvent( MSG_MOUSEPRESSED, 1, 1 );
@@ -321,6 +334,7 @@ void __ps2mouse_parse_data_packet (void)
 // Houve mudança no botao 2.
     if( button2_changed == TRUE )
     {
+        //printf("2 \n");
         // houve mudança e ele foi pressionado.
         if( mbuttons_current_state[2] == TRUE ){
             xxxMouseEvent( MSG_MOUSEPRESSED, 2, 2 );

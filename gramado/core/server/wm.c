@@ -1997,6 +1997,8 @@ wmHandler(
     case GWS_MouseMove:
     case GWS_MousePressed:
     case GWS_MouseReleased:
+        //#debug
+        //if( msg == GWS_MousePressed ){ printf("%d\n",long1); }
         r = (unsigned long) wmProcedure(
                 (struct gws_window_d *) 0,
                 (int) msg,
@@ -2004,6 +2006,7 @@ wmHandler(
                 (unsigned long) long2 ); 
         return r;
         break;
+
 
 // #important:
 // Mandaremos input de teclado somente para 
