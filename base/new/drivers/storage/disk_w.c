@@ -16,8 +16,9 @@
 
 void write_lba ( unsigned long address, unsigned long lba )
 {
-	// #todo: 
-	// Check lba limits.
+
+// #todo: 
+// Check lba limits.
 
     if (address == 0){
         debug_print ("write_lba: [FAIL] Limits\n");
@@ -27,34 +28,35 @@ void write_lba ( unsigned long address, unsigned long lba )
     // See: volume.h
     switch (g_currentvolume_fatbits){
 
-        case 32:
-            printf ("write_lba: [ERROR] FAT32 not supported\n");
-            goto fail;
-            break;
+    case 32:
+        printf ("write_lba: [ERROR] FAT32 not supported\n");
+        goto fail;
+        break;
 
-        //See: atahdd.c
-        case 16:
-            ataWriteSector ( address, lba, 0, 0 ); 
-            return;
-            break;
+    //See: atahdd.c
+    case 16:
+        ataWriteSector ( address, lba, 0, 0 ); 
+        return;
+        break;
 
-        case 12:
-            printf ("write_lba: [ERROR] FAT12 not supported\n");
-            goto fail;
-            break;
+    case 12:
+        printf ("write_lba: [ERROR] FAT12 not supported\n");
+        goto fail;
+        break;
 
-        default:
-            printf ("write_lba: [ERROR] g_currentvolume_fatbits NOT SUPPORTED\n");
-            goto fail;
-            break;
+    default:
+        printf ("write_lba: [ERROR] g_currentvolume_fatbits NOT SUPPORTED\n");
+        goto fail;
+        break;
     };
 
-    // Nothing.
+// Nothing.
 
 fail:
     refresh_screen();
     return;
 }
+
 
 /*
  * fatWriteCluster:

@@ -1192,6 +1192,12 @@ int consoleCompareStrings(void)
     debug_print("consoleCompareStrings: \n");
     printf("\n");
 
+    // disk
+    if ( strncmp( prompt, "disk", 4 ) == 0 ){
+        printf("disk: Show ide info:\n");
+        show_ide_info();
+        goto exit_cmp;
+    }
 
 // ========
 // 'about'

@@ -1,7 +1,7 @@
 
+// atahdd.c
 
 #include <kernel.h>  
-
 
 
 uint8_t hdd_ata_status_read (unsigned int port_index)
@@ -9,7 +9,7 @@ uint8_t hdd_ata_status_read (unsigned int port_index)
     unsigned short port=0;
 
     if (port_index>3){
-        panic("hdd_ata_status_read: port_index");
+        panic("hdd_ata_status_read: port_index\n");
     }
 
 // #bugbug: 
@@ -49,7 +49,7 @@ hdd_ata_cmd_write (
 int hdd_ata_wait_not_busy (unsigned int port_index)
 {
     if (port_index>3){
-        panic("hdd_ata_wait_not_busy: port_index");
+        panic("hdd_ata_wait_not_busy: port_index\n");
     }
 
     while ( hdd_ata_status_read(port_index) & ATA_SR_BSY )
@@ -87,7 +87,7 @@ int hdd_ata_wait_no_drq (unsigned int port_index)
 // + port - ata port. (0~3)
 // + buffer
 // + bytes
-static void 
+void 
 hdd_ata_pio_read ( 
     unsigned int port_index, 
     void *buffer, 
@@ -566,7 +566,6 @@ ataWriteSector (
 
 
 /*
- ***************************************
  * init_hdd:
  *     Inicializa o driver de hd.
  *     @todo: Mudar para hddInit().
@@ -575,24 +574,10 @@ ataWriteSector (
 int init_hdd (void)
 {
 
-	// #todo: 
-	// We need to do something here.
+// #todo: 
+// We need to do something here.
 
     g_driver_hdd_initialized = (int) TRUE;
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

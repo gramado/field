@@ -35,13 +35,12 @@
 ;; History:
 ;;     2016 - Created by Fred Nora.
 
-
 vhd_footer:
     ;;
 .cookie:
-	db 'conectix'
+    db 'conectix'
 .features:
-	dd 0
+    dd 0
 .version:
     dd 0x00001000
 .dataOffset:
@@ -52,12 +51,24 @@ vhd_footer:
     db 0x6A, 0x6D, 0x76, 0x61
 .creatorVersion:
     dd 0x0A000400
+;;Windows 0x5769326B (Wi2k)
 .creatorOS:
     dd 0x6B326957
+;; Original Size
+;; This field stores the size of the hard disk in bytes, 
+;; from the perspective of the virtual machine, at creation time. 
+;; This field is for informational purposes. 
+;bytes.: 8,589,934,592.0 Bytes (B)	=	8,192.0 Megabytes (MB)
 .originalSyze:
-    dd 0, 0x00000002    ;bytes.
+    dd 0, 0x00000002  
+;; Current Size
+;; This field stores the current size of the hard disk, in bytes, 
+;; from the perspective of the virtual machine.
+;; This value is same as the original size when the hard disk is created. 
+;; This value can change depending on whether the hard disk is expanded. 
+;bytes. 8,589,934,592.0 Bytes (B)	=	8,192.0 Megabytes (MB)
 .currentSyze:
-    dd 0, 0x00000002    ;bytes.
+    dd 0, 0x00000002  
 .diskGeometry:
     dw 0xC303           ;# Cylinders.
     db 4                ;# Heads.

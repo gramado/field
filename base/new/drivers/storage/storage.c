@@ -21,96 +21,97 @@ int disk_init (void)
     struct disk_d *d;
 
     unsigned char BootDisk=0;
-
     int i=0;
-
-
 
 #ifdef KERNEL_VERBOSE
     printf ("disk_init: Initializing..\n");
 #endif
 
 
-    // Clean the disk list.
+//
+//  storage structure
+//
+
+    if( (void *) storage == NULL ){
+        panic ("disk_init: storage\n");
+    }
+
+
+// Clean the disk list.
 
     for ( i=0; i<DISK_COUNT_MAX; i++ )
     {
         diskList[i] = 0;
     };
 
- 
-    //
-    //  Disk structure
-    //
+//
+//  Disk structure
+//
 
-	//#importante
-	//Essa estrutura � vital, n�o podemos ficar sem ela.
-	
+// #importante
+// Essa estrutura eh vital, 
+// nao podemos ficar sem ela.
+
     d = (void *) kmalloc( sizeof(struct disk_d) );
 
     if( (void *) d == NULL ){
         panic ("disk_init: d\n");
     }
- 
-    if( (void *) storage == NULL ){
-        panic ("disk_init: storage");
-    }else{
-        d->used  = (int) TRUE;
-        d->magic = (int) 1234;
 
-        // This is the boot disk.
-        // So, it will be the number '0'.
-        d->id = 0;
-        current_disk             = d->id;
-        diskList[ current_disk ] = (unsigned long) d;   //#test
+    d->used  = (int) TRUE;
+    d->magic = (int) 1234;
 
-        d->diskType = DISK_TYPE_NULL;
+// This is the boot disk.
+// So, it will be the number '0'.
 
-        // Get the number of the boot disk.
-        // This info was provide by BIOS at boot time.
-        // That is why we call this 'boot_disk_number'.
-        // See: core/info.c
+    d->id = 0;
+    current_disk = d->id;
+    diskList[ current_disk ] = (unsigned long) d;   //#test
 
-        // #bugbug #todo
-        // Nao chamar um metodo fora desse modulo 
-        // para realizar esse trabalho.
+    d->diskType = DISK_TYPE_NULL;
 
-        d->boot_disk_number = (char) info_get_boot_info(3);
+// Get the number of the boot disk.
+// This info was provide by BIOS at boot time.
+// That is why we call this 'boot_disk_number'.
+// See: info.c
+// #bugbug #todo
+// Nao chamar um metodo fora desse modulo 
+// para realizar esse trabalho.
 
-        BootDisk = (char) d->boot_disk_number;
+    d->boot_disk_number = (char) info_get_boot_info(3);
 
-        switch (BootDisk){
-            case 0x80:  d->name = "sda";  break;
-            case 0x81:  d->name = "sdb";  break;
-            case 0x82:  d->name = "sdc";  break;
-            case 0x83:  d->name = "sdd";  break;
-            default:
-                debug_print("disk_init: [FAIL] default boot disk number\n");
-                d->name = "sd?";
-                break;
-        };
+    BootDisk = (char) d->boot_disk_number;
 
-        d->next = NULL;
-
-        // #bugbug
-        // Is this structure initialized ?
-
-        if ( (void*) storage != NULL ){
-            storage->system_disk = (struct disk_d *) d;
-        }
-
-        // global.
-        ____boot____disk =  (struct disk_d *) d;
+    switch (BootDisk){
+    case 0x80:  d->name = "sda";  break;
+    case 0x81:  d->name = "sdb";  break;
+    case 0x82:  d->name = "sdc";  break;
+    case 0x83:  d->name = "sdd";  break;
+    default:
+        debug_print("disk_init: [FAIL] default boot disk number\n");
+        d->name = "sd?";
+        break;
     };
+
+    d->next = NULL;
+
+// #bugbug
+// Is this structure initialized ?
+
+    if ( (void*) storage != NULL ){
+        storage->system_disk = (struct disk_d *) d;
+    }
+
+// global.
+    ____boot____disk =  (struct disk_d *) d;
 
    //more?
 
 //done:
-
     printf("Done\n");
-
     return 0;
 }
+
 
 // Show disk information given its descriptor.
 int diskShowDiskInfo ( int descriptor )
@@ -160,6 +161,7 @@ done:
     return 0;
 }
 
+
 void diskShowCurrentDiskInfo (void)
 {
     if (current_disk<0)
@@ -169,6 +171,7 @@ void diskShowCurrentDiskInfo (void)
 
     diskShowDiskInfo (current_disk);
 }
+
 
 // Show info for all disks in the list.
 // Called by service 251
@@ -485,6 +488,7 @@ fail:
     return (int) -1;
 }
 
+
 // Show info for all volumes in the list.
 void volume_show_info (void)
 {
@@ -502,34 +506,30 @@ void volume_show_info (void)
     };
 }
 
+
 void *volume_get_volume_handle( int number )
 {
-	//check limts
-    if ( number < 0 || number >= VOLUME_COUNT_MAX )
+
+// check limts
+    if ( number < 0 || 
+         number >= VOLUME_COUNT_MAX )
     {
         return NULL;
     }
-    
+
     return (void *) volumeList[number];
 }
 
+
 void *volume_get_current_volume_info (void)
 {
-    if( current_volume < 0 || current_volume > VOLUME_COUNT_MAX ){
-	    return NULL;
-	}
-	
-    return (void *) volumeList[VOLUME_COUNT_MAX];	
+    if ( current_volume < 0 || 
+         current_volume > VOLUME_COUNT_MAX )
+    {
+         return NULL;
+    }
+
+    return (void *) volumeList[VOLUME_COUNT_MAX];
 }
-
-
-
-
-
-
-
-
-
-
 
 

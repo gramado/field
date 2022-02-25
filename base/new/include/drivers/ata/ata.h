@@ -149,14 +149,16 @@
 #define ATA_REG_ERROR     0x01
 // W, Features Register, Used to control command specific interface features.
 #define ATA_REG_FEATURES  0x01
-// Sector Count Register	Number of sectors to read/write (0 is a special value).
+// Sector Count Register  Number of sectors to read/write (0 is a special value).
 #define ATA_REG_SECCOUNT  0x02
-// Sector Number Register (LBAlo)	This is CHS / LBA28 / LBA48 specific.
+
+// Sector Number Register (LBAlo) This is CHS / LBA28 / LBA48 specific.
 #define ATA_REG_LBA0      0x03
 // Cylinder Low Register / (LBAmid)	Partial Disk Sector address.
 #define ATA_REG_LBA1      0x04
 // Cylinder High Register / (LBAhi)	Partial Disk Sector address.
 #define ATA_REG_LBA2      0x05
+
 // Drive/Head Register Used to select a drive and/or head. Supports extra address/flag bits.
 #define ATA_REG_DEVSEL    0x06
 // W, Command Register	Used to send ATA commands to the device.
@@ -479,7 +481,7 @@ int hdd_ata_wait_not_busy (unsigned int port_index);
 int hdd_ata_wait_no_drq (unsigned int port_index);
 
 // Read disk using pio mode.
-static void 
+void 
 hdd_ata_pio_read ( 
     unsigned int port_index, 
     void *buffer, 

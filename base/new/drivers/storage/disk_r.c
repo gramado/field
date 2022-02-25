@@ -96,35 +96,36 @@ void read_lba ( unsigned long address, unsigned long lba )
     // if ( address == 0 ){}
 
 
-    // See: volume.h
+// See: volume.h
 
     switch (g_currentvolume_fatbits){
 
-        case 32:
-            debug_print ("read_lba: [FAIL] FAT32 not supported\n");
-            return;
-            break;
+    case 32:
+        debug_print ("read_lba: [FAIL] FAT32 not supported\n");
+        return;
+        break;
 
-        // atahdd.c
-        case 16:
-            ataReadSector ( address, lba, 0, 0 );
-            return;
-            break;
+    // atahdd.c
+    case 16:
+        //#todo: return value.
+        ataReadSector ( address, lba, 0, 0 );
+        return;
+        break;
 
-        // Nothing.
-        case 12:
-            debug_print ("read_lba: [FAIL] FAT12 not supported\n");
-            return;
-            break;
+    // Nothing.
+    case 12:
+        debug_print ("read_lba: [FAIL] FAT12 not supported\n");
+        return;
+        break;
 
-        default:
-            debug_print ("read_lba: [FAIL] g_currentvolume_fatbits not supported\n");
-            break;
+    default:
+        debug_print ("read_lba: [FAIL] g_currentvolume_fatbits not supported\n");
+        break;
     };
 }
 
+
 /*
- ******************************************
  * fatLoadCluster:
  *     Carrega um cluster.
  *     Argumentos:

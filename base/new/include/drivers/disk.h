@@ -159,22 +159,55 @@ struct bpb_d
  * partition_table_d:
  *     Structure for partition table.
  */ 
+// See: https://wiki.osdev.org/Partition_Table
+
+/*
+Element (offset)  Size      Description
+0                 byte      Boot indicator bit flag: 0 = no, 0x80 = bootable (or "active")
+
+1                 byte      Starting head
+2                 6 bits    Starting sector (Bits 6-7 are the upper two bits for the Starting Cylinder field.)
+3                 10 bits   Starting Cylinder
+
+4                 byte      System ID
+
+5                 byte      Ending Head
+6                 6 bits    Ending Sector (Bits 6-7 are the upper two bits for the ending cylinder field)
+7                 10 bits   Ending Cylinder
+
+8                 uint32_t  Relative Sector (to start of partition -- also equals the partition's starting LBA value)
+12                uint32_t  Total Sectors in partition
+*/
+
 struct partition_table_d
 {
-    // //0x80=active  0x00=inactive
+
+// //0x80=active  0x00=inactive
     unsigned char active;
-    unsigned char start_chs[3];
+
+// #todo
+// Talvez isso não importe se estivermos usando LBA.
+    unsigned char start_chs[3];  //sizes:  8,6,10
 
     unsigned char type;
-    unsigned char end_chs[3];
+
+// #todo
+// Talvez isso não importe se estivermos usando LBA.
+    unsigned char end_chs[3];    //sizes:  8,6,10
     
-    // Sectors between MBR and first sector.
+// Sectors between MBR and first sector.
     unsigned long offset;
     
-    // Sectors in partition.
+// Sectors in partition.
+// O tamanho da partição dado em setores.
+// Se estivermos usando isso, então o CHS não importa.
     unsigned long size;
 };
-struct partition_table_d *partition; 
+
+// #test
+//struct partition_table_d *partition; 
+struct partition_table_d *system_partition; 
+
 
 // This is a good code.
 // It is easy to handle the partition table values.
@@ -188,9 +221,7 @@ struct mbr_d
 struct mbr_d *mbr; 
 
 
-
 /*
- ***************************************************
  * disk_d:
  *     Estrutura para acesso rápido a discos.
  *     Deve ser simples e com poucos elementos.
@@ -198,11 +229,11 @@ struct mbr_d *mbr;
 
 struct disk_d
 { 
-    // Object header.
+// Object header.
     object_type_t  objectType;
     object_class_t objectClass;
 
-    // Structure validation
+// Structure validation
     int used;
     int magic;
 
@@ -212,41 +243,38 @@ struct disk_d
     int id;                 // ID na lista de discos.
     char boot_disk_number;  // ID herdado do boot block.
 
-    // Ponteiro para o nome do disco,
-    // Talvez não precise ser um ponteiro, pode ser um array.
-    
+// Ponteiro para o nome do disco,
+// Talvez não precise ser um ponteiro, pode ser um array.
     char *name; 
 
-
-    //#todo
-    // se está funcionando ... se está inicializado ...
+//#todo
+// se está funcionando ... se está inicializado ...
     //int status;
-    
-    //#todo
-    // que tipo de operação esta sendo realizada. ou nenhuma.
-    // se ele está ocupoado o escretor terá que esperar.
+
+//#todo
+// que tipo de operação esta sendo realizada. ou nenhuma.
+// se ele está ocupoado o escretor terá que esperar.
     //int state;
 
-    // Security
+// Security
     pid_t pid;     // Qual processo está usando.
     gid_t gid;
     // ...
 
-    //#todo
+//#todo
     //struct mbr_d mbr;
     //struct bpb_d bpb;
     //struct partition_table_d        partition_table;
     //struct partition_table_chars_d  partition_table_chars;
 
-
-    // #todo
-    // contador de processos usando o disco
+// #todo
+// contador de processos usando o disco
 
     uint8_t channel;
     uint8_t dev_num;
     
-    //#todo
-    //volume list.
+//#todo
+//volume list.
 
     // ...
 
@@ -273,7 +301,6 @@ int diskShowDiskInfo ( int descriptor );
 void diskShowCurrentDiskInfo (void);
 void disk_show_info (void);
 void *disk_get_disk_handle ( int number );
-
 
 int volume_init (void);
 int volumeShowVolumeInfo ( int descriptor );

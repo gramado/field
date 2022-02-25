@@ -663,6 +663,16 @@ int ide_identify_device ( uint8_t nport )
 
     unsigned char status=0;
 
+
+// #todo
+// What is the limit?
+// The limit here is 4.
+// See: ide.h
+
+    if(nport >= 4){
+        panic("ide_identify_device: nport\n");
+    }
+
 // #todo:
 // Rever esse assert. 
 // Precisamos de uma mensagem de erro aqui.
@@ -758,20 +768,107 @@ int ide_identify_device ( uint8_t nport )
     sig_byte_2 = in8( ata.cmd_block_base_address + 5 );
 
 
-    /*
-    // #test
-    // Isso provavelmente é o número de setores envolvidos em
-    // uma operação de leitura ou escrita.
-    //===============
-    unsigned long NumberOfSectors=0;
-    NumberOfSectors = in8( ata.cmd_block_base_address + ATA_REG_SECCOUNT );
-    if (NumberOfSectors>0){
-       printf(">>>> %d | *breakpoint\n",NumberOfSectors);
+
+// #todo
+// In this moment we're trying to find 
+// the size of the disk given in sectors.
+
+/*
+//===============
+
+// #test
+// Isso provavelmente é o número de setores envolvidos em
+// uma operação de leitura ou escrita.
+
+    unsigned long rw_size_in_sectors=0;
+    rw_size_in_sectors = in8( ata.cmd_block_base_address + ATA_REG_SECCOUNT );
+    if (rw_size_in_sectors>0){
+       printf("::#breakpoint NumberOfSectors %d \n",rw_size_in_sectors);
        refresh_screen();
        while(1){}
     }
-    */
     //===============
+*/
+
+/*
+
+// Sector Number Register 
+// (LBAlo) This is CHS / LBA28 / LBA48 specific.
+#define ATA_REG_LBA0      0x03
+
+// Cylinder Low Register 
+// (LBAmid) Partial Disk Sector address.
+#define ATA_REG_LBA1      0x04
+
+// Cylinder High Register 
+// (LBAhi) Partial Disk Sector address.
+#define ATA_REG_LBA2      0x05
+
+*/
+
+// See:
+// https://forum.osdev.org/viewtopic.php?f=1&t=22563
+
+#define DRDY  0x40
+#define BSY   0x80
+#define HOB   0x80
+#define Sector_Count    2
+#define LBA_Low         3
+#define LBA_Mid         4
+#define LBA_High        5
+#define Device          6
+#define Status          7
+#define Command         7
+
+    unsigned long Max_LBA=0;
+    unsigned int port = (ata.cmd_block_base_address & 0xFFFF);
+    
+
+    //out8(port+Command, 0xF8);  //READ NATIVE MAX ADDRESS
+    //out8(port+Command, 0xEC);  //ATA_CMD_IDENTIFY_DEVICE
+
+// Wait 
+    //while ( in8(port+Status) &  BSY != 0)
+    //{
+        // wait command completed
+    //}
+
+// Wait
+    //int w=0;
+    //for(w=0;w<400000;w++){}
+
+/*
+// Not lba48
+    Max_LBA  = (unsigned long long )in8(port+LBA_Low);
+    Max_LBA += (unsigned long long )in8(port+LBA_Mid)  <<8;
+    Max_LBA += (unsigned long long )in8(port+LBA_High) <<16;
+    Max_LBA += ((unsigned long long )in8(port+Device) & 0xF) <<24;
+*/
+
+    //unsigned char buffer[512+1];
+    //unsigned short buffer[512+1];
+    
+    //hdd_ata_pio_read ( 
+    //    (unsigned int) nport, 
+    //    (void *) buffer, 
+    //    (int) 512 );
+
+/*  
+    //#todo: 60 se for words e 120 se for bytes.
+    Max_LBA = buffer[60] &0xffff;
+    Max_LBA += buffer[61] << 16 &0xffffffff;
+
+    if( Max_LBA > 0 )
+    {
+        printf("::#breakpoint Max_LBA %d \n",Max_LBA);
+        //refresh_screen();
+        //while(1){}
+        
+        ide_ports[nport].size_in_sectors = (unsigned long) Max_LBA;
+    }
+*/
+
+// =============================================================
 
 // #test
 // vamos pegar mais informações. 
@@ -1525,10 +1622,12 @@ void show_ide_info (void)
 {
     int i=0;
 
+    printf("\n");
     printf ("\n  show_ide_info:  \n");
 
     for ( i=0; i<4; i++ )
     {
+        printf("\n");
         printf ("id=%d \n", ide_ports[i].id );
         printf ("channel=%d dev_num=%d \n", 
             ide_ports[i].channel, 
@@ -1539,14 +1638,17 @@ void show_ide_info (void)
         printf ("type=%d      \n", ide_ports[i].type );
         printf ("base_port=%x \n", ide_ports[i].base_port );
         printf ("name=%s      \n", ide_ports[i].name );
+        
+        printf ("Size in sectors = %d \n", 
+            ide_ports[i].size_in_sectors );
     };
 
-    //
-    // # debug.
-    //
+//
+// # debug.
+//
 
-	// primary secondary  ... master slave
-	// printf ( " channel=%d dev=%d \n", ata.channel, ata.dev_num );
+// primary secondary  ... master slave
+    // printf ( " channel=%d dev=%d \n", ata.channel, ata.dev_num );
 
 
 	/*

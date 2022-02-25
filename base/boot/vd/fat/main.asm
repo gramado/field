@@ -9,7 +9,6 @@
 ;;     Criaremos um VHD usando nasm. O arquivo principal, main.asm, é o 
 ;; MBR do VHD e tem por objetivo carregar o BM.BIN na memória em 0:8000h e 
 ;; passar o comando para ele, além de passar argumentos.
-;;
 ;;     Também estão presentes no arquivo principal, o VBR no setor 63, 
 ;; incluido em hexadecimal para compatibilidade com sistema host na hora de 
 ;; carregar os arquivos para dentro do VHD. Os marcadores de início das duas 
@@ -20,17 +19,13 @@
 ;;     @todo: Podemos incluir também o VBR que está em hexadecimal.
 ;;     @todo: Agora que o BM.BIN é carregado ddo sistema de arquivos, temos
 ;; a opção de configurarmos uma GPT logo após o MBR.
-;;
-;;    O modo de vído usado é o modo texto, herdado do BIOS.
+;;    O modo de vídeo usado é o modo texto, herdado do BIOS.
 ;; O modo de vídeo não será alterado no MBR.
-;;
-;;
 ;; Histórico:
 ;;     2017 - Created by Fred Nora.
 ;;     2019 -
 ;;     ...
 ;;
-
 
 ;;
 ;; codename db 'londrina'
@@ -219,14 +214,15 @@ fs_fat16_data_area:
 	;; Outras opções de tamanho serão criadas depois.
 	;; Obs: Outra partição poderá ser criada dentro desse espaço.
 	;;      Será a partição do sistema, usando o sistema de arquivos ext2.
-	
-    ;; Completaremos com zeros até o fim do disco.
-    ;; 32MB menos a área já utilizada pelas partes criadas anteriormente,
-	;; menos 4 bytes de assinatura antes do footer.
-	
-	;Full data area with zeros.                                           
-    times  (32*1024*1024) -( fs_fat16_data_area - boot_main ) -(4) db 0  
 
+;; Completaremos com zeros até o fim do disco.
+;; 32MB menos a área já utilizada pelas partes criadas anteriormente,
+;; menos 4 bytes de assinatura antes do footer.
+
+; Fill data area with zeros.                                           
+    times  (32*1024*1024) - ( fs_fat16_data_area - boot_main ) -(4) db 0  
+    ;times  (64*1024*1024) - ( fs_fat16_data_area - boot_main ) -(4) db 0  
+    
 .end_of_disk:    
     db '*EOD'    ;; ## END OF DISK ##        
 ;;====================================================================

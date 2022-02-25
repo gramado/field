@@ -68,14 +68,12 @@ typedef enum {
 
 struct ide_port_d 
 {
-
     // #todo
-    // Obeject header ?
+    // Object header ?
 
     // Structure validation.
     int used;
     int magic;
-
 
     // The port number.
     //int id;
@@ -88,22 +86,24 @@ struct ide_port_d
 
     unsigned short base_port;
 
-    //
-    // #todo
-    // Salvar aqui o canal usado pela porta
-    // e se o dispositivo é master ou slave.
-    //
+
+// #test
+// The size of the disk given in sectors.
+// This is a work in progress, don't trust in this value yet.
+    unsigned long size_in_sectors;
+
+// #todo
+// Salvar aqui o canal usado pela porta
+// e se o dispositivo é master ou slave.
   
     uint8_t channel;   // #bugbug: penso que seja para primary ou secondary.
     uint8_t dev_num;   // #bugbug: penso que seja para master e slave.
 
-
     // ...
 
-
-    // Dá pra colocar aqui mais informações sobre 
-    // o dispositivo conectado a porta.
-    // podemos usar ponteiros para estruturas.
+// Dá pra colocar aqui mais informações sobre 
+// o dispositivo conectado a porta.
+// podemos usar ponteiros para estruturas.
 };
 
 // Four ports.
