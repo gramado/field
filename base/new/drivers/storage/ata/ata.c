@@ -2,22 +2,20 @@
 // ata.c
 // ata handshake.
 // write command and read status.
+// Created by Nelson Cole.
 
 
 #include <kernel.h>  
-
-
-extern st_dev_t *current_dev;
-//extern st_dev_t *current_dev;
-
 
 /* 
  * Obs:
  * O que segue são rotinas de suporte ao controlador IDE.
  */
 
-st_dev_t *current_dev;       // A unidade atualmente selecionada.
-st_dev_t *ready_queue_dev;   // O início da lista.
+
+
+struct storage_device_d *current_dev;       // A unidade atualmente selecionada.
+struct storage_device_d *ready_queue_dev;   // O início da lista.
 
 uint32_t  dev_next_pid = 0;  // O próximo ID de unidade disponível. 
 
@@ -312,16 +310,17 @@ ata_ioctl (
 
 // ata_initialize:
 // Inicializa o IDE e mostra informações sobre o disco.
-// Called by ataDialog in atainit.c
 // Sondando na lista de dispositivos encontrados 
 // pra ver se tem algum controlador de disco IDE.
 // IN: ?
 // Configurando flags do driver.
 // FORCEPIO = 1234
+// Called by ataDialog in atainit.c
 
 int ata_initialize ( int ataflag )
 {
-    int Status = 1;
+    int Status = -1;  //error
+    int Value = -1;
 
     // iterator.
     int iPortNumber=0;
@@ -330,18 +329,18 @@ int ata_initialize ( int ataflag )
     unsigned char dev=0;
     unsigned char fun=0;
 
-    int Ret = -1;
-
 
     debug_print("ata_initialize: todo \n");
-    //return 0;
-
 
     // Setup interrupt breaker.
-    debug_print("ata_initialize: Turn on interrupt breaker\n");
-
+    //debug_print("ata_initialize: Turn on interrupt breaker\n");
     __breaker_ata1_initialized = FALSE;
     __breaker_ata2_initialized = FALSE;
+
+
+// A estrutura ainda nao foi configurada.
+    ata.used = FALSE;
+    ata.magic = 0;
 
 //
 // ======================================
@@ -353,22 +352,25 @@ int ata_initialize ( int ataflag )
 // até que possamos encontrar dinamicamente 
 // o canal e o dispositivo certos.
 // __IDE_PORT indica qual é o indice de porta.
-// See: config.h
-
-    ata_set_boottime_ide_port_index(__IDE_PORT);
-
 // Configumos o atual como sendo o mesmo
 // usado durante o boot.
 // #todo
 // Poderemos mudar o atual conforme nossa intenção
 // de acessarmos outros discos.
 
-    ata_set_current_ide_port_index(__IDE_PORT);
+// See: config.h
+
+    unsigned int bootime_ideport_index = __IDE_PORT;
+    unsigned int current_ideport_index = __IDE_PORT;
+
+    ata_set_boottime_ide_port_index(bootime_ideport_index);
+    ata_set_current_ide_port_index(current_ideport_index);
 
 //
-// ===============================================================
+// ============================================
 //
 
+// ??
 // Configurando flags do driver.
 // FORCEPIO = 1234
 
@@ -378,11 +380,10 @@ int ata_initialize ( int ataflag )
 // Messages
 //
 
-#ifdef KERNEL_VERBOSE
-    printf ("ata_initialize:\n");
-    printf ("Initializing IDE/AHCI support ...\n");
-#endif
-
+//#ifdef KERNEL_VERBOSE
+    //printf ("ata_initialize:\n");
+    //printf ("Initializing IDE/AHCI support ...\n");
+//#endif
 
 // #test
 // Sondando na lista de dispositivos encontrados 
@@ -402,39 +403,39 @@ int ata_initialize ( int ataflag )
                                     (unsigned char) PCI_CLASSCODE_MASS, 
                                     (unsigned char) PCI_SUBCLASS_IDE );
 
-
-// Structure validation.
-
     if ( (void *) PCIDeviceATA == NULL ){
-        panic("ata_initialize: PCIDeviceATA\n");
+        printf("ata_initialize: PCIDeviceATA\n");
+        Status = (int) -1;
+        goto fail;
     }
 
     if ( PCIDeviceATA->used != TRUE || 
          PCIDeviceATA->magic != 1234 )
     {
-        panic("ata_initialize: PCIDeviceATA validation\n");
+        printf("ata_initialize: PCIDeviceATA validation\n");
+        Status = (int) -1;
+        goto fail;
     }
 
-    //#debug
+//#debug
     // printf (": IDE device found\n");
     // printf ("[ Vendor=%x Device=%x ]\n", PCIDeviceATA->Vendor, PCIDeviceATA->Device );
 
-//
 // Vamos saber mais sobre o dispositivo encontrado. 
-//
-
 // #bugbug: 
 // Esse retorno é só um código de erro.
+// Nessa hora configuramos os valores na estrutura 'ata.xxx'
 
-    Ret = (unsigned long) diskATAPCIConfigurationSpace(PCIDeviceATA);
+    Value = 
+        (unsigned long) atapciConfigurationSpace( (struct pci_device_d*) PCIDeviceATA );
 
-    if ( Ret == PCI_MSG_ERROR )
+    if ( Value == PCI_MSG_ERROR )
     {
-        printk ("ata_initialize: Error Driver [%x]\n", Ret );
-        Status = (int) 1;
-        panic("ata_initialize: Error Driver");
-        //goto fail;  
+        printk ("ata_initialize: Error Driver [%x]\n", Value );
+        Status = (int) -1;
+        goto fail;
     }
+
 
 // Explicando:
 // Aqui estamos pegando nas BARs o número das portas.
@@ -459,19 +460,34 @@ int ata_initialize ( int ataflag )
     ATA_BAR4 = ( PCIDeviceATA->BAR4 & ~0x7 ) + ATA_IDE_BAR4_BUS_MASTER * ( !PCIDeviceATA->BAR4 );
     ATA_BAR5 = ( PCIDeviceATA->BAR5 & ~0xf ) + ATA_IDE_BAR5            * ( !PCIDeviceATA->BAR5 );
 
-//
 // Colocando nas estruturas.
-//
     ide_ports[0].base_port = (unsigned short) (ATA_BAR0_PRIMARY_COMMAND_PORT   & 0xFFFF);
     ide_ports[1].base_port = (unsigned short) (ATA_BAR1_PRIMARY_CONTROL_PORT   & 0xFFFF);
     ide_ports[2].base_port = (unsigned short) (ATA_BAR2_SECONDARY_COMMAND_PORT & 0xFFFF);
     ide_ports[3].base_port = (unsigned short) (ATA_BAR3_SECONDARY_CONTROL_PORT & 0xFFFF);
-    //tem ainda a porta do dma na bar4
+    // Tem ainda a porta do dma na bar4.
 
 
 //
 // De acordo com o tipo.
 //
+
+// #??
+// Em que momento setamos os valores dessa estrutura.
+// Precisamos de uma flag que diga que a estrutura ja esta inicializada.
+// Caso contrario nao podemos usar os valores dela.
+// >> Isso acontece  logo acima quando chamamos
+// a funçao atapciConfigurationSpace()
+
+    if ( ata.used != TRUE || 
+         ata.magic != 1234 )
+    {
+        printf("ata_initialize: ata structure validation\n");
+        return -1;
+    }
+
+// Que tipo de controlador?
+
 
 // ==============================================
 // Se for IDE.
@@ -518,15 +534,18 @@ int ata_initialize ( int ataflag )
         //
 
         // Iniciando a lista.
-        // st_dev structure.
+        // storage_device_d structure.
 
-        ready_queue_dev = ( struct st_dev * ) kmalloc ( sizeof( struct st_dev) );
+        ready_queue_dev = 
+            ( struct storage_device_d * ) kmalloc ( sizeof( struct storage_device_d) );
 
         if ( (void*) ready_queue_dev == NULL ){
-            panic("ata_initialize: ready_queue_dev\n");
+            printf("ata_initialize: ready_queue_dev\n");
+            Status = (int) -1;
+            goto fail;
         }
 
-        current_dev = ( struct st_dev * ) ready_queue_dev;
+        current_dev = ( struct storage_device_d * ) ready_queue_dev;
 
         current_dev->dev_id   = dev_next_pid++;
         current_dev->dev_type = -1;
@@ -542,12 +561,15 @@ int ata_initialize ( int ataflag )
 
         // #bugbug
         // Is this a buffer ? For what ?
-        // Is this bugger enough ?
+        // Is this buffer enough ?
 
         ata_identify_dev_buf = (unsigned short *) kmalloc(4096);
 
-        if ( (void *) ata_identify_dev_buf == NULL ){
-            panic ("ata_initialize: ata_identify_dev_buf\n");
+        if ( (void *) ata_identify_dev_buf == NULL )
+        {
+            printf ("ata_initialize: ata_identify_dev_buf\n");
+            Status = (int) -1;
+            goto fail;
         }
 
         // Sondando dispositivos e imprimindo na tela.
@@ -556,7 +578,10 @@ int ata_initialize ( int ataflag )
         // #todo
         // Create a constant for 'max'. 
 
-        for ( iPortNumber=0; iPortNumber < 4; iPortNumber++ )
+        for ( 
+            iPortNumber=0; 
+            iPortNumber < 4; 
+            iPortNumber++ )
         {
             ide_dev_init(iPortNumber);
         };
@@ -566,30 +591,53 @@ int ata_initialize ( int ataflag )
         goto done;
     }
 
+
+// ==============================================
+// Agora se for AHCI.
+
+    if ( ata.chip_control_type == ATA_RAID_CONTROLLER )
+    {
+        printf("ata_initialize: RAID not supported yet\n");
+        Status = (int) -1;
+        goto fail;
+    }
+
 // ==============================================
 // Agora se for AHCI.
 
     if ( ata.chip_control_type == ATA_AHCI_CONTROLLER )
     {
-        panic("ata_initialize: AHCI not supported yet\n");
+        printf("ata_initialize: AHCI not supported yet\n");
+        Status = (int) -1;
+        goto fail;
+    }
+
+
+// Controlador de tipo invalido?
+    if ( ata.chip_control_type == ATA_UNKNOWN_CONTROLLER )
+    {
+        printf("ata_initialize: Unknown controller type\n");
+        return -1;
     }
 
 // ==============================================
 // Nem IDE nem AHCI.
 
-    panic("ata_initialize: IDE and AHCI not found\n");
+    printf("ata_initialize: IDE and AHCI not found\n");
+    Status = (int) -1;
+
+fail:
+    printf ("ata_initialize: fail\n");
+    return -1;
 
 done:
-
 // Setup interrupt breaker.
 // Só liberamos se a inicialização fncionou.
-
     if ( Status == 0 ){
         debug_print("ata_initialize: Turn off interrupt breaker\n");
         __breaker_ata1_initialized = TRUE; 
         __breaker_ata2_initialized = TRUE; 
     }
-
     return (int) Status;
 }
 
@@ -599,11 +647,16 @@ done:
 // O número da porta identica qual disco queremos pegar informações.
 // Slavaremos algumas informações na estrutura de disco.
 
+// OUT:
+// 0xFF = erro ao identificar o número.
+// 0    = PATA ou SATA
+// 0x80 = ATAPI ou SATAPI
+
 int ide_identify_device ( uint8_t nport )
 {
     // Signature bytes.
-    unsigned char sig_byte_1=0;
-    unsigned char sig_byte_2=0;
+    unsigned char sig_byte_1=0xFF;
+    unsigned char sig_byte_2=0xFF;
 
     struct disk_d  *disk;
     char name_buffer[32];
@@ -624,8 +677,8 @@ int ide_identify_device ( uint8_t nport )
 
     if ( ata_status_read() == 0xFF )
     {
-        //debug_print(...);
-        return (int) -1;
+        debug_print("ide_identify_device: ata_status_read()\n");
+        goto fail;
     }
 
 // #bugbug
@@ -647,12 +700,13 @@ int ide_identify_device ( uint8_t nport )
         (unsigned short) ( ata.cmd_block_base_address + ATA_REG_DEVSEL), 
         (unsigned char) 0xE0 | ata.dev_num << 4 );
 
+//
 // Solicitando informações sobre o disco.
+//
 
-    // cmd
+// cmd
     ata_wait (400);
     ata_cmd_write (ATA_CMD_IDENTIFY_DEVICE); 
-
 
     // ata_wait_irq();
 
@@ -662,12 +716,10 @@ int ide_identify_device ( uint8_t nport )
 // Sem unidade no canal.
 
     ata_wait (400);
-    
     if ( ata_status_read() == 0 )
     {
-        // ??
-        // Talvez precismos de uma mensagem de erro.
-        return (int) -1;
+        debug_print("ide_identify_device: ata_status_read()\n");
+        goto fail;
     }
 
 // #todo
@@ -690,14 +742,17 @@ int ide_identify_device ( uint8_t nport )
     if (cl==0x3c && ch==0xc3) return ATADEV_SATA;
     */
 
-    // Saving.
+// Saving.
     // lba1 = in8( ata.cmd_block_base_address + ATA_REG_LBA1 );
     // lba2 = in8( ata.cmd_block_base_address + ATA_REG_LBA2 );
 
     // REG_CYL_LO = 4
     // REG_CYL_HI = 5
 
+//
+// SIGNATURE:
 // Getting signature bytes.
+//
 
     sig_byte_1 = in8( ata.cmd_block_base_address + 4 );
     sig_byte_2 = in8( ata.cmd_block_base_address + 5 );
@@ -754,6 +809,11 @@ int ide_identify_device ( uint8_t nport )
         // See: disk.h
         disk = (struct disk_d *) kmalloc( sizeof(struct disk_d) );
 
+        if( (void*) disk == NULL){
+            debug_print("ide_identify_device: disk on PATA\n");
+            goto fail;
+        }
+
         if ((void *) disk != NULL )
         {
             // Object header.
@@ -763,7 +823,6 @@ int ide_identify_device ( uint8_t nport )
 
             disk->used = TRUE;
             disk->magic = 1234;
-
             // type and class.
             disk->diskType = DISK_TYPE_PATA;
             // disk->diskClass = ? // #todo:
@@ -794,6 +853,8 @@ int ide_identify_device ( uint8_t nport )
             diskList[nport] = (unsigned long) disk;
         }
 
+        // It's a PATA device.
+        // 0 = PATA or SATA.
         return (int) 0;
     }
 
@@ -825,6 +886,11 @@ int ide_identify_device ( uint8_t nport )
         // Disk
         // See: disk.h
         disk = (struct disk_d *) kmalloc(  sizeof(struct disk_d) );
+
+        if( (void*) disk == NULL){
+            debug_print("ide_identify_device: disk on SATA\n");
+            goto fail;
+        }
 
         if ((void *) disk != NULL )
         {
@@ -862,8 +928,12 @@ int ide_identify_device ( uint8_t nport )
             diskList[nport] = (unsigned long) disk;
         }
 
+        // It's a SATA device.
+        // 0 = PATA or SATA.
+
         return (int) 0;
     }
+
 
 // ==========================
 // # PATAPI
@@ -893,12 +963,18 @@ int ide_identify_device ( uint8_t nport )
 
         disk = (struct disk_d *) kmalloc (  sizeof(struct disk_d) );
 
+        if( (void*) disk == NULL){
+            debug_print("ide_identify_device: disk on PATAPI\n");
+            goto fail;
+        }
+
         if ((void *) disk != NULL )
         {
             disk->used = TRUE;
             disk->magic = 1234;
             disk->diskType = DISK_TYPE_PATAPI;
             // disk->diskClass = ?
+
             disk->id = nport;  
                         
             // name
@@ -915,6 +991,9 @@ int ide_identify_device ( uint8_t nport )
             // #todo: Check overflow.
             diskList[nport] = (unsigned long) disk;
         }
+
+        // It's a PATAPI device.
+        // 0x80 = PATAPI or SATAPI.
 
         return (int) 0x80;
     }
@@ -947,11 +1026,15 @@ int ide_identify_device ( uint8_t nport )
 
         disk = (struct disk_d *) kmalloc(  sizeof(struct disk_d) );
 
+        if( (void*) disk == NULL){
+            debug_print("ide_identify_device: disk on SATAPI\n");
+            goto fail;
+        }
+
         if ( (void *) disk != NULL )
         {
             disk->used = TRUE;
             disk->magic = 1234;
-
             disk->diskType = DISK_TYPE_SATAPI;
             //disk->diskClass = ?
 
@@ -970,6 +1053,9 @@ int ide_identify_device ( uint8_t nport )
             diskList[nport] = (unsigned long) disk;
         }
 
+        // It's a SATAPI device.
+        // 0x80 = PATAPI or SATAPI.
+
         return (int) 0x80;
     }
 
@@ -979,7 +1065,11 @@ int ide_identify_device ( uint8_t nport )
     // #debug
     //panic("ide_identify_device: type not defined");
 
-    return 0; 
+
+// 0xFF: Unknown device class.
+fail:
+    debug_print("ide_identify_device: fail\n");
+    return 0xFF;
 }
 
 
@@ -991,52 +1081,57 @@ int ide_identify_device ( uint8_t nport )
 // para a estrutura de disco usada pelo gramado.
 // Para salvarmos os valores que pegamos nos registradores.
 
+// Called by ata_initialize.
+
 int ide_dev_init (char port)
 {
-    struct st_dev  *tmp_dev;
+    struct storage_device_d  *tmp_dev;
     int data=0;
 
-// #?
-// We have four ports in the ide controller.
-// See: ata_initialize.
-    
-    if (port<0){
-        panic("ide_dev_init: [ERROR] port\n");
+// 4 ports only    
+    if (port<0 || port >= 4){
+        printf ("ide_dev_init: port\n");
+        goto fail;
     }
 
 // See: ata.h
 
-    struct st_dev  *new_dev;
+    struct storage_device_d  *new_dev;
 
-    new_dev = ( struct st_dev * ) kmalloc ( sizeof( struct st_dev) );
-
-    if ( (void *) new_dev ==  NULL ){
-        panic ("ide_dev_init: [FAIL] new_dev\n");
-    }
-
-
-//
-// data thing ??
-//
-
-    data = (int) ide_identify_device(port);
-
-    // #todo:
-    // Penso que esse valor de '-1' for determinado 
-    // por Nelson como erro.
-    
-    //if ( data < 0 )
-    if ( data == -1 )
+    new_dev = ( struct storage_device_d * ) kmalloc( sizeof( struct storage_device_d) );
+    if ( (void *) new_dev ==  NULL )
     {
-        debug_print ("ide_dev_init: [FIXME] data\n");
-        return (int) 1;
+        printf ("ide_dev_init: new_dev\n");
+        goto fail;
     }
 
 
     unsigned long value=0;
     unsigned long value2=0;
 
-    // Unidades ATA.
+// ??
+// #todo: Explain it.
+
+    data = (int) ide_identify_device(port);
+
+// Erro
+// 0xFF = erro ao identificar o número.
+// 0    = PATA ou SATA
+// 0x80 = ATAPI ou SATAPI
+
+
+// ================
+// Unidade de classe desconhecida.
+    if ( data == 0xFF )
+    {
+        debug_print ("ide_dev_init: [FIXME] data\n");
+        return (int) -1;
+    }
+
+
+// ================
+// Unidades ATA.
+// 0    = PATA ou SATA
     if ( data == 0 )
     {
 
@@ -1106,24 +1201,26 @@ int ide_dev_init (char port)
         //}
 
 
-        // #todo
-        // Agora essa função precisa receber um ponteiro 
-        // para a estrutura de disco usada pelo gramado.
+// #todo
+// Agora essa função precisa receber um ponteiro 
+// para a estrutura de disco usada pelo gramado.
 
-          // Unidades ATAPI. 
-    }else if( data == 0x80 )
-          {
-              //  Is this an ATAPI device ?
-              new_dev->dev_type = (ata_identify_dev_buf[0] & 0x8000) ? ATAPI_DEVICE_TYPE : 0xffff;
+// ================
+// Unidades ATAPI. 
+// 0x80 = ATAPI ou SATAPI
+    }else if( data == 0x80 ){
 
-              // What kind of lba?
-              new_dev->dev_access = ATA_LBA28;
+        // Is this an ATAPI device ?
+        new_dev->dev_type = (ata_identify_dev_buf[0] & 0x8000) ? ATAPI_DEVICE_TYPE : 0xffff;
 
-              // Let's set up the PIO support.
-              // Where ATAFlag was defined?
-              // Where FORCEPIO was defined?
+        // What kind of lba?
+        new_dev->dev_access = ATA_LBA28;
 
-              // Com esse só funciona em pio 
+        // Let's set up the PIO support.
+        // Where ATAFlag was defined?
+        // Where FORCEPIO was defined?
+
+        // Com esse só funciona em pio 
               if (ATAFlag == FORCEPIO){
                   new_dev->dev_modo_transfere = 0; 
 
@@ -1183,60 +1280,64 @@ int ide_dev_init (char port)
              // para a estrutura de disco usada pelo gramado.
 
 
-          }else{
-               debug_print ("ide_dev_init: [ERROR] not ATA, not ATAPI.\n");
-               return (int) 1;
-          };
+// ================
+// Unidade de classe desconhecida.
+// #bugbug: Not panic()
+    }else{
+        debug_print ("ide_dev_init: [ERROR] not ATA, not ATAPI.\n");
+        return (int) -1;
+    };
 
 
-    //Dados em comum.
+//
+// Dados em comum.
+//
 
     new_dev->dev_id = dev_next_pid++;
 
-
-    //
-    // ??
-    // Salvando na estrutura de dispositivo as
-    // informações sobre a porta ide.
-    // channel and device.
-    // ex: primary/master.
-    // #bugbug
-    // Mas temos um problema. Talvez quando essa função
-    // foi chamada o dev_num ainda não tenha cido inicializado.
-    //
+// Salvando na estrutura de dispositivo as
+// informações sobre a porta ide.
+// channel and device.
+// ex: primary/master.
+// #bugbug
+// Mas temos um problema. Talvez quando essa função
+// foi chamada o dev_num ainda não tenha cido inicializado.
 
     new_dev->dev_channel = ata.channel;
     new_dev->dev_num     = ata.dev_num;
 
     new_dev->dev_nport = port;
 
+//
+// == port ====================================
+//
 
-    //
-    // == port ====================================
-    //
+// #bugbug
+// Nao devemos confundir esses numeros com os numeros
+// gerados pelo BIOS, pois bios tambem considera
+// outras midias alem do ide.
 
-    // #bugbug
-    // Nao devemos confundir esses numeros com os numeros
-    // gerados pelo BIOS, pois bios tambem considera
-    // outras midias alem do ide.
+// #atenção
+// Essa estrutura é para 32 portas.
+// para listar as portas AHCI.
+// Mas aqui está apenas listando as 4 portas IDE.
 
     switch (port){
-
     case 0:  dev_nport.dev0 = 0x81;  break;
     case 1:  dev_nport.dev1 = 0x82;  break;
     case 2:  dev_nport.dev2 = 0x83;  break;
     case 3:  dev_nport.dev3 = 0x84;  break;
-
-    // #atenção
-    // Essa estrutura é para 32 portas.
-    // para listar as portas AHCI.
-    // Mas aqui está apenas listando as 4 portas IDE.
+    
     default:
+        // #bugbug
+        // Porque não retornamos daqui mesmo?
         debug_print ("ide_dev_init: [ERROR] default port number\n");
         break;
     };
 
+// Linked list.
     new_dev->next = NULL;
+
 
 //#ifdef KERNEL_VERBOSE
     // #todo
@@ -1245,19 +1346,21 @@ int ide_dev_init (char port)
 //#endif
 
 
-    // =========================================
+// =========================================
 
-    //
-    // Add no fim da lista (ready_queue_dev).
-    //
+//
+// Add no fim da lista (ready_queue_dev).
+//
 
-    tmp_dev = ( struct st_dev * ) ready_queue_dev;
-
-    if ( (void *) tmp_dev ==  NULL ){
-        panic ("ide_dev_init: [FAIL] tmp_dev\n");
+    tmp_dev = ( struct storage_device_d * ) ready_queue_dev;
+    if ( (void *) tmp_dev ==  NULL )
+    {
+        printf ("ide_dev_init: [FAIL] tmp_dev\n");
+        goto fail;
     }
 
-    // Linked list
+// Linked list
+// Walk.
 
     while ( tmp_dev->next )
     {
@@ -1266,9 +1369,14 @@ int ide_dev_init (char port)
 
     tmp_dev->next = new_dev;
 
-    debug_print ("ide_dev_init: done\n");
-
+//done:
+    //debug_print ("ide_dev_init: done\n");
     return 0;
+
+fail:
+    refresh_screen();
+    panic ("ide_dev_init: fail\n");
+    return -1;  // Not reached.
 }
 
 
@@ -1284,14 +1392,14 @@ void ide_mass_storage_initialize (void)
 // Vamos trabalhar na lista de dispositivos.
 // Iniciando a lista.
 
-    ready_queue_dev = ( struct st_dev * ) kmalloc ( sizeof( struct st_dev) );
+    ready_queue_dev = ( struct storage_device_d * ) kmalloc ( sizeof( struct storage_device_d) );
 
     if ( (void *) ready_queue_dev == NULL )
     {
         panic ("ide_mass_storage_initialize: ready_queue_dev\n");
     }
 
-    current_dev = ( struct st_dev * ) ready_queue_dev;
+    current_dev = ( struct storage_device_d * ) ready_queue_dev;
 
     current_dev->dev_id = dev_next_pid++;
 
@@ -1467,7 +1575,7 @@ void show_ide_info (void)
 	// Estrutura 'atapi'
 	// Qual lista ??
 
-	// Estrutura 'st_dev'
+	// Estrutura 'storage_device_d'
 	// Estão na lista 'ready_queue_dev'	
 
     //refresh_screen ();

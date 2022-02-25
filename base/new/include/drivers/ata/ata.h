@@ -1,5 +1,6 @@
 
 // ata.h
+// Created by Nelson Cole.
 
 #ifndef __ATA_H
 #define __ATA_H    1
@@ -44,6 +45,9 @@
 #define ATA_IDE_CONTROLLER  0x1
 #define ATA_RAID_CONTROLLER 0x4
 #define ATA_AHCI_CONTROLLER 0x6
+#define ATA_UNKNOWN_CONTROLLER    0xFF   
+
+
 
 // Retorno da inicializacao PCI. 
 #define PCI_MSG_ERROR       -1
@@ -271,13 +275,15 @@ struct dev_nport dev_nport;
 
 struct ata_d
 {
-    //int used;
-    //int magic;
+    int used;
+    int magic;
 
     uint8_t channel;  // Primary or secondary.
     uint8_t dev_num;  // Master or slave.
 
+    // byte
     uint8_t chip_control_type;
+    
     uint8_t dev_type;  
     uint8_t access_type;
     uint8_t cmd_read_modo;
@@ -292,11 +298,12 @@ struct ata_d  ata;
 
 
 /*
- * st_dev:
+ * storage_device_d
+ * storage device.
  * É uma estrutura para dispositivos de armazenamento.
  */
 
-typedef struct st_dev 
+struct storage_device_d
 {
     unsigned long dev_id;
 
@@ -316,32 +323,24 @@ typedef struct st_dev
 
     unsigned long long dev_total_num_sector_lba48;
 
-
     unsigned long dev_size;
     
     // #test
     unsigned long _MaxLBA;
     unsigned long _MaxLBAExt;
     
-    struct st_dev *next;
-
-}st_dev;
-
-// Defining the type.
-typedef struct st_dev st_dev_t;
-
-
+    //struct st_dev *next;
+    struct storage_device_d *next;
+};
 
 //======================================================
 
-
-//incluindo coisas que estavam em disk1.c
+// Incluindo coisas que estavam em disk1.c
 
 #define DISK1 1
 #define DISK2 2
 #define DISK3 3
 #define DISK4 4
-
 
 
 // base address 
@@ -358,7 +357,6 @@ static unsigned long ATA_BAR2_SECONDARY_COMMAND_PORT;  // Secondary Command Bloc
 static unsigned long ATA_BAR3_SECONDARY_CONTROL_PORT;  // Secondary Control Block Base Address
 static unsigned long ATA_BAR4;  // Legacy Bus Master Base Address
 static unsigned long ATA_BAR5;  // AHCI Base Address / SATA Index Data Pair Base Address
-
 
 
 //
@@ -411,9 +409,9 @@ struct {
 //
 
 
+// Handlers for irqs.
 void DeviceInterface_PrimaryIDE(void);
 void DeviceInterface_SecondaryIDE(void);
-
 
 void ata_soft_reset (void);
 unsigned char ata_status_read (void);
@@ -426,24 +424,19 @@ unsigned char ata_wait_no_drq (void);
 unsigned char ata_wait_busy (void);
 unsigned char ata_wait_not_busy (void);
 
-
 void ata_wait (int val);
 void ata_delay (void);
-
 
 void set_ata_addr (int channel);
 
 // worker
 unsigned char __ata_assert_dever (char nport);
 
-
 // low level workers.
 void __ata_pio_read ( void *buffer, int bytes );
 void __ata_pio_write ( void *buffer, int bytes );
 
-
 static inline void atapi_pio_read ( void *buffer, uint32_t bytes );
-
 
 void ata_set_boottime_ide_port_index(unsigned int port_index);
 int ata_get_boottime_ide_port_index(void);
@@ -451,13 +444,11 @@ int ata_get_boottime_ide_port_index(void);
 void ata_set_current_ide_port_index(unsigned int port_index);
 int ata_get_current_ide_port_index(void);
 
-
 int 
 ata_ioctl ( 
     int fd, 
     unsigned long request, 
     unsigned long arg );
-    
 
 uint32_t 
 diskReadPCIConfigAddr ( 
@@ -477,9 +468,6 @@ diskWritePCIConfigAddr (
 int ata_initialize ( int ataflag );
 
 
-
-// ===
-
 uint8_t hdd_ata_status_read (unsigned int port_index);
 
 void 
@@ -489,7 +477,6 @@ hdd_ata_cmd_write (
 
 int hdd_ata_wait_not_busy (unsigned int port_index);
 int hdd_ata_wait_no_drq (unsigned int port_index);
-
 
 // Read disk using pio mode.
 static void 
@@ -504,7 +491,6 @@ hdd_ata_pio_write (
     unsigned int port_index, 
     void *buffer, 
     int bytes );
-
 
 // Read and write via pio mode.
 int 
@@ -529,12 +515,8 @@ ataWriteSector (
     unsigned long reserved1,
     unsigned long reserved2 );
 
-
-
-
 int init_hdd (void);
 
-// ===
 void ide_dma_start (void);
 void ide_dma_stop (void);
 int ide_dma_read_status (void);
@@ -545,8 +527,6 @@ ide_dma_data (
     uint16_t byte_count,
     uint8_t flg,
     uint8_t nport );
-    
-// ===
 
 int 
 ataDialog ( 
@@ -554,26 +534,18 @@ ataDialog (
     unsigned long long1, 
     unsigned long long2 );
 
-
-// ===
-
 uint32_t diskPCIScanDevice ( int class );
-int diskATAPCIConfigurationSpace ( struct pci_device_d *D );
 
 
-// ==
+int atapciConfigurationSpace ( struct pci_device_d *D );
+
 
 unsigned char ata_wait_irq (void);
 int disk_ata_wait_irq (void);
 
-// ===
-
 int ide_identify_device ( uint8_t nport );
 int ide_dev_init (char port);
 void ide_mass_storage_initialize (void);
-
-
-// ==
 
 static inline void dev_switch (void);
 static inline int getnport_dev (void);
@@ -582,12 +554,5 @@ int nport_ajuste ( char nport );
 void show_ide_info (void);
 
 #endif    
-
-
-
-
-
-
-
 
 
