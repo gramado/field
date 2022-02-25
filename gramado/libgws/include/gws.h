@@ -249,8 +249,19 @@ gws_redraw_window (
 // The server will return an event from the its client's event queue.
 struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event);
 
+
 // Refresh a window.
 int gws_refresh_window (int fd, int window );
+
+
+int
+gws_refresh_retangle ( 
+    int fd,
+    unsigned long left, 
+    unsigned long top, 
+    unsigned long width, 
+    unsigned long height );
+
 
 // Change window position.
 int 

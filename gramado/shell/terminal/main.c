@@ -359,17 +359,6 @@ void doPrompt(int fd)
     cursor_x = 0;
     cursor_y++;
 
-// draw prompt symbol.
-    gws_draw_char ( 
-        fd, 
-        Terminal.client_window_id, 
-        (cursor_x*8), 
-        (cursor_y*8), 
-        prompt_color, 
-        '>' ); 
-
-// Increment x.
-    cursor_x++;
 
 // Refresh client window.
 
@@ -378,9 +367,23 @@ void doPrompt(int fd)
         return;
     }
 
+// draw prompt symbol.
+    gws_draw_char ( 
+        fd, 
+        wid, 
+        (cursor_x*8), 
+        (cursor_y*8), 
+        prompt_color, 
+        '>' ); 
+
+// Increment x.
+    cursor_x++;
+
 // #bugbug
 // Refreshing the whole window is too much.
 // Refresh only the rectangle of the size of a char or line.
+// #todo: Call gws_refresh_retangle(...) (Not implemented yet)
+
     gws_refresh_window(fd,wid);
 }
 
@@ -1486,8 +1489,8 @@ int main ( int argc, char *argv[] )
 
     int client_fd = -1;
 
-    debug_print ("--------------------------\n");
-    debug_print ("terminal: Initializing ...\n");
+    //debug_print ("--------------------------\n");
+    debug_print ("terminal: Initializing\n");
 
 // Device info
 // #todo: Check for 'zero'.
@@ -1546,26 +1549,22 @@ int main ( int argc, char *argv[] )
         }else{ break; };
     };
 
-
 // Windows:
-
     int main_window = 0;
     int terminal_window = 0;
 
 //
 // main window
 //
-
-    unsigned long mwWidth  = (w >> 1);
-    unsigned long mwHeight = (h >> 1);
-    unsigned long mwLeft   = ( ( w - mwWidth ) >> 1 );
-    unsigned long mwTop    = ( ( h - mwHeight) >> 1 ); 
+    unsigned long mwWidth  = (w >> 1);  //((w/8)*6);
+    unsigned long mwHeight = (h >> 1);  //((h/8)*6); 
+    unsigned long mwLeft   = ( ( w - mwWidth ) >> 1 );  //centralizado.
+    unsigned long mwTop    = ( ( h - mwHeight) >> 1 );  //centralizado 
     unsigned int mwColor   = COLOR_WINDOW;
 
 //
 // Client area window
 //
-
     unsigned long wLeft   = 2;   // por causa da borda.
     unsigned long wTop    = 34;  // por causa da title bar
     unsigned long wWidth  =  mwWidth  -2 -2;

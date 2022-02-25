@@ -2393,17 +2393,11 @@ gws_draw_char (
     unsigned int ch )
 {
 
-    int response=0;
+    int Response=0;
     int Value=0;
 
-
-    if (fd<0){
-        return -1;
-    }
-
-    if (window<0){
-        return -1;
-    }
+    if (fd<0)    {return -1;}
+    if (window<0){return -1;}
 
 // Request
     gws_debug_print("gws_draw_char: request\n");
@@ -2428,11 +2422,11 @@ gws_draw_char (
         //gws_yield();
     };
     // A sincronização nos diz que já temos um reply.
-    response = __gws_drawchar_response ((int) fd);  
+    Response = __gws_drawchar_response ((int) fd);  
 
     gws_debug_print("gws_draw_char: done\n");
 
-    return (int) response;
+    return (int) Response;
 }
 
 
@@ -2872,6 +2866,20 @@ int gws_refresh_window (int fd, int window )
 }
 
 
+
+int
+gws_refresh_retangle ( 
+    int fd,
+    unsigned long left, 
+    unsigned long top, 
+    unsigned long width, 
+    unsigned long height )
+{
+    //#todo
+    return -1;
+}
+
+
 // Atualiza o retângulo da surface da thread.
 void 
 setup_surface_retangle ( 
@@ -3021,7 +3029,6 @@ void gws_yield_n_times (unsigned long n)
 
 
 /*
- **************************
  * gws_create_thread:
  *     Create a thread.
  *     #todo: 

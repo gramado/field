@@ -1,12 +1,10 @@
 
 // rect.c
 
-
 #include <kernel.h>
 
 
 /* 
- *************************************
  * drawDataRectangle: (API)
  *     Draw a rectangle on backbuffer. 
  */
@@ -512,7 +510,11 @@ refresh_rectangle (
 
 
 // == FLASH ========
-    // #todo: Create a global variable for this.
+// #todo: Create a global variable for this.
+
+// #debug
+// Used for optimization tests.
+
     //int RefreshFlash=TRUE;
     int RefreshFlash=FALSE;
     
