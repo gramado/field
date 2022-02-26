@@ -2424,7 +2424,7 @@ fail:
 }
 
 
-
+// 2021
 // Flush a given area into the framebuffer.
 
 int serviceRefreshRectangle (void)
@@ -2439,6 +2439,10 @@ int serviceRefreshRectangle (void)
 
 // #todo
 // Check all the header.
+
+    unsigned long msg_code = message_address[1];
+    if( msg_code != GWS_RefreshRectangle )
+        return -1;
 
 // #todo
 // Check if the message code is right.
@@ -2457,9 +2461,7 @@ int serviceRefreshRectangle (void)
 // Maybe we can test some limits here.
 
 // Flush it into the framebuffer.
-
     gws_refresh_rectangle ( left, top, width, height );
-
     return 0;
 }
 

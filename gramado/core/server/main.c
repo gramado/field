@@ -1143,12 +1143,17 @@ gwsProcedure (
         //NoReply = FALSE;      // #todo
         break;
 
+
+
+
     // Refresh rectangle ... 
+    // See: wm.c
     case GWS_RefreshRectangle:
         gwssrv_debug_print ("gwssrv: [2021] serviceRefreshRectangle\n");
         serviceRefreshRectangle();
-        //NoReply = FALSE;  // #todo
+        NoReply = FALSE;
         break;
+
 
     // ?? #bugbug: The client only sends requests.
     // GWS_GetSendEvent
@@ -1210,7 +1215,6 @@ gwsProcedure (
         serviceGetClientMessage();
         NoReply = FALSE;
         break;
-
 
 // Let's get one event from the client's event queue.
 // Send it as a response.

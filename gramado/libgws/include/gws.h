@@ -1,8 +1,6 @@
 /*
  * File: gws.h 
- * 
  *     Client-side library for Gramado Window Server. 
- * 
  * History:
  *     2020 -  Created by Fred Nora.
  */
@@ -216,6 +214,9 @@ gws_plotrectangle (
 //
 // == 2d ==============================================
 //
+
+
+
 
 
 // Draw a char.

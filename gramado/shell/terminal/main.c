@@ -384,9 +384,14 @@ void doPrompt(int fd)
 // Refresh only the rectangle of the size of a char or line.
 // #todo: Call gws_refresh_retangle(...) (Not implemented yet)
 
-    gws_refresh_window(fd,wid);
-}
+    // it works.
+    gws_refresh_retangle(
+        fd,
+        (cursor_x*8),(cursor_y*8),8,8);
 
+    // it works
+    //gws_refresh_window(fd,wid);
+}
 
 
 // interna
@@ -1428,11 +1433,16 @@ terminalProcedure (
                         (cursor_y*8), 
                         fg_color, 
                         long1 );
+                    
+                    gws_refresh_retangle(
+                        fd, 
+                        (cursor_x*8), (cursor_y*8), 8, 8 );
 
+                    // it works
                     // refresh window
                     // #bugbug: Is it too much.
                     // We need to refresh only the dirty rectangles.
-                    gws_refresh_window(fd,window);
+                    // gws_refresh_window(fd,window);
 
                     // update cursor positions
                     // #todo: Create a helper for that this.

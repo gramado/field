@@ -139,6 +139,18 @@ __gws_plotrectangle_request (
 int __gws_plotrectangle_response (int fd);
 
 
+// == refresh rectangle
+int 
+__gws_refresh_rectangle_request (
+    int fd,
+    unsigned long left,
+    unsigned long top,
+    unsigned long width,
+    unsigned long height );
+int __gws_refresh_rectangle_response(int fd);
+
+
+
 // == Draw Char ==========================
 int 
 __gws_drawchar_request (
@@ -1705,6 +1717,117 @@ process_event:
 }
 
 
+// ================================================
+
+int 
+__gws_refresh_rectangle_request (
+    int fd,
+    unsigned long left,
+    unsigned long top,
+    unsigned long width,
+    unsigned long height )
+{
+    // Isso permite ler a mensagem na forma de longs.
+    unsigned long *message_buffer = (unsigned long *) &__gws_message_buffer[0];   
+
+    int n_writes = 0;   // For sending requests.
+    
+    //char *name = "Window name 1";
+
+//
+// Write
+//
+    // #debug
+    gws_debug_print ("__gws_refresh_rectangle_request: Writing ...\n");      
+
+// Enviamos um request para o servidor.
+// ?? Precisamos mesmo de um loop para isso. ??
+
+
+// The parameters.
+
+    message_buffer[0] = (unsigned long) 0;             // window
+    message_buffer[1] = (unsigned long) GWS_RefreshRectangle;  // refresh rectangle
+    message_buffer[2] = (unsigned long) 0;
+    message_buffer[3] = (unsigned long) 0;
+
+    message_buffer[4] = (unsigned long) (left   & 0xFFFF); 
+    message_buffer[5] = (unsigned long) (top    & 0xFFFF); 
+    message_buffer[6] = (unsigned long) (width  & 0xFFFF); 
+    message_buffer[7] = (unsigned long) (height & 0xFFFF ); 
+
+    //message_buffer[?] = (unsigned long) 0; 
+    // ...
+
+// Write
+
+    while (1){
+        n_writes = send ( 
+                       fd, 
+                       __gws_message_buffer, 
+                       sizeof(__gws_message_buffer), 
+                       0 );
+        if(n_writes>0){ break; }
+    };
+
+    return 0; 
+}
+
+// Response
+// A sincronização nos diz que já temos um reply.
+int __gws_refresh_rectangle_response(int fd)
+{
+    unsigned long *message_buffer = (unsigned long *) &__gws_message_buffer[0];   
+    int n_reads = 0;    // For receiving responses.
+
+// A sincronização nos diz que já temos um reply.
+    //int y=0;
+    //for(y=0; y<15; y++){ gws_yield(); };
+
+//
+// Read
+//
+    // #debug
+    gws_debug_print ("__gws_refresh_rectangle_response: Reading ...\n");      
+
+    n_reads = recv ( 
+                  fd, 
+                  __gws_message_buffer, 
+                  sizeof(__gws_message_buffer), 
+                  0 );
+
+    if (n_reads <= 0) {  return -1;  }
+
+//
+// The msg index.
+//
+    // Get the message sended by the server.
+
+    int msg   = (int) message_buffer[1];
+    int value = (int) message_buffer[2];
+
+    switch (msg){
+
+        // Reply
+        case GWS_SERVER_PACKET_TYPE_REPLY:
+            return (int) value;
+            break;
+
+        case GWS_SERVER_PACKET_TYPE_REQUEST:
+        case GWS_SERVER_PACKET_TYPE_EVENT:
+        case GWS_SERVER_PACKET_TYPE_ERROR:
+        default:
+            return -1;
+            break; 
+    };
+
+//fail:
+    return -1;
+}
+
+// ================================================
+
+
 
 
 //
@@ -1726,7 +1849,6 @@ __gws_drawchar_request (
     int n_writes = 0;   // For sending requests.
     
     //char *name = "Window name 1";
-
 
 //
 // Write
@@ -1766,7 +1888,6 @@ __gws_drawchar_request (
 
     return 0; 
 }
-
 
 
 // Response
@@ -2392,7 +2513,6 @@ gws_draw_char (
     unsigned int color,
     unsigned int ch )
 {
-
     int Response=0;
     int Value=0;
 
@@ -2875,8 +2995,38 @@ gws_refresh_retangle (
     unsigned long width, 
     unsigned long height )
 {
-    //#todo
-    return -1;
+    int Response=0;
+    int Value=0;
+
+    if (fd<0)    {return -1;}
+
+// Request
+    gws_debug_print("gws_refresh_retangle: request\n");
+    __gws_refresh_rectangle_request (
+        (int) fd,             // fd
+        (unsigned long) left, // left
+        (unsigned long) top,  // top
+        (unsigned long) width,
+        (unsigned long) height );
+    rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
+
+
+// Response
+// Waiting to read the response.
+    gws_debug_print("gws_refresh_retangle: response\n");
+    while (1){
+        Value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
+        if (Value == ACTION_REPLY ) { break; }
+        if (Value == ACTION_ERROR ) { return -1; }
+        if (Value == ACTION_NULL )  { return -1; }  //no reponse. (syncronous)
+        //gws_yield();
+    };
+    // A sincronização nos diz que já temos um reply.
+    Response = __gws_refresh_rectangle_response ((int) fd);  
+
+    gws_debug_print("gws_refresh_retangle: done\n");
+
+    return (int) Response;
 }
 
 
