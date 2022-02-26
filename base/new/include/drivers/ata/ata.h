@@ -293,6 +293,9 @@ struct ata_d
     uint32_t ctrl_block_base_address;
     uint32_t bus_master_base_address;
     uint32_t ahci_base_address;
+
+//#todo
+    //struct storage_device_d devs[4];
 };
 
 // Not a pointer.
@@ -317,17 +320,22 @@ struct storage_device_d
     unsigned char  dev_modo_transfere;
     
     unsigned long dev_byte_per_sector;
-    unsigned long dev_total_num_sector;
+
+
+    unsigned long dev_total_num_sector;             // lba28
+    unsigned long dev_total_num_sector_lba48;  // lba48
+
+    unsigned short lba28_value1;
+    unsigned short lba28_value2;
+
+    unsigned short lba48_value1;
+    unsigned short lba48_value2;
+    unsigned short lba48_value3;
+    unsigned short lba48_value4;
     
-    // #??
-    // 64bit type ?
-    // Maybe we need some other type of representation here.
-
-    unsigned long long dev_total_num_sector_lba48;
-
     unsigned long dev_size;
     
-    // #test
+// #test
     unsigned long _MaxLBA;
     unsigned long _MaxLBAExt;
     
@@ -414,6 +422,9 @@ struct {
 // Handlers for irqs.
 void DeviceInterface_PrimaryIDE(void);
 void DeviceInterface_SecondaryIDE(void);
+
+// Show info of the list of devices.
+void ata_show_device_list_info(void);
 
 void ata_soft_reset (void);
 unsigned char ata_status_read (void);

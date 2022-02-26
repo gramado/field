@@ -98,6 +98,8 @@ hdd_ata_pio_read (
 
     int nwords=0;
 
+    //debug_print("hdd_ata_pio_read:\n");
+
     if ( port_index > 3 ){
         panic("hdd_ata_pio_read: We only support 4 ata ports\n");
     }
@@ -113,7 +115,7 @@ hdd_ata_pio_read (
     unsigned long TestMaxLBA = 16777216;
 
     if ( next_lba >= TestMaxLBA ){
-        panic("hdd_ata_pio_read: Trying to read outside the disk limits\n");
+        panic("hdd_ata_pio_read: [debug] Trying to read outside the temporary limit\n");
     }
 
 // ================================
@@ -124,6 +126,7 @@ hdd_ata_pio_read (
     //#todo
     //if ( (void*) buffer == NULL ){ return; );
 
+    //ATA_REG_DATA
     port = (unsigned short) (ide_ports[port_index].base_port + 0);
 
     asm volatile (\
@@ -131,6 +134,8 @@ hdd_ata_pio_read (
         rep; insw":: "D" (buffer),\
         "d" ( (unsigned short) port ),\
         "c" (nwords) );
+
+    //debug_print("hdd_ata_pio_read: done\n");
 }
 
 
@@ -448,8 +453,18 @@ again:
  * lba - lba
  * reserved1 - null
  * reserved2 - null
- * 
  */
+
+// #todo
+// Só falta conseguirmos as variáveis que indicam o canal e 
+// se é master ou slave.
+
+// ======================== ATENÇAO ==============================
+// #IMPORTANTE:
+// #todo
+// Só falta conseguirmos as variáveis que indicam o canal e 
+// se é master ou slave.
+
  
 int
 ataReadSector ( 
@@ -461,11 +476,9 @@ ataReadSector (
 
     int Status=0;
 
-// ======================== ATENÇAO ==============================
-// #IMPORTANTE:
-// #todo
-// Só falta conseguirmos as variáveis que indicam o canal e 
-// se é master ou slave.
+// #bugbug
+// This is the port index, not the channel index.
+    unsigned int CurrentPortIndex = (unsigned int) ata_get_current_ide_port_index();
 
 
 /*
@@ -498,11 +511,6 @@ ataReadSector (
 // ====================================================
 */
 
-// #bugbug
-// This is the port index, not the channel index.
-
-    unsigned int port_index = (unsigned int) ata_get_current_ide_port_index();
-
 
 // IN:
 // (buffer, lba, rw flag, port number, master )
@@ -511,7 +519,7 @@ ataReadSector (
         (unsigned long) buffer, 
         (unsigned long) lba, 
         (int) 0x20,
-        (unsigned int) port_index ); 
+        (unsigned int) CurrentPortIndex ); 
 
     return Status;
 }

@@ -1728,14 +1728,14 @@ fsLoadFile (
 
     //int IsDirectory;
 
-    // Cluster inicial
+// Cluster inicial
     unsigned short cluster=0; 
 
-    // ?? 
-    // Primeiro setor do cluster.
+// ?? 
+// Primeiro setor do cluster.
     unsigned long S=0;  
 
-    // Usado junto com o endereço do arquivo.
+// Usado junto com o endereço do arquivo.
     unsigned long SectorSize=0;
 
 // Sectors per cluster.
@@ -1811,7 +1811,7 @@ fsLoadFile (
         panic("fsLoadFile: [FAIL] BufferSizeInBytes\n");
     }
 
-    // limite maximo de uma imagem de processo.
+// limite maximo de uma imagem de processo.
     if ( BufferSizeInBytes > (512*4096) ){
         panic("fsLoadFile: [FAIL] BufferSizeInBytes\n");
     }
@@ -2136,6 +2136,7 @@ __loop_next_entry:
 // Configura o cluster atual.
 // Ver se o cluster carregado era o último cluster do arquivo.
 // Vai para próxima entrada na FAT.
+// See: read_r.c
 
 // #bugbug
 // Vector overflow ?

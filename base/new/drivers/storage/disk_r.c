@@ -76,6 +76,7 @@ fatClustToSect (
     return (unsigned long) (C * spc) + first_data_sector;
 }
 
+
 /*
  *****************************************************************
  * read_lba:
@@ -88,7 +89,19 @@ fatClustToSect (
 // Essa rotina e' independente do sistema de arquivos.
 // Change name to dest_buffer
 
-void read_lba ( unsigned long address, unsigned long lba )
+// #bugbug
+// Disk info?
+// Qual é o disco?
+// Qual é a porta IDE?
+// ...
+
+// #todo
+// use 'buffer_va'.
+
+void 
+read_lba ( 
+    unsigned long address, 
+    unsigned long lba )
 {
     // #todo
     // Fazer algum filtro de argumentos ??
@@ -108,6 +121,7 @@ void read_lba ( unsigned long address, unsigned long lba )
     // atahdd.c
     case 16:
         //#todo: return value.
+        //#todo: IN: buffer,lba,?,?,
         ataReadSector ( address, lba, 0, 0 );
         return;
         break;

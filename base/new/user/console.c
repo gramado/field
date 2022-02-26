@@ -1195,9 +1195,11 @@ int consoleCompareStrings(void)
     // disk
     if ( strncmp( prompt, "disk", 4 ) == 0 ){
         printf("disk: Show ide info:\n");
-        show_ide_info();
+        //show_ide_info();
+        ata_show_device_list_info();
         goto exit_cmp;
     }
+
 
 // ========
 // 'about'

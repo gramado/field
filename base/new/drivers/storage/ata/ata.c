@@ -664,6 +664,8 @@ int ide_identify_device ( uint8_t nport )
     unsigned char status=0;
 
 
+    debug_print("ide_identify_device: \n");
+
 // #todo
 // What is the limit?
 // The limit here is 4.
@@ -697,10 +699,12 @@ int ide_identify_device ( uint8_t nport )
 // então temos que nos certificar que esses valores 
 // são válidos.
 
+//Reset?
     out8 ( ata.cmd_block_base_address + ATA_REG_SECCOUNT, 0 );  // Sector Count 7:0
     out8 ( ata.cmd_block_base_address + ATA_REG_LBA0,     0 );  // LBA  7-0
     out8 ( ata.cmd_block_base_address + ATA_REG_LBA1,     0 );  // LBA 15-8
     out8 ( ata.cmd_block_base_address + ATA_REG_LBA2,     0 );  // LBA 23-16
+
 
 // Select device
 // #todo:
@@ -714,9 +718,15 @@ int ide_identify_device ( uint8_t nport )
 // Solicitando informações sobre o disco.
 //
 
+
+    
 // cmd
     ata_wait (400);
+
+    debug_print("ide_identify_device: ATA_CMD_IDENTIFY_DEVICE\n");
+
     ata_cmd_write (ATA_CMD_IDENTIFY_DEVICE); 
+    ata_wait (400);
 
     // ata_wait_irq();
 
@@ -725,9 +735,11 @@ int ide_identify_device ( uint8_t nport )
 // Melhor seria fazermos polling
 // Sem unidade no canal.
 
-    ata_wait (400);
-    if ( ata_status_read() == 0 )
-    {
+
+
+    debug_print("ide_identify_device: ata_status_read()\n");
+
+    if ( ata_status_read() == 0 ){
         debug_print("ide_identify_device: ata_status_read()\n");
         goto fail;
     }
@@ -809,6 +821,7 @@ int ide_identify_device ( uint8_t nport )
 // See:
 // https://forum.osdev.org/viewtopic.php?f=1&t=22563
 
+/*
 #define DRDY  0x40
 #define BSY   0x80
 #define HOB   0x80
@@ -822,10 +835,13 @@ int ide_identify_device ( uint8_t nport )
 
     unsigned long Max_LBA=0;
     unsigned int port = (ata.cmd_block_base_address & 0xFFFF);
-    
+*/    
 
+//#atençao
+//Isso foi chamado logo acima.
     //out8(port+Command, 0xF8);  //READ NATIVE MAX ADDRESS
     //out8(port+Command, 0xEC);  //ATA_CMD_IDENTIFY_DEVICE
+
 
 // Wait 
     //while ( in8(port+Status) &  BSY != 0)
@@ -847,11 +863,31 @@ int ide_identify_device ( uint8_t nport )
 
     //unsigned char buffer[512+1];
     //unsigned short buffer[512+1];
+
+    // ata.cmd_block_base_address?
+    // Isso foi configurado logo acima,
+    // então a função hdd_ata_pio_read
+    // vai usar a mesma porta que estamos 
+    // usando nessa função.
+
+    //debug_print("ide_identify_device: hdd_ata_pio_read()\n");
+  
     
-    //hdd_ata_pio_read ( 
-    //    (unsigned int) nport, 
-    //    (void *) buffer, 
-    //    (int) 512 );
+/*
+    hdd_ata_pio_read ( 
+        (unsigned int) nport, 
+        (void *) buffer, 
+        (int) 512 );
+*/
+
+/*
+    ata_wait_drq();
+    __ata_pio_read ( buffer, 512 );
+
+    ata_wait_not_busy();
+    ata_wait_no_drq();
+*/
+
 
 /*  
     //#todo: 60 se for words e 120 se for bytes.
@@ -1182,7 +1218,6 @@ fail:
 
 int ide_dev_init (char port)
 {
-    struct storage_device_d  *tmp_dev;
     int data=0;
 
 // 4 ports only    
@@ -1203,8 +1238,10 @@ int ide_dev_init (char port)
     }
 
 
-    unsigned long value=0;
+    unsigned long value1=0;
     unsigned long value2=0;
+    unsigned long value3=0;
+    unsigned long value4=0;
 
 // ??
 // #todo: Explain it.
@@ -1252,8 +1289,15 @@ int ide_dev_init (char port)
         };
 
 
-        new_dev->dev_total_num_sector  = ata_identify_dev_buf[60];
-        new_dev->dev_total_num_sector += ata_identify_dev_buf[61];
+
+        //old
+        //new_dev->dev_total_num_sector  = ata_identify_dev_buf[60];
+        //new_dev->dev_total_num_sector += ata_identify_dev_buf[61];
+
+        //#test
+        //new_dev->dev_total_num_sector  = 
+        //    *(unsigned long*) (short *) &ata_identify_dev_buf[60];
+
 
         // #bugbug
         // We can not do this.
@@ -1262,11 +1306,35 @@ int ide_dev_init (char port)
 
         new_dev->dev_byte_per_sector = 512;
 
-        new_dev->dev_total_num_sector_lba48  = ata_identify_dev_buf[100];
-        new_dev->dev_total_num_sector_lba48 += ata_identify_dev_buf[101];
-        new_dev->dev_total_num_sector_lba48 += ata_identify_dev_buf[102];
-        new_dev->dev_total_num_sector_lba48 += ata_identify_dev_buf[103];
+        //new_dev->dev_total_num_sector_lba48  = ata_identify_dev_buf[100];
+        //new_dev->dev_total_num_sector_lba48 |= ata_identify_dev_buf[101];
+        //new_dev->dev_total_num_sector_lba48 |= ata_identify_dev_buf[102];
+        //new_dev->dev_total_num_sector_lba48 |= ata_identify_dev_buf[103];
 
+        value1 = ata_identify_dev_buf[103];  
+        new_dev->lba48_value1 = (unsigned short) value1;
+        value1 = ( value1 << 48 );           
+        value1 = ( value1 & 0xFFFF000000000000 );    
+        
+        value2 = ata_identify_dev_buf[102];  
+        new_dev->lba48_value2 = (unsigned short) value2;
+        value2 = ( value2 << 32 );
+        value2 = ( value2 & 0x0000FFFF00000000  );
+
+        value3 = ata_identify_dev_buf[101];
+        new_dev->lba48_value3 = (unsigned short) value3;  
+        value3 = ( value3 << 16 );
+        value3 = ( value3 & 0x00000000FFFF0000  );
+
+        value4 = ata_identify_dev_buf[100];
+        new_dev->lba48_value4 = (unsigned short) value4;  
+        //value4 = ( value4 << 0 );
+        value4 = ( value4 & 0x000000000000FFFF  );
+          
+        new_dev->dev_total_num_sector_lba48 = 
+            (unsigned long) (value1 | value2 | value3 | value4 );
+
+        
         // #bugbug
         // We can not do this.
         // We need to check the supported sector size.
@@ -1277,18 +1345,17 @@ int ide_dev_init (char port)
         // Pegando o size.
         // Quantidade de setores.
         // Uma parte está em 61 e outra em 60.
- 
-        value = ata_identify_dev_buf[61];  
-        value = ( value << 16 );           
-        value = ( value & 0xFFFF0000 );    
         
-        value2 = ata_identify_dev_buf[60];  
+        value1 = ata_identify_dev_buf[61];  
+        new_dev->lba28_value1 = (unsigned short) value1;
+        value1 = ( value1 << 16 );           
+        value1 = ( value1 & 0xFFFF0000 );    
+        value2 = ata_identify_dev_buf[60];
+        new_dev->lba28_value2 = (unsigned short) value2;
         value2 = ( value2 & 0x0000FFFF );  
-        
-        new_dev->dev_total_num_sector = value | value2;
-        
+        new_dev->dev_total_num_sector = value1 | value2;
         new_dev->_MaxLBA = new_dev->dev_total_num_sector;
-              
+                   
         //if ( new_dev->dev_total_num_sector > 0 )
         //{
         //     printf ("#debug: >>>> ata Size %d\n", 
@@ -1330,6 +1397,8 @@ int ide_dev_init (char port)
               new_dev->dev_total_num_sector  = 0;
               new_dev->dev_total_num_sector += 0;
 
+
+
               // #bugbug
               // 2024
               // Is this standard for all kind of CD?
@@ -1337,11 +1406,40 @@ int ide_dev_init (char port)
 
               new_dev->dev_byte_per_sector = 2048; 
 
-              new_dev->dev_total_num_sector_lba48  = 0;
-              new_dev->dev_total_num_sector_lba48 += 0;
-              new_dev->dev_total_num_sector_lba48 += 0;
-              new_dev->dev_total_num_sector_lba48 += 0;
+              //#test
+              //new_dev->dev_total_num_sector  = 
+                  //*(unsigned long*) (short *) &ata_identify_dev_buf[60];
 
+
+              new_dev->dev_total_num_sector_lba48  = 0;
+              new_dev->dev_total_num_sector_lba48 |= 0;
+              new_dev->dev_total_num_sector_lba48 |= 0;
+              new_dev->dev_total_num_sector_lba48 |= 0;
+
+              value1 = ata_identify_dev_buf[103];  
+              new_dev->lba48_value1 = (unsigned short) value1;
+              value1 = ( value1 << 48 );           
+              value1 = ( value1 & 0xFFFF000000000000 );    
+        
+              value2 = ata_identify_dev_buf[102];  
+              new_dev->lba48_value2 = (unsigned short) value2;
+              value2 = ( value2 << 32 );
+              value2 = ( value2 & 0x0000FFFF00000000  );
+
+              value3 = ata_identify_dev_buf[101];
+              new_dev->lba48_value3 = (unsigned short) value3;  
+              value3 = ( value3 << 16 );
+              value3 = ( value3 & 0x00000000FFFF0000  );
+
+              value4 = ata_identify_dev_buf[100];
+              new_dev->lba48_value4 = (unsigned short) value4;  
+              //value4 = ( value4 << 0 );
+              value4 = ( value4 & 0x000000000000FFFF  );
+          
+              new_dev->dev_total_num_sector_lba48 = 
+                  (unsigned long) (value1 | value2 | value3 | value4 );
+
+            
               // #bugbug
               // 2024
               // Is this standard for all kind of CD?
@@ -1353,16 +1451,16 @@ int ide_dev_init (char port)
               // Quantidade de setores.
               // Uma parte está em 61 e outra em 60.
  
-              value = ata_identify_dev_buf[61];  
-              value = ( value << 16 );           
-              value = ( value & 0xFFFF0000 );    
-        
-              value2 = ata_identify_dev_buf[60];  
+              value1 = ata_identify_dev_buf[61];
+              new_dev->lba28_value1 = (unsigned short) value1;  
+              value1 = ( value1 << 16 );           
+              value1 = ( value1 & 0xFFFF0000 );    
+              value2 = ata_identify_dev_buf[60];
+              new_dev->lba28_value2 = (unsigned short) value2;  
               value2 = ( value2 & 0x0000FFFF );  
-        
-              new_dev->dev_total_num_sector = value | value2;
-        
+              new_dev->dev_total_num_sector = value1 | value2;
               new_dev->_MaxLBA = new_dev->dev_total_num_sector;
+              
               
               //if ( new_dev->dev_total_num_sector > 0 )
               //{
@@ -1448,23 +1546,24 @@ int ide_dev_init (char port)
 //
 // Add no fim da lista (ready_queue_dev).
 //
+    struct storage_device_d  *tmp;
 
-    tmp_dev = ( struct storage_device_d * ) ready_queue_dev;
-    if ( (void *) tmp_dev ==  NULL )
+    tmp = ( struct storage_device_d * ) ready_queue_dev;
+    if ( (void *) tmp ==  NULL )
     {
-        printf ("ide_dev_init: [FAIL] tmp_dev\n");
+        printf ("ide_dev_init: [FAIL] tmp\n");
         goto fail;
     }
 
-// Linked list
-// Walk.
+// Linked list. Walk.
+// Colocaremos esse novo ponteiro no fim da lista.
 
-    while ( tmp_dev->next )
+    while ( tmp->next )
     {
-        tmp_dev = tmp_dev->next;
+        tmp = tmp->next;
     };
 
-    tmp_dev->next = new_dev;
+    tmp->next = new_dev;
 
 //done:
     //debug_print ("ide_dev_init: done\n");
@@ -1474,6 +1573,37 @@ fail:
     refresh_screen();
     panic ("ide_dev_init: fail\n");
     return -1;  // Not reached.
+}
+
+
+void ata_show_device_list_info(void)
+{
+    struct storage_device_d *sd;
+
+// The head of the list
+    sd = (struct storage_device_d *) ready_queue_dev;
+    
+    while ( (void *) sd != NULL )
+    {
+        printf("PORT %d: lba28{%d} lba48{%d}\n",
+            sd->dev_nport, 
+            sd->dev_total_num_sector,
+            sd->dev_total_num_sector_lba48 );
+
+        printf("PORT %d: LBA28 v1{%d} v2{%d} \n",
+            sd->dev_nport, 
+            sd->lba28_value1,
+            sd->lba28_value2 );
+        
+        printf("PORT %d: LBA48 v1{%d} v2{%d} v3{%d} v4{%d}\n",
+            sd->dev_nport, 
+            sd->lba48_value1,
+            sd->lba48_value2,
+            sd->lba48_value3,
+            sd->lba48_value4 );
+            
+        sd = (struct storage_device_d *) sd->next;
+    };
 }
 
 
@@ -1491,8 +1621,7 @@ void ide_mass_storage_initialize (void)
 
     ready_queue_dev = ( struct storage_device_d * ) kmalloc ( sizeof( struct storage_device_d) );
 
-    if ( (void *) ready_queue_dev == NULL )
-    {
+    if ( (void *) ready_queue_dev == NULL ){
         panic ("ide_mass_storage_initialize: ready_queue_dev\n");
     }
 
@@ -1544,7 +1673,6 @@ static inline void dev_switch (void)
     {
         return;
     }
-
 
 // Obter a próxima tarefa a ser executada.
 // Se caímos no final da lista vinculada, 
