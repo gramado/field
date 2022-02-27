@@ -1,63 +1,28 @@
 
 // mouse.c
+// ps/2 mouse support.
+// ring 0, kernel base.
+// Created by Fred Nora.
 
-#include <kernel.h>  
+#include <kernel.h>
 
-// Quando tem uma interrupção de mouse eu 
-// desligo o teclado e espero por ack
-// mas quando tem uma interrupção de teclado, 
-// então eu desligo o mouse mas não espero o ack.
-
-// ps/2 mouse handler.
+// ps/2 mouse irq handler.
 __VOID_IRQ 
 irq12_MOUSE (void)
 {
-
-// #debug
-// #todo: delete this thing.
-    //debug_print ("irq12_MOUSE: [TODO]\n");
-
-// Not initialized.
-// Uma interrupção ocorreu antes mesmo de inicializarmos 
-// o dispositivo e o handler ja estava conectado.
-// apenas drenamos um byte pra evitar problemas.
-// Mas antes deveríamos checar se a flag indica que
-// o buffer está cheio.
-
+    // If ps2 mouse isn't initialized yet.
     if ( PS2.mouse_initialized != TRUE ){
         in8(0x60);
         return;
     }
 
 // Disable keyboard port.
-    wait_then_write (0x64,0xAD);    
-    //keyboard_expect_ack();
-
-//
-// #todo
-//
-
-// #bugbug
-// This is a good routine.
-// It works easily on qemu.
-// But we need to fix some stuff to work
-// also in the real machine.
-
-    DeviceInterface_PS2Mouse();
-
-//#debug
-    //printf("$\n");
-    //refresh_screen();
-
+// Call the main routine.
 // Reanable keyboard port.
-    wait_then_write (0x64,0xAE);
-    //keyboard_expect_ack();
+// See: ps2mouse.c
 
-// #debug
-// #todo: delete this thing.
-    //debug_print ("irq12_MOUSE: Done\n");
+    wait_then_write(0x64,0xAD);
+    DeviceInterface_PS2Mouse();
+    wait_then_write(0x64,0xAE);
 }
-
-
-
 

@@ -1,72 +1,66 @@
 
 // ps2mouse.c
-
+// ps/2 mouse support.
+// ring0, kernel base.
+// Created by Fred Nora.
 
 /*
  #todo
  enable mouse?
  See: temple os
-
     if (*0x40E(U16 *) == 0x9FC0)
     {
         _b = 0x9FC00 + 0x30;
         *_b = 1;    
     }
-
 */
 
-
-#include <kernel.h>  
-
+#include <kernel.h>
 
 // Screen width and height
 extern unsigned long SavedX; 
-extern unsigned long SavedY; 
+extern unsigned long SavedY;
+
+// packet
+static unsigned char mouse_packet_data = 0;  // flags
+static char mouse_packet_x = 0;              // delta x
+static char mouse_packet_y = 0;              // delta y
+static char mouse_packet_scroll = 0;         // z
+
+// packet support
+static int count_mouse = 0;  // stages.
+static char buffer_mouse[4];
+
+// mouse buttons support
+unsigned int mbuttons_old_state[5];
 
 static long mouse_x = 0;
 static long mouse_y = 0;
-
 static int ps2_mouse_moving=0;
 static int ps2_mouse_has_wheel=0;
 
-static unsigned char mouse_packet_data = 0;   // várias flags;
-static char mouse_packet_x = 0;      // delta x
-static char mouse_packet_y = 0;      // delta y
-static char mouse_packet_scroll = 0;
-//====================================================================
-// Contador
-static int count_mouse = 0;
-// Buffer
-static char buffer_mouse[3];
-//=====================================================================
-
-// Estado atual dos botoes.
-unsigned int mbuttons_old_state[5];
-
-
-// i8042 mouse status bit.
-// The bit in the first byte.
-
-#define MOUSE_FLAGS_LEFT_BUTTON    0x01
-#define MOUSE_FLAGS_RIGHT_BUTTON   0x02
-#define MOUSE_FLAGS_MIDDLE_BUTTON  0x04
-#define MOUSE_FLAGS_ALWAYS_1       0x08
-#define MOUSE_FLAGS_X_SIGN         0x10
-#define MOUSE_FLAGS_Y_SIGN         0x20
-#define MOUSE_FLAGS_X_OVERFLOW     0x40
+// Flags in the first byte.
 #define MOUSE_FLAGS_Y_OVERFLOW     0x80
+#define MOUSE_FLAGS_X_OVERFLOW     0x40
+#define MOUSE_FLAGS_Y_SIGN         0x20
+#define MOUSE_FLAGS_X_SIGN         0x10
+#define MOUSE_FLAGS_ALWAYS_1       0x08
+#define MOUSE_FLAGS_MIDDLE_BUTTON  0x04
+#define MOUSE_FLAGS_RIGHT_BUTTON   0x02
+#define MOUSE_FLAGS_LEFT_BUTTON    0x01
 
-
-
-//  mouseHandler support
+// ??
+// mouseHandler support
 #define MOUSE_DATA_BIT  1
 #define MOUSE_SIG_BIT   2
 #define MOUSE_F_BIT     0x20
-#define MOUSE_V_BIT     0x08 
+#define MOUSE_V_BIT     0x08
 
-
+#define __PS2MOUSE_SET_DEFAULTS      0xF6
+#define __PS2MOUSE_SET_RESOLUTION    0xE8
 
 /*
+// Commands?
 #define PS2MOUSE_SET_RESOLUTION            0xE8
 #define PS2MOUSE_STATUS_REQUEST            0xE9
 #define PS2MOUSE_REQUEST_SINGLE_PACKET     0xEB
@@ -77,17 +71,19 @@ unsigned int mbuttons_old_state[5];
 #define PS2MOUSE_SET_DEFAULTS              0xF6
 #define PS2MOUSE_RESEND                    0xFE
 #define PS2MOUSE_RESET                     0xFF
-#define PS2MOUSE_INTELLIMOUSE_ID 0x03
 */
 
+// ID support:
+// #define PS2MOUSE_INTELLIMOUSE_ID 0x03
+// ...
 
 
 // #deprecated!
 // local worker
+// This is an old routine for parsing the packet values.
+// Not used for now.
 void __update_mouse (void)
 {
-
-// #deprecated!
 
 // O primeiro byte comtém um monte de flags.
 // O segundo byte comtém o delta x
@@ -153,53 +149,51 @@ quit:
 
 
 // local worker
-// #todo: Explain it better.
+// This routine is gonna parse the packet and give us
+// an updated x and y values.
+// #todo: We need to review the number given to the buttons,
+// 1,2,3 or 0,1,2. What is the right standard?
 void __ps2mouse_parse_data_packet (void)
 {
+// The first byte.
     unsigned char Flags=0;
-
-//#debug
-    //debug_print ("__ps2mouse_parse_data_packet:\n");
-
-// grab the items.
-    mouse_packet_data = buffer_mouse[0];
-    mouse_packet_x    = buffer_mouse[1];
-    mouse_packet_y    = buffer_mouse[2];
-    // ? = = buffer_mouse[3];  //extra 
-
-// Local use.
-    Flags = mouse_packet_data; 
-
-// == Posicionamento ====
-// #todo
-// Explain it better.
-
-    saved_mouse_x = mouse_x;
-    saved_mouse_y = mouse_y;
-
-    // old method.
-    //__update_mouse(); 
-
+// Overflow support.
     int x_overflow=FALSE; 
     int y_overflow=FALSE;
+// Sign support.
     int x_sign=FALSE;
     int y_sign=FALSE;
 
-// signal
+// The current buttons state.
+    unsigned int mbuttons_current_state[5];
+
+// Button changes.
+    int button0_changed=FALSE;
+    int button1_changed=FALSE;
+    int button2_changed=FALSE;
+
+// Save the old values of x and y.
+    saved_mouse_x = mouse_x;
+    saved_mouse_y = mouse_y;
+
+// Save for local use.
+    Flags = buffer_mouse[0];
+
+// Grab the items inside the packet.
+    mouse_packet_data = buffer_mouse[0];
+    mouse_packet_x    = buffer_mouse[1];
+    mouse_packet_y    = buffer_mouse[2];
+    // ? = = buffer_mouse[3];  //extra
+
+// Check signal
     if(mouse_packet_data & 0x10){ x_sign=TRUE; }
     if(mouse_packet_data & 0x20){ y_sign=TRUE; }
 
-// overflow
+// check overflow
     if(mouse_packet_data & 0x40){ x_overflow=TRUE; }
     if(mouse_packet_data & 0x80){ y_overflow=TRUE; }
 
-
-//
-// deltas
-//
-
-
-// mudança de sinal
+// Signal changes
     if (mouse_packet_x && x_sign)
     { 
         mouse_packet_x = (char) (mouse_packet_x - 0xFF - 0x01);
@@ -209,87 +203,52 @@ void __ps2mouse_parse_data_packet (void)
         mouse_packet_y = (char) (mouse_packet_y - 0xFF - 0x01);
     }
 
-
-// overflow
-// Abort in caseof overflow
+// Abort in case of overflow.
     if (x_overflow || y_overflow)
     {
         return;
-        //mouse_packet_x = 0;
-        //mouse_packet_y = 0;
     }
 
-
-/*
-// Limitando o delta no caso overflow de x.
-    if (x_overflow)
-    {
-        if (mouse_packet_x && x_sign)
-            mouse_packet_x = 0x00; //max neg delta
-        if (mouse_packet_x && !x_sign)
-            mouse_packet_x = 0xFF; //max pos delta
-    }
-
-// Limitando o delta no caso overflow de y.
-    if (y_overflow)
-    {
-        if (mouse_packet_y && y_sign)
-            mouse_packet_y = 0x00; //max neg delta
-        if (mouse_packet_y && !y_sign)
-            mouse_packet_y = 0xFF; //max pos delta
-    }
-*/
-
-// #todo
-// Podemos usar um 'acelerador'
-// na forma de multiplicador do delta.
-// Multiplica ou adiciona ao delta.
+//
+// Final x and y positions.
+//
 
 // It is relative.
     mouse_x = (long) (mouse_x + mouse_packet_x);
     mouse_y = (long) (mouse_y - mouse_packet_y);
 
-// Agora vamos manipular os valores atualizados.
-    mouse_x = (mouse_x & 0x000003FF );
-    mouse_y = (mouse_y & 0x000003FF );
+// Limits.
+// #bugbug: Not good for high resolutions.
+    mouse_x = (long) (mouse_x & 0x000003FF );
+    mouse_y = (long) (mouse_y & 0x000003FF );
 
-// Estado atual dos botoes.
-    unsigned int mbuttons_current_state[5];
-
-// ======================================
-
+// Left button.
     if ( ( Flags & MOUSE_LEFT_BUTTON ) == 0 ){
         mbuttons_current_state[0] = FALSE;
     }else if( ( Flags & MOUSE_LEFT_BUTTON ) != 0 ){
         mbuttons_current_state[0] = TRUE;
     };
 
-
+// Right button.
     if ( ( Flags & MOUSE_RIGHT_BUTTON ) == 0 ){
         mbuttons_current_state[1] = FALSE;
     }else if( ( Flags & MOUSE_RIGHT_BUTTON ) != 0 ){
         mbuttons_current_state[1] = TRUE;
     };
 
-
+// Middle button.
     if ( ( Flags & MOUSE_MIDDLE_BUTTON ) == 0 ){
         mbuttons_current_state[2] = FALSE;
     }else if( ( Flags & MOUSE_MIDDLE_BUTTON ) != 0 ){
         mbuttons_current_state[2] = TRUE;
     };
 
-   // mbuttons_current_state[0] = (int) (mbuttons_current_state[0] & 0xFF);
-   // mbuttons_current_state[1] = (int) (mbuttons_current_state[1] & 0xFF);
-   // mbuttons_current_state[2] = (int) (mbuttons_current_state[2] & 0xFF);
+// Buttons state:
+// Compare the current state with the old state.
 
-//
-//  Compare
-//
-
-// não hou mudanças.
-    int button0_changed=FALSE;
-    int button1_changed=FALSE;
-    int button2_changed=FALSE;
+    button0_changed = FALSE;
+    button1_changed = FALSE;
+    button2_changed = FALSE;
 
 // button 0 changed
     if( mbuttons_current_state[0] != mbuttons_old_state[0] )
@@ -301,153 +260,74 @@ void __ps2mouse_parse_data_packet (void)
     if( mbuttons_current_state[2] != mbuttons_old_state[2] )
         button2_changed=TRUE;
 
-//
-// It was pressed or released?
-//
-
-// Salva os atuais
-// Serão usados para a próxima comparação.
+// Save the current states.
     mbuttons_old_state[0] = mbuttons_current_state[0];
     mbuttons_old_state[1] = mbuttons_current_state[1];
     mbuttons_old_state[2] = mbuttons_current_state[2];
 
+// Call the event handler.
+// Was it pressed or released?
 
-// Houve mudança no botao 0.
+// The button 0 changed the state.
     if( button0_changed == TRUE )
     {
-        //printf("0 \n");
-        // houve mudança e ele foi pressionado.
+        // Presssed
         if( mbuttons_current_state[0] == TRUE ){
             xxxMouseEvent( MSG_MOUSEPRESSED, 0, 0 );
         }
-        
-        // houve mudança e ele foi liberado.
+        // Released
         if( mbuttons_current_state[0] == FALSE ){
             xxxMouseEvent( MSG_MOUSERELEASED, 0, 0 );
         }
         return;
     }
 
-
-// Houve mudança no botao 1.
+// The button 1 changed the state.
     if( button1_changed == TRUE )
     {
-        //printf("1 \n");
-        // houve mudança e ele foi pressionado.
+        // Pressed
         if( mbuttons_current_state[1] == TRUE ){
             xxxMouseEvent( MSG_MOUSEPRESSED, 1, 1 );
         }
-        
-        // houve mudança e ele foi liberado.
+        // Relesed
         if( mbuttons_current_state[1] == FALSE ){
             xxxMouseEvent( MSG_MOUSERELEASED, 1, 1 );
         }
         return;
     }
 
-// Houve mudança no botao 2.
+// The button 2 changed the state.
     if( button2_changed == TRUE )
     {
-        //printf("2 \n");
-        // houve mudança e ele foi pressionado.
+        // Pressed
         if( mbuttons_current_state[2] == TRUE ){
             xxxMouseEvent( MSG_MOUSEPRESSED, 2, 2 );
         }
-        
-        // houve mudança e ele foi liberado.
+        // Released
         if( mbuttons_current_state[2] == FALSE ){
             xxxMouseEvent( MSG_MOUSERELEASED, 2, 2 );
         }
         return;
     }
 
+// Is the mouse moving or not?
 
-// Screen limits.
-// #todo
-// Precisamos de variáveis globais que
-// nos diga as dimensões da tela.
+    // Not.
+    ps2_mouse_moving = FALSE;
 
-    //#todo: Esse filtro agora é feito na rotina de 
-    //tratamento de evento, que é chamada logo abaixo.
-    //if ( mouse_x < 1 ){ mouse_x = 1; }
-    //if ( mouse_y < 1 ){ mouse_y = 1; }
-    //if ( mouse_x > (SavedX-16) ){ mouse_x = (SavedX-16); }
-    //if ( mouse_y > (SavedY-16) ){ mouse_y = (SavedY-16); }
-    //if ( mouse_x > 300 ){ mouse_x = 300; }
-    //if ( mouse_y > 150 ){ mouse_y = 150; }
-
-// Cursor movement.
-// Comparando o novo com o antigo, pra saber se o mouse se moveu.
-// #obs: Pra quem mandaremos a mensagem de moving ??
-
-    if ( saved_mouse_x != mouse_x || 
-         saved_mouse_y != mouse_y )
+    // Yes.
+    if ( saved_mouse_x != mouse_x || saved_mouse_y != mouse_y )
     {
-        // flag: o mouse está se movendo.
-        // usaremos isso no keydown.
-        // >> na hora de enviarmos uma mensagem de mouse se movendo
-        // se o botão estiver pressionado então temos um drag (carregar.)
-        // um release cancela o carregar.
         ps2_mouse_moving = TRUE;
+    }
 
-       // Apaga o antigo.
-       // + Copia no LFB um retângulo do backbuffer 
-       // para apagar o ponteiro antigo.
-       //refresh_rectangle ( saved_mouse_x, saved_mouse_y, 20, 20 );
-       // Acende o novo.
-       //+ Decodifica o mouse diretamente no LFB.
-       // Copiar para o LFB o antigo retângulo  
-       // para apagar o ponteiro que está no LFB.
-       //bmpDisplayMousePointerBMP ( mouseBMPBuffer, mouse_x, mouse_y );   
-       
-       // #bugbug: Essa rotina pode estar falhando na maquina real.
-       // por problemas na inicializaçao de variaveis
-       
-       //drawDataRectangle( 
-       //    mouse_x, mouse_y, 
-       //    10, 10, COLOR_RED, 0 );
-
-       // IN: color, x, y, 0, rop_flags
-       //backbuffer_putpixel ( 
-       //    COLOR_BLACK,  // color 
-       //    mouse_x,      // x
-       //    mouse_y,      // y
-       //    0 );          // rop_flags
-
-       //refresh_rectangle ( mouse_x, mouse_y, 10, 10 );
-       
-       //#debug
-       //printf("[%d,%d] ",mouse_x,mouse_y);
-       //refresh_screen();
-       
-       // See: kgwm.c
-       //xxxMouseEvent(mouse_x,mouse_y);
-
-    }else{
-        // Não redesenhamos quando o evento for um click, sem movimento.
-        ps2_mouse_moving = FALSE;
-    };
-
-// event
-
-    //if( !x_overflow && !y_overflow ){
-        //IN: event id, x, y
-        //xxxMouseEvent(0,mouse_x,mouse_y);
-    //}
-    
-//#todo: event id 
+// Call the event handler.
 // IN: event id, x, y.
     if (ps2_mouse_moving==TRUE){
         xxxMouseEvent( MSG_MOUSEMOVE, mouse_x, mouse_y );
     }
-
-//#debug
-    //debug_print ("__ps2mouse_parse_data_packet: Done\n");
 }
 
-
-#define __PS2MOUSE_SET_DEFAULTS      0xF6
-#define __PS2MOUSE_SET_RESOLUTION    0xE8
 
 void ps2mouse_initialize_device (void)
 {

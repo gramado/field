@@ -1,10 +1,10 @@
 
 // ps2kbd.c
+// ps/2 keyboard support.
+// ring0, kernel base.
+// Created by Fred Nora.
 
-#include <kernel.h>  
-
-
-
+#include <kernel.h>
 
 
 void ps2kbd_initialize_device (void)
@@ -14,7 +14,6 @@ void ps2kbd_initialize_device (void)
 // globals
     keyboard_init_modifier_keys();
     keyboard_init_lock_keys();
-
 
  // enable keyboard port
     wait_then_write(I8042_STATUS, 0xae);
@@ -26,43 +25,34 @@ void ps2kbd_initialize_device (void)
 
 
 /*
- * *******************************************************
  * DeviceInterface_PS2Keyboard: 
- * 
  *     Vamos pegar o raw code.
- * 
  *     Keyboard handler for abnt2 keyboard.
  *     fica dentro do driver de teclado.
- *
  *     A interrupção de teclado vai chamar essa rotina.
  *     @todo: Usar keyboardABNT2Handler().
  * void keyboardABNT2Handler() 
  * Esse será o handler do driver de teclado
  * ele pega o scacode e passa para a entrada do line discipline dentro do kernel.
- *
- * @TODO: ISSO DEVERÁ IR PARA UM ARQUIVO MENOR ... OU AINDA PARA UM DRIVER.
+ * #todo: ISSO DEVERÁ IR PARA UM ARQUIVO MENOR ... OU AINDA PARA UM DRIVER.
  * Pega o scacode cru e envia para a disciplina de linhas que deve ficar no kernelbase.
  * Essa é a parte do driver de dispositivo de caractere.
- *
  * #importante:
  * O driver deverá de alguma maneira notificar o kernel sobrea a ocorrência
  * do evento de input. Para que o kernel acorde as trheads que estão esperando 
  * por eventos desse tipo.
  */
 
-	//#importante:
-	// Provavelmente uma interrupção irá fazer esse trabalho de 
-	// enviar o scancode para o kernel para que ele coloque na fila.
-	// Nesse momento o kernel de sentir-se alertado sobre o evento de 
-	// input e acordar a threa que está esperando por esse tipo de evento. 
-
-    // #obs: 
-    // Esse buffer está em gws/user.h 
-
+// #importante:
+// Provavelmente uma interrupção irá fazer esse trabalho de 
+// enviar o scancode para o kernel para que ele coloque na fila.
+// Nesse momento o kernel de sentir-se alertado sobre o evento de 
+// input e acordar a threa que está esperando por esse tipo de evento. 
+// #obs: 
+// Esse buffer está em gws/user.h 
 // Low level keyboard writter.
 // Isso poderia usar uma rotina de tty
 // O teclado esta lidando no momento com um buffer pequeno, 128 bytes.
-
 // PUT SCANCODE
 
 void DeviceInterface_PS2Keyboard(void)
@@ -82,9 +72,10 @@ void DeviceInterface_PS2Keyboard(void)
 #define I8042_MOUSE_BUFFER 0x20
 #define I8042_KEYBOARD_BUFFER 0x00
 
-// #test
-// buffer full?
+// Get status.
     unsigned char status = in8(I8042_STATUS);
+
+// buffer full?
     if (!(status & I8042_BUFFER_FULL))
         return;
 
@@ -94,33 +85,32 @@ void DeviceInterface_PS2Keyboard(void)
         ? TRUE 
         : FALSE;
 
-    //Yes it is a mouse.
+    // Yes it is a mouse.
     if ( is_mouse_device == TRUE )
         return;
+
 // =============================================
 
-    //não precisamos perguntar para o controlador se
-    //podemos ler, porque foi uma interrupção que nos trouxe aqui.
-    // #obs:
-    // O byte pode ser uma resposta à um comando ou 
-    // um scancode.
+// Não precisamos perguntar para o controlador se
+// podemos ler, porque foi uma interrupção que nos trouxe aqui.
+// #obs:
+// O byte pode ser uma resposta à um comando ou 
+// um scancode.
 
     unsigned char __raw = 0;
     unsigned char val   = 0;
 
 sc_again:
 
-    //===========================================
-    // #test
-    // Testing with ack
-    // credits: minix
-    // #define KEYBD   0x60  /* I/O port for keyboard data */
-    // #define PORT_B  0x61  /* I/O port for 8255 port B (kbd, beeper...) */
-    // #define KBIT    0x80  /* bit used to ack characters to keyboard */
+//===========================================
+// #test
+// Testing with ack
+// credits: minix
+// #define KEYBD   0x60  /* I/O port for keyboard data */
+// #define PORT_B  0x61  /* I/O port for 8255 port B (kbd, beeper...) */
+// #define KBIT    0x80  /* bit used to ack characters to keyboard */
 
-//
 // Get the rawbyte for the key struck.
-//
     __raw = in8(0x60);
 
 //===========================================
@@ -135,18 +125,19 @@ sc_again:
     out8(0x61, val);
 //===========================================
 
-
 //++
 // ===========================================
-    // #todo
-    // Temos que checar se o primeiro byte é um ack ou um resend.
-    // isso acontece logo apos a inicialização.
+// #todo
+// Temos que checar se o primeiro byte é um ack ou um resend.
+// isso acontece logo apos a inicialização.
+// #todo
+// me parece que o primeiro byte pode ser um ack ou resend.
+// #define ACKNOWLEDGE         0xFA
+// #define RESEND              0xFE
 
-    // #todo
-    // me parece que o primeiro byte pode ser um ack ou resend.
-    
-    // #define ACKNOWLEDGE         0xFA
-    // #define RESEND              0xFE
+// ??
+// Assim como no mouse, talvez o ack so seja enviado
+// quando estivermos em modo streaming.
 
     switch (__raw){
 
@@ -220,11 +211,8 @@ NormalByte:
 // device type, data.
 // 1 = keyboard
 
-
-//
+// Call the event handler.
 // Console interrupt
-//
-
 // Valid foreground thread.
 // Handler for keyboard input.
 // See: kgwm.c
@@ -249,15 +237,13 @@ done:
 // #todo: Change this name.
 void keyboard_init_modifier_keys (void)
 {
-    // Modifier keys.
-
+// Modifier keys.
     shift_status  = 0;
     ctrl_status   = 0;
     winkey_status = 0;
     alt_status    = 0;
 
-
-	// Alternate Graphic.
+// Alternate Graphic.
     //altgr_status = 0; //@todo
     
 	// Function.
@@ -265,6 +251,7 @@ void keyboard_init_modifier_keys (void)
 	
 	//...
 }
+
 
 // #todo: Change this name.
 void keyboard_init_lock_keys (void)
@@ -348,66 +335,35 @@ void keyboard_set_leds (char flag)
     // switch(flag){}
 }
 
+
 /*
- ************************ 
  * keyboardGetKeyState: 
  * 
  */
 
 // Pega o status das teclas de modificação.
 
-unsigned long keyboardGetKeyState ( unsigned char key ){
-	
-	unsigned long State = 0;
+unsigned long keyboardGetKeyState ( unsigned char key )
+{
+	unsigned long State=0;
 	
 	switch (key){
-		
-		case VK_LSHIFT: 
-		    State = shift_status; 
-			break;
-
-	    case VK_LCONTROL:
-		    State = ctrl_status;
-		    break;
-
-	    case VK_LWIN:
-		    State = winkey_status;
-		    break;
-
-	    case VK_LMENU:
-		    State = alt_status;
-		    break;
-
-	    case VK_RWIN:
-		    State = winkey_status;
-		    break;
-
-	    case VK_RCONTROL:
-		    State = ctrl_status;
-		    break;
-			
-	    case VK_RSHIFT:
-		    State = shift_status;
-		    break;
-
-	    case VK_CAPITAL:
-		    State = capslock_status;
-		    break;
-
-	    case VK_NUMLOCK:
-		    State = numlock_status;
-		    break;
-			
-		case VK_SCROLL:
-            State = scrolllock_status;
-            break;			
-			
-		//...
+	case VK_LSHIFT:    State = shift_status;       break;
+    case VK_LCONTROL:  State = ctrl_status;        break;
+    case VK_LWIN:      State = winkey_status;      break;
+    case VK_LMENU:     State = alt_status;         break;
+    case VK_RWIN:      State = winkey_status;      break;
+    case VK_RCONTROL:  State = ctrl_status;        break;
+    case VK_RSHIFT:    State = shift_status;       break;
+    case VK_CAPITAL:   State = capslock_status;    break;
+    case VK_NUMLOCK:   State = numlock_status;     break;
+    case VK_SCROLL:    State = scrolllock_status;  break;
+    // ...
 	};
-
 
     return (unsigned long) State;
 }
+
 
 // Get alt Status.
 int get_alt_status (void)
@@ -429,7 +385,6 @@ int get_shift_status (void)
 
 
 /*
- *************************************** 
  * xxx_keyboard_read: 
  * 
  */
@@ -448,8 +403,8 @@ uint8_t xxx_keyboard_read (void)
     return (uint8_t) val;
 }
 
+
 /*
- *************************************** 
  * xxx_keyboard_write: 
  * 
  */
@@ -467,9 +422,7 @@ void xxx_keyboard_write (uint8_t data)
 }
 
 
-
 /*
- **************************************
  * zzz_keyboard_read:
  *     Pega um byte na porta 0x60.
  */
@@ -480,6 +433,7 @@ unsigned char zzz_keyboard_read (void)
     
     return (unsigned char) in8(0x60);
 }
+
 
 void keyboard_expect_ack (void)
 {
@@ -519,16 +473,5 @@ void keyboard_expect_ack (void)
     return;
     //return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 

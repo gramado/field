@@ -1,69 +1,33 @@
 
 // keyboard.c
-
-
+// ps/2 keyboard support.
 // See:
 // https://www.gnu.org/software/libc/manual/html_node/Canonical-or-Not.html
-//
+// Created by Fred Nora.
 
 #include <kernel.h>  
 
-
-// quando tem uma interrupção de mouse eu desligo o teclado e espero por ack
-// mas quando tem uma interrupção de teclado, então eu desligo o mouse mas não espero o ack.
-
+// ps/2 keyboard irq handler.
 __VOID_IRQ 
 irq1_KEYBOARD (void)
 {
-    //#debug
-    //debug_print ("\n");
-    //debug_print ("irq1_KEYBOARD: [TODO]\n");
-
-// Not initialized.
-// Uma interrupção ocorreu antes mesmo de inicializarmos 
-// o dispositivo e o handler ja estava conectado.
-// apenas drenamos um byte pra evitar problemas.
-// Mas antes deveríamos checar se a flag indica que
-// o buffer está cheio.
-
+    // If ps2 keyboard isn't initialized yet.
     if ( PS2.keyboard_initialized != TRUE ){
         in8(0x60);
         return;
     }
 
-    //printf ("k");
-    //refresh_screen();
-
 // Disable mouse port.
-    wait_then_write (0x64,0xA7);
-    //mouse_expect_ack();
-
+// Call the main routine.
+// Reenable the mouse port if ps2 mouse was initialized.
 // See: ps2kbd.c
+
+    wait_then_write(0x64,0xA7);
     DeviceInterface_PS2Keyboard();
-
-// #bugbug
-// Se estivermos usando uma inicialização reduzida,
-// onde habilitamos somente a porta do teclado,
-// não podemos habilitar a porta do mouse, sem a 
-// devida inicialização.
-// Só reabilitaremos se a configuração de ps2 
-// nos disser que o segundo dispositivo esta em uso.
-// Reabilitando a porta de um dispositivo que
-// ja foi devidamente inicializado.
-
-//done:
-
-// Reenable the mouse port.
-
     if ( PS2.mouse_initialized == TRUE ){
-        wait_then_write (0x64,0xA8);
-        //mouse_expect_ack();
+        wait_then_write(0x64,0xA8);
     }
-
-//#debug
-    //debug_print ("irq1_KEYBOARD: Done\n");
 }
-
 
 
 
