@@ -62,7 +62,15 @@ Please, give us some feedback.
 
 > See the [docs](https://github.com/frednora/gramado/tree/main/admin/docs).
 
-## More information
+## Author
+
+* **Fred Nora** - [frednora](https://twitter.com/frednora)
+
+## Contributors
+
+* **Fred Nora** - [frednora78](https://facebook.com/frednora78)
+
+## License
 
 Gramado is a Free and Open Source operating system.
 The source code uses the BSD license.
