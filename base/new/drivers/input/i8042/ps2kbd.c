@@ -73,7 +73,6 @@ void DeviceInterface_PS2Keyboard(void)
     static int __has_e0_prefix = 0;
     static int __has_e1_prefix = 0;
 
-
 // =============================================
 // #test
 
@@ -124,7 +123,6 @@ sc_again:
 //
     __raw = in8(0x60);
 
-
 //===========================================
 // Get
 // > Strobe the keyboard to ack the char
@@ -136,7 +134,6 @@ sc_again:
     out8(0x61, val | 0x80);  
     out8(0x61, val);
 //===========================================
-
 
 
 //++
@@ -186,9 +183,6 @@ sc_again:
 // ===========================================
 //--
 
-
-CheckByte:
-
 // #bugbug
 // [Enter] in the numerical keyboard isn't working.
 // teclas do teclado extendido.
@@ -205,6 +199,7 @@ CheckByte:
 // Mas por enquanto, essa rotina manda mensagens para o ws
 // caso tenha um instalado.
 
+CheckByte:
 
 // Check prefix for extended keyboard sequence
     if ( __raw == 0xE0 ){ __has_e0_prefix = 1; goto done; }
@@ -242,7 +237,6 @@ NormalByte:
            (unsigned char) __raw );
     }
 
-
 // Clean the mess.
     __has_e0_prefix = 0;
     __has_e1_prefix = 0;
@@ -250,6 +244,7 @@ NormalByte:
 done:
     return;
 }
+
 
 // #todo: Change this name.
 void keyboard_init_modifier_keys (void)

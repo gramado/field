@@ -16,10 +16,8 @@ __VOID_IRQ
 irq1_KEYBOARD (void)
 {
     //#debug
-
     //debug_print ("\n");
-    debug_print ("irq1_KEYBOARD: [TODO]\n");
-
+    //debug_print ("irq1_KEYBOARD: [TODO]\n");
 
 // Not initialized.
 // Uma interrupção ocorreu antes mesmo de inicializarmos 
@@ -27,8 +25,8 @@ irq1_KEYBOARD (void)
 // apenas drenamos um byte pra evitar problemas.
 // Mas antes deveríamos checar se a flag indica que
 // o buffer está cheio.
-    if ( PS2.keyboard_initialized != TRUE )
-    {
+
+    if ( PS2.keyboard_initialized != TRUE ){
         in8(0x60);
         return;
     }
@@ -36,13 +34,11 @@ irq1_KEYBOARD (void)
     //printf ("k");
     //refresh_screen();
 
-    // Disable mouse port.
+// Disable mouse port.
     wait_then_write (0x64,0xA7);
     //mouse_expect_ack();
 
-// See: 
-// ps2kbd.c
-
+// See: ps2kbd.c
     DeviceInterface_PS2Keyboard();
 
 // #bugbug
@@ -50,26 +46,22 @@ irq1_KEYBOARD (void)
 // onde habilitamos somente a porta do teclado,
 // não podemos habilitar a porta do mouse, sem a 
 // devida inicialização.
-
 // Só reabilitaremos se a configuração de ps2 
 // nos disser que o segundo dispositivo esta em uso.
-
 // Reabilitando a porta de um dispositivo que
 // ja foi devidamente inicializado.
 
-done:
+//done:
 
 // Reenable the mouse port.
 
-    if ( PS2.used == TRUE )
-    {
-        if ( PS2.mouse_initialized == TRUE ){
-            wait_then_write (0x64,0xA8);
-            //mouse_expect_ack();
-        }
+    if ( PS2.mouse_initialized == TRUE ){
+        wait_then_write (0x64,0xA8);
+        //mouse_expect_ack();
     }
 
-    debug_print ("irq1_KEYBOARD: Done\n");
+//#debug
+    //debug_print ("irq1_KEYBOARD: Done\n");
 }
 
 

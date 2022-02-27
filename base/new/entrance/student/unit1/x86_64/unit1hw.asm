@@ -91,9 +91,7 @@ _irq0:
     mov qword [_contextRDI], rdi 
     mov qword [_contextRSI], rsi 
 
-;
 ; Segments
-;
 
     xor rax, rax
 
@@ -117,18 +115,15 @@ _irq0:
 ; #bugbug: sempre a mesma pilha?
 ; Que pilha as interrupçoes de softwar estao usando?
 
-
 ;
 ; Calls
 ;
 
 ; cpl
 ; see: x64cont.c
-
     mov rax, qword [_contextCS]
     and rax, 3
     mov [_contextCPL], rax
-
 
 ; Timer and taskswitching.
 ; See: ke/hal/x86_64/pit.c
@@ -136,7 +131,6 @@ _irq0:
     call _irq0_TIMER
 
 ; Release a bandit.
-
     jmp unit3Irq0Release
 ; --------------------------------------
 
@@ -947,23 +941,21 @@ _irq11:
 
 ;===================
 
+
 ;=======================================
 ; IRQ 12 - mouse on PS/2 connector
-;
-; See:
-; /i8042/mouse.c
-;
+; See: /i8042/mouse.c
 
 extern _irq12_MOUSE
 
 ; Capture context
 global _irq12
 _irq12:
-    cli
 
-    ;; Acumulator.
+    cli
+; Acumulator.
     push rax
-   
+
     push rax
     push rbx
     push rcx
@@ -991,8 +983,6 @@ _irq12:
 ; See: mouse.c
     call _irq12_MOUSE
 
-    ;int 3
-
     popfq
     pop rsp
     pop gs
@@ -1016,22 +1006,19 @@ _irq12:
     pop rbx
     pop rax
 
+;EOI order: Second, first.
 
-    ;; EOI.
-    ;; Order: Second, first.
     mov al, 0x20
     out 0xA0, al 
     IODELAY 
     out 0x20, al
     IODELAY 
 
-    
-    ;; The acumulator.
+;The acumulator.
     pop rax
 
     sti
     iretq
-
 ;;=================
 
 

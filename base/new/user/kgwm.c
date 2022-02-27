@@ -1,4 +1,6 @@
 
+// kgws.c
+// Events and wm inside the kernel.
 
 #include <kernel.h> 
 
@@ -179,8 +181,7 @@ wmProcedure (
 
     unsigned long tmp_value=0;
 
-
-    debug_print("wmProcedure:\n");
+    //debug_print("wmProcedure:\n");
     
     sprintf (buffer,"My \x1b[8C string!\n"); 
 
@@ -564,9 +565,8 @@ wmProcedure (
             break;
     };
 
-
 //unexpected_fail:
-    debug_print("wmProcedure: unexpected fail\n");
+    //debug_print("wmProcedure: unexpected fail\n");
     return 0;
 
 fail:
@@ -627,20 +627,17 @@ xxxKeyEvent (
     // ??
     // __has_e0_prefix and __has_e1_prefix
 
-    // Step 0 
-    // Declarações de variáveis.
-
+// Step 0 
+// Declarações de variáveis.
 
     struct process_d  *__p;
     struct thread_d   *t;
-
 
     unsigned long status = 0;
     int msg_status = -1;
     int save_pos = 0;
 
-
-    // Pegando o argumento e convertendo para ascii
+// Pegando o argumento e convertendo para ascii
     unsigned char Keyboard_RawByte  =0;
     unsigned char Keyboard_ScanCode =0;    // The scancode.
 
@@ -659,9 +656,11 @@ xxxKeyEvent (
     // true for keyup and false for keydown.
     // int Break = TRUE;
 
-    debug_print("xxxKeyEvent:\n");
+//#todo
+    //debug_print("xxxKeyEvent:\n");
 
-    if (tid<0 || tid >= THREAD_COUNT_MAX){
+    if (tid<0 || tid >= THREAD_COUNT_MAX)
+    {
         debug_print("xxxKeyEvent: tid\n");
         return (int) (-1);
     }
@@ -1044,15 +1043,12 @@ done:
 
     Event_LongRawByte = (unsigned long) ( Keyboard_RawByte & 0x000000FF );
 
-
 // Não tem virtual key '0'.
-
     if ( Event_LongASCIICode == 0 )
         return -1;
 
 // #todo
 // Check 'control + alt + del'.
-
 // Teclas de digitação.
 // Manda para o window server.
 // Ele vai imprimir na janela com foco de entrada
@@ -1067,7 +1063,6 @@ done:
         }
     }
 */
-
 
 // #test
 // Colocando no arquivo.
@@ -1103,7 +1098,6 @@ done:
         }
     }
 
-
 // Process the event using the system's window procedures.
 // It can use the kernel's virtual console or
 // send the event to the loadable window server.
@@ -1132,7 +1126,7 @@ xxxMouseEvent(
     long long2 )
 {
 
-    debug_print ("xxxMouseEvent:\n");
+    //debug_print ("xxxMouseEvent:\n");
 
 // pressionado ou liberado
     if( event_id == MSG_MOUSEPRESSED ||
@@ -1240,7 +1234,7 @@ xxxMouseEvent(
         (unsigned long)     long2 );       // y
 */
 done:
-    debug_print ("xxxMouseEvent: Done\n");
+    //debug_print ("xxxMouseEvent: Done\n");
     return 0;
 }
 

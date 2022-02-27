@@ -196,10 +196,7 @@ struct thread_d
     int used;
     int magic;
 
-//
 // Input model
-//
-
 // Setup the input model for this thread ...
 // So the kernel will know where are the places
 // to send the input when this is the current thread.
@@ -211,9 +208,7 @@ struct thread_d
 
     //thread_inputmodel_t input_model;
 
-//
 // Surface
-//
     struct rect_d *surface_rect;
 
     int position;
@@ -325,9 +320,15 @@ struct thread_d
     unsigned long pd0_VA;
     unsigned long pd0_PA;
 
-// pl
+// privilege level
     unsigned long iopl;
+    //unsigned long current_iopl; //use this one?
     unsigned long previous_iopl;
+
+// The thread is running in the ring0 phase
+// after the isr request.
+//    int in_syscall;
+
 
 // ========================================================
 // ORDEM: 

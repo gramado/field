@@ -1606,9 +1606,7 @@ __add_message_to_into_the_queue(
 
     unsigned long message_buffer[8];
 
-
-    debug_print("__add_message_to_into_the_queue:\n");
-
+    //debug_print("__add_message_to_into_the_queue:\n");
 
 // Invalid window
 
@@ -1673,7 +1671,7 @@ __add_message_to_into_the_queue(
         window->client_tid );
 
 //done:
-    debug_print("__add_message_to_into_the_queue: done\n");
+    //debug_print("__add_message_to_into_the_queue: done\n");
     return 0;
 }
 

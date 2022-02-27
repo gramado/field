@@ -158,7 +158,8 @@ void __ps2mouse_parse_data_packet (void)
 {
     unsigned char Flags=0;
 
-    debug_print ("__ps2mouse_parse_data_packet:\n");
+//#debug
+    //debug_print ("__ps2mouse_parse_data_packet:\n");
 
 // grab the items.
     mouse_packet_data = buffer_mouse[0];
@@ -184,12 +185,21 @@ void __ps2mouse_parse_data_packet (void)
     int x_sign=FALSE;
     int y_sign=FALSE;
 
+// signal
     if(mouse_packet_data & 0x10){ x_sign=TRUE; }
     if(mouse_packet_data & 0x20){ y_sign=TRUE; }
+
+// overflow
     if(mouse_packet_data & 0x40){ x_overflow=TRUE; }
     if(mouse_packet_data & 0x80){ y_overflow=TRUE; }
 
+
+//
 // deltas
+//
+
+
+// mudança de sinal
     if (mouse_packet_x && x_sign)
     { 
         mouse_packet_x = (char) (mouse_packet_x - 0xFF - 0x01);
@@ -199,14 +209,18 @@ void __ps2mouse_parse_data_packet (void)
         mouse_packet_y = (char) (mouse_packet_y - 0xFF - 0x01);
     }
 
-/*
+
+// overflow
+// Abort in caseof overflow
     if (x_overflow || y_overflow)
     {
-        mouse_packet_x = 0;
-        mouse_packet_y = 0;
+        return;
+        //mouse_packet_x = 0;
+        //mouse_packet_y = 0;
     }
-*/
 
+
+/*
 // Limitando o delta no caso overflow de x.
     if (x_overflow)
     {
@@ -224,7 +238,7 @@ void __ps2mouse_parse_data_packet (void)
         if (mouse_packet_y && !y_sign)
             mouse_packet_y = 0xFF; //max pos delta
     }
-
+*/
 
 // #todo
 // Podemos usar um 'acelerador'
@@ -422,13 +436,13 @@ void __ps2mouse_parse_data_packet (void)
     //}
     
 //#todo: event id 
-    
+// IN: event id, x, y.
     if (ps2_mouse_moving==TRUE){
-        // IN: event id, x, y.
         xxxMouseEvent( MSG_MOUSEMOVE, mouse_x, mouse_y );
     }
 
-    debug_print ("__ps2mouse_parse_data_packet: Done\n");
+//#debug
+    //debug_print ("__ps2mouse_parse_data_packet: Done\n");
 }
 
 
@@ -634,20 +648,23 @@ void ps2mouse_initialize_device (void)
 }
 
 
-
 // Called by irq12_MOUSE in mouse.c.
+// See: https://wiki.osdev.org/Mouse_Input
+// See: https://wiki.osdev.org/User:Kmtdk
+// See: https://wiki.osdev.org/PS/2_Mouse
 void DeviceInterface_PS2Mouse(void)
 {
     unsigned char _byte=0;
     int posX = 0;
     int posY = 0;
 
-
-    debug_print ("DeviceInterface_PS2Mouse:\n");
+//#debug
+//#todo: deletar isso.
+    //debug_print ("DeviceInterface_PS2Mouse:\n");
 
 // Not initialized.
-    if ( PS2.mouse_initialized != TRUE )
-    {
+    if ( PS2.mouse_initialized != TRUE ){
+        debug_print ("DeviceInterface_PS2Mouse: Not initialized yet\n");
         return;
     }
 
@@ -675,85 +692,103 @@ void DeviceInterface_PS2Mouse(void)
  which is easily recognizable.
 */
 
+
 // =============================================
 // #test
-
 #define I8042_STATUS 0x64
-#define I8042_WHICH_BUFFER 0x20
 #define I8042_BUFFER_FULL 0x01
-#define I8042_MOUSE_BUFFER 0x20
+#define I8042_WHICH_BUFFER 0x20
 #define I8042_KEYBOARD_BUFFER 0x00
+#define I8042_MOUSE_BUFFER    0x20
 
-// #test
-// buffer full?
+// Get status
     unsigned char status = in8(I8042_STATUS);
+
+// buffer full?
     if (!(status & I8042_BUFFER_FULL))
         return;
 
 // which device?
+// Is it a mouse device?
+// Return if it is not a mouse device.
     int is_mouse_device = 
         ((status & I8042_WHICH_BUFFER) == I8042_MOUSE_BUFFER) 
         ? TRUE 
         : FALSE;
-
-    //No it is not a mouse.
     if ( is_mouse_device == FALSE )
         return;
 // =============================================
 
-    debug_print ("[Get byte]: #bugbug PF\n");
+
+//#debug
+//#todo: deletar isso.
+    //debug_print ("[Get byte]: #bugbug PF\n");
+
+
+// Get the byte.
+
     //_byte = (unsigned char) zzz_mouse_read();
     _byte = (unsigned char) in8(0x60);
 
-    // ACK: 
-    // Significa início do pacote quando no modo
-    // 'request single packets'.
+// #bugbug
+// Talvez esses bytes so importem se forem pegos 
+// na porta de status, não na porta 0x60
+
+// ACK: 
+// Significa início do pacote quando no modo
+// 'request single packets'.
+// Então vamos reinicializar o contador.
+
+/*
+    // O ACK não é enviado se estivermos
+    // no modo streaming.
     if ( _byte == 0xFA ){
-        debug_print ("[0xFA]: ACK\n");
-        //printf ("DeviceInterface_PS2Mouse: ack\n");
-        //refresh_screen();
-        //in8(0x60);
+        //debug_print ("[0xFA]: ACK\n");
         count_mouse = 0;
         return;
     }
-    
-    // RESEND: 
+*/
+
+/*
+// RESEND: 
+// ??? Resend é comando e não estatus.
     if ( _byte == 0xFE ){
-        debug_print ("[0xFE]: RESEND\n");
-        //printf ("DeviceInterface_PS2Mouse: resend\n");
-        //refresh_screen();
-        //in8(0x60);
-        count_mouse = 0;
+        //debug_print ("[0xFE]: RESEND\n");
+        printf ("DeviceInterface_PS2Mouse: resend\n");
+        refresh_screen();
+        //count_mouse = 0;
         return;
     }
+*/
 
-// #todo
-// O bit 6 indica que é o primeir byte do pacote.
-// Synchronize
-
-    //if(( *_byte & 64)==64) { count_mouse=0; };
+// first byte
+// Y overflow	X overflow	Y sign bit	X sign bit	Always 1	Middle Btn	Right Btn	Left Btn
 
 // Counter
     switch (count_mouse){
-    //flags
+
     case 0:
-        debug_print ("[0]:\n");
+        //debug_print ("[0]:\n");
         buffer_mouse[0] = (char) _byte;
-        if (!(_byte & MOUSE_FLAGS_ALWAYS_1)){
+        // Esse bit esta sempre setado no primeiro byte.
+        if (!(_byte & MOUSE_FLAGS_ALWAYS_1))
+        {
             debug_print ("[0]: Stream out of sync.\n");
+            count_mouse=0;
             break;
         }
         count_mouse++;
         break;
+
     //x
     case 1:
-        debug_print ("[1]:\n");
+        //debug_print ("[1]:\n");
         buffer_mouse[1] = (char) _byte;
         count_mouse++;
         break;
     //y
     case 2:
-        debug_print ("[2]:\n");
+        //debug_print ("[2]:\n");
         buffer_mouse[2] = (char) _byte;
         // Se tem wheel, então tem mais um bytes.
         if( ps2_mouse_has_wheel == TRUE )
@@ -780,7 +815,7 @@ void DeviceInterface_PS2Mouse(void)
     
     //error
     default:
-        debug_print ("[default]:\n");
+        //debug_print ("[default]:\n");
         in8(0x60);
         count_mouse = 0;
         //old_mouse_buttom_1 = 0;
@@ -796,7 +831,9 @@ void DeviceInterface_PS2Mouse(void)
     //printf("$\n");
     //refresh_screen();
 
-    debug_print ("DeviceInterface_PS2Mouse: Done\n");
+//#debug
+//#todo: deletar isso.
+    //debug_print ("DeviceInterface_PS2Mouse: Done\n");
 }
 
 

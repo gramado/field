@@ -57,18 +57,17 @@ unit3Irq0Release:
 ; 64bit
 ; This is a 64bit pointer to the pml4 table.
 
+; #bugbug
+; Não precisamos fazer refresh em todo tick,
+; somente quando houver troca de tarefa.
+
     mov RAX, CR3  
     IODELAY 
-    nop
-    nop
-    nop
-    nop
     mov CR3, RAX  
 
+; Wait TLB.
     ;IODELAY 
-    ;IODELAY 
-    ;IODELAY 
-    ;IODELAY 
+
 
 ;
 ; == Restore context ====================

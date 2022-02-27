@@ -12,7 +12,10 @@
 __VOID_IRQ 
 irq12_MOUSE (void)
 {
-    debug_print ("irq12_MOUSE: [TODO]\n");
+
+// #debug
+// #todo: delete this thing.
+    //debug_print ("irq12_MOUSE: [TODO]\n");
 
 // Not initialized.
 // Uma interrupção ocorreu antes mesmo de inicializarmos 
@@ -21,16 +24,14 @@ irq12_MOUSE (void)
 // Mas antes deveríamos checar se a flag indica que
 // o buffer está cheio.
 
-    if ( PS2.mouse_initialized != TRUE )
-    {
+    if ( PS2.mouse_initialized != TRUE ){
         in8(0x60);
         return;
     }
 
-    // Disable keyboard port.
+// Disable keyboard port.
     wait_then_write (0x64,0xAD);    
     //keyboard_expect_ack();
-
 
 //
 // #todo
@@ -44,16 +45,17 @@ irq12_MOUSE (void)
 
     DeviceInterface_PS2Mouse();
 
-    //#debug
+//#debug
     //printf("$\n");
     //refresh_screen();
-
 
 // Reanable keyboard port.
     wait_then_write (0x64,0xAE);
     //keyboard_expect_ack();
 
-    debug_print ("irq12_MOUSE: Done\n");
+// #debug
+// #todo: delete this thing.
+    //debug_print ("irq12_MOUSE: Done\n");
 }
 
 
