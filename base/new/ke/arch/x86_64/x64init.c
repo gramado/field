@@ -1018,10 +1018,11 @@ int I_init (void)
 
     PROGRESS("Kernel:2:5\n"); 
     //debug_print ("I_init: storage structure\n");
-    storage = (void *) kmalloc ( sizeof(struct storage_d) );
-    if ( (void *) storage == NULL )
-    {
-       printf ("I_init: storage\n");
+
+    int st_status=FALSE;
+    st_status = init_storage_support();
+    if ( st_status != TRUE ){
+       printf ("I_init: init_storage_support fail\n");
        return FALSE;
     }
 
@@ -1030,6 +1031,8 @@ int I_init (void)
 
     disk_init();
     volume_init();
+
+// fs
     //vfsInit();
     fsInit();
     // ...

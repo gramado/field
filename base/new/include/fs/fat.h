@@ -9,7 +9,6 @@
 // Isolando pra talvez tirarmos isso do kernel.
 // fat16 é o sistema da partição de boot apenas.
 
-
 // fat16 file attributes.
 // See:
 // https://en.wikipedia.org/wiki/Design_of_the_FAT_file_system
@@ -38,20 +37,20 @@
 //#define FAT32_LINK_TERMINATOR           0x0FFFFFFF
 
 
-#define	FAT12_MASK	0x00000fff	/* mask for 12 bit cluster numbers */
-#define	FAT16_MASK	0x0000ffff	/* mask for 16 bit cluster numbers */
-#define	FAT32_MASK	0x0fffffff	/* mask for FAT32 cluster numbers */
+#define FAT12_MASK  0x00000fff  /* mask for 12 bit cluster numbers */
+#define FAT16_MASK  0x0000ffff  /* mask for 16 bit cluster numbers */
+#define FAT32_MASK  0x0fffffff  /* mask for FAT32 cluster numbers */
 
 
-#define  FAT16_CLUSTER_AVAILABLE    0x0000
-#define  FAT16_CLUSTER_RESERVED     0xfff0
-#define  FAT16_CLUSTER_BAD          0xfff7
-#define  FAT16_CLUSTER_LAST         0xffff
+#define FAT16_CLUSTER_AVAILABLE    0x0000
+#define FAT16_CLUSTER_RESERVED     0xfff0
+#define FAT16_CLUSTER_BAD          0xfff7
+#define FAT16_CLUSTER_LAST         0xffff
 
 
+#define FAT_DIRECTORY_ENTRY_FREE    0xE5
+#define FAT_DIRECTORY_ENTRY_LAST    0x00
 
-#define FAT_DIRECTORY_ENTRY_FREE        0xE5
-#define FAT_DIRECTORY_ENTRY_LAST        0x00
 
 /*
 #define FAT_DIRECTORY_ENTRY_FREE        0xE5
@@ -152,23 +151,6 @@ to_FAT_name (
     char *src,
     char *dst );
 
-
 #endif    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

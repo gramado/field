@@ -1,5 +1,6 @@
 /*
  * File: main.c
+ *    This is the InitProcess.
  *    Client side application for Gramado Window Server.
  *    Using socket to connect with gws.
  *    AF_GRAMADO family.
@@ -360,7 +361,8 @@ gwsProcedure (
             printf("gws.bin: Closing...\n");
             exit(0);
             break;
-        
+
+        // range: 4001~4009 
         case MSG_COMMAND:
             printf("gws.bin: MSG_COMMAND %d \n",long1);
             switch(long1){
@@ -372,10 +374,27 @@ gwsProcedure (
             gws_clone_and_execute("editor.bin");  break;
             case 4003:  //app3
             printf("gws.bin: 4003\n");
+            gws_clone_and_execute("fileman.bin");  break;
+            case 4004:  //app4
+            printf("gws.bin: 4004\n");
+            gws_clone_and_execute("logon.bin");  break;
+            case 4005:  //app5
+            printf("gws.bin: 4005\n");
+            gws_clone_and_execute("reboot.bin");  break;
+            case 4006:  //app6
+            printf("gws.bin: 4006\n");
+            //gws_clone_and_execute("shell.bin");  break;
+            case 4007:  //app7
+            printf("gws.bin: 4007\n");
+            gws_clone_and_execute("shutdown.bin");  break;
+            case 4008:  //app8
+            printf("gws.bin: 4008\n");
             gws_clone_and_execute("terminal.bin");  break;
+            case 4009:  // gns srv
+            printf("gws.bin: 4009\n");
+            gws_clone_and_execute("cmdline.bin");  break;
             };
             break;
-
 
         // 20 = MSG_KEYDOWN
         case MSG_KEYDOWN:

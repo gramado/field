@@ -127,7 +127,6 @@ struct cwd_d CWD;
 int fat_cache_saved;
 int fat_cache_loaded;
 
-
 // gcc -Wall Defined but not used!
 static char *____root_name = "/";
 
@@ -167,8 +166,8 @@ unsigned long search_path_dir_entries;
 
 // List of clusters. 
 // Usado na rotina de carregamento de arquivo.
+// #bugbug: Isso não é desperdício?
 unsigned short file_cluster_list[1024]; 
-
 
 
 
@@ -176,18 +175,14 @@ unsigned short file_cluster_list[1024];
 // == Structures ====================================
 //
 
-
 /*
- * 
  * Obs: Dentro do kernel base somente teremos primitivas
  *      Operações complexas devem ir para servidores utilitários.
- *
  * Descrição:
  *     Header para o File System Manager. (FSM)
  *     File system header for kernel file management.
  *     Inicialmente suporte ao sistema de arquivos FAT16.
- *     Posteriormente suporte aos sistemas FAT12, FAT32, EXT2.     
- *
+ *     Posteriormente suporte aos sistemas FAT12, FAT32, EXT2.
  * History:
  *     2014 - Created by Fred Nora.
  */
@@ -203,12 +198,11 @@ struct target_dir_d
     // Buffer where the directory was loaded.
     unsigned long current_dir_address;
 
-	//ponteiro para a string do caminho
-	//char *pwd_string;  
+//ponteiro para a string do caminho
+    //char *pwd_string;  
 
     //file name 8.3 (11 bytes;)
     char name[32];
-
 
     // ??
     // The number of entries ?
@@ -227,9 +221,8 @@ struct hardlink_d
 {
     int used;
     int magic;
-	//..
+    //..
 };
-
 
 
 // links para arquivos e diretórios em 
@@ -238,23 +231,24 @@ struct softlink_d
 {
     int used;
     int magic;
-	//..
+    //..
 };
-
 
 
 struct fat_d
 {
     unsigned long address;
     int type;
-	//...
+    //...
 };
+
+// See: fs_init_fat in fs.c
 
 struct fat_d  *fat;
 
+
  
 /*
- **************************************
  * dir_d:
  *     Estrutura para diretório de arquivo.
  *     #importante: 
@@ -267,9 +261,6 @@ struct dir_d
     int magic;
     int id;
 
-    // #todo: 
-    // Precisaremos dessas coisas.
-
     struct inode_d *inode;
     file *_file;
 
@@ -277,31 +268,28 @@ struct dir_d
     uid_t uid;
     gid_t gid;
 
-
-    // número de bytes em uma entrada.
+// número de bytes em uma entrada.
     int entry_size_in_bytes;
 
-    //numero total de bytes no diretório.
+// número total de bytes no diretório.
     int totalentries_size_in_bytes;
 
     int number_of_entries;
 
-    // Númetro máximo de arquivos em um diretório.
+// Númetro máximo de arquivos em um diretório.
     int fileMax;
 
-	// Número total de arquivos presentes no diretório.
+// Número total de arquivos presentes no diretório.
     int fileTotal;
 
-	//Endreço onde o arquivo foi carregado.
+// Endereço onde o arquivo foi carregado.
     unsigned long address;
-   
 
-    //flag, se esta ou nao na memoria.
+// flag, se esta ou nao na memoria.
     int inMemory;
 
     struct dir_d *next;
 };
-
 
 
 /*
@@ -311,12 +299,10 @@ struct dir_d
 
 struct filesystem_d
 {
-    // Object info.
-
     object_type_t  objectType;
     object_class_t objectClass;
 
-    //#todo:
+//#todo:
     //int id;
 
     int used;
@@ -326,23 +312,18 @@ struct filesystem_d
 
     char *name;
 
-
-    // Sectors per cluster.
+// Sectors per cluster.
     int spc; 
 
-
-    // Number of entries in the root dir.
-    //int rootdir_entries;
+// Number of entries in the root dir.
     int dir_entries;
     
-    // Size of the entry in bytes.
+// Size of the entry in bytes.
     int entry_size; 
 
-    //================    
-
-    // #bugbug
-    // Thats specific for fat16.
-    // fat16.
+// #bugbug
+// Thats specific for fat16.
+// fat16.
     
     unsigned long rootdir_address;   //endereço do rootdir
     unsigned long rootdir_lba;       //lba
@@ -356,6 +337,8 @@ struct filesystem_d
     // struct filesystem_d *next;
 };
 
+// The root file system.
+// See: fs_init_structures in fs.c
 struct filesystem_d  *root;
 // ...
 

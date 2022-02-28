@@ -3,29 +3,21 @@
  *
  * Definição:
  * Informações globais sobre a gerência de dispositivos.
- * 
  * + Informações globais sobre o dispositivo onde o sistema operacional 
  * foi instalado.
- *
  * + Informações sobre o host device.
- *
  * + Não é a qui o lugar para se detalhar todos os dispositivos instalados na máquina.
  * Aqui é lugar de classificar a plataforma alvo para o sistema operacional. Para
  * que as aplicações possam se adaptar às características do dispositivo que suportam
  * o sistema operacional.
  *
- * Versão 1.0, 2016 - Created.   
+ * 2016 - Created.   
  */
- 
- 
+
 #ifndef ____GDEVICE_H
 #define ____GDEVICE_H 1
  
- 
 
-// See: devices/devices.h
- 
- 
 /*
  * driver_type_t: 
  *     Tipos de drivers. 
@@ -34,13 +26,16 @@
  * em qualquer ring.
  *     + O driver modular poderá ser descarregado. 
  */ 
+ 
 typedef enum {
-	DriverTypeSystem,     //Persistente.
-	DriverTypeModular,    //Modular.
-	//...
+    
+    DriverTypeSystem,     //Persistente.
+    DriverTypeModular,    //Modular.
+    //...
+
 }driver_type_t; 
- 
- 
+
+
 /*
  * host_device_type_t:
  *     Classes de dispositivos segundo o host que pertencem.
@@ -48,33 +43,36 @@ typedef enum {
  *     Outras poderão ser incluídas futuramente. 
  */ 
 typedef enum {
-	HostDeviceTypePC,        //PC.
-	HostDeviceTypeMobile,    //Mobile.
-	HostDeviceTypeIOT,       //Iot.
-	//...
+
+    HostDeviceTypePC,        //PC.
+    HostDeviceTypeMobile,    //Mobile.
+    HostDeviceTypeIOT,       //Iot.
+    //...
+
 }host_device_type_t; 
 
 
- 
-typedef struct host_device_info_d host_device_info_t; 
 struct host_device_info_d
 {
-	//Type.
+
+//Type.
     host_device_type_t type;
-	
-	
-	//Screen size.
-	unsigned long host_device_screen_width;
-	unsigned long host_device_screen_height;
+
+// Screen size.
+    unsigned long host_device_screen_width;
+    unsigned long host_device_screen_height;
 
     //Continua ...
-	
+
 };
-host_device_info_t *HostDeviceInfo; 
-//
+
+struct host_device_info_d *HostDeviceInfo;
+
+
 
 /*
- * #bugbug essa estrutura ja deve ter sido definida em outro lugar , por isso 
+ * #bugbug essa estrutura ja deve ter 
+ * sido definida em outro lugar , por isso 
  * esta dando problemas.
  * @todo: tirar o x.
  *
@@ -97,11 +95,9 @@ struct xdevice_driver_d
 //
 
 //Screen sizes and bpp.
-
 unsigned long g_device_screen_width;
 unsigned long g_device_screen_height;
 unsigned long g_device_screen_bpp; 
-
 
 #endif   
 

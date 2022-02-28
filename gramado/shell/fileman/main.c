@@ -224,7 +224,6 @@ int filemanProcedure(
     if(msg<0)
         return -1;
 
-
     switch(msg)
     {
 
@@ -257,20 +256,19 @@ int filemanProcedure(
             };
             break;
 
-// syskeydown
+        // syskeydown
+        // It works because the fileman is getting input from
+        // the control thread not from the file.
         case MSG_SYSKEYDOWN:
             switch (long1)
             {
                 case VK_F1: 
-                    printf("VK_F1\n");
-                    rtl_clone_and_execute("editor.bin");
+                    rtl_clone_and_execute("cmdline.bin");
                     return 0;
                     break;
 
                 case VK_F2: 
-                    printf("VK_F2\n");
-                    //rtl_clone_and_execute("terminal.bin");
-                    rtl_clone_and_execute("cmdline.bin");
+                    rtl_clone_and_execute("editor.bin");
                     return 0;
                     break;
 
@@ -289,7 +287,6 @@ int filemanProcedure(
                     //gws_refresh_window(fd,Menu_window);
                     return 0;
                     break;
-
             };
             break;
     };

@@ -310,6 +310,7 @@ void set_file ( void *file, int Index )
 }
 
 
+// fsInit:
 // Called by init() in init.c
 int fsInit (void)
 {
@@ -317,10 +318,9 @@ int fsInit (void)
 
     int slot = -1;
 
-
     debug_print ("fsInit: [TODO]\n");
     
-    // Undefined fs!
+// Undefined fs!
     set_filesystem_type(FS_TYPE_NULL);
 
 
@@ -335,14 +335,13 @@ int fsInit (void)
     // #todo
     fat16Init();
 
-
 //
 // == fileList =========================
 //
 
-	// Agora inicialzamos as stream 4 e 5.
-	// As anteriores foram inicializadas em stdio,
-	// pois s�o o fluxo padr�o.
+// Agora inicialzamos as stream 4 e 5.
+// As anteriores foram inicializadas em stdio,
+// pois s�o o fluxo padr�o.
 
 //
 // == volume1_rootdir =========================================== 
@@ -487,20 +486,15 @@ int fsInit (void)
     };
 
 
-
-
-    // Initialize directory facility structures.
-    
+// Initialize directory facility structures.
     init_directory_facilities();
 
-    // CWD Structure.
-    // Inicializa o pwd support.
-
+// CWD Structure.
+// Inicializa o pwd support.
     fsInitializeWorkingDiretoryString();
 
-    // Target dir struct
-    // Inicializa a estrutura de suporte ao target dir.
-
+// Target dir struct
+// Inicializa a estrutura de suporte ao target dir.
     fsInitTargetDir(VOLUME1_ROOTDIR_ADDRESS,"/");
 
 // done:
@@ -583,16 +577,15 @@ int fat16Init (void)
 // #todo
 // Change the return type to 'int' and
 // remove all the messages. Maybe.
+// Create the 'root' filesystem structure.
 void fs_init_structures (void)
 {
     int Type=0;
 
     debug_print ("fs_init_structures: [TODO]\n");
 
-//
 // struct
-//
-
+// Create the 'root' filesystem structure.
 // Initialize the 'root' filesystem structure.
 // "/"
 
@@ -605,21 +598,13 @@ void fs_init_structures (void)
 
     root->objectType  = ObjectTypeFileSystem;
     root->objectClass = ObjectClassKernelObjects;
-
-// #todo
-// Vamos fazer isso no final da rotina.
     root->used  = TRUE;
     root->magic = 1234;
-
-// Name.
-// pointer 
-
     root->name = (char *) ____root_name;
 
-//
+
 // #todo 
 // #bugbug   volume_vfs  ??
-//
 
 // Se o volume do vfs ainda não foi criado 
 // então não podemos prosseguir.
@@ -632,17 +617,16 @@ void fs_init_structures (void)
         //volume_vfs->fs = root;
  
 
-    if( (void*) storage == NULL)
+// Save is in the 'storage' low level structure.
+
+    if( (void*) storage == NULL ){
          panic("fs_init_structures: storage");
+    }
 
     storage->fs = root;
-
     // ...
 
-//
 // Type
-// 
-
 // #bugbug: 
 // Em qual disco e volume pegamos o tipo de sistema de arquivos?
 
@@ -657,9 +641,6 @@ void fs_init_structures (void)
     }else{
         root->type = (int) Type;
     };
-
-
-// Type:
 
     switch (Type){
 
@@ -708,10 +689,7 @@ void fs_init_fat (void)
 {
     debug_print ("fs_init_fat: [TODO]\n");
 
-//
 // root
-//
-
 // The root file system structure.
 // "/"
 
@@ -719,20 +697,16 @@ void fs_init_fat (void)
         panic ("fs_init_fat: root\n");
     }
 
-//
-// fat
-//
 
-// The 'fat' structure.
+// fat
+// Let's create the 'fat' structure.
 
     fat = (void *) kmalloc ( sizeof(struct fat_d) );
-
     if ( (void *) fat == NULL ){
         panic ("fs_init_fat: fat\n");
     }
 
-// Info
-
+// Populate it with some values found in the root structure.
     fat->address = root->fat_address; 
     fat->type    = root->type;
 
@@ -741,14 +715,20 @@ void fs_init_fat (void)
 
 // Continua ...
 
+// #todo
+// What is this address?
+// Is this the virtual address of the
+// start of the fat table?
 
-    if ( fat->address == 0 )
+    if ( fat->address == 0 ){
         panic ("fs_init_fat: fat->address\n");
+    }
 
-// #bugbug: Is it int ?
-    if ( fat->type <= 0 )
+// #bugbug: 
+// Is it int ?
+    if ( fat->type <= 0 ){
         panic ("fs_init_fat: fat->type\n");
-
+    }
 
 // Continua a inicialização da fat.
 
@@ -3207,16 +3187,15 @@ void fs_show_inode_table(void)
 
 void fs_show_root_fs_info(void)
 {
-
-    printf ("\n");
+    //printf ("\n");
     printf ("fs_show_root_fs_info:\n");
 
-
-    // root fs structure.
+// root fs structure.
 
     if ( (void *) root == NULL ){
         printf ("No root structure\n");
         goto fail;
+    
     }else{
 
         if ( root->used != 1 || root->magic != 1234 ){
@@ -3253,8 +3232,8 @@ void sys_pwd (void)
     fs_print_process_cwd (current_process);
 }
 
+
 /*
- **************************************************
  * fsSaveFile:
  *     Salva um arquivo no disco.
  *     Somente no diretório raiz.
@@ -3262,31 +3241,24 @@ void sys_pwd (void)
 
 // It was called by sys_write_file() in fs.c.
 // It was called by sys_read_file when the file does not exist.
-
-
 // #obs
 // Isso salva um arquivo.
 // Também poderia ser usado para criar um arquivo ou diretório ? 
- 
 // #todo: #test
 // Número máximo de entradas na lista de clusters. 
 // Quantas?
 // A FAT tem 246 setores, 123 KB
-
 // fsSaveFile:
 //     Salva um arquivo. 
 //     Onde? #todo vamos fornecer o endereço do diretorio.
 // IN: 
 // name, size in sectors, size in bytes, adress, flag. 
 // OUT:
-
 // #bugbug
 // O nome nao esta ficando certo na entrada.
-
 // #todo
 // is dir_address virtual or physical?
 // Change this name to dir_pa or dir_va.
-
 
 int
 fsSaveFile ( 
@@ -3394,21 +3366,16 @@ fsSaveFile (
         goto fail;
     }
 
-
-    // Load root dir and FAT.
-
+// Load root dir and FAT.
     fs_load_rootdir( VOLUME1_ROOTDIR_ADDRESS, VOLUME1_ROOTDIR_LBA, 32 );
-
     fs_load_fat(VOLUME1_FAT_ADDRESS,VOLUME1_FAT_LBA,246);
 
-
-    // Procurando cluster livre na fat.
-    // Nesse momento construimos uma lista de clusters livres.
-    // #todo: 
-    // Essa lista já devia existir e agora somente 
-    // usaríamos.
-    // #todo: Essa rotina poderia seruma helper function?
-
+// Procurando cluster livre na fat.
+// Nesse momento construimos uma lista de clusters livres.
+// #todo: 
+// Essa lista já devia existir e agora somente 
+// usaríamos.
+// #todo: Essa rotina poderia seruma helper function?
 
 //SearchEmptyEntries:
  

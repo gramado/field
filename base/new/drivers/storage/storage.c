@@ -4,6 +4,19 @@
 #include <kernel.h>  
 
 
+
+int init_storage_support(void)
+{
+    storage = (void *) kmalloc ( sizeof(struct storage_d) );
+    if ( (void *) storage == NULL )
+    {
+       printf ("init_storage_support: storage\n");
+       return FALSE;
+    }
+    return TRUE;
+}
+
+
 /*
  * disk_init:
  *     Initialize the disk manager.
@@ -307,9 +320,9 @@ int volume_init (void){
     };
 
 
-    //
-    // == VFS =====================================================
-    //
+//
+// == VFS =====================================================
+//
 
 
     // Volume.

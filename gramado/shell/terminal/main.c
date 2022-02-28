@@ -1459,7 +1459,9 @@ terminalProcedure (
             };
             break;
 
-        //#bugbug: Not working
+        // #bugbug: Not working
+        // It's because the terminal is getting input
+        // from file, not from the control thread.
         //case MSG_SYSKEYDOWN:
         //    switch(long1){
         //    case VK_F1: gws_clone_and_execute("browser.bin");  break;

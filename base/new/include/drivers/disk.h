@@ -1,4 +1,6 @@
 
+// disk.h
+
 #ifndef  __DISK_H
 #define  __DISK_H    1
 
@@ -7,12 +9,15 @@
 
 #define DISK_BYTES_PER_SECTOR  512 
 //#define DISK_BYTES_PER_SECTOR 4096 
- 
+
+
 //
 // == MBR =================================================
 //
 
+
 // MBR support:
+// MBR for fat16 first partition.
 // jmp, bpb, partition table, signature.
 
 // jmp
@@ -51,7 +56,6 @@
 // #bugbug: ??? Is this the right offset??
 //#define  BS_FilSysType   50  /* Filesystem type string (8-byte) */ 
 #define  BS_FilSysType   53  // starts here in dos 4.0
-
 
 // #todo:
 // Where is this restart point in gramado os ??
@@ -95,7 +99,6 @@
 #define MBR_PT_FAT16B  0x06
 // ...
 
-
 //
 // =========================================
 //
@@ -110,11 +113,10 @@
 
 
 /*
- *****************************************************
  * disk_type_t:
  *     Enumerando os tipos de disk.
  */
- 
+
 typedef enum {
 
     DISK_TYPE_NULL, 
@@ -125,7 +127,6 @@ typedef enum {
     //...
 
 }disk_type_t;
-
 
 
 // #Obs:
@@ -141,14 +142,12 @@ typedef enum {
 }disk_class_t;
 
 
-
 // bios parameter block
 struct bpb_d
 {
     int id;
     int used;
     int magic;
-    
     //...
 
     struct bpb_d *next;
@@ -309,22 +308,6 @@ void *volume_get_volume_handle( int number );
 void *volume_get_current_volume_info (void);
 
 #endif    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -127,8 +127,31 @@ unsigned long wmSendInputToWindowManager(
 }
 
 
+// local
+// Launch an app via init process.
+// Just a small range of messages are accepted.
+// See: gramado/core/client
+// range: 4001~4009
+void __launch_app_via_initprocess(int index)
+{
 
+    if( index < 4001)
+        return;
 
+    if( index > 4009)
+        return;
+
+    if( (void*) InitThread == NULL ){
+        return;
+    }
+
+    post_message_to_tid(
+        (int) InitThread->tid,
+        NULL,  //window
+        (int) MSG_COMMAND,  //msg code
+        index,   // range: 4001~4009
+        0 );
+}
 
 
 /*
@@ -309,18 +332,8 @@ wmProcedure (
                 // Exibir a surface do console.
                 case VK_F1:
                     if (ctrl_status == TRUE){
-                        
-                        // dado em char size, ou linhas
-                        //drawDataRectangle( 
-                         //   (CONSOLE_TTYS[fg_console].cursor_left * 8), 
-                         //   (CONSOLE_TTYS[fg_console].cursor_top * 8), 
-                         //   (CONSOLE_TTYS[fg_console].cursor_right * 8), 
-                         //   (CONSOLE_TTYS[fg_console].cursor_bottom * 8), 
-                         //   COLOR_GRAY );
-                         //refresh_screen(); //usar refresh rectangle
-                         
-                         return 0;
-                        
+                        __launch_app_via_initprocess(4001);
+                        return 0;
                     }
                     if (alt_status == 1){
                         printf ("wmProcedure: alt + f1\n");
@@ -334,7 +347,9 @@ wmProcedure (
 
                 case VK_F2:
                     if (ctrl_status == TRUE){
+                         __launch_app_via_initprocess(4002);
                          //powertrio_select_client(1);
+                         return 0;
                     }
                     if (alt_status == 1){
                         printf ("wmProcedure: alt + f2\n");
@@ -349,6 +364,8 @@ wmProcedure (
                 case VK_F3:
                     if (ctrl_status == TRUE){
                         //powertrio_select_client(2);
+                        __launch_app_via_initprocess(4003);
+                        return 0;
                     }
                     if (alt_status == 1){
                         printf ("wmProcedure: alt + f3\n");
@@ -363,6 +380,8 @@ wmProcedure (
                 case VK_F4:
                     if (ctrl_status == TRUE){
                         //powertrio_next();
+                        //__launch_app_via_initprocess(4004);
+                        return 0;
                     }
                     if (alt_status == 1){
                         printf ("wmProcedure: alt + f4\n");
@@ -380,6 +399,8 @@ wmProcedure (
                     if (ctrl_status == TRUE){
                         //powertrio_select_client(0);
                         //reboot();
+                        __launch_app_via_initprocess(4005);
+                        return 0;
                     }
                     if (alt_status == TRUE){
                         printf ("wmProcedure: alt + f5\n");
@@ -395,6 +416,7 @@ wmProcedure (
                 // 9216 - Launch the redpill application
                 case VK_F6:
                     if (ctrl_status == TRUE){
+                        __launch_app_via_initprocess(4006);
                         //powertrio_select_client(1);
                         // #todo: 
                         // shutdown. Only the ring3 applications
@@ -415,9 +437,11 @@ wmProcedure (
                 // Test 1.
                 case VK_F7:
                     if (ctrl_status == TRUE){
+                        __launch_app_via_initprocess(4007);
                         //powertrio_select_client(2);
-                       // Send message to init process to launch gdeshell.
+                        // Send message to init process to launch gdeshell.
                         //__kgwm_SendMessageToInitProcess(9217);
+                        return 0;
                     }
                     if (alt_status == TRUE){
                         printf ("wmProcedure: alt + f7\n");
@@ -452,6 +476,9 @@ wmProcedure (
                         // Send message to init process to launch the launcher.
                         //__kgwm_SendMessageToInitProcess(9216); 
                         //__kgwm_SendMessageToInitProcess(9218);  // launch sysmon
+                        
+                        //__launch_app_via_initprocess(4008);
+                        return 0;
                     }
                     if (alt_status == TRUE){
                         printf ("wmProcedure: alt + f8\n");
@@ -468,12 +495,14 @@ wmProcedure (
                 // #todo:
                 // [Window Manager]: Switcher
                     if (ctrl_status == TRUE){
+                        //__launch_app_via_initprocess(4009);
                         printf("\n");
                         printf ("Prompt ON: Type something\n");
                         //printf("\n");
                         consolePrompt();
                         ShellFlag = TRUE;
                         refresh_screen();
+                        return 0;
                     }
                     if (alt_status == TRUE){
                         printf ("wmProcedure: alt + f9\n");
@@ -499,6 +528,7 @@ wmProcedure (
                         printf("\n");
                         ShellFlag = FALSE;
                         refresh_screen();
+                        return 0;
                     }
                     if (alt_status == TRUE){
                         printf ("wmProcedure: alt + f10\n");
