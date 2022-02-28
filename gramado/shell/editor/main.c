@@ -58,8 +58,11 @@ int main_window       = 0;
 int addressbar_window = 0;
 int client_window     = 0;
 
-int button            = 0;
 
+int save_button = 0;
+
+// #todo
+// int button_list[8];
 
 //
 // cursor
@@ -95,16 +98,12 @@ int tmp_ip_y=8;
 #define IP(a, b, c, d) (a << 24 | b << 16 | c << 8 | d)
 
 
-
 int fileman_init_globals(void)
 {
-    gws_debug_print("fileman_init_globals:\n");
-    
+    //gws_debug_print("fileman_init_globals:\n");
     gScreenWidth  = gws_get_system_metrics(1);
     gScreenHeight = gws_get_system_metrics(2);
-
     //...
-    
     return 0;
 }
 
@@ -113,9 +112,10 @@ int fileman_init_windows(void)
 {
     int i=0;
 
-    gws_debug_print("fileman_init_windows:\n");
+    //gws_debug_print("fileman_init_windows:\n");
     
-    for (i=0; i<WINDOW_COUNT_MAX; i++){
+    for (i=0; i<WINDOW_COUNT_MAX; i++)
+    {
         windowList[i] = 0;
     };
     
@@ -133,8 +133,6 @@ struct sockaddr_in addr = {
     .sin_addr   = IP(192, 168, 1, 79),
 };
 */
-
-
 
 
 // Quem deveria fazer isso seria o window server
@@ -175,10 +173,7 @@ editorDrawChar(
     cursor_x = pos_x;
     cursor_y = pos_y;
 
-//
 // Draw
-//
-
 // Calling the window server for drawing the char.
 
     gws_draw_char ( 
@@ -193,16 +188,23 @@ editorDrawChar(
     cursor_x++;
 }
 
+
 void
 editorSetCursor( 
     int x,
     int y )
 {
-    if (cursor_x >= 0 && cursor_x < cursor_x_max)
+    if (cursor_x >= 0 && 
+        cursor_x < cursor_x_max)
+    {
         cursor_x = x;
+    }
 
-    if (cursor_y >= 0 && cursor_y < cursor_y_max)
+    if (cursor_y >= 0 && 
+        cursor_y < cursor_y_max)
+    {
         cursor_y = y;
+    }
 }
 
 
@@ -287,18 +289,16 @@ done:
 }
 
 
-/*
- **********************************************
- * main:
- */
-
-int main ( int argc, char *argv[] ){
-
+int main ( int argc, char *argv[] )
+{
     struct gws_display_d *Display;
+
     int client_fd = -1;
 
 
-// Curosr
+    debug_print ("EDITOR.BIN: Initializing\n");
+
+// global: Cursor
     cursor_x = 0;
     cursor_y = 0;
 
@@ -327,14 +327,8 @@ int main ( int argc, char *argv[] ){
 
 // =====================================================
 
-    // #todo:
-    // check validation od w h
-    debug_print ("------------------------\n"); 
-    debug_print ("editor: Initializing ...\n");
-
 
 // Device info
-
     unsigned long w = gws_get_system_metrics(1);
     unsigned long h = gws_get_system_metrics(2);
 
@@ -343,15 +337,11 @@ int main ( int argc, char *argv[] ){
         exit(1);
     }
 
-// ============================================
-
-
 // Tamanho da janela.
-
     unsigned long w_width  = (w>>1);
     unsigned long w_height =  (h - 100); //(h>>1);
 
-    // original: 
+// original
     unsigned long viewwindowx = ( ( w - w_width ) >> 1 );
     unsigned long viewwindowy = ( ( h - w_height) >> 1 ); 
 
@@ -367,10 +357,10 @@ int main ( int argc, char *argv[] ){
     //unsigned long viewwindowx = 0;
     //unsigned long viewwindowy = 0; 
 
+// #hackhack
+// @media
+// Se a tela for pequena demais para os dias de hoje. hahaha
 
-    // #hackhack
-    // @media
-    // se a tela for pequena demais para os dias de hoje. hahaha
     if ( w == 320 )
     {
         // dimensoes
@@ -382,19 +372,14 @@ int main ( int argc, char *argv[] ){
         viewwindowy = 0;
     }
 
-
 // Cursor limits based on the window size.
-
     cursor_x = 0;
     cursor_y = 0;
     cursor_x_max = ((w_width/8)  -1);
     cursor_y_max = ((w_height/8) -1);
 
 
-//
-// main window
-//
-
+// Creating the main window.
 // style: 
 // 0x0001=maximized 
 // 0x0002=minimized 
@@ -411,24 +396,23 @@ int main ( int argc, char *argv[] ){
                       COLOR_RED,   // #todo: client bg. Not implemented. 
                       COLOR_GRAY );
 
-    if ( main_window < 0 ){
+    if ( main_window < 0 )
+    {
         debug_print("Editor: main_window fail\n"); 
         exit(1);
     }
 
-// Text.
+// Text inside the main window.
      gws_draw_text (
-        (int) client_fd,       // fd,
-        (int) main_window,     // window id,
+        (int) client_fd,      // fd,
+        (int) main_window,    // window id,
         (unsigned long)  2, 
         (unsigned long) 32 + (40/3), 
         (unsigned long) COLOR_BLACK,
         " Name: ");
 
-
-//
 // Address bar - (edit box)
-//
+// Inside the main window.
 
     addressbar_window = gws_create_window (
                             client_fd,
@@ -437,10 +421,13 @@ int main ( int argc, char *argv[] ){
                             (( w_width/8 )*3), 32,    
                             main_window,0,COLOR_WHITE,COLOR_WHITE);
 
-    if ( addressbar_window < 0 )
-        debug_print("Editor: addressbar_window fail\n");
-    
-    if ( addressbar_window > 0 ){
+    if ( addressbar_window < 0 ){
+        debug_print("editor: addressbar_window fail\n");
+    }
+
+// Text inside the address bar.
+    if ( addressbar_window > 0 )
+    {
         gws_draw_text (
             (int) client_fd,            // fd,
             (int) addressbar_window,    // window id,
@@ -450,39 +437,42 @@ int main ( int argc, char *argv[] ){
             "text.txt");
      }
 
+// The [Save] button.
+// inside the main window.
 
-//
-// [Save F?] button
-//
-
-    button = gws_create_window ( 
+    save_button = gws_create_window ( 
                  client_fd,
                  WT_BUTTON,1,1,"Save",
                  (( w_width/8 )*6), 32 +4,
                  (( w_width/8 )*1), 32,
                  main_window, 0, COLOR_GRAY, COLOR_GRAY );
 
-    if ( button < 0 )
-        debug_print("Editor: button fail\n"); 
+    if ( save_button < 0 ){
+        debug_print("editor: save_button fail\n"); 
+    }
 
 //
 // == Client window =======================
 //
 
-// client window (White)
+// Client window (White)
+// Inside the main window.
 // Lembre-se que temos uma status bar.
+
+    unsigned long cw_left   = 4;
+    unsigned long cw_top    = 32 +40;
+    unsigned long cw_width  = ( w_width -4 -4);
+    unsigned long cw_height = ( w_height -32 - 40 -4 -32 );
 
     client_window = gws_create_window ( 
                         client_fd,
                         WT_EDITBOX,1,1,"Client",
-                        4,                             // left 
-                        32 +40,                        // top 
-                        ( w_width -4 -4),              // width
-                        ( w_height -32 - 40 -4 -32 ),  // height
+                        cw_left, cw_top, cw_width, cw_height,
                         main_window,0,COLOR_WHITE,COLOR_WHITE );
 
-    if ( client_window < 0 ) 
-        debug_print("Editor: client_window fail\n"); 
+    if ( client_window < 0 ) {
+        debug_print("editor: client_window fail\n"); 
+    }
 
 
     /*
@@ -514,23 +504,25 @@ int main ( int argc, char *argv[] ){
 
 
 // Show main window.
+    gws_refresh_window (client_fd, main_window);
 
-    gws_refresh_window (client_fd,main_window);
-
-
-    // test: ok
+// test: ok
     //gws_change_window_position(client_fd,main_window,0,0);
     //gws_resize_window ( client_fd, main_window, 400, 400);
     //gws_redraw_window(client_fd,main_window,1);
 
-    //mudando o tamanho de uma janela que esta no top
-    //vai deixar ela suja e o compositor vai repintar.
-
-
+// mudando o tamanho de uma janela que esta no top
+// vai deixar ela suja e o compositor vai repintar.
 
 // ============================================
 // focus
 // editbox
+// Setting the input focus on a given window.
+// Input
+// #focus
+// Well, the editor.bin application is not receiving
+// the input ... so, i guess the window server
+// is printing the chars into the window with focus.
 
     gws_async_command(
          client_fd,
@@ -538,18 +530,8 @@ int main ( int argc, char *argv[] ){
          client_window,
          client_window );
 
-
-//
-// Input
-//
-
-// #focus
-// Well, the editor.bin application is not receiving
-// the input ... so, i guess the window server
-// is printing the chars into the window with focus.
-
-
-    while(1){
+    while (1)
+    {
         //
     };
 

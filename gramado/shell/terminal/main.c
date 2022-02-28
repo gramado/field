@@ -113,7 +113,6 @@ void clear_terminal_client_window(int fd)
 }
 
 
-
 // local
 // maximize application window.
 // #bugbug: Covering the taskbar.
@@ -130,12 +129,65 @@ void __winmax(int fd)
 
     gws_change_window_position(fd,test_win,0,0);
 
+// resize
     gws_resize_window(
         fd, test_win, w, h );
 
     gws_redraw_window(
          fd, test_win, TRUE );
 }
+
+// local
+// maximize application window.
+// #bugbug: Covering the taskbar.
+void __winmin(int fd)
+{
+    int test_win = Terminal.main_window_id;
+
+    unsigned long w=rtl_get_system_metrics(1);
+    unsigned long h=rtl_get_system_metrics(2);
+                  h=h-40;
+
+    if(fd<0)
+        return;
+
+    gws_change_window_position(fd,test_win,0,0);
+
+// resize
+
+    unsigned long w_width=0;
+    unsigned long w_height=0;
+
+    if(w>100){w_width=100;}
+    if(h>100){w_height=100;}
+
+    gws_resize_window(
+        fd, test_win, w_width, w_height );
+
+// redraw
+    gws_redraw_window(
+         fd, test_win, TRUE );
+}
+
+
+// local
+void __desktop(int fd)
+{
+    int test_win = Terminal.main_window_id;
+
+//#test 1
+    gws_async_command(fd,11,0,0);  //update desktop
+
+/*
+//#test 2
+    int i=0;
+    for (i=0; i<8; i++){
+        gws_change_window_position (fd,test_win,i,i);
+        gws_redraw_window (fd, test_win, TRUE );
+    };
+*/
+}
+
 
 
 // local
@@ -188,6 +240,7 @@ void compareStrings(int fd)
 
     if ( strncmp(prompt,"winmin",6) == 0 )
     {
+        __winmin(fd);
         goto exit_cmp;
     }
 
@@ -201,8 +254,9 @@ void compareStrings(int fd)
     //#test: update all the windows in the desktop.
     if ( strncmp(prompt,"desktop",7) == 0 )
     {
+        __desktop(fd);
         //gws_async_command(fd,12,0,0); //switch focus.
-        gws_async_command(fd,11,0,0); //update desktop
+        //gws_async_command(fd,11,0,0); //update desktop
         goto exit_cmp;
     }
 
@@ -1481,6 +1535,56 @@ terminalProcedure (
     return 0;
 }
 
+// local
+int __input_loop(int fd)
+{
+// #importante:
+// Esse event loop pega dados de um arquivo.
+
+    int C=0;
+    FILE *new_stdin;
+    new_stdin = (FILE *) fopen("gramado.txt","a+");
+
+    int client_fd = fd;
+    int window_id = Terminal.client_window_id;
+
+    if( (void*) new_stdin == NULL ){
+        printf ("__input_loop: new_stdin\n");
+        return -1;
+    }
+
+// O kernel seleciona qual será 
+// o arquivo para teclado ps2.
+
+    gramado_system_call(
+        8002,
+        fileno(new_stdin),
+        0,
+        0 );
+
+// Poisiona no início do arquivo.
+    rewind(new_stdin);
+
+// relax
+    rtl_yield();
+    
+    while (1){
+        C = fgetc(new_stdin);
+        if (C > 0)
+        {
+            terminalProcedure( 
+                client_fd,    // socket
+                window_id,    // window ID
+                MSG_KEYDOWN,  // message code
+                C,            // long1 (ascii)
+                C );          // long2 (ascii)
+        }
+        rtl_yield(); // relax
+    };
+    
+    return 0;
+}
+
 
 //
 // Main
@@ -1739,56 +1843,23 @@ int main ( int argc, char *argv[] )
     clear_terminal_client_window(client_fd);
     doPrompt(client_fd);
 
-//
 // Input loop!
-//
+// local routine.
 
-// #importante:
-// Esse event loop pega dados de um arquivo.
-
-    int C=0;
-    FILE *new_stdin;
-    new_stdin = (FILE *) fopen("gramado.txt","a+");
-
-// O kernel seleciona qual será 
-// o arquivo para teclado ps2.
-
-    gramado_system_call(
-        8002,
-        fileno(new_stdin),
-        0,
-        0 );
-
-    rewind(new_stdin);
-
-    // #test
-    rtl_yield();
-    
-    while (1){
-        C = fgetc(new_stdin);
-        if (C > 0)
-        {
-            terminalProcedure( 
-                client_fd,            // socket
-                Terminal.client_window_id,   // window ID
-                MSG_KEYDOWN,          // message code
-                C,                    // long1 (ascii)
-                C );                  // long2 (ascii)
-        }
-        //#test
-        rtl_yield();
-    };
+    int InputStatus=-1;
+    InputStatus = __input_loop(client_fd);
 
 //exit:
     debug_print ("terminal: bye\n"); 
     printf      ("terminal: bye\n");
+    
+    while(1){}
+
     return 0;
 }
 
 
-
 /*
- ******************************************
  * terminalTerminal:
  *     Constructor.
  *     Não emite mensagens.

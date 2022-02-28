@@ -1,20 +1,16 @@
 
+// shell
+
 // rtl
 #include <types.h>
 #include <stdio.h>
-
-
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-
-
 #include <rtl/gramado.h>
 
 #include "shell.h"
 
-unsigned long device_width;
-unsigned long device_height;
 
 #define MSG_KEYDOWN       20
 #define MSG_KEYUP         21
@@ -32,6 +28,9 @@ unsigned long device_height;
 
 #define COLOR_BLACK    0x000000
 #define COLOR_GRAY     0x808080 
+
+unsigned long device_width;
+unsigned long device_height;
 
 
 //======================================
@@ -57,6 +56,7 @@ __shell_refresh_rectangle (
         0, 
         0 );
 }
+
 
 void 
 __shell_draw_rectangle ( 
@@ -119,15 +119,11 @@ unsigned long shellCompare (void)
     unsigned long ret_value=0;
     char *c;
 
-
-//
 // The first char.
-//
-
-	// $(NULL)
-	// [ENTER] finalizou a atring antes de ter digitado alguma coisa.
-	// Se alguem pressiona [ENTER] com prompt vazio d� page fault ?
-	// Isso cancela caso o buffer esteja vazio.
+// $(NULL)
+// [ENTER] finalizou a atring antes de ter digitado alguma coisa.
+// Se alguem pressiona [ENTER] com prompt vazio d� page fault ?
+// Isso cancela caso o buffer esteja vazio.
 
     c = prompt;
 
@@ -313,6 +309,9 @@ shellProcedure (
     unsigned long long2 )
 {
 
+    if(msg<0)
+        return -1;
+
     switch (msg)
     {
         // 20 = MSG_KEYDOWN
@@ -425,8 +424,7 @@ int main ( int argc, char *argv[] )
     //argc=0;
     //argv=NULL;
     
-    debug_print ("------------------------------\n");
-    debug_print ("shell.bin\n");
+    debug_print ("SHELL.BIN\n");
 
     device_width  = rtl_get_system_metrics(1);
     device_height = rtl_get_system_metrics(2);
@@ -453,42 +451,32 @@ int main ( int argc, char *argv[] )
         0);
     */
 
-    printf ("Gramado OS\n");
-
+    printf ("SHELL.BIN: Gramado OS\n");
     shellPrompt();
-
-    //#debug
-    //printf ("w: %d\n",device_width);
-    //printf ("h: %d\n",device_height);
-    //exit(0);
 
     
 // #bugbug
 // Clear the screen.
     //gramado_system_call(390,0,0,0);
 
-
-   //printf ("Shell: $");
-   //fflush(stdout);
-
 //
 // Message loop
 //
 
-//=================================
+// =================================
+// Getting input event with the control thread.
+// #todo: First we need to set the focus on this thread.
+
+// Podemos chamar mais de um diálogo
+// Retorna TRUE quando o diálogo chamado 
+// consumiu o evento passado à ele.
+// Nesse caso chamados 'continue;'
+// Caso contrário podemos chamar outros diálogos.
+
 
     rtl_focus_on_this_thread();
-
     while (1){
-
-        if ( rtl_get_event() == TRUE )
-        {  
-            // Podemos chamar mais de um diálogo
-            // Retorna TRUE quando o diálogo chamado 
-            // consumiu o evento passado à ele.
-            // Nesse caso chamados 'continue;'
-            // Caso contrário podemos chamar outros diálogos.
-
+        if ( rtl_get_event() == TRUE ){
             shellProcedure ( 
                 (void*) RTLEventBuffer[0], 
                 RTLEventBuffer[1], 
@@ -496,11 +484,14 @@ int main ( int argc, char *argv[] )
                 RTLEventBuffer[3] );
         }
     };
+
 //=================================
 
+    //#debug
+    //asm ("int $3");
 
-
-    asm ("int $3");
+    while(1){};
+    
     return 0;
 }
 

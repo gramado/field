@@ -305,7 +305,9 @@ clean2:
 # Clear gns service stuff
 	-rm -rf com/gns/bin/*.BIN
 
-
+# todo: 
+# We need clean up all the object files
+# for the applications.
 clean3:
 	-rm gramado/bin/*.BIN
 
