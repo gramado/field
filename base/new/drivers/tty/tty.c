@@ -654,7 +654,8 @@ struct tty_d *tty_create(void)
         __tty->cursor_width_in_pixels  = 8;
         __tty->cursor_height_in_pixels = 8;
 
-        __tty->cursor_color = COLOR_WHITE; 
+        __tty->bg_color = COLOR_BLACK;
+        __tty->fg_color = COLOR_WHITE;
         
         // cursor position in chars.
         __tty->cursor_x = 0;

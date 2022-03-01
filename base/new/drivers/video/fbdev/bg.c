@@ -1,10 +1,7 @@
 
 // bg.c
 
-
 #include <kernel.h>
-
-
 
 // #bugbug
 // Essa rotina é sensível, pois agora usamos 64bit.
@@ -28,7 +25,6 @@ void backgroundDraw (unsigned int color)
         0, 0, deviceWidth, deviceHeight, 
         color,
         0 );   //rop_flags
-
 
 /*
     //loop

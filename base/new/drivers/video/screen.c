@@ -112,6 +112,9 @@ void screenSetSize( unsigned long width, unsigned long height )
 // então vamos copiar menos dados pra evitar ultrapassar o limite
 // e causar PF.
 
+// #todo
+// We can also use 16 bytes ... SSE?
+
 void fb_refresh_screen (unsigned long flags)
 {
     int i=0;
@@ -124,28 +127,19 @@ void fb_refresh_screen (unsigned long flags)
     unsigned long *backbuffer_long  = (unsigned long *) BACKBUFFER_VA;
     unsigned long *frontbuffer_long = (unsigned long *) FRONTBUFFER_VA;
 
-// #todo
-// We can also use 16 bytes ... SSE?
 
-// #debug
-    //debug_print_string("fb_refresh_screen:\n");
-
-// Vertical synchonization?
-//  if(flags & 1)
-    vsync();
+// We can't refresh.
+// The buffer wasn't validated.
+    if ( refresh_screen_enabled != TRUE ){
+        debug_print_string("fb_refresh_screen: [FAIL-FIXME] refresh_screen_flag\n");
+        return;
+    }
 
     if ( SavedX == 0 || SavedY == 0 || SavedBPP == 0 )
     {
         debug_print_string("fb_refresh_screen: [FAIL] validation\n");
         return;
     }
-
-// We can't refresh.
-    if ( refresh_screen_enabled != TRUE ){
-        debug_print_string("fb_refresh_screen: [FAIL-FIXME] refresh_screen_flag\n");
-        return;
-    }
-
 
 // #todo
 // Isso significa que só poderemos 
@@ -166,6 +160,14 @@ void fb_refresh_screen (unsigned long flags)
         return;
     }
 
+//
+// Refresh
+//
+
+// Vertical synchonization?
+//  if(flags & 1)
+    vsync();
+
 // Fast way ?
 // Divisible by 8. So use the fast way.
 
@@ -180,6 +182,8 @@ void fb_refresh_screen (unsigned long flags)
     }
 
 // Slow way.
+// One byte per time.
+
     for ( i=0; i<Total; i++ ){
         frontbuffer[i] = backbuffer[i];
     };

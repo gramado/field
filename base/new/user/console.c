@@ -384,6 +384,7 @@ console_interrupt(
 }
 
 
+// Initializ virtual console.
 void console_init_virtual_console (int n)
 {
     int ConsoleIndex = -1;
@@ -500,29 +501,34 @@ void console_init_virtual_console (int n)
 // cursor limits
 
 
+// #todo: 8 = char size.
+    unsigned long screen_width_in_chars  = (SavedX/8);
+    unsigned long screen_height_in_chars = (SavedY/8);
+
 // Full screen
     CONSOLE_TTYS[ConsoleIndex].fullscreen_flag = TRUE;
     CONSOLE_TTYS[ConsoleIndex].cursor_left = 0;
     CONSOLE_TTYS[ConsoleIndex].cursor_top  = 0;
-    CONSOLE_TTYS[ConsoleIndex].cursor_right  = (SavedX/8);
-    CONSOLE_TTYS[ConsoleIndex].cursor_bottom = (SavedY/8);
+    CONSOLE_TTYS[ConsoleIndex].cursor_right  = screen_width_in_chars;
+    CONSOLE_TTYS[ConsoleIndex].cursor_bottom = screen_height_in_chars;
 
 // Everyone has the same color.
-    CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_WHITE; 
-
+// White on black.
+    CONSOLE_TTYS[ConsoleIndex].bg_color = COLOR_BLACK;
+    CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_WHITE;
 
 // A different color for each console number.
     if (ConsoleIndex == 0){
-        CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_WHITE; 
+        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_WHITE; 
     }
     if (ConsoleIndex == 1){
-        CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_RED; 
+        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_RED; 
     }
     if (ConsoleIndex == 2){
-        CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_GREEN; 
+        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_GREEN; 
     }
     if (ConsoleIndex == 3){
-        CONSOLE_TTYS[ConsoleIndex].cursor_color = COLOR_BLUE; 
+        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_BLUE; 
     }
 
     //#todo
@@ -1094,7 +1100,7 @@ void xxxConsoleOutbyte (int c, int console_number)
             d_drawchar_transparent ( 
                 (cWidth  * CONSOLE_TTYS[n].cursor_x), 
                 (cHeight * CONSOLE_TTYS[n].cursor_y), 
-                CONSOLE_TTYS[n].cursor_color, 
+                CONSOLE_TTYS[n].fg_color, 
                 Ch );
         };
         // Nothing.
@@ -2258,7 +2264,7 @@ console_ioctl (
     // Change the color of the char for the current virtual console.
     // ok. it is working.
     case 1000:
-        CONSOLE_TTYS[fg_console].cursor_color = (unsigned int) arg;
+        CONSOLE_TTYS[fg_console].fg_color = (unsigned int) arg;
         return 0;  //ok
         break;
 

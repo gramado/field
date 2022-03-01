@@ -1841,7 +1841,8 @@ void __initialize_virtual_consoles(void)
         CONSOLE_TTYS[i].cursor_bottom = (SavedY/cHeight);
         
         //Let's use the standard colors.
-        //CONSOLE_TTYS[i].cursor_color  = COLOR_WHITE;
+        //CONSOLE_TTYS[i].bg_color = COLOR_BLACK;
+        //CONSOLE_TTYS[i].fg_color = COLOR_WHITE;
     };
 
 // The foreground console.

@@ -164,16 +164,12 @@ struct tty_queue
 };
 
 
-
 /*
- *************************************** 
  * tty_d:
  *     The tty structure need to have a pointer to
  * a buffer and a pointer to a thread. These is the where
  * we're gonna send the data.
- * 
  */
-
 // estrutura para tty
 // uma estrutura de tty deve estar associado a
 // uma janela de terminal virtual.
@@ -184,34 +180,32 @@ struct tty_d
 //
 // == Identification =============
 //
-    
     object_type_t  objectType;
     object_class_t objectClass;
     
-    // In the TTYs table?
+// In the TTYs table?
     int index;
     int used;
     int magic;
 
-    // tty name
+// tty name
     char name[64];      // 
     size_t Name_len;    // len 
-
 
     int initialized;
 
 //
 // == (1) storage ========
 //
-    
-    // The buffer. The box.
 
-    //
-    // Buffers.
-    //
-    
-    // If the buffer are used or not.
-    // options: TRUE, FALSE.
+// The buffer. The box.
+
+//
+// Buffers.
+//
+
+// If the buffer are used or not.
+// options: TRUE, FALSE.
     int nobuffers;
 
 // Canonical. (cooked mode)
@@ -224,98 +218,96 @@ struct tty_d
 
     struct tty_queue output_queue;     // Output buffer.
 
-
 //
 // == (2) synchronization ========
 //
 
-    // flag para sincronizaçao de leitura e escrita de eventos.
+// Flag para sincronizaçao de leitura e escrita de eventos.
     int new_event;
 
-    // Synch and job control.
-    // This way the TTY driver can send the input to the forground process.
+// Synch and job control.
+// This way the TTY driver can send the input to the forground process.
 
-    // If a process try to write in a stopped TTY it will be blocked.
+// If a process try to write in a stopped TTY it will be blocked.
     int stopped;
     
     //int lock;
 
-   // Owner process.
+// Owner process.
     struct process_d *process;
 
-    // #todo: Process group?
+// #todo: Process group?
     //int pgrp;
 
-    // #todo: merge
-    // Thread de input.
+// #todo: merge?
+// Thread de input.
     struct thread_d *thread;
-    // Control thread;
+// Control thread;
     struct thread_d *control;
 
 //
 // == (3) transmition ========
 //
-    
-    // The pipe fd, the socket fd, the read write operation.
+
+// The pipe fd, the socket fd, the read write operation.
 
     file *_fp;    
-    
+
+//linked socket?
     struct tty_d *link;
 
-    // ===============================
 //
 // == Device info ==================
 //
-    
-    // Device.
+
+// Device.
     //struct device_d *device;
     struct ttydrv_d *driver;
 
-    // i don't like this
-    // line discipline
+// i don't like this
+// line discipline
     struct ttyldisc_d *ldisc;
 
-    // termios
+// termios
     struct termios termios;
 
 //
 // == Security ============================================
 //
 
-    // What is the user logged in this terminal?
+// What is the user logged in this terminal?
     struct user_info_d *user_info;
 
-    // Security
-    // user session, room, desktop;
+// Security?
+// user session, room, desktop;
     struct usession_d  *user_session;
     struct room_d      *room;
     struct desktop_d   *desktop;
-    // ===================================================
+// ===================================================
 
-    // process group.
-    // Usando quanto tiver uma interrupção de tty.
-    // Quais processos estão no mesmo grupo quanto tiver a interrupção.
-    // Vamos sinalizá-los.
+// process group.
+// Usando quanto tiver uma interrupção de tty.
+// Quais processos estão no mesmo grupo quanto tiver a interrupção.
+// Vamos sinalizá-los.
     gid_t gid;
 
-    // ??
-    // Quantos processos estao usando essa tty.
+// ??
+// Quantos processos estao usando essa tty.
     int pid_count;
+//=========================
 
-    //=========================
 
 //
 // ==  properties ========================
 //
 
-    // Qual eh o modo de operacao do terminal virtual.
-    // graphics, text ...
+// Qual eh o modo de operacao do terminal virtual.
+// graphics, text ...
     //int vt_mode;
-    
-    // Qual eh o modo de operacao do console virtual.
-    // graphics, text ...
-    int vc_mode;
 
+// Qual eh o modo de operacao do console virtual.
+// graphics, text ...
+    int vc_mode;
 
     short type;       // type of tty
     short subtype;    // subtype of tty 
@@ -326,28 +318,25 @@ struct tty_d
 // == Actions ==============
 //
 
-    // Qual terminal virtual esta usando essa tty.
+// Qual terminal virtual esta usando essa tty.
     int virtual_terminal_pid;
 
-    // Window.
-    // When we are using the kgws.
+// Window.
+// When we are using the kgws.
     //struct window_d  *window;
 
-    //
-    // system metrics.
-    //
+//
+// system metrics.
+//
     
-    // cursor dimentions in pixel.
+// cursor dimentions in pixel.
     unsigned long cursor_width_in_pixels;
     unsigned long cursor_height_in_pixels; 
 
-
-//#todo
-//precisamos da cor do background
-    //unsigned int bg_color;
-    
-    unsigned int cursor_color;
-
+// Char support.
+// bg and fg colors.
+    unsigned int bg_color;
+    unsigned int fg_color;
 
 //
 // Print support
