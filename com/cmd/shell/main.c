@@ -12,6 +12,19 @@
 #include "shell.h"
 
 
+//================
+
+//
+// VGA TEST
+//
+
+// libio
+//#include <libio.h>
+#include "vga_test.h"
+//================
+
+
+
 #define MSG_KEYDOWN       20
 #define MSG_KEYUP         21
 #define MSG_SYSKEYDOWN    22
@@ -454,7 +467,13 @@ int main ( int argc, char *argv[] )
     printf ("SHELL.BIN: Gramado OS\n");
     shellPrompt();
 
-    
+
+// #test
+// changing vga resolution.
+// IN: only 320x200x256
+    //printf ("Calling VGA_init\n");
+    //VGA_init(320,200,256);
+
 // #bugbug
 // Clear the screen.
     //gramado_system_call(390,0,0,0);

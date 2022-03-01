@@ -490,12 +490,12 @@ wmProcedure (
                     return 0;
                     break;
 
-
                 case VK_F9:
                 // #todo:
                 // [Window Manager]: Switcher
                     if (ctrl_status == TRUE){
                         //__launch_app_via_initprocess(4009);
+                        backgroundDraw(COLOR_BLACK);
                         printf("\n");
                         printf ("Prompt ON: Type something\n");
                         //printf("\n");
@@ -528,6 +528,11 @@ wmProcedure (
                         printf("\n");
                         ShellFlag = FALSE;
                         refresh_screen();
+                        
+                          // update desktop
+                        if ( gUseWMCallbacks == TRUE )
+                            wmSendInputToWindowManager(0,9092,0,0);
+
                         return 0;
                     }
                     if (alt_status == TRUE){

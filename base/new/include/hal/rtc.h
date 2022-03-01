@@ -4,7 +4,6 @@
 #ifndef ____RTC_H
 #define ____RTC_H    1
 
-
 // #todo:
 // Podemos criar uma lista para todos os dispositivos em pic.h
 #define  RTC_IRQ   8 
@@ -12,7 +11,6 @@
 // Ports 
 #define RTC_ADDRESS_PORT  0x70 
 #define RTC_DATA_PORT     0x71
-
 
 //Time
 #define  RTC_SEC    0x00  //*RTC seconds. 
@@ -45,14 +43,13 @@
 //...
 
 
-
 //
 // Globals
 //
 
-static volatile unsigned long g_ticks;
+//static volatile unsigned long g_ticks;
+//static unsigned long g_ticks;
 // ...
-
 
 
 

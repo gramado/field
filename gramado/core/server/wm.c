@@ -1504,6 +1504,7 @@ void __switch_window(void)
 */
 
 
+// #todo: explain it better.
 void __switch_focus(void)
 {
 // Switch focus support.
@@ -1805,10 +1806,24 @@ wmProcedure(
         if(long1==0){ yellow_status("R0"); }
         if(long1==1){ yellow_status("R1"); }
         if(long1==2){ yellow_status("R2"); }
+        //if(long1==1){ create_main_menu(); return 0; }
+        //if(long1==1){ create_main_menu(); return 0; }
+        
         if(mousehover_window==__taskbar_startmenu_button_window->id)
             wm_update_desktop();
-        //if(mousehover_window==__root_window->id)
-            //wm_update_desktop();
+
+        //if(mousehover_window==__taskbar_startmenu_button_window->id)
+        //    create_main_menu();
+
+        //if(mousehover_window==__taskbar_startmenu_button_window->id)
+        //    __switch_focus();
+
+        //if(mousehover_window==__taskbar_startmenu_button_window->id)
+        //    redraw_window_by_id(get_top_window(),TRUE);
+
+        //if(mousehover_window==__taskbar_startmenu_button_window->id)
+        //   rtl_clone_and_execute("terminal.bin");
+
         return 0;
         break;
 
@@ -2104,7 +2119,7 @@ void yellow_status( char *string )
 }
 
 
-
+//#todo: Explain it.
 int 
 is_within ( 
     struct gws_window_d *window, 
@@ -3660,38 +3675,35 @@ int create_main_menu(void)
 
     if ( (void*) menu != NULL )
     {
-               //menu item 0
-               gwssrv_create_menu_item (
-                  "Test mouse F3",
-                  (int) 0,
-                  (struct gwsssrv_menu_d *) menu );
- 
-               
-               //menu item 1
-               gwssrv_create_menu_item (
-                  "Editor F10",
-                  (int) 1,
-                  (struct gwsssrv_menu_d *) menu );
+        //menu item 0
+        gwssrv_create_menu_item (
+            "Test mouse F3",
+            (int) 0,
+            (struct gwsssrv_menu_d *) menu );
 
-               //menu item 2
-               gwssrv_create_menu_item (
-                  "Terminal F12",
-                  (int) 2,
-                  (struct gwsssrv_menu_d *) menu );
+        //menu item 1
+        gwssrv_create_menu_item (
+            "Editor F10",
+            (int) 1,
+            (struct gwsssrv_menu_d *) menu );
 
-               //menu item 3
-               gwssrv_create_menu_item (
-                  "Reboot F4",
-                  (int) 3,
-                  (struct gwsssrv_menu_d *) menu );
-              
+        //menu item 2
+        gwssrv_create_menu_item (
+            "Terminal F12",
+            (int) 2,
+            (struct gwsssrv_menu_d *) menu );
+
+        //menu item 3
+        gwssrv_create_menu_item (
+            "Reboot F4",
+            (int) 3,
+            (struct gwsssrv_menu_d *) menu );  
     }
 
-    
     gws_show_window_rect(menu->window);
-        
     return 0;
 }
+
 
 
 
@@ -3768,11 +3780,10 @@ void reset_zorder(void)
 
 
 /*
- ****************************************************
  * gws_change_window_position:
  *     Muda os valores do posicionamento da janela.
  */
- 
+
 int 
 gwssrv_change_window_position ( 
     struct gws_window_d *window, 

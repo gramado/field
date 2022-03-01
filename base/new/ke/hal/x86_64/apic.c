@@ -1,24 +1,20 @@
 /*
  * File: apic.c
- *
  *    Controlador APIC.
- *    Arquivo principal do módulo interno do kernel de 32bit. 
- *
+ *    Arquivo principal do módulo interno do kernel.
  *    APIC - Advanced Programmable Interrupt Controller.
- *
- *   Stuffs:
+ *   Stuff:
  *       +Discrete APIC.
  *       +Integrated local APICs.
  *       +APIC timer.
  *       +I/O APICs.
- *
- * Versão 1.0, 2015.
+ * 2015.
  */
-
 
 // See:
 // hwi/dd/nhid/arch/x86/apic.c
-
+// https://wiki.osdev.org/Symmetric_Multiprocessing
+// https://www.cheesecake.org/sac/smp.html
 
 
 #include <kernel.h>
@@ -37,8 +33,6 @@ void flush_cashes(void)
 //@todo: definir porta 70h usada nesse arquivo.
 
 
-
-
 //
 // Variáveis internas.
 //
@@ -51,12 +45,9 @@ void flush_cashes(void)
 
 /*
  * imcr_pic_to_apic:
- *
  * Handle interrupt mode configuration register (IMCR).
- *
  * This register controls whether the interrupt signals that reach 
  * the BSP come from the master PIC or from the local APIC. 
- *
  * Before entering Symmetric I/O Mode, either the BIOS or 
  * the operating system must switch out of PIC Mode by changing the IMCR.
  */
@@ -69,6 +60,7 @@ static inline void imcr_pic_to_apic (void)
 // NMI and 8259 INTR go through APIC. 
     out8 ((unsigned short)0x01, (unsigned char)0x23);
 }
+
 
 // #todo: Check these ports
 static inline void imcr_apic_to_pic (void)
@@ -87,8 +79,6 @@ static inline void imcr_apic_to_pic (void)
 // #todo
 // Testando um código encontrado em https://wiki.osdev.org/APIC.
 // setting up the APIC: 
-
-
  
  
 /* 
@@ -135,10 +125,7 @@ void cpu_set_apic_base(unsigned long apic)
 }
 
  
- 
- 
- 
-/**
+/*
  * Get the physical address of the APIC registers page
  * make sure you map it to virtual memory ;)
  */
@@ -239,8 +226,6 @@ void APIC::wakeupSequence(U32 apicId, U8 pvect)
 
 
 
-
-
 /*
 uint32_t apic_read(void* apic_base, uint32_t register);
 uint32_t apic_read(void* apic_base, uint32_t register) 
@@ -257,8 +242,6 @@ void apic_write(void* apic_base, uint32_t register, uint32_t data)
     *((volatile uint32_t*)(apic_base + register)) = data;
 }
 */
-
-
 
 
 //

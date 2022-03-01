@@ -1,17 +1,13 @@
 /*
  * File: apic.h
- *
  * Descrição:
  *     Header para o driver do controlador APIC.
  *     Advanced Programmable Interrupt Controller
- *
  *     Exemplo:
  *     82489DX.
  *     82093AA for PIIX3-based systems.
- *         
  * Variantes:
  *    xAPIC, x2APIC.
- *
  * 2015 - Created by Fred Nora.
  */
 
@@ -19,9 +15,13 @@
 // https://opensource.apple.com/source/xnu/xnu-2050.24.15/osfmk/i386/lapic.h.auto.html
 
 
-#ifndef ____APIC_H
-#define ____APIC_H
+// APICs (both local and I/O) are memory mapped devices. 
+// The default location for the local APIC 
+// is at 0xfee00000 in physical memory. 
 
+
+#ifndef ____APIC_H
+#define ____APIC_H    1
 
 
 /*
@@ -33,13 +33,17 @@ starting address of FEE00000H.
 For correct APIC operation, this address space must be mapped to 
 an area of memory that has been designated as strong uncacheable (UC).
 (Credits: terenceli)
-The default memory mapped address of the LAPIC is 0xFEE00000 but should be read
-from the MADT or MSRs. Each CPU has it's own LAPIC mapped at this location,
+The default memory mapped address of the LAPIC 
+is 0xFEE00000 but should be read from the MADT or MSRs. 
+Each CPU has it's own LAPIC mapped at this location,
 meaning CPUs cannot change each other's LAPICs.
 (Credits: https://nemez.net/osdev/lapic.txt)
 See:
 losethos os - Adam1a.HPP.
 // #todo: Vamos precisar de um endereço virtual para acessarmos isso.
+*/
+
+
 #define LAPIC_BASE		0xFEE00000
 #define LAPIC_APIC_ID		        (LAPIC_BASE+0x020)
 #define LAPIC_APIC_VERSION	        (LAPIC_BASE+0x030)
@@ -81,8 +85,6 @@ losethos os - Adam1a.HPP.
 #define IA32_EFER	0xC0000080
 #define IA32_FS_BASE	0xC0000100
 #define IA32_GS_BASE	0xC0000101
-*/
-
 
 
 /*
@@ -125,7 +127,6 @@ int check_apic (void);
 
 void cpu_set_apic_base(unsigned long apic);
 unsigned long cpu_get_apic_base(void); 
-
 
 // apic stuffs for x86.
 static inline void imcr_pic_to_apic (void);

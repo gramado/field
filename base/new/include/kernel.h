@@ -226,6 +226,9 @@ unsigned long SavedBPP;
 #include "hal/pit.h"
 #include "hal/pic.h"
 #include "hal/apic.h"
+
+#include "hal/mp.h"
+
 #include "hal/cpuid.h"
 #include "hal/rtc.h"
 

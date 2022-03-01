@@ -1,6 +1,5 @@
 /*
  * File: mp.h 
- * 
  *     Multi-processor (MP) support.
  *     Symmetric multiprocessing (SMP) 
  */
@@ -9,18 +8,13 @@
 // https://wiki.osdev.org/Symmetric_Multiprocessing
 // https://wiki.osdev.org/User:Shikhin/Tutorial_SMP
 // apic.h
-// ...
-
-
+// https://www.cheesecake.org/sac/smp.html
+// https://en.wikipedia.org/wiki/Symmetric_multiprocessing
 
 
 #ifndef ____MP_H
-#define ____MP_H
+#define ____MP_H    1
 
-
-// See:
-// https://en.wikipedia.org/wiki/Symmetric_multiprocessing
-// ...
 
 // List for pointer of ProcessorBlock_d struture.
 // See: hal/cpu.h
@@ -30,44 +24,55 @@
 unsigned long processorList[32]; 
 
 
-
 /*
-struct mp_floating_pointer_structure 
-{
-    // The Signature, must contain _MP_, and is present on a 16 byte boundary.
-    char signature[4];
-    
-    // The address of the MP Configuration Table.
-    uint32_t configuration_table;
-    
-    // The length of the floating point structure table, in 16 byte units. 
-    // This field *should* contain 0x01, meaning 16-bytes.
-    // In 16 bytes (e.g. 1 = 16 bytes, 2 = 32 bytes)
-    uint8_t length; 
-    
-     // The version number of the MP Specification. 
-     // A value of 1 indicates 1.1, 4 indicates 1.4, and so on.
-    uint8_t mp_specification_revision;
-    
-     // The checksum of the Floating Point Structure.
-    // This value should make all bytes in the table equal 0 when added together
-    uint8_t checksum; 
-
-    // If this is not zero then configuration_table should be 
-    // ignored and a default configuration should be loaded instead    
-    uint8_t default_configuration; 
-
-    // Few feature bytes.
-    // If bit 7 is then the IMCR is present and PIC mode is being used, otherwise 
-    // virtual wire mode is; all other bits are reserved
-    uint32_t features; 
-
-};
+First, you need to find the floating pointer structure. 
+According to the spec, it can be in one of four places: 
+(1) in the first kilobyte of the extended BIOS data area, 
+(2) the last kilobyte of base memory, 
+(3) the top of physical memory, or 
+(4) the BIOS read-only memory space between 0xe0000 and 0xfffff. 
+You need to search these areas for the four-byte 
+signature "_MP_" which denotes the start of the 
+floating pointer structure. 
 */
 
+struct mp_floating_pointer_structure 
+{
 
-/*
-struct mp_configuration_table {
+// The Signature, must contain _MP_, and 
+// is present on a 16 byte boundary.
+    char signature[4];
+
+// The address of the MP Configuration Table.
+    uint32_t configuration_table;
+    
+// The length of the floating point structure table, in 16 byte units. 
+// This field *should* contain 0x01, meaning 16-bytes.
+// In 16 bytes (e.g. 1 = 16 bytes, 2 = 32 bytes)
+    uint8_t length; 
+    
+// The version number of the MP Specification. 
+// A value of 1 indicates 1.1, 4 indicates 1.4, and so on.
+    uint8_t mp_specification_revision;
+    
+// The checksum of the Floating Point Structure.
+// This value should make all bytes in the table equal 0 when added together
+    uint8_t checksum; 
+
+// If this is not zero then configuration_table should be 
+// ignored and a default configuration should be loaded instead    
+    uint8_t default_configuration; 
+
+// Few feature bytes.
+// If bit 7 is then the IMCR is present and PIC mode is being used, otherwise 
+// virtual wire mode is; all other bits are reserved
+    uint32_t features; 
+};
+
+
+
+struct mp_configuration_table 
+{
     char signature[4]; // "PCMP"
     uint16_t length;
     uint8_t mp_specification_revision;
@@ -81,8 +86,7 @@ struct mp_configuration_table {
     uint16_t extended_table_length;
     uint8_t extended_table_checksum;
     uint8_t reserved;
-}
-*/
+};
 
 
 /*
