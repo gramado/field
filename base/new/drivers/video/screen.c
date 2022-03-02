@@ -154,7 +154,26 @@ void fb_refresh_screen (unsigned long flags)
     //int Total = (int)(SavedX*SavedBPP*SavedY);
     int Total = (screen_size_in_kb * 1024);
 
+/*
+// nao pode ser mais que 2mb
     //if ( Total >= (2*1024*1024) )
+    if (Total >= 2097152 ){
+        debug_print_string("fb_refresh_screen: [FAIL-FIXME] Total\n");
+        return;
+    }
+*/
+// Se algo deu errado 
+// e realmente precisamos de alguma tela
+// para debug na inicializaçao.
+// entao vamos limitar o tamanho do refresh screen
+// isso ajuda no refresh screen, mas nao em outras rotinas graficas.
+    if( g_use_fake_screen_size == TRUE)
+    {
+        //fake_screen_size_in_kb = (( 320*4*200 )/1024);
+        Total = (fake_screen_size_in_kb * 1024);
+    }
+
+// nao pode ser mais que 2mb
     if (Total >= 2097152 ){
         debug_print_string("fb_refresh_screen: [FAIL-FIXME] Total\n");
         return;

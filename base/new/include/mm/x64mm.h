@@ -10,7 +10,6 @@ unsigned long gKernelPML4Address;
 
 
 
-
 // Some useful data for memory management.
 
 struct mm_data_d
@@ -21,15 +20,15 @@ struct mm_data_d
     unsigned long pml4_va; 
     unsigned long pml4_pa; 
 
-    // We just need one table to handle a basic initialization.
+// We just need one table to handle a basic initialization.
 
-    // Saving the pointer for the first table.
+// Saving the pointer for the first table.
     unsigned long pdpt0_va; 
     unsigned long pdpt0_pa; 
 
-    // We just need one table to handle a basic initialization.
+// We just need one table to handle a basic initialization.
 
-    // Saving the pointer for the first table.
+// Saving the pointer for the first table.
     unsigned long pd0_va; 
     unsigned long pd0_pa; 
 };
@@ -41,7 +40,6 @@ struct mm_data_d init_mm_data;
 // A new process been created.
 struct mm_data_d newprocess_mm_data;
 // ...
-
 
 
 
@@ -64,9 +62,9 @@ struct system_zone_d *systemzone;
 //#bugbug: maybe it is not a good name.
 struct window_zone_d
 {
-	unsigned long windowzone_start;
-	//Endere�o onde come�a a user session.
-	unsigned long usersession_start;	//ficar� dentro de uma �rea paginada.
+    unsigned long windowzone_start;
+    //Endere�o onde come�a a user session.
+    unsigned long usersession_start;	//ficar� dentro de uma �rea paginada.
     struct usession_d *usersession;    
 };
 struct window_zone_d *windowzone;
@@ -82,10 +80,10 @@ struct mm_zones_d
 struct mm_zones_d *zones;
 
 
+// =============================================================
 
-//===============================================================
-
-// vari�veis blobais de endere�os usados no gerenciamento de zonas de mem�ria.
+// variaveis blobais de endereços 
+// usados no gerenciamento de zonas de memoria.
 
 #define SYSTEMZONE_START 0
 #define SYSTEMZONE_END   0x0FFFFFFF 
@@ -96,16 +94,14 @@ unsigned long systemzoneStart;
 unsigned long systemzoneEnd;
 unsigned long systemzoneSize;
 unsigned long windowzoneStart;
-unsigned long windowzoneEnd;    //?? Devemos levar em considera��o o calculo do tamanho da mem�ria
+unsigned long windowzoneEnd;    //?? Devemos levar em consideraçao o calculo do tamanho da mem�ria
 unsigned long windowzoneSize;
-
 
 
 
 /*
  * page_directory_d:
  *     Estrutura para o 'page directory' de um processo.
- *
  *     Todo processo tem seu pr�prio diret�rio de p�ginas.
  *     Assim v�rios processos podem usar o mesmo endere�o l�gico.
  *     Ex: 0x400000
@@ -121,29 +117,29 @@ struct page_directory_d
     object_type_t  objectType;
     object_class_t objectClass;
 
-	//identificadores.
+//identificadores.
     int id;
     int used;
     int magic;
-	
-	//Qual processo � o dono do diret�rio de p�ginas.
-	//talvez seja possivel reaproveitar o diret�rio.
+
+//Qual processo � o dono do diret�rio de p�ginas.
+//talvez seja possivel reaproveitar o diret�rio.
     struct process_d *process;
-	
-	//Endere�o onde ficar� o diret�rio de p�ginas.
-	//Obs: Para configurar um diret�rio de p�ginas talvez
-	//tenha que colocar um endere�o f�sico em CR3. Lembre-se
-	//que o malloc do kernel base aloca mem�ria no heap do 
-	//processo kernel que fica no �ltimo giga da mem�ria virtual.
+
+// Endereço onde ficar� o diret�rio de p�ginas.
+// Obs: Para configurar um diret�rio de p�ginas talvez
+// tenha que colocar um endere�o f�sico em CR3. Lembre-se
+// que o malloc do kernel base aloca mem�ria no heap do 
+// processo kernel que fica no �ltimo giga da mem�ria virtual.
     unsigned long Address;
-	
-	
-	// ?? struct page_directory_entry_d[1024] ??
-	
-	//@todo: Mais informa��es sobre o diret�rio de p�ginas.
-	
-	//Pr�ximo diret�rio, significa pr�ximo processo.
-	//significa processos ligados em um job.
+
+
+    // ?? struct page_directory_entry_d[1024] ??
+
+    //@todo: Mais informa��es sobre o diret�rio de p�ginas.
+
+// Proximo diret�rio, significa pr�ximo processo.
+// significa processos ligados em um job.
     struct page_directory_d *next;  
 };
 
@@ -155,13 +151,14 @@ struct page_directory_d *pagedirectoryShared;           // Shared.
 
 
 //
-// Lista de diret�rios. (Pois cada processo tem um diret�rio).
+// Lista de diretórios. (Pois cada processo tem um diret�rio).
 //
 
-// Quantidade de diretórios que podem ser criados na lista.
+// Quantidade de diretórios que podem ser 
+// criados na lista.
 #define PAGEDIRECTORY_COUNT_MAX 1024  
 
-//Lista de estruturas para diret�rios de p�ginas.
+//Lista de estruturas para diretórios de paginas.
 unsigned long pagedirectoryList[PAGEDIRECTORY_COUNT_MAX]; 
 
 
@@ -183,23 +180,23 @@ struct page_table_d
     int id;
     int used;
     int magic;
-	
-	//A qual diret�rio de p�ginas a page table perrtence.
-	//se bem que talvez possamos usar a mesma pagetable
-	//em mais de um diret�rio. ser�??
+
+// A qual diret�rio de p�ginas a page table perrtence.
+// se bem que talvez possamos usar a mesma pagetable
+// em mais de um diret�rio. ser�??
     struct page_directory_d *directory;
-	
-	//Cada pagetable pertence � um processo.
+
+// Cada pagetable pertence � um processo.
     struct process_d *process;
-	
-	//Travando uma pagetable inteira,
-	//nenhuma de suas p�ginas poder�o se descarregadas
-	//para o disco de swap.
+
+// Travando uma pagetable inteira,
+// nenhuma de suas p�ginas poder�o se descarregadas
+// para o disco de swap.
     int locked;
-	
+
 	// ?? struct page_table_entry_d[1024] ??
-	
-    //@todo: Mais informa��es sobre a pagetable.
+
+//@todo: Mais informaçoes sobre a pagetable.
     struct page_table_d *next;
 };
 
@@ -225,23 +222,18 @@ unsigned long pagetableList[PAGETABLE_COUNT_MAX];
 
 /**
  **  **  SUPER IMPORTANTE  **
- **
  ** Super block.
  ** ESSAS VARI�VEIS GLOBAIS MARCAR�O O IN�CIO E O FIM 
  ** DA �REA DE MEM�RIA F�SICA DESTINADA AOS FRAMES DE MEM�RIA 
  ** F�SICA QUE SER�O USADOS PELO GERENCIADOR DE P�GINAS.
- **
  ** Pertencer�o ao banco FDB. (Free Data Base).
  ** 0x10000000 � um bom lugar pra come�ar os frames ,
  ** na verdade os blocos 4MB, pois cada bloco de 4MB pode ser mapeado 
  ** usando apenas uma pagetable.
- ** 
  ** mmFramesSuperBlockStart = 0x10000000
  ** mmFramesSuperBlockEnd   = 0x1FFFFFFF
- ** 
  ** Esses s�o endere�os f�sicos.
  ** Obs: Ficar�o nesse lugar caso se tenha mem�ria dispon�vel para isso.
- **
  **/
 
 // Frames Super Block.
@@ -269,26 +261,24 @@ unsigned long mmFramesSuperBlockTotalUsed;  //Total de frames e uso.
 // Lista com todos.
 //
 
-
-//Lista de ponteiros para as estruturas de todos os frames do FSB.
+// Lista de ponteiros para as estruturas de 
+// todos os frames do FSB.
 unsigned long fsbFrames[FSB_FRAMES_MAX]; 
 
 //
 // Lista de livres.
 //
 
-//Lista de ponteiros para as estruturas de todos os frames 'LIVRES' do FSB.
+// Lista de ponteiros para as estruturas de 
+// todos os frames 'LIVRES' do FSB.
 unsigned long fsbFreeFrames[FSB_FREEFRAMES_MAX];  
  
  
-
-
 
 //
 // memory:
 //
 
- 
  
 //
 // MM BLOCK.
@@ -305,63 +295,53 @@ unsigned long fsbFreeFrames[FSB_FREEFRAMES_MAX];
 #define MMBLOCK_COUNT_MAX  (2*4096)
 
 
-
 // Quantidade m�xima de framepools.
 // Um framepool � uma parti��o da mem�ria f�sica.
 // Cada framepool � composto de 1024 pageframes.
-//
 // @todo: 
 // #bugbug: 
 // A quantidade de framepools deve ser equivalente � quantidade 
 // de mem�ria f�sica dispon�vel.
 // Por isso devemos criar �reas de mem�ria f�sica aloc�veis. O que 
 // facilita a manuten��o de listas de framepools.
-//
 // Em outras palavra. Temos que concatenar parti��es de mem�ria f�sica
 // pra facilitar. Ent�o chamaremos essa �rea onde est�o as parti��es de
 // �rea pagin�vel. Pois existem �res de mem�ria que n�o s�o pafin�veis,
 // elas simplesmente foram mapeadas para que alguma parte do sistema use.
-//
 // @todo: 
 // Criar um ponteiro que indique o �n�cio da �rea p�gin�vel, assim como 
 // acontece com o in�cio de um heap.
-//
 // � principio todo processo poderia ter acesso � apenas uma parti��o.
 // Um framepool � garantido para um processo quando esse processo � criado
-// mesmo antes de haver algum mapeamento. Na verdade um processo ter� uma lista
-// de framepools.
-//
+// mesmo antes de haver algum mapeamento. 
+// Na verdade um processo ter� uma lista de framepools.
 
 
 //List.(1024 framepools de 4MB d� 4GB).
 #define FRAMEPOOL_COUNT_MAX 1024
 
 
-
-
 //
 // ## MEMORY PARTITION ##
 //
 
-//Um framepool tem 4MB de tamanho.
+// Um framepool tem 4MB de tamanho.
+// #todo: Um framepool em 64bit talvez seja de 2mb.
 #define MEMORY_PARTITION_SIZE   (4 * MB)
 
 
-
-// Obs: Criamos apenas algumas entradas no diret�rio de p�ginas
+// Obs: 
+// Criamos apenas algumas entradas no diret�rio de p�ginas
 // do kernel, mas algumas dessas entradas ser�o iguais para todos 
 // os processos. Ent�o os diret�rios de da p�ginas dos processos
 // ser�o configurados de forma semelhante.
 
-//
 // Page frames da imagem do kernel:
 // ================================
 // Foram alocadas 1024 pageframes para a imagem do kernel.
 // Isso equivale a um pageframe pool. Que � igual a 4MB. Pois
 // s�o 1024 page frames de pag�nas de 4KB cada.
-//
 
-//
 // + kernel area = 1024 page frames (4MB)
 // + kernel image = 1024 pageframes (4MB)
 // + user mode area = 1024 pageframes (4MB)
@@ -370,16 +350,18 @@ unsigned long fsbFreeFrames[FSB_FREEFRAMES_MAX];
 //         uma placa de v�deo tem mais mem�ria que isso)
 // + backbuffer = 1024 pageframes (4MB) (Isso realmente � pouco, o backbuffer 
 //         deve caner uma imagem grande, que ser� dividade em v�rios monitores.)
-//
-//
+
 
 
 /*
 INVLPG
 
-INVLPG is an instruction available since the i486 that invalidates a single page in the TLB. 
-Intel notes that this instruction may be implemented differently on future processes,
- but that this alternate behavior must be explicitly enabled. INVLPG modifies no flags.
+INVLPG is an instruction available since the i486 
+that invalidates a single page in the TLB. 
+Intel notes that this instruction may be implemented 
+differently on future processes,
+but that this alternate behavior must be 
+explicitly enabled. INVLPG modifies no flags.
 
 NASM example:
 
@@ -417,21 +399,18 @@ unsigned long mmblockCount;
  * Kernel Stack suppport.
  */ 
 
-unsigned long kernel_stack_end;        //va
-unsigned long kernel_stack_start;      //va
-unsigned long kernel_stack_start_pa;   //pa (endere�o indicado na TSS).
-
-
-
-
+unsigned long kernel_stack_end;       //va
+unsigned long kernel_stack_start;     //va
+unsigned long kernel_stack_start_pa;  //pa (endere�o indicado na TSS).
 
 
 /*
  * process_memory_info_d:
- *
- *     Estrutura para informa��es sobre a mem�ria utilizada por um processo.
+ *     Estrutura para informa��es sobre a 
+ * mem�ria utilizada por um processo.
  * Obs: 
- * O gerenciamento de mem�ria � tarefa do m�dulo /sm portanto isso n�o deve 
+ * O gerenciamento de mem�ria � tarefa do 
+ * modulo /sm portanto isso n�o deve 
  * ir para o /microkernel.
  */
 
@@ -440,17 +419,15 @@ struct process_memory_info_d
     object_type_t  objectType;
     object_class_t objectClass;
 
-
     struct process_d *process;
-	
-	//valor em KB. (quantidade de p�ginas + tamanho da p�gina.)
-	
+
+//valor em KB. (quantidade de p�ginas + tamanho da p�gina.)
+
     unsigned long WorkingSet;  //Working Set.
     unsigned long Private;     //Mem�ria n�o compartilhada. 
     unsigned long Shared;      //Mem�ria compartilhada.
-	//...
-	
-	
+    //...
+
 	//unsigned long pageFaults; //Contagem de faltas.
 	//Pico de Working Set.
 	//??delta de conjunto de trabalho.
@@ -460,28 +437,25 @@ struct process_memory_info_d *pmiCurrent;
 //...
 
 
-
 /*
  * physical_memory_info_d:
- *
  *     Informa��es sobre a mem�ria f�sica.
  *     O arquivo system.h deve usar isso. 
  */
 
 struct physical_memory_info_d
 {
-	object_type_t objectType;
-	object_class_t objectClass;
-	
-	//?? d�vidas.
-	unsigned long Total;     //Total de mem�ria f�sica.(RAM).
-	unsigned long InCache;   //Parte do total que est� em cache.(foi paginada e est� em cache).
-	unsigned long Free;      //Livre.(Existe na RAM mas n�o foi paginada??).
-    //...	
+    object_type_t objectType;
+    object_class_t objectClass;
+
+//?? d�vidas.
+    unsigned long Total;    //Total de mem�ria f�sica.(RAM).
+    unsigned long InCache;  //Parte do total que est� em cache.(foi paginada e est� em cache).
+    unsigned long Free;     //Livre.(Existe na RAM mas n�o foi paginada??).
+    //...
 };
 struct physical_memory_info_d *pmiMemoryInfo;
 //...
-
 
 
 /*
@@ -492,24 +466,22 @@ struct physical_memory_info_d *pmiMemoryInfo;
 
 struct memory_info_d
 {
-	object_type_t objectType;
-	object_class_t objectClass;
-	
-    //Physical.
-	unsigned long TotalP;
+    object_type_t objectType;
+    object_class_t objectClass;
+
+// Physical.
+    unsigned long TotalP;
     unsigned long AvailableP;
-    
-	//Virtual
-	unsigned long TotalV;
+
+// Virtual
+    unsigned long TotalV;
     unsigned long AvailableV;
 };
 struct memory_info_d *miMemoryInfo;
 //...
 
 
-
 /*
- *****************************************************************
  * mmblock_d:
  *     Estrutura para memory blocks.
  *     Temos v�rios blocos de mem�ria espalhados em lugares diferentes 
@@ -520,26 +492,20 @@ struct memory_info_d *miMemoryInfo;
  * de um processo ou o heap de um desktop. @todo: Para isso essa estrutura 
  * poderia conter informa��es sobre qual heap estamos usando. Mas me parece 
  * que o tamanho do header deve ser fixo.
- *
  * @todo: 
  * Os blocos precisam de alguma organiza��o. 
  * Por enquanto, o total � 256 heaps de tamanhos diferentes.
- *
  * Os blocos formar�o uma lista encadeada que ser� percorrida para se 
  * encontrar um bloco vazio. (walk).
- *
- * *Importante: A mem�ria ser� organizada em bancos, que conter�o mem�ria 
+ * Importante: A mem�ria ser� organizada em bancos, que conter�o mem�ria 
  * privada e mem�ria compartilhada. Os blocos de mem�ria e os heaps 
  * precisam estar associadoas aos bancos, que conter�o informa��es sobre 
  * processos e usu�rios. @todo:
  * Obs: Os bancos est�o definidos em bank.h
- * 
  * Obs: Um heap de processo tem v�rios blocos dentro.
- *
- * *IMPORTANTE: 
+ * IMPORTANTE: 
  *     Talvez tenhamos algum limite para o tamanho dessa estrutura 
  * em especial. (N�o incluir nenhuma vari�vel por enquanto!).
- *****************************************************************
  */ 
 
 // Essa estrutura � para gerenciar �reas de mem�ria alocadas dinamicamente 
@@ -548,48 +514,55 @@ struct memory_info_d *miMemoryInfo;
 // Talvez n�o seja poss�vel mudar essa estrutura. �la � diferente.
 // Portanto n�o definiremos inada o tipo de objeto que ela � e nem a classe.
 
+// #bugbug
+// Don't change this structure,
+
 struct mmblock_d 
 {
 
+// #bugbug
+// Don't change this structure,
 
-	//object_type_t objectType;
-	//object_class_t objectClass;
+    //object_type_t objectType;
+    //object_class_t objectClass;
 
-    //Identificadores.
-	unsigned long Header;      //Endere�o onde come�a o header do heap. *Importante.
-	unsigned long headerSize;  //Tamanho do header em bytes.
-	unsigned long Id;          //Id do header.
-	unsigned long Used;        //Flag 'usado' ou 'livre'.
-	unsigned long Magic;       //Magic number. Ver se n�o est� corrompido.
-	
-	//Status.
-	unsigned long Free;           //Se o bloco esta livre ou n�o.
+// Identificadores.
+    unsigned long Header;      //Endere�o onde come�a o header do heap. *Importante.
+    unsigned long headerSize;  //Tamanho do header em bytes.
+    unsigned long Id;          //Id do header.
+    unsigned long Used;        //Flag 'usado' ou 'livre'.
+    unsigned long Magic;       //Magic number. Ver se n�o est� corrompido.
 
-	//Mensuradores. (sizes).
-	unsigned long requestSize;    //Tamanho, em bytes, da �rea solicitada.
-	unsigned long unusedBytes;    //Quantidade de bytes n�o usados na �rea do cliente.	
-	unsigned long userareaSize;   //Tamanho da �rea reservada para o cliente. 
-                                  //(request size + unused bytes). 
+// Status.
+    unsigned long Free;  // Se o bloco esta livre ou nao.
 
-	//@todo: 
-    //    Incluir quando poss�vel.
-    // Lembrando que talvez o tamanho dessa estrutura seja fixo.
-    // Talvez n�o mudaremos nada no tamanho dela.	
+// Mensuradores. (sizes).
+    unsigned long requestSize;   //Tamanho, em bytes, da �rea solicitada.
+    unsigned long unusedBytes;   //Quantidade de bytes n�o usados na �rea do cliente.	
+    unsigned long userareaSize;  //Tamanho da �rea reservada para o cliente. 
+                                 //(request size + unused bytes). 
+
+//@todo: 
+//    Incluir quando poss�vel.
+// Lembrando que talvez o tamanho dessa estrutura seja fixo.
+// Talvez n�o mudaremos nada no tamanho dela.	
     //struct heap_d *heap;
 
 //
 // User area
 //
 
-    // (Onde come�a a �rea solicitada).
-
-    unsigned long userArea;    //In�cio da �rea alocada.
+// (Onde come�a a �rea solicitada).
+//In�cio da �rea alocada.
+    unsigned long userArea;
 
 
 //
 // Footer
 //
-    unsigned long Footer;    //Endere�o do in�cio do footer.
+
+//Endere�o do in�cio do footer.
+    unsigned long Footer;
 
 //
 // Process
@@ -600,63 +573,58 @@ struct mmblock_d
     struct process_d  *process;
 
 
-	// Continua ?? ... 
-	// Talvez n�o pode.
-	
-	// IMPORTANTE: 
-	// Talvez temos algum limite para o tamanho dessa estrutura em especial. 
-	// N�o inluir nada por enquanto.
+// Continua ?? ... 
+// Talvez n�o pode.
 
-    // Navigation
+// IMPORTANTE: 
+// Talvez temos algum limite para o tamanho dessa estrutura em especial. 
+// Nao inluir nada por enquanto.
+
+// Navigation
     struct mmblock_d *Prev;
     struct mmblock_d *Next;
 };
+
 struct mmblock_d *current_mmblock;
 
- 
 //Lista de blocos. 
 //lista de blocos de mem�ria dentro de um heap.
-//@todo: na verdade temos que usar lista encadeada. 
+//#todo: Na verdade temos que usar lista encadeada. 
+
 unsigned long mmblockList[MMBLOCK_COUNT_MAX];  
 
 
 
-/*
- ****************************************************************
- * page_d:
- *     Guarda informa��es sobre um 'page frame' na mem�ria f�sica.
- *     @todo: Incluir todas as informa��es necess�rias.
- */
-
+// Estrutura para gerencia de página.
 struct page_d
 {
-	
-	//identificador da estrutura.
-	//� um �ndice na lista de p�ginas do pagedpool.
+
+//identificador da estrutura.
+//� um �ndice na lista de p�ginas do pagedpool.
 
     int id;
     int used;
     int magic;
-	
-	// Identificador de frame.
-	// (pa/4096)
 
+// Identificador de frame.
+// (pa/4096)
     int frame_number;
 
-    // Locked:
-    // Não pode ser descarregado para o disco.
-    // Não pode ser alterado.
+// Locked:
+// Não pode ser descarregado para o disco.
+// Não pode ser alterado.
     int locked;
 
-    // A página está livrea para uso pelos processos.
+// A página está livrea para uso pelos processos.
     int free;
 
-    // Contador de referências.
+// Contador de referências.
     int ref_count;
 
-    // Navigation
+// Navigation
     struct page_d *next;
 };
+
 
 // #importante
 // Pool de memória paginável usado para alocação.
@@ -688,24 +656,22 @@ struct frame_pool_d
     int used;
     int magic;
 
-	//N�o pode ser modificada.
+//N�o pode ser modificada.
     int locked;
-	
-	//Endere�o do in�cio do framepool.
-	// va ou pa ??
-	unsigned long address; 
-	
-	//Qual processo � o dono desse framepool.
+
+//Endere�o do in�cio do framepool.
+// va ou pa ??
+    unsigned long address; 
+
+//Qual processo � o dono desse framepool.
     struct process_d *process;
 
-    // Navigation
+// Navigation
     struct frame_pool_d *next;
 };
 
-//
 // Cada framepool abaixo � o framepool inicial de uma regi�o.
 // Uma regis�o pode ter v�rios framepools.
-//
 
 //kernel space.
 struct frame_pool_d *framepoolKernelSpace;            //0x00000000  Kernel Space. In�cio do kernel space.
@@ -730,9 +696,8 @@ struct frame_pool_d *framepoolBackBuffer3;   //In�cio do backbuffer.
 struct frame_pool_d *framepoolBackBuffer4;   //In�cio do backbuffer.
 //...
 
-
-//�rea onde poderemos alocar frames para os processos usarem...
-//Esse � o framepool inicial de usa �re grande de mem�ria.
+//area onde poderemos alocar frames para os processos usarem...
+//Esse eh o framepool inicial de usa �re grande de mem�ria.
 struct frame_pool_d *framepoolPageableSpace;   
 
 
@@ -746,10 +711,8 @@ struct frame_pool_d *framepoolCurrent;
 //struct frame_pool_d *framepoolUserNonPagedPool;
 
 //
-//   **** PAGEABLE AREA ****
+//  PAGEABLE AREA
 //
-
-
 
 unsigned long gPagedPollStart;
 unsigned long gPagedPollEnd;
@@ -794,12 +757,9 @@ int g_pageable_framepool_index_max;
 unsigned long framepoolList[FRAMEPOOL_COUNT_MAX];
 
 
-
 //Lista de framepools livres.
 //int framepoolFreeList[FRAMEPOOL_COUNT_MAX]
 //frame_pool_t *framepoolFreeListHead;
-
-
 
 //frame pool atual.
 int g_current_framepool;
@@ -817,7 +777,6 @@ unsigned long g_framepool_max;
 unsigned long g_total_physical_memory;
 
 
-
 //Contabilidade. kernel(talvez deva fazer uma estrututra) MS.
 //Mem�ria usada pelo kernel.
 //+Paginada. paged
@@ -831,9 +790,7 @@ unsigned long g_kernel_paged_memory;
 unsigned long g_kernel_nonpaged_memory;
 
 
-
-
-// **** GERENCIA DE MEM�RIA F�SICA. ****
+// GERENCIA DE MEM�RIA F�SICA.
 //MS - Windows 
 // +Resevada para hardware.
 // +Em uso.
@@ -845,29 +802,25 @@ unsigned long g_kernel_nonpaged_memory;
 // al�m do tamanho da mem�ria ram.
 //
 
-
-// **** GERENCIA DE MEM�RIA F�SICA. ****
+// GERENCIA DE MEM�RIA F�SICA.
 //MS - Windows 
 // + Total.
 // + Em cache.
 // + Dispon�vel.
 // + Livre.
-//
-
-
-
 
 
 // Tipo de sistema baseado no tamanho da memoria.
 typedef enum {
+
     stNull,
     stSmallSystem,
     stMediumSystem,
     stLargeSystem,
+
 }mm_system_type_t;
 
-
-//salva o tipo de sistema baseado no tamanho da mem�ria.
+// Salva o tipo de sistema baseado no tamanho da memoria.
 int g_mm_system_type;
 
 
@@ -914,10 +867,6 @@ unsigned long LARGE_heappool_pa;
 unsigned long LARGE_extraheap1_pa;
 unsigned long LARGE_extraheap2_pa; 
 unsigned long LARGE_extraheap3_pa; 
-
-
-
-
 
 
 //base     = base memory retornada pelo cmos
@@ -969,10 +918,7 @@ unsigned long mm_used_frame_table;
 
 // ======================================================
 
-//
 // Frame structure.
-//
-
 // This structure is gonna handle a free frame.
 struct frame_d
 {
@@ -991,13 +937,17 @@ struct frame_d
 // O número da entrada na tabela FT.frame_table[entry_number].
 // Também é o índice que representa o offset de lba
 // no armazenamento secundário.
-
     int entry_number;
 
 // Se esse frame está no disco.
 // Isso significa que o frame pode ser considerado livre.
 // The pointer is in the SWAPPED_FRAMES[] list.
     int swapped;
+
+    //...
+    
+    // #todo: navigation?
+    //struct frame_d *next;
 };
 
 
@@ -1016,21 +966,18 @@ struct frame_d
 // A área total de frames não pode conter menos frames que isso.
 #define FT_TOTAL_FRAMES  (FT_NUMBER_OF_SYSTEM_FRAMES + FT_NUMBER_OF_USER_FRAMES)
 
-// Gerencia a área alocável total.
 
+// Gerencia a área alocável total.
 struct frame_table_d 
 {
 
 // Flags que indica a validade da estrutura
 // e o status da inicialização da estrutura.
-
     int used;
     int magic;
-
     int initialized;
 
 // no available ram
-
 
 // This is the address where the table starts.
 // It represent the point after the last mapped address.
@@ -1086,13 +1033,11 @@ struct frame_d SWAPPED_FRAMES[1024];
 // Maybe we can have more lists here.
 // ...
 
-
-
-
 // ...
 
 
-unsigned long mm_used_lfb;          // start = ?? size = 4MB
+// start = ?? size = 4MB
+unsigned long mm_used_lfb; 
 
 //#todo
 //unsigned long mm_used_
@@ -1174,12 +1119,9 @@ void showFreepagedMemory ( int max );
 void show_memory_structs (void);
 void testingPageAlloc (void);
 
-
 // ==
 
 int kernel_gc (void);
-
-
 
 unsigned long get_new_frame (void);
 unsigned long alloc_frame(void);
@@ -1187,26 +1129,18 @@ unsigned long alloc_frame(void);
 // #danger
 unsigned long get_table_pointer (void);
 
-
 void load_pml4_table(void *phy_addr);
-
 
 void *CloneKernelPDPT0(void);
 void *CloneKernelPD0(void);
 void *CloneKernelPML4 (void);
 void *clone_pml4 ( unsigned long pml4_va );
 
-
-
 int I_initialize_frame_table(void);
-
-
 
 int pEmpty (struct page_d *p);
 void freePage (struct page_d *p);
 void notfreePage (struct page_d *p);
-
-
 
 // Wrapper
 unsigned long 
@@ -1220,13 +1154,11 @@ __virtual_to_physical (
     unsigned long virtual_address, 
     unsigned long pml4_va );
 
-
-
 // #todo
 void pages_calc_mem (void);
 
 
-void *page (void);
+void *page(void);
 
 // #todo
 // #fixme
@@ -1243,16 +1175,5 @@ void *allocPages (int size);
 void initializeFramesAlloc (void);
 
 #endif    
-
-
-
-
-
-
-
-
-
-
-
 
 

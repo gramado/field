@@ -1,37 +1,30 @@
 /*
  *  File: mm/memmap.h 
- *
  * Descrição: 
  *     Memory map support.
  *     Referência para localização de VBR, FAT, ROOT, DATAAREA ...
- *
  * ATENÇÃO: 
  *     kernel base = 0x00100000pa
- *   
  * #bugbug: 
  *     Ao usar 0x00020000, 0x00060000, 0x00080000 a memória de video 
  * é afetada.
  *     Tem mapeamento sobreposto nessa região.
- *
  * History:
  *     2015 - Created by Fred Nora.
  */
- 
- 
- /*
+
+
+/*
   #importante:
   Basicamente existem 2 mapeamentos de memória:
-  
   + Um usado pelo kernel e seus módulos, mesmo que esses 
     módulos estejam em user mode ou em outro processo e 
-	
   + Outro mapeamento padrão para todos os processos.
-  
   + ?? Não sei quanto ao mapeamento para servidores em user mode 
     ou para bibliotecas em user mode
   ...
- 
   */
+
 
 /*    
   Memory map. 
@@ -114,19 +107,28 @@
              |                                    | Podemos usar essa área em kernel mode para memória compartilhada.
              |                                    | Os primeiros 4MB são acessados pelo kernel.
              |           0 ~ 0x004FFFFF           | Os processos estão herdando esse mapeamento do kernel. 
-    00000000 |         kernel Mode access         | 
+    00000000 |         kernel Mode access         |
              +====================================+
  
-  
-
-    ***	 
-
-			 
-    ***
-	
-	Obs: O layout da memória virtual está em fase de desenvolvimento.	   
-	
+    Obs: 
+    O layout da memória virtual está em fase de desenvolvimento.
 */ 
+
+
+// ================
+// Essas são algumas entradas usadas no primeiro diretorio de 
+// páginas do kernel. x86_64
+// Entries:
+//   0 = Primeiros 2MB da memória RAM.
+//   1 = Area em user mode que começa em 32MB da memória física.
+// 384 = Imagem do kernel que começa em 1MB da memória física.
+// 385 = frontbuffer. LFB.
+// 386 = backbuffer. Começa na área de 16MB da memória física.
+// 387 = Paged pool area.
+// 388 = Heap pool.
+// 389 = extraheap1
+// 390 = extraheap2
+// 391 = extraheap3. The window server image.
  
 
 

@@ -98,11 +98,15 @@ int videoInit (void)
 {
     int Status=0;
 
-    // Se o modo de video nao esta habilitado
+// Se o modo de video nao esta habilitado
     if ( VideoBlock.useGui != TRUE )
     {
         // Can we use the function?
-        panic("videoInit:\n");
+        // No we can't
+        //panic("videoInit:\n");
+        debug_print("videoInit:\n");
+        asm ("cli \n");
+        while(1){ asm("hlt"); }
     }
 
     g_useGUI          = TRUE;
@@ -127,7 +131,6 @@ int videoInit (void)
 
     g_backbuffer_va  = (unsigned long) BACKBUFFER_VA;
 
-
 // Device screen sizes. 
 // (herdadas do boot loader.)
 // See: globals/gdevice.h
@@ -136,7 +139,6 @@ int videoInit (void)
     g_device_screen_height = (unsigned long) SavedY;
     g_device_screen_bpp    = (unsigned long) SavedBPP;
 
-
     // gwsSetCurrentFontAddress ( VIDEO_BIOS_FONT8X8_ADDRESS );
 
 // #todo: 
@@ -144,7 +146,6 @@ int videoInit (void)
     gcharWidth  = VIDEO_BIOS_FONT8X8_WIDTH;
     gcharHeight = VIDEO_BIOS_FONT8X8_HEIGHT;
     gfontSize   = FONT8X8;
-
 
     return 0;
     //return (int) Status;    

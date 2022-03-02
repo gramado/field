@@ -1672,11 +1672,13 @@ int main ( int argc, char *argv[] )
 //
 // main window
 //
-    unsigned long mwWidth  = (w >> 1);  //((w/8)*6);
-    unsigned long mwHeight = (h >> 1);  //((h/8)*6); 
-    unsigned long mwLeft   = ( ( w - mwWidth ) >> 1 );  //centralizado.
-    unsigned long mwTop    = ( ( h - mwHeight) >> 1 );  //centralizado 
+
+    unsigned long mwWidth  = (w >> 1);
+    unsigned long mwHeight = (h >> 1); 
+    unsigned long mwLeft   = ( ( w - mwWidth ) >> 1 );
+    unsigned long mwTop    = ( ( h - mwHeight) >> 1 );
     unsigned int mwColor   = COLOR_WINDOW;
+
 
 //
 // Client area window
@@ -1685,6 +1687,7 @@ int main ( int argc, char *argv[] )
     unsigned long wTop    = 34;  // por causa da title bar
     unsigned long wWidth  =  mwWidth  -2 -2;
     unsigned long wHeight =  mwHeight -2 -34;
+
     unsigned int wColor   = bg_color;
 
 // The surface of this thread.

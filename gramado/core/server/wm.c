@@ -1774,7 +1774,25 @@ wmProcedure(
         printf("wmProcedure: [19] GWS_GetFocus2\n");
         break;
 
+
+// #todo
+// Esse eh o momento de exibirmos o cursor do mouse,
+// e nao no kernel como estamos fazendo.
+// Precisamos fazer refresh para apagar o cursor antigo
+// depois pintarmos o cursor novo direto no lfb.
+// Mas nao temos aqui a rotina de pintarmos direto no
+// lfb.
+// #todo: Trazer as rotinas de exibiçao de cursor
+// para ca, depois deixar de usar
+// as rotinas de pintura de cursor que estao no kernel.
+
     case GWS_MouseMove:
+        
+        // primeiro apaga, depois escreve diretamente no lfb.
+ 
+        // refresh the rectangle. (apaga)
+        // gws_refresh_rectangle ( long1, long2, 8, 8 );
+    
         // O ponteiro esta dentro do botao do menu iniciar?
         Status = is_within(
             (struct gws_window_d *) __taskbar_startmenu_button_window,
@@ -2474,6 +2492,7 @@ int serviceRefreshRectangle (void)
 // Maybe we can test some limits here.
 
 // Flush it into the framebuffer.
+// See: rect.c
     gws_refresh_rectangle ( left, top, width, height );
     return 0;
 }

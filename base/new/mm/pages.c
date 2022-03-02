@@ -19,9 +19,9 @@ extern unsigned long SavedLFB;          // #todo: precisamos que o bl passe  end
 // Os endereços virtuas das tabelas passados via parâmetro
 // pertencem ao pml4 do kernel e nos permite acessar essas tabelas
 // para configurarmos elas.
-
 // #todo: This is a work in progress.
-// #bugbug: è uma rotina muito ruim, se possível substituir por algo melhor.
+// #bugbug: 
+// É uma rotina muito ruim, se possível substituir por algo melhor.
 
 void *CreateAndIntallPageTable (
     unsigned long pml4_va,   // page map level 4
@@ -32,13 +32,11 @@ void *CreateAndIntallPageTable (
     int pd_index,            // Install the pagetable into this entry of the page directory. 
     unsigned long region_pa )
 {
-
-    panic("CreateAndIntallPageTable: suspended");
-
+    panic("CreateAndIntallPageTable: suspended\n");
     return NULL;
 
-/*
 
+/*
     int i=0;
 
     // #todo
@@ -279,28 +277,32 @@ unsigned long table_pointer_heap_base = ____DANGER_TABLE_POINTER_HEAP_BASE;
 
 // ====================================================================
 
+// Isso serve pra pegarmos um endereço físico
+// que servira de base para criarmos uma pagetable.
+
 unsigned long get_table_pointer (void)
 {
     debug_print ("get_table_pointer:\n");
 
-    table_pointer_heap_base = (unsigned long) (table_pointer_heap_base + 0x1000);
+// Incrementa 4KB.
+    table_pointer_heap_base = 
+        (unsigned long) (table_pointer_heap_base + 0x1000 );
 
-    // #todo
-    // Precisamos de uma nova origem.
-    // Os primeiros 12bits precisam ser '0'.
-    // VM_BASE = 0x000B8000.
-    
-    // #bugbug
-    // Todo o espaço entre 0x1000 e 0x000B8000 esta livre ?
-    // Onde estao a fat e o root dir?
-    // MBR_ADDRESS = 0x20000. 
-    // Esse o o endereço mais baixo entre os endereços usados
-    // pelo sistema de arquivos.
-    
+// #todo
+// Precisamos de uma nova origem.
+// Os primeiros 12bits precisam ser '0'.
+// VM_BASE = 0x000B8000.
+// #bugbug
+// Todo o espaço entre 0x1000 e 0x000B8000 esta livre ?
+// Onde estao a fat e o root dir?
+// MBR_ADDRESS = 0x20000. 
+// Esse o o endereço mais baixo entre os endereços usados
+// pelo sistema de arquivos.
+
     //if ( table_pointer_heap_base >= VM_BASE )
     if ( table_pointer_heap_base >= MBR_ADDRESS )
     {
-        panic ("pages-get_table_pointer: [FIXME] Limits\n");
+        panic ("get_table_pointer: [FIXME] Limits\n");
     }
 
     return (unsigned long) table_pointer_heap_base;
@@ -312,6 +314,9 @@ void *CloneKernelPDPT0(void)
     register int i=0;
     unsigned long destAddressVA=0; 
 
+// Pegamos um edereço que serve de base para
+// criarmos um pdpt.
+// Identidade 1:1.
 
     //destAddressVA = (unsigned long) newPage (); 
     destAddressVA = (unsigned long) get_table_pointer(); 
@@ -320,26 +325,22 @@ void *CloneKernelPDPT0(void)
         panic ("CloneKernelPML4: destAddressVA\n");
     }
 
-
-    // The virtual address of the kernel page directory and
-    // the virtual address of the new page directory.
-    // #bugbug: What directory we are using right now? kernel?
+// The virtual address of the kernel page directory and
+// the virtual address of the new page directory.
+// #bugbug: What directory we are using right now? kernel?
 
     unsigned long *src = (unsigned long *) kernel_mm_data.pdpt0_va; //gKernelPML4Address;
-    unsigned long *dst = (unsigned long *) destAddressVA;  
+    unsigned long *dst = (unsigned long *) destAddressVA;
 
-    // Copy
-
+// Copy
     for ( i=0; i < 512; ++i ){
         dst[i] = (unsigned long) src[i];
     };
 
-    // Done.
-    // The virtual address of the new pml4. 
-
+// Done.
+// The virtual address of the new pml4. 
     return (void *) destAddressVA;
 }
-
 
 
 void *CloneKernelPD0(void)
@@ -347,6 +348,9 @@ void *CloneKernelPD0(void)
     register int i=0;
     unsigned long destAddressVA=0; 
 
+// Pegamos um edereço que serve de base para
+// criarmos um pd.
+// Identidade 1:1.
 
     //destAddressVA = (unsigned long) newPage (); 
     destAddressVA = (unsigned long) get_table_pointer(); 
@@ -355,30 +359,26 @@ void *CloneKernelPD0(void)
         panic ("CloneKernelPML4: destAddressVA\n");
     }
 
-
-    // The virtual address of the kernel page directory and
-    // the virtual address of the new page directory.
-    // #bugbug: What directory we are using right now? kernel?
+// The virtual address of the kernel page directory and
+// the virtual address of the new page directory.
+// #bugbug: What directory we are using right now? kernel?
 
     unsigned long *src = (unsigned long *) kernel_mm_data.pd0_va; //gKernelPML4Address;
     unsigned long *dst = (unsigned long *) destAddressVA;  
 
-    // Copy
-
+// Copy
     for ( i=0; i < 512; ++i ){
         dst[i] = (unsigned long) src[i];
     };
 
-    // Done.
-    // The virtual address of the new pml4. 
-
+// Done.
+// The virtual address of the new pml4. 
     return (void *) destAddressVA;
 }
 
 
 /*
  * CloneKernelPML4:
- *
  *    Clone the kernel pml4.
  *    OUT: The virtual address of the new directory.
  */
@@ -389,6 +389,9 @@ void *CloneKernelPML4(void)
     register int i=0;
     unsigned long destAddressVA=0; 
 
+// Pegamos um edereço que serve de base para
+// criarmos um pml4.
+// Identidade 1:1.
 
     //destAddressVA = (unsigned long) newPage (); 
     destAddressVA = (unsigned long) get_table_pointer(); 
@@ -406,14 +409,12 @@ void *CloneKernelPML4(void)
     unsigned long *dst = (unsigned long *) destAddressVA;  
 
 // Copy
-
     for ( i=0; i < 512; ++i ){
         dst[i] = (unsigned long) src[i];
     };
 
 // Done.
 // The virtual address of the new pml4. 
-
     return (void *) destAddressVA;
 }
 
@@ -421,17 +422,14 @@ void *CloneKernelPML4(void)
 /*
  * clone_pml4:
  *     Clone a given page directory.
- * 
  */
 
 // Clona um pml4 dado seu endereço.
 // Queremos clonar o diretório atual,
 // para que o processo filho tenha o mesmo diretório do processo pai. 
-
 // #??
 // Esse endereço virtual eh valido?
 // Pertence ao diretorio que estamos usando no momento?
-
 // #todo
 // clone_pml4
 
@@ -440,20 +438,22 @@ void *clone_pml4 ( unsigned long pml4_va )
     register int i=0;
     unsigned long destAddressVA=0; 
 
-
-    // #test
-    // no directory in the address '0'
+// #test
+// no directory in the address '0'
 
     if ( pml4_va == 0 )
         panic("clone_pml4: pml4_va\n");
 
 
-    // Get a target address for the directory.
-    
+
+// Get a target address for the directory.
 // #bugbug:
 // We are using that routine to get a poiter for a table.
 // Is that a virtual address ?
 // What about the size?
+// Pegamos um edereço que serve de base para
+// criarmos um pml4.
+// Identidade 1:1.
 
     destAddressVA = (unsigned long) get_table_pointer(); 
     
@@ -462,12 +462,10 @@ void *clone_pml4 ( unsigned long pml4_va )
     }
 
 // Initialization
-
     unsigned long *src = (unsigned long *) pml4_va;
     unsigned long *dst = (unsigned long *) destAddressVA;
 
 // Copy
-
     for ( i=0; i < 512; ++i ){
         dst[i] = (unsigned long) src[i]; 
     };
@@ -1124,24 +1122,20 @@ int mmSetUpPaging (void)
     //if( framebuffer_pa == 0 )
         //x_panic("mmSetupPaging: framebuffer_pa");
 
-//
+
 // # DIRECTORIES
-//
+// Preenchendo todo o diret�rio de p�ginas do kernel com p�ginas 
+// n�o presentes. Usando um endere�o nulo de p�gina.
+// Inicializando quatro diret�rios.
+// o bit 7 da entrada permanece em 0, 
+// indicando que temos p�ginas de 4KB.
+// kernel
+// Diret�rio de p�ginas do processo kernel.
+// 0 no bit 2 indica qual level ??
+// 010 em bin�rio.
+// #importante:
+// O endere�o f�sico e virtual s�o iguais para essa tabela.
 
-	// Preenchendo todo o diret�rio de p�ginas do kernel com p�ginas 
-	// n�o presentes. Usando um endere�o nulo de p�gina.
-
-	// Inicializando quatro diret�rios.
-	// o bit 7 da entrada permanece em 0, 
-	// indicando que temos p�ginas de 4KB.
-	// kernel
-	// Diret�rio de p�ginas do processo kernel.
-	// 0 no bit 2 indica qual level ??
-	// 010 em bin�rio.
-
-    // #importante:
-    // O endere�o f�sico e virtual s�o iguais para essa tabela.
-    
 //
 // ==================================================
 //
@@ -1277,10 +1271,9 @@ Entry_1:
 Entry_384:
     mm_used_kernelimage = (1024 * 2);  //2mb
 
-
-    // kernel_base_pa = 0x100000pys
-    // (0x100000pys = 0x30000000virt).
-    // Configurando a área de memória onde ficará a imagem do kernel.
+// kernel_base_pa = 0x100000pys
+// (0x100000pys = 0x30000000virt).
+// Configurando a área de memória onde ficará a imagem do kernel.
 
 // Isso mapeia 2MB começando do primeiro mega. 
 // (kernel mode).
@@ -1304,10 +1297,10 @@ Entry_384:
 Entry_385:
     mm_used_lfb = (1024 * 2);  
 
-    // framebuffer_pa = Endereço físico do lfb.
-    // 0x????pys = 0x30200000virt
-    // Uma área em user mode.
-    // O endereço físico foi passado pelo bootblock.
+// framebuffer_pa = Endereço físico do lfb.
+// 0x????pys = 0x30200000virt
+// Uma área em user mode.
+// O endereço físico foi passado pelo bootblock.
 
 // Mapear 2MB à partir do endereço configurado
 // como início do LFB.
@@ -1335,9 +1328,9 @@ Entry_385:
 Entry_386:
     mm_used_backbuffer = (1024 * 2);  
 
-    // backbuffer_pa = 0x01000000pys
-    // 16mb mark.
-    // 0x01000000pys = 0x30400000virt
+// backbuffer_pa = 0x01000000pys
+// 16mb mark.
+// 0x01000000pys = 0x30400000virt
 
 // Mapeando 2mb de memória em ring3 para o backbuffer.
 // Criamos a pagetable.
@@ -1357,11 +1350,10 @@ Entry_386:
 Entry_387:
     mm_used_pagedpool = (1024 * 2);  //2mb 
 
-    // 0x30600000;  // 2mb a mais que o backbuffer
+// 0x30600000;  // 2mb a mais que o backbuffer
     g_pagedpool_va = (unsigned long) PAGEDPOOL_VA;
 
 // mapeando 2mb de memória em ring3 para o pagedpool.
-
     mm_fill_page_table( 
         (unsigned long) &kernel_pd0[0], (int) PD_ENTRY_PAGEDPOOL, 
         (unsigned long) &pt_pagedpool[0], (unsigned long) SMALL_pagedpool_pa, 
@@ -1382,7 +1374,6 @@ Entry_388:
     g_heap_count     = 0;
     g_heap_count_max = G_DEFAULT_PROCESSHEAP_COUNTMAX;
     g_heap_size      = G_DEFAULT_PROCESSHEAP_SIZE;  //#bugbug
-
 
 // Heaps support.
 // Pool de heaps.
@@ -1483,27 +1474,23 @@ Entry_391:
 // #important
 // Vamos configurar a frame table de acordo com o total de memória RAM.
 // 'memorysizeTotal' is the ram size in KB.
-
 // Configura apenas o início e o fim.
 // O resto da tabela será configurado pela função
 // I_initialize_frame_table() 
-
 // Start:
 // FRAME_TABLE_START_PA
 // This is the start of the table.
 // This is the 256MB mark.
-
 // End:
 // FRAME_TABLE_END_PA
 // This is the end of the table.
-
 // See:
 // x64gpa.h
 
     debug_print ("mmSetUpPaging: Setup FT\n");
 
 // Setup the start of the table.
-// It is always the same.
+// It's always the same.
 // We need at least 256 MB.
 // The system with 256MB has no FT.
 // We need more them this to have a FT.
@@ -1519,7 +1506,8 @@ Entry_391:
 // End
 // (Uninitialized)
 // It will depend on the size of the RAM.
-    FT.end_pa = 0; 
+// This routine will find this value.
+    FT.end_pa = 0;
 
 
 // =================================================
@@ -1530,8 +1518,8 @@ Entry_391:
 
     if ( memorysizeTotal >= (1024*1024)  )
     {
-        debug_print ("mmSetUpPaging: We have 1GB or more\n");
         FT.end_pa = __1GB_MARK_PA;
+        debug_print ("mmSetUpPaging: We have 1GB or more\n");
         goto initialize_frame_table;
     }
 
@@ -1542,10 +1530,11 @@ Entry_391:
 
     if ( memorysizeTotal >= (512*1024) )
     {
-        debug_print ("mmSetUpPaging: We have 512MB or more\n");
         FT.end_pa = __512MB_MARK_PA;
+        debug_print ("mmSetUpPaging: We have 512MB or more\n");
         goto initialize_frame_table;
     } 
+
 
 // =================================================
 // Size in KB.
@@ -1553,8 +1542,8 @@ Entry_391:
 
     if ( memorysizeTotal >= (256*1024) )
     {
-        debug_print ("mmSetUpPaging: We have 256MB or more\n");
         FT.end_pa = __256MB_MARK_PA;
+        debug_print ("mmSetUpPaging: We have 256MB or more\n");
         goto initialize_frame_table;
     } 
 
@@ -1592,12 +1581,13 @@ Entry_391:
     }
 
 // Não é menor que 250MB
+// __256MB_MARK_PA?
     FT.end_pa = (unsigned long)(250*1024*1024);
 
 //============================================================
 
 //
-// Initializing all the other elements of the frame table
+// Initializing all the other elements of the frame table.
 //
 
 initialize_frame_table:
@@ -1605,13 +1595,13 @@ initialize_frame_table:
 // #bugbug
 // Slow. Use a define for this value.
 
-    if ( FT.end_pa < (250*1024*1024) ){
+    if ( FT.end_pa < (250*1024*1024) )
+    {
         debug_print ("mmSetUpPaging: [PANIC] less than 250MB.\n");
         //#todo: panic
     }
 
     I_initialize_frame_table();
-
 
 // ================================================================
 

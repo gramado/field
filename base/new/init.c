@@ -255,19 +255,33 @@ int kernel_main(int arch_type)
 // Paint a white screen if magic is ok.
 // Paint a colored screen if magic is not ok.
 
+
+// WHITE
     if ( bootMagic == 1234 )
     {
-        for (i=0; i<320*50; i++){
+        //for (i=0; i<320; i++)
+        for (i=0; i<320*50; i++)
+        {
             fb[i] = 0xFFFFFFFFFFFFFFFF;
         };
     }
 
+
+// COLORED
     if ( bootMagic != 1234 )
     {
         for (i=0; i<320*50; i++){
             fb[i] = 0xFF00FFFFFFF00FFF;
         };
     }
+
+
+//
+// #breakpoint
+//
+
+    //while(1){}
+
 
 // Hack Hack
     VideoBlock.useGui = TRUE;
@@ -315,13 +329,28 @@ int kernel_main(int arch_type)
 // teste para a máquina real.
 // preto
 
-    if ( xBootBlock.deviceWidth == 320 )
-    {
-        for (i=0; i<40*40; i++)
+/*
+    //if ( xBootBlock.deviceWidth == 320 )
+    //{
+        for (i=0; i< 320*25; i++)
         {
             fb[i] = 0;
         };
-    }
+    //}
+
+*/
+    // # ======== DEBUG =============
+    // #todo
+    // The initialization in the real machine
+    // crashes here for the resolution 320x200
+    // gramado mode: jail
+
+
+//#debug
+// Let's print some BLACK over the WHITE BAR.
+    //while(1){}
+
+// ========= funciona ate aqui na maq real ========================
 
 // We do not have output yet
 
@@ -332,6 +361,7 @@ int kernel_main(int arch_type)
     //    debug_print ("FAIL");
     //    while(1){}
     //}
+
 
 // ============================
 // #progress
@@ -349,6 +379,10 @@ int kernel_main(int arch_type)
 
     PROGRESS("Kernel:0:1\n");
     preinit_OutputSupport();
+
+// #IMPORTAT: 
+// We do not have all the runtime support yet.
+// We can't use printf yet.
 
 // =================================================
 // Show some basic info.
@@ -382,6 +416,12 @@ int kernel_main(int arch_type)
 // Video support
 // See: drivers/video/video.c
 
+
+    //#breakpoint: BLACK ON WHITE.
+    //ok, funcionou na maq real no modo jail, provavelmente 320x200.
+    //for (i=0; i< 320*25; i++){ fb[i] = 0; };
+    //while(1){asm("hlt");};
+    
     PROGRESS("Kernel:0:3\n");
     Video_initialize();
 
@@ -393,6 +433,13 @@ int kernel_main(int arch_type)
 // Here the background is not initialized yet,
 // so, we have a lot of dirty things.
 // See: ke/runtime.c
+
+    //#breakpoint: BLACK ON WHITE.
+    //ok, funcionou na maq real no modo jail, provavelmente 320x200.
+    //Ainda nao podemos usar o refresh screen porque a
+    //flag refresh_screen_enabled ainda nao foi acionada.
+    //for (i=0; i< 320*25; i++){ fb[i] = 0; };
+    //while(1){asm("hlt");};
 
     PROGRESS("Kernel:0:4\n");
     Runtime_initialize();
@@ -419,10 +466,21 @@ int kernel_main(int arch_type)
 // #todo
 // See: drivers/video/fbdev/bg.c
 
+    //#breakpoint: BLACK ON WHITE.
+    //ok, funcionou na maq real no modo jail, provavelmente 320x200.
+    //Ainda nao podemos usar o refresh screen porque a
+    //flag refresh_screen_enabled ainda nao foi acionada.
+    //for (i=0; i< 320*25; i++){ fb[i] = 0; };
+    //while(1){asm("hlt");};
+
     Background_initialize();
 
-// Ok, agora podemos usar o console virtual
-// para verbose.
+
+// No refresh screen yet!
+// Ainda nao podemos usar o refresh screen porque a
+// flag refresh_screen_enabled ainda nao foi acionada.
+// Eh o que vamos fazer agora,
+// de acordo com o tamanho da memoria disponivel pra isso.
 
 // ++
 // ======================================
@@ -446,31 +504,35 @@ int kernel_main(int arch_type)
         pitch = (xBootBlock.deviceWidth * bytes_per_pixel);
     }  
 
-    if (pitch == 0)
-    {
+// pitch fail,
+// don't stop, the real machine needs some kind of
+// message support.
+
+    if (pitch == 0){
         refresh_screen_enabled = FALSE;
         debug_print("Screen size fail. pitch\n");
     }
 
-// Valid pitch.
-
+// Quantos kb vamos precisar para uma tela nessa resoluçao?
     sz_in_kb = 
         (unsigned long) (( pitch * xBootBlock.deviceHeight )/ 1024 );
-    
+
+// Screen size in kb.
+// Remember: For now we only have 2048 kb mapped for lfb.
     screen_size_in_kb = sz_in_kb;
 
     // #debug
     //printf ("Screen size: %d KB\n", sz_in_kb);
  
-// fail
-// #provisorio
+// Se a quantidade usada por uma tela nessa resoluçao
+// for maior que o que temos disponivel.
+// Entao nao podemos habilitar o refresh screen.
 
-    if ( sz_in_kb >= 2048 )
-    {
+    if ( sz_in_kb >= 2048 ){
         refresh_screen_enabled = FALSE;
         debug_print ("Screen size fail sz_in_k\n");
     }
-    
+
 // ok
 // Ok We can use the refresh routine.
 // Because we have memory enough for that.
@@ -487,16 +549,37 @@ int kernel_main(int arch_type)
 //
 
 // We can't live without this.
+// But the real machine needs the message support,
+// so, we can't stop here. Let's hack for a now.
 
-    if ( refresh_screen_enabled != TRUE ){
+/*
+    if ( refresh_screen_enabled != TRUE )
+    {
         debug_print("kernel_main: refresh_screen_enabled != TRUE\n");
         Initialization.console_log = FALSE;
-        die();
+        while(1){asm("hlt");};
+        //die(); //we dont have refresh screen support,
+    }
+*/
+
+// #hackhack
+// Nesse caso a rotina de refreshscreen vai usar
+// um tamanho falso de tela, bem pequeno, que
+// cabe na memoria mapeada disponivel.
+// Isso sera usado para debug em ambiente
+// que tivermos problemas.
+// tudo isso se resolvera quando mapearmos memoria
+// o suficiente para resoluçoes grandes.
+    if ( refresh_screen_enabled != TRUE )
+    {
+        // enough for 320x200x32bpp
+        fake_screen_size_in_kb = (( 320*4*200 )/1024);
+        g_use_fake_screen_size = TRUE;
+        refresh_screen_enabled = TRUE;
     }
 
 // OK. 
 // We have a virtual console and we can use the printf.
-
     Initialization.console_log = TRUE;
 
 // BANNER!
@@ -507,8 +590,45 @@ int kernel_main(int arch_type)
     console_banner(0);
 
     //printf("gcc: %d\n",GCC_VERSION);
+
+// Na maquina real, com a placa de video nvidea
+// a resoluçao do modo jail eh 320x200
+// Na maquina real, com a placa de video onboard
+// a resoluçao do modo jail eh muito grande.
+
+    printf ("Width  = %d \n",xBootBlock.deviceWidth );
+    printf ("Height = %d \n",xBootBlock.deviceHeight );
+    printf ("BPP    = %d \n",xBootBlock.bpp );
+
+//
+// Stop: 
+//
+
+// We will support only 2 resolutions for now
+// when we're not on qemu.
+// width=800 or width=640
+// In qemu we can support 3 resolutions
+// width=800 or width=640 or width=320
+// But at this moment we can't call the funtion
+// for detecting if we are using qemuor not.
+// #todo: 
+// We need another function for detecting it
+// in this phase of the initialization.
+
+    if ( xBootBlock.deviceWidth != 800 &&
+         xBootBlock.deviceWidth != 640 &&
+         xBootBlock.deviceWidth != 320 )
+    {
+        printf("Bad resolution\n");
+        printf("We're working to support more resolutions\n");
+        refresh_screen();
+        while(1){asm("hlt");}
+    }
+
+// #breakpoint
     //refresh_screen();
-    //while(1){}
+    //while(1){asm("hlt");}
+
 
 // Show gramado mode.
 

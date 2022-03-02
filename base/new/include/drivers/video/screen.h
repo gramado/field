@@ -11,6 +11,10 @@
 
 
 unsigned long screen_size_in_kb;
+// hack: for debuging purpose
+int g_use_fake_screen_size;
+unsigned long fake_screen_size_in_kb;
+
 
 // The refresh is enabled we mapped
 // memory enough for that.

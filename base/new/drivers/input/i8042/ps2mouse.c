@@ -34,8 +34,12 @@ static char buffer_mouse[4];
 // mouse buttons support
 unsigned int mbuttons_old_state[5];
 
+
 static long mouse_x = 0;
 static long mouse_y = 0;
+static long saved_mouse_x=0;
+static long saved_mouse_y=0;
+
 static int ps2_mouse_moving=0;
 static int ps2_mouse_has_wheel=0;
 
@@ -335,6 +339,17 @@ void ps2mouse_initialize_device (void)
     unsigned char device_id=0;
 
     debug_print ("ps2mouse_initialize_device:\n");
+
+// pointer.
+
+    //mouse_x = (long) (SavedX >> 1);
+    //mouse_y = (long) (SavedY >> 1);
+    mouse_x = (long) 8;
+    mouse_y = (long) 8;
+    saved_mouse_x = (long) mouse_x;
+    saved_mouse_y = (long) mouse_y;
+
+
 
 //++
 //======================================================

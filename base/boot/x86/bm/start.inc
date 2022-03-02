@@ -497,69 +497,73 @@ startGUI:
 	;; Cursor
 	mov dword [g_cursor_x], 4
 	mov dword [g_cursor_y], 4
-	
-	;String
-	;mov esi, msg_start_loading
-	;call lib32PrintString
-	;call _asm_refresh_screen
 
+;String
+    ;mov esi, msg_start_loading
+    ;call lib32PrintString
+    ;call _asm_refresh_screen
 
-    ;;debug
-    mov esi, startMsgTest1   
-    call lib32PrintString
-    call _asm_refresh_screen
+; debug
+; Verbose: 'startGUI'
 
-	; #debug 
-	; #todo: 
-	; Testando modos no geforce.
+    ;mov esi, startMsgTest1   
+    ;call lib32PrintString
+    ;call _asm_refresh_screen
+
+; #debug 
+; #todo: 
+; Testando modos no geforce.
     ; jmp $
-	
-    
-	; #todo: 
-	; N�o h� fun��es de string em modo gr�fico no bootmanager ainda.
-	; Ent�o para o carregamento do BL.BIN n�o h� mensagens.      
-	
-	; Carrega o Boot Loader.
-	; Carrega o arquivo  BL.BIN na mem�ria e passa o comando para ele.
-	; Enviando argumento em AL, e EBX.
-	
-.LoadBootLoader:
-	
-	;;;; ATEN��O 
-	;;;; O BL.BIN FOI CARREGADO PELO MBR USANDO RECURSOS DO BIOS.
-	;;;; N�O DEVEMOS CARREGA-LO NOVAMENTE NESSE MOMENTO USANDO RECURSO DE 32BIT.
-	
-	; Obs: 
-	; ?? N�o carrega mais pois ele est� em assembly e faz parte do System4Nora.
 
-	;mov esi, msg_start_ok
-	;call lib32PrintString	
-	;call _asm_refresh_screen
-	
+; #todo: 
+; #importante:
+; No boot manager ainda nao ha funçoes de 
+; print string em modo grafico.
+; Entao para o carregamento do BL.BIN nao ha mensagens.      
+
+;
+; Carrega o Boot Loader.
+;
+
+; Carrega o arquivo  BL.BIN na memoria e 
+; passa o comando para ele.
+; Enviando argumento em AL, e EBX.
+
+;;;; ATENÇAO 
+;;;; O BL.BIN FOI CARREGADO PELO MBR USANDO RECURSOS DO BIOS.
+;;;; NAO DEVEMOS CARREGA-LO NOVAMENTE NESSE MOMENTO 
+;;;; USANDO RECURSO DE 32BIT.
+
+; .LoadBootLoader:
+
+; #debug
+    ;mov esi, msg_start_ok
+    ;call lib32PrintString
+    ;call _asm_refresh_screen
+
 ;;
 ;;======================
 ;;
-;.StartBootLoader:
 
-    ;; #bugbug
-	;; Essa mensagem atraza muito.
-	;; Por causa do refresh screen
+.StartBootLoader:
 
-	;mov esi, msg_start_jumping
-	;call lib32PrintString
-	;call _asm_refresh_screen
+; #debug
+; Precisamos disso no debug na maquina real.
+
+    mov esi, msg_start_jumping
+    call lib32PrintString
+    call _asm_refresh_screen
+
+;#breakpoint
     ;jmp $
-	
-	
-	
-	;; #bugbug
-	;; Temos que permitir o formato elf.
-	;; Por�m o BL ainda est� no formato PE.
-
 
 ;
 ; == Image =============================
 ;
+
+; #bugbug
+; Temos que permitir o formato ELF.
+; Porem o BL ainda esta no formato PE.
 
 ; Check PE binary in BL.BIN.
 ; IMAGE_ADDRESS
@@ -567,111 +571,100 @@ startGUI:
     mov edx, dword 0x20000   
     mov eax, [edx]
 
-	;first byte.
-	cmp al, byte 'L'
-	jne .peFail
-	
-	inc edx 
-	mov eax, [edx]
+; First byte: 'L'
+; Second byte: 0x01
 
-	;second byte.
-	cmp al, byte 0x01
-	jne .peFail
+    cmp al, byte 'L'
+    jne .peFail
 
+    inc edx 
+    mov eax, [edx]
 
-.LpreparandoArgumentos:
- 
-    ;;
-    ;;  ## Boot Block ## 
-    ;;
-
-	;; Preparing a table of arguments.
-	;; See: stage3/include/bootloader.inc.
-
-
-	;; #todo
-	;; We need the boot disk value!
-
-	;; Prepara a tabela.
-	;; Estamos preparando a tabela para enviarmos para o Boot Loader.
-
-	
-	;; #todo
-	;; Precismos passar mais informa��es sobre o disco.
+    cmp al, byte 0x01
+    jne .peFail
 
 
 ;
-; Boot block
+;  ## Boot Block ## 
 ;
 
+; Preparing a table of arguments.
+; See: stage3/include/bootloader.inc.
+; #todo
+; We need the boot disk value!
+; Prepara a tabela.
+; Estamos preparando a tabela para enviarmos para o Boot Loader.
+; #todo
+; Precismos passar mais informa��es sobre o disco.
+
+; =================
+; boot block structure:
 ; LFB address.
 ; Width in pixels.
 ; Height in pixel.
 ; BPP.
 ; metafile address
 ; ...
+; ==================
+
 
 ; lfb
-	xor eax, eax
-	mov eax, dword [ModeInfo_PhysBasePtr]  
-	mov dword [BootBlock.lfb], eax
-	
+    xor eax, eax
+    mov eax, dword [ModeInfo_PhysBasePtr]  
+    mov dword [BootBlock.lfb], eax
+
 ; screen width
-	xor eax, eax
-	mov ax, word [ModeInfo_XResolution]    
-	mov dword [BootBlock.x], eax 
-	
+    xor eax, eax
+    mov ax, word [ModeInfo_XResolution]    
+    mov dword [BootBlock.x], eax 
+
 ; screen height
-	xor eax, eax
-	mov ax, word [ModeInfo_YResolution]    
-	mov dword [BootBlock.y], eax 
+    xor eax, eax
+    mov ax, word [ModeInfo_YResolution]    
+    mov dword [BootBlock.y], eax 
 
 ; bpp
-	xor eax, eax
-	mov al, byte [ModeInfo_BitsPerPixel]   
-	mov dword [BootBlock.bpp], eax 
+    xor eax, eax
+    mov al, byte [ModeInfo_BitsPerPixel]   
+    mov dword [BootBlock.bpp], eax 
 
 ; #bugbug
 ; Algo nao permite enderecarmos os elementos do metafile.
-; mas conseguimos passar seu endereco.
+; mas conseguimos passar seu endereço.
 
-    ;; == ?? ==================================================
-    ;; metafile address
+;; == ?? ==================================================
+;; metafile address
     xor eax, eax
     mov eax, dword META$FILE    
     mov dword [BootBlock.metafile_address], eax
 
+;; disk number.
+    xor eax, eax
+    mov al, byte [DISKINFO16_disk_number]  
+    mov dword [BootBlock.disk_number], eax 
 
-    ;; disk number.
-	xor eax, eax
-	mov al, byte [DISKINFO16_disk_number]  
-	mov dword [BootBlock.disk_number], eax 
+;; heads (word)
+    xor eax, eax
+    mov ax, word [DISKINFO16_heads]
+    mov dword [BootBlock.heads], eax 
 
+;; spt (word)
+    xor eax, eax
+    mov ax, word [DISKINFO16_spt]
+    mov dword [BootBlock.spt], eax 
 
-    ;; heads (word)
-	xor eax, eax
-	mov ax, word [DISKINFO16_heads]
-	mov dword [BootBlock.heads], eax 
+;; cylinders (word)
+    xor eax, eax
+    mov ax, word [DISKINFO16_cylinders]
+    mov dword [BootBlock.cylinders], eax 
 
-
-    ;; spt (word)
-	xor eax, eax
-	mov ax, word [DISKINFO16_spt]
-	mov dword [BootBlock.spt], eax 
-
-    ;; cylinders (word)
-	xor eax, eax
-	mov ax, word [DISKINFO16_cylinders]
-	mov dword [BootBlock.cylinders], eax 
-
-    ;; Saving the gramado mode in the boot block. 
-    ;; Maybe it is enough to the BL have this number.
+;; Saving the gramado mode in the boot block. 
+;; Maybe it's enough to the BL have this number.
     xor eax, eax
     mov eax, dword [tmp_gamemode]
     mov dword [BootBlock.gramado_mode], eax 
 
-
-	;Continua...
+; Continua...
 
 
 ;
@@ -698,9 +691,6 @@ startGUI:
 ; Gramado mode. (jail, p1, home ...)
     mov edi, dword [tmp_gamemode]
 
-.LgoBL:
-
-
 ;;
 ;; == \o/ =================================
 ;;
@@ -708,6 +698,7 @@ startGUI:
 ; Go!
 ; Jump to the entrypoint of the boot loader. (BL.BIN).
 ; 0x00021000
+; See: bl/x86/head.s
 ; IN:
 ; al:  Boot mode.
 ; ebx: LFB physical addres.
@@ -797,15 +788,15 @@ setup_buffer:
 ;; configuradas pelo kernel depois de detectar a 
 ;; quantidade de mem�ria.
 
-	;buffer 1,2 e 3.
-	;push edx
-   	;mov edx, dword 0x01000000
-	;mov dword [VIDEO.buffer1], edx
-   	;mov edx, dword 0x01500000
-	;mov dword [VIDEO.buffer2], edx
-   	;mov edx, dword 0x01A00000
-	;mov dword [VIDEO.buffer3], edx 
-	;pop edx
+    ;buffer 1,2 e 3.
+    ;push edx
+    ;mov edx, dword 0x01000000
+    ;mov dword [VIDEO.buffer1], edx
+    ;mov edx, dword 0x01500000
+    ;mov dword [VIDEO.buffer2], edx
+    ;mov edx, dword 0x01A00000
+    ;mov dword [VIDEO.buffer3], edx 
+    ;pop edx
 
     ret
 ;--

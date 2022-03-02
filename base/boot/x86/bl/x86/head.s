@@ -4,24 +4,19 @@
 ; Gramado Boot Loader - a Boot Loader entry point for x86 processors.
 ; It's a 32bit, kernel mode, system aplication used to load the 
 ; kernel and some other files.
-;
 ; Descriçao:
 ; Esse arquivo � o entrypoint do Boot Loader. (BL.BIN).
 ; Parte inicial do n�cleo do Boot Loader para a arquitetura x86 de 32bit 
 ; para desktops.
 ; Startup module for the 32bit Boot Loader of a 32bit OS for desktops.
-;
-; Localiza��o:
+; Localizaçao:
 ; O Boot Loader � carregado em 0x00020000 com o entry point em 0x00021000.
-;
-; Atribui��es:   
+; Atribuiçoes:   
 ;    + Inicializar a arquitetura x86. 
 ;    + Chamar c�digo em C para carregar o kernel.
 ;    + Passar o comando para o kernel.
-;
-; ATEN��O:
+; ATENÇAO:
 ; Logo abaixo, no fim desse arquivo, est�o GDT, IDT e includes.
-;
 ; History:
 ;     2015 - Created by Fred Nora.
 ;     2021 - Creating a 64bit boot loader.
@@ -41,60 +36,42 @@ segment .head_x86
 
 [bits 32]
 
-
 ;; See: gdef.h
 extern ___last_valid_address 
-
-
-
-; Vari�veis importadas.
-
-
-
-; LFB - Linear Frame Buffer
-; physical address.
-
-extern _g_lbf_pa
-
-
 
 
 ;
 ; Imported
 ;
 
-extern _OS_Loader_Main                ; * Entrada da parte em C.
-extern _BlKernelModuleMain    ; * Reentrada do bl, agora na forma de m�dulo.
-;extern _shell_main    ;Entrada do Shell do Boot Loader.
-
+extern _g_lbf_pa  ; LFB - Linear Frame Buffer. (physical address).
+extern _OS_Loader_Main      ; Entrada da parte em C.
+extern _BlKernelModuleMain  ; Reentrada do bl, agora na forma de m�dulo.
+;extern _shell_main         ; Entrada do Shell do Boot Loader.
 ;...
 
-
-
-; Image address:
+; Kernel image address:
 ; Physical address.
 
 KRN_BASE        equ  0x00100000  ; Image base. 1MB mark.
 KRN_ENTRYPOINT  equ  0x00101000  ; Entry point
 
 
-
 ; Directory and page table.
-;PAGE_DIR_ADDRESS        equ     ??
-;PAGE_TABLE_ADDRESS      equ     ??
+; PAGE_DIR_ADDRESS        equ     ??
+; PAGE_TABLE_ADDRESS      equ     ??
 
 
-;---------------------------------------------
+;==================================================
 ; _OS_Loader_Entry_Point:
-; 
 ;     Entry point do Boot Loader.
-;
-; IN:  al = 'G' (Graphic); 'T' (Text).
-;      ebx = LFB address.
-;      edx = Boot Block.
-;
-;++
-
+;     The BM.BIN jumped here into this point.
+; ---------------------
+; IN:
+; al  = 'G' (Graphic); 'T' (Text).
+; ebx = LFB address.
+; edx = Boot Block.
+; ---------------------
 ; IN:
 ; al:  Boot mode.
 ; ebx: LFB physical addres.
@@ -105,28 +82,27 @@ KRN_ENTRYPOINT  equ  0x00101000  ; Entry point
 
 global _OS_Loader_Entry_Point
 _OS_Loader_Entry_Point:
-
    JMP StartLoader
-
     %include "header.inc"
-
+    ;...
 StartLoader:
 
-    ; #debug.
-    ; text mode.
+; First of all, we're gonna save
+; all the info given by the the BM.
+
+; #debug: Text mode support.
 
     mov byte [0xb8000], byte "B"
     mov byte [0xb8001], byte 9
     mov byte [0xb8002], byte "L"
     mov byte [0xb8003], byte 9
+    ;#breakpoint
+    ;jmp $
 
-    ;Debug.
-    ;JMP $
-
-    ; Salva o modo de vídeo.
+; Salva o modo de vídeo.
     mov byte [bl_video_mode], al
 
-    ; Verifica se usa gui ou n�o.
+; Verifica se usa gui ou nao.
     cmp al, byte 'G'
     je .useGUI
 .dontuseGUI:
@@ -135,156 +111,165 @@ StartLoader:
 .useGUI:
     mov dword [_SavedBootMode], 1    ;GUI flag.
 .go:
-	;Salva o LFB.
-	;Global para endere�o f�sico do LFB.
+
+; Salva o LFB.
+; Global para endereço fisico do LFB.
     mov dword [_g_lbf_pa], ebx    
 
-   ; @todo: 
-   ;     Passar o bootblock em ebx e a flag em al.
+; #todo: 
+; Passar o bootblock em ebx e a flag em al.
 
     mov byte [bl_video_mode], al
-    mov dword [_g_lbf_pa], ebx         ;Endere�o f�sico do LFB.
-
-
+    mov dword [_g_lbf_pa], ebx      ;Endereço fisico do LFB.
 
 ;
 ; == Boot Block ========================================
 ;
 
-    ; BootBlock pointer.
-    ; Ponteiro para o bootblock passado pelo boot manager.
-    ; #todo
-    ; We need to use this address to setup the base of the
-    ; boot block strucure used in this BL.
-    
+; BootBlock pointer.
+; Ponteiro para o bootblock passado pelo boot manager.
+; #todo
+; We need to use this address to setup the base of the
+; boot block strucure used in this BL.
+
     mov dword [_SavedBootBlock], edx 
 
-
-    ; Gramado mode. (jail, p1, home ...)
+; Gramado mode. (jail, p1, home ...)
     mov dword [_SavedGramadoMode], edi 
 
 
 ;++
 ; ===============================================
-
-    ; Boot block starts at 0x00090000
-
-    ; LFB_VA:        0x00090000 + 0
-    ; WIDTH:         0x00090000 + 8
-    ; HEIGHT:        0x00090000 + 16
-    ; BPP:           0x00090000 + 24
-    ; LAST_VALID:    0x00090000 + 32
-    ; GRAMADO MODE:  0x00090000 + 40
-
-
-;
+; let's handle the boot block
+; Boot block starts at 0x00090000
+; ---------
+; LFB_VA:        0x00090000 + 0
+; WIDTH:         0x00090000 + 8
+; HEIGHT:        0x00090000 + 16
+; BPP:           0x00090000 + 24
+; LAST_VALID:    0x00090000 + 32
+; GRAMADO MODE:  0x00090000 + 40
+; ----------------------------
 ; LFB_PA, X, Y, BPP
 ;
 
-    ; 0x00090000 + 0
+; LFB_PA
+; 0x00090000 + 0
     xor eax, eax
     mov eax, dword [edx +0] 
     mov dword [_SavedLFB], eax
     mov dword [0x90000], eax
     mov dword [0x90000 + 4], 0
 
-    ; 0x00090000 + 8
+; screen width
+; 0x00090000 + 8
     xor eax, eax
     mov ax, word [edx +4] 
     mov dword [_SavedX], eax
     mov dword [0x90000 + 8], eax
     mov dword [0x90000 + 12], 0
 
-    ; 0x00090000 + 16
+; screen height
+; 0x00090000 + 16
     xor eax, eax
     mov ax, word [edx +8] 
     mov dword [_SavedY], eax
     mov dword [0x90000 + 16], eax
     mov dword [0x90000 + 20], 0
 
-    ; 0x00090000 + 24
+; bytes per pixel
+; 0x00090000 + 24
     xor eax, eax
     mov al, byte [edx +12] 
     mov dword [_SavedBPP], eax
     mov dword [0x90000 + 24], eax
     mov dword [0x90000 + 28], 0
 
-    ; 0x00090000 + 32
-    ; last valid
-    ; See:
 
-    ; 0x00090000 + 40
+; ?
+; 0x00090000 + 32
+; last valid
+; See:
+
+; Gramado mode.
+; 0x00090000 + 40
     xor eax, eax
     mov eax, dword [_SavedGramadoMode]  ;jail, p1, home ... 
     mov dword [0x90000 + 40], eax
     mov dword [0x90000 + 48], 0
-
-
 ; ===============================================
 ;--
 
+; #todo: 
+; Pode-se zerar os registradores nesse momento ?
 
-	; #todo: 
-	; Pode-se zerar os registradores nesse momento ?
+;
+; GDT and IDT support.
+;
 
-
-	;Configura IDT. 
-	;Aponta tudo para 'unhandled_int'.
-	;Configura vetores de faults e exception.
-	;Outros vetores.
+; Configura IDT. 
+; Aponta tudo para 'unhandled_int'.
+; Configura vetores de faults e exception.
+; Outros vetores.
 
     cli 
     call setup_idt 
     call setup_faults 
     call setup_vectors 
 
-	;Carrega GDT e IDT.
-	
-	lgdt [GDT_register]
-	lidt [IDT_register]
-	
-	; Setup registers.
-	
-	mov ax, DATA_SEL 
-	mov ds, ax
-	mov es, ax 
-	;mov ax, NULL_SEL
-	;mov fs, ax
-	;mov gs, ax 
-	mov ss, ax
-	mov eax, _bootloader_stack_start 
-	mov esp, eax 
+; Carrega GDT e IDT.
 
+    lgdt [GDT_register]
+    lidt [IDT_register]
 
-	;PIC.
-	cli
-	mov al, 00010001b    ;Begin PIC 1 initialization.
-	out 0x20, al
-	IODELAY
-	mov al, 00010001b    ;Begin PIC 2 initialization.
-	out 0xA0, al	
-	IODELAY
-	mov al, 0x20		 ;IRQ 0-7: interrupts 20h-27h.
-	out 0x21, al
-	IODELAY
-	mov al, 0x28		 ;IRQ 8-15: interrupts 28h-2Fh.
-	out 0xA1, al
-	IODELAY
-	mov al, 4
-	out 0x21, al
-	IODELAY
-	mov al, 2
-	out 0xA1, al
-	IODELAY
-	mov al, 1
-	out 0x21, al
-	IODELAY
-	out 0xA1, al
-	IODELAY
-	cli
-	
-	;unmask all interrupts
+; Clear the mess.
 
+; Setup registers and setup the stack.
+; Where is the stack?
+
+    mov ax, DATA_SEL 
+    mov ds, ax
+    mov es, ax 
+    ;mov ax, NULL_SEL
+    ;mov fs, ax
+    ;mov gs, ax 
+    mov ss, ax
+    mov eax, _bootloader_stack_start 
+    mov esp, eax 
+
+; PIC initialization.
+; #todo Explain it better.
+; IRQ 0-7: interrupts 20h-27h.
+; IRQ 8-15: interrupts 28h-2Fh.
+
+    cli
+    mov al, 00010001b  ;Begin PIC 1 initialization.
+    out 0x20, al
+    IODELAY
+    mov al, 00010001b  ;Begin PIC 2 initialization.
+    out 0xA0, al
+    IODELAY
+    mov al, 0x20       ;IRQ 0-7: interrupts 20h-27h.
+    out 0x21, al
+    IODELAY
+    mov al, 0x28       ;IRQ 8-15: interrupts 28h-2Fh.
+    out 0xA1, al
+    IODELAY
+    mov al, 4
+    out 0x21, al
+    IODELAY
+    mov al, 2
+    out 0xA1, al
+    IODELAY
+    mov al, 1
+    out 0x21, al
+    IODELAY
+    out 0xA1, al
+    IODELAY
+    
+    cli  ;; We don't need this here.
+
+; Unmask all interrupts.
     mov al, 0
     out 0xa1, al 
     IODELAY
@@ -296,41 +281,39 @@ StartLoader:
 ; PIT
 ;
 
-	;; PIT
-	;; #importante
-	;; Vamos deixar o kernel inicializar o PIT.
+; PIT
+; #importante
+; Vamos deixar o kernel inicializar o PIT.
 
 ;
 ;  Call C part.
 ;
 
-    ; Calling C part of the kernel base.
-    ; See: main.c
+; Calling C part of the kernel base.
+; See: main.c
 
     jmp _OS_Loader_Main
-
+    ;jmp $
 
 ;
 ; == Go to kernel ================================
 ;
 
-; O C salta para cá.
+; A parte em C salta para cá depois da inicializaçao,
+; para enfim saltarmos para o kernel.
 ; See: pages.c
 
 global _go_to_kernel
 _go_to_kernel:
 
+; cr3
 ; Flush
 
     mov EAX, CR3  
     ; nop
     mov CR3, EAX
 
-
-;
 ; cr0
-;
-
 ; Enable paging to activate long mode
 ; Enable paging and protected mode.
 ; The paging was NOT enabled in pages.c
@@ -339,23 +322,18 @@ _go_to_kernel:
     or ebx,0x80000001 
     mov cr0, ebx 
 
-
-;
 ; GDT
-;
-
 ; Load the 64-bit global descriptor table.
 
     lgdt [GDT64.Pointer]
 
-    ; Maybe we are still in compatibility mode,
-    ; so, this way we can setup DS, ES and SS.
-
-    ; #todo: Rever isso.
-    ; Os modos de operação são determinados via CS.L e CS.D
-    ; Modo 64-bit = CS.L = 1 e CS.D = 0
-    ; Modo compatibilidade 32-bit CS.L = 0 e CS.D = 1
-    ; Modo compatibilidade 16-bit CS.L = CS.D = 0
+; Maybe we are still in compatibility mode,
+; so, this way we can setup DS, ES and SS.
+; #todo: Rever isso.
+; Os modos de operação são determinados via CS.L e CS.D
+; Modo 64-bit = CS.L = 1 e CS.D = 0
+; Modo compatibilidade 32-bit CS.L = 0 e CS.D = 1
+; Modo compatibilidade 16-bit CS.L = CS.D = 0
 
     xor eax, eax
     mov ax, 0x10    ;GDT64.Data
@@ -371,20 +349,21 @@ _go_to_kernel:
 ; Temos um bootblock em 0x00090000.
 ; Temos também outro boot block em [] 
 ; que não foi devidamente observado.
-
 ; #todo: 
 ; Vamos precisa passar o 'Gramado mode',
 ; muita coisa no sistema depende disso.
 
+; Isso funciona na maq real.
 
-    ; Isso funciona na maq real.
+; Jump to the 64bit code in KERNEL.BIN.
+; It will change the game and we will enter in 64bit long mode.
+; See: _kernel_begin in: 
+; new/entrance/warden/unit0/x86_64/head_64.asm
+
     ;xor eax, eax
     ;xor ebx, ebx
     ;xor ecx, ecx
     mov edx, dword 1234
-
-    ; Jump to the 64bit code in KERNEL.BIN.
-    ; It will change the game and we will enter in 64bit long mode.
 
     jmp GDT64.Code:0x30001000
 

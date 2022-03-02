@@ -106,11 +106,11 @@ int init_heap (void)
 
 // Done.
 
-#ifdef PS_VERBOSE
+//#ifdef PS_VERBOSE
     // #bugbug
     // printf ainda não funciona nesse momento.
     //printf ("Done\n");
-#endif
+//#endif
 
     return 0;
 
@@ -178,7 +178,12 @@ int init_stack (void)
     return 0;
 
 fail:
+
+    //#bugbug
+    // No support for this at this time.
+    
     refresh_screen();
+    
     return (int) 1;
     //return (int) -1;
 }

@@ -1,4 +1,5 @@
 
+// ps2mouse.h
 
 #ifndef ____PS2MOUSE_H
 #define ____PS2MOUSE_H    1
@@ -59,11 +60,6 @@
 //
 
 
-// Usado pelo ponteiro.
-int saved_mouse_x;
-int saved_mouse_y;
-
-
 // this is gonna be used by PS2 structure in ps2.h
 struct ps2_mouse_d
 {
@@ -93,9 +89,6 @@ struct ps2_mouse_d
 unsigned long savedmouseoverwindowX;
 unsigned long savedmouseoverwindowY;
 
-//usado pelo ponteiro.
-int saved_mouse_x;
-int saved_mouse_y;
 
 //#deletar
 //Coisas que antes eram importadas de hwlib.inc e qua não são mais.

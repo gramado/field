@@ -1,6 +1,5 @@
 /*
  * BL.BIN
- * 
  * Gramado Boot Loader
  * (c) Copyright 2015-2020 Fred Nora.
  * File: main.c 
@@ -133,19 +132,18 @@ ____go:
 
 
 /*
- ************************************************
  * OS_Loader_Main:
  *     This is the entrypoint for the C part of the boot loader.
  *     Initializes, loads the kernel image and returns to head.s.
  */
 
-void OS_Loader_Main (void)
-{
-
+// The function StartLoader in head.s jumps here.
 // #todo
 // Podemos cair num shell de recuperaçcao
 // caso o carregamento der errado.
 
+void OS_Loader_Main (void)
+{
     int Status = (-1);
 
 // root and fat not loaded yet.
@@ -220,7 +218,6 @@ void OS_Loader_Main (void)
     LastValidComplement[0] = (unsigned long) 0;
 
 //#debug
-
     //printf ("BlMain: Las valid PA = %x \n", __address);
     //refresh_screen();
     //while(1){}
@@ -228,9 +225,9 @@ void OS_Loader_Main (void)
 //--
 
 
+
 //++
 // =======================================
-
 // Cleaning the RAM.
 // Vamos limpar somente a parte que será usada pelos 
 // primeiros componentes do sistema.
@@ -258,10 +255,11 @@ void OS_Loader_Main (void)
 // =======================================
 //--
 
+
 // #todo
 // Precisamos reconsiderar a necessidade de fazermos isso.
-// O timer ira atrazar a inicializa��o ?
-// Precisamos dessas interrup��es para alguma coisa como
+// O timer ira atrazar a inicializaçao ?
+// Precisamos dessas interrupçoes para alguma coisa como
 // o driver de ata ?
 
 // #debug
@@ -273,8 +271,9 @@ void OS_Loader_Main (void)
 // Podemos adiar isso ?
 // #todo:
 // Talvez devamos adiar esse sti.
+// #bugbug: Talvez isso seja necessario para usar o hd.
 
-    asm ("sti");
+    //asm ("sti");
 
     init_heap();  // malloc support.
     init_hdd();   // IDE driver.
@@ -420,14 +419,14 @@ void OS_Loader_Main (void)
 */
 
 //#debug
-    //printf ("\n");
-    //printf ("The kernel image is already loaded\n");
-    //printf ("Let's setup long mode, paging and jump to the kernel.\n");
+    printf ("OS_Loader_Main:\n");
+    printf ("The kernel image is already loaded\n");
+    printf ("Let's setup long mode,\n");
+    printf ("paging and jump to the kernel.\n");
 
-//#debug
+//#breakpoint
     //refresh_screen();
     //while(1){}
-
 
 /*
     How do I enable Long Mode ?
@@ -504,13 +503,14 @@ See: https://wiki.osdev.org/X86-64
 // #slow
 // #debug
 // In this document.
-    
-    
+// See: pages.c
+
 //#debug
     //printf ("OS_Loader_Main: Setup paging ...\n");
     //refresh_screen();
 
-    BlSetupPaging();
+    //BlSetupPaging();
+    SetUpPaging();
 
 // Nao podemos chamar rotina alguma aqui,
 // somente retornar.
@@ -572,9 +572,7 @@ int newOSLoadKernelImage(void)
 /*
  * BlSetupPaging:
  *     Setup paging.
- *
  * In this function:
- *
  * @diretorio:
  *   page_directory = 0x9C000
  *   OBS: 
@@ -584,19 +582,16 @@ int newOSLoadKernelImage(void)
  *        Toda vez que o kernel iniciar a execu��o de um processo ele deve 
  * carregar o endere�o do diretorio do processo em CR3.
  *       Por enquanto s� tem um diret�rio criado.
- *
  * @p�ginas:
  *   km_page_table  = 0x8C000 (RING 0).
  *   um_page_table  = 0x8E000 (RING 3).
  *   vga_page_table = 0x8F000 (RING 3).
  *   lfb_page_table = ?? (RING 3).
- *
- *  @todo: 
- *      Esses endere�os precisam ser registrados em vari�veis globais ou
+ * @todo: 
+ * Esses endere�os precisam ser registrados em vari�veis globais ou
  * dentro de uma estrutura para se passado para o Kernel.
-* 
- *      Essa deve ser uma interface que chama as rotinas de configura��o
- * da pagina��o. 
+ * Essa deve ser uma interface que chama as rotinas 
+ * de configuraçao da paginaçao. 
  */
 
 // See: pages.c

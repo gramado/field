@@ -510,9 +510,7 @@ refresh_rectangle_via_kgws (
 
 
 /*
- *************************************************** 
  * gws_refresh_rectangle:
- * 
  */
 
 // From backbuffer to frontbuffer.
@@ -749,7 +747,6 @@ gws_refresh_rectangle (
 
 
 /*
- *******************************************************
  * rectBackbufferDrawRectangle: (API)
  *     Draw a rectangle on backbuffer. 
  */
@@ -758,7 +755,6 @@ gws_refresh_rectangle (
 // At this moment, no structure ware invalidated.
 // So, the caller needs to specify a rect structure,
 // this way we can invalidated it.
-
 // use_kgws?
 // TRUE = use kgws.
 // FALSE = do not use kgws. #bugbug

@@ -1212,6 +1212,12 @@ xxxMouseEvent(
     if ( event_id == MSG_MOUSEMOVE )
     {
 
+// #bugbug
+// #todo
+// Essa rotina de exibiçao de cursor deve acontecer
+// la no window server, quando enviarmos as
+// informaçoes de evento para la. Nao aqui.
+
 // Erease cursor.
 // Ereasing the cursor by refreshing a little
 // part of the backbuffer into the front buffer.

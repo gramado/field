@@ -38,23 +38,17 @@ void page_enable()
 
 
 /*
- ***************************************************
  * SetUpPaging:
- * 
  *     Mapping.
- *
  * In this function:
  *     (Phase 1) Endereços da memória físicas acessíveis em Kernel Mode. 
  *     (Phase 2) Inicializando o diretório.
  *     (Phase 3) Cria tabelas de páginas e coloca o ponteiro de cada uma 
  * delas na sua respectiva entrada de diretório.
- *     (Phase 4) **** CRIANDO OUTROS DIRETÓRIOS ****
- *
+ *     (Phase 4) CRIANDO OUTROS DIRETÓRIOS
  * @diretorio:
  *   boot_pd0 = 0x9C000.
- *    
  *   Page directory do kernel.
- *
  * Obs: Esse diretório criado será usado pelas primeiros processos durante
  * essa fase de construção do sistema. O ideal é um diretório por processo.
  *      Toda vez que o Kernel inicia a execução de um processo, ele deve 
@@ -64,23 +58,21 @@ void page_enable()
  * de páginas que o processo kernel usa. O problema é que com isso os 
  * processos precisam ter endereço virtual diferentes. Quando cada processo
  * tiver seu próprio diretório então eles poderão ter o mesmo endereço virtual.
- *
  * @todo: Esses endereços precisam ser registrados em variáveis globais ou
  * dentro de uma estrutura para serem passados para o Kernel.
- * 
  * Obs: Essa deve ser uma interface que chama as rotinas de configuração de 
  * paginação. (Mapeamento). 
- *
  * Obs: 
  * Essa configuração inicial feita no Boot Loader, não impede o Kernel de 
  * refazer as configurações básicas de paginação. O fato é que o kernel será o 
- * gerenciador de páginas de memória. O que não impede de haver gerenciamento
- * um user mode.
- * 
+ * gerenciador de páginas de memória. O que não impede de haver 
+ * gerenciamento um user mode.
  * History:
  *     2015 - Created by Fred Nora.
  *     ...
  */
+
+// Called by OS_Loader_Main in main.c
 
 extern void go_to_kernel(void);
 
@@ -245,20 +237,20 @@ int SetUpPaging()
 Entry_0:
 
 /*
- * kernel mode pages 
- * =================
- * (kernel mode)(0fis = 0virt).
- * Configurando o início da memória RAM
- * como área em kernel mode.
- * + Mapeando os primeiros 2MB da memória.  
- * + Preenchendo a tabela km_page_table.
- * + A entrada '0' do diretório aponta para
- *   uma tabela que mapeia os primeiros 4 mega 
- *   de endereço virtual.
- * 'kernel_address' é o início da memória RAM.
- *  Cada pagina tem 4KB.
+ kernel mode pages 
+ =================
+ (kernel mode)(0fis = 0virt).
+ Configurando o início da memória RAM
+ como área em kernel mode.
+ + Mapeando os primeiros 2MB da memória.  
+ + Preenchendo a tabela km_page_table.
+ + A entrada '0' do diretório aponta para
+   uma tabela que mapeia os primeiros 4 mega 
+   de endereço virtual.
+ 'kernel_address' é o início da memória RAM.
+  Cada pagina tem 4KB.
  */
- 
+
 // #importante
 // Essa primeira entrada esta funcionando.
 // Conseguimos usar essa identidade 1:1,
@@ -282,14 +274,14 @@ Entry_0:
 Entry_1:
 
 /*
- * user mode pages 
- * ===============
- * (400000fis = 400000virt).
- * Configurando uma área de memória em user mode,
- * usada por processos em user mode.
- * Mapear 2MB da memória começando em 400000fis. 
- * (user mode).
- * user_address = (400000fis = 400000virt).
+ user mode pages 
+ ===============
+ (400000fis = 400000virt).
+ Configurando uma área de memória em user mode,
+ usada por processos em user mode.
+ Mapear 2MB da memória começando em 400000fis. 
+ (user mode).
+ user_address = (400000fis = 400000virt).
  */
 
     for (i=0; i < 512; i++)
@@ -308,16 +300,16 @@ Entry_1:
 Entry_2:
 
 /*
- * User Mode VGA pages: 
- * ===================
- * (0xB8000fis = 800000virt).
- * Mapeando a área de memória usada pela memória
- * de vídeo em modo texto, 0xB8000.
- * Mapear 2MB da memória começando em B8000fis.
- * Obs:
- *     Aqui, na verdade não precisaria configurar 4 megas, 
- *     apenas o tamanho da memória de vídeo presente em 0xb8000.
- * vga_address = 0xB8000.
+ User Mode VGA pages: 
+ ===================
+ (0xB8000fis = 800000virt).
+ Mapeando a área de memória usada pela memória
+ de vídeo em modo texto, 0xB8000.
+ Mapear 2MB da memória começando em B8000fis.
+ Obs:
+     Aqui, na verdade não precisaria configurar 4 megas, 
+     apenas o tamanho da memória de vídeo presente em 0xb8000.
+ vga_address = 0xB8000.
  */
 
     for ( i=0; i < 512; i++ )
@@ -341,17 +333,17 @@ Entry_384:
 // Essa não é possivel pois temos o limite de 512 entradas.
 
 /*
- * kernel mode pages 
- * =================
- * (0x100000fis = 0xc0000000virt).
- *      possivelmente 0x30000000
- *      mas precisamos checar, pois isso não esta funcionando.
- *      precisamos encontrar esse endereço virtual.
- * Configurando a área de memória onde ficará a imagem do kernel.
- * Isso mapeia 2MB começando do primeiro mega. 
- * (kernel mode).
- * Preenchendo a tabela km_page_table.
- * 'kernel_base' é o endereço físico da imagem do kernel.
+ kernel mode pages 
+ =================
+ (0x100000fis = 0xc0000000virt).
+      possivelmente 0x30000000
+      mas precisamos checar, pois isso não esta funcionando.
+      precisamos encontrar esse endereço virtual.
+ Configurando a área de memória onde ficará a imagem do kernel.
+ Isso mapeia 2MB começando do primeiro mega. 
+ (kernel mode).
+ Preenchendo a tabela km_page_table.
+ 'kernel_base' é o endereço físico da imagem do kernel.
  */
 
     for ( i=0; i < 512; i++ )
@@ -378,18 +370,18 @@ Entry_384:
 Entry_385:
 
 /*
- * user mode LFB pages 
- * ===================
- * (0X??fis = 0xC0400000virt).
- * O endereço linear do lfb é  agora. ?? 0x30200000
- * Mapear 2MB à partir do endereço configurado
- * como início do LFB.
- * O Boot Manager configurou VESA e obteve o endereço do LFB.
- * O Boot Manager passou para o Boot Loader esse endereço.
- * Mapeando 2MB da memória fisica começando no 
- * endereço passado pelo Boot Manager.
- * O endereço de memória virtual utilizada é 0xC0400000.
- * lfb_address = Endereço do LFB, passado pelo Boot Manager.
+ user mode LFB pages 
+ ===================
+ (0X??fis = 0xC0400000virt).
+ O endereço linear do lfb é  agora. ?? 0x30200000
+ Mapear 2MB à partir do endereço configurado
+ como início do LFB.
+ O Boot Manager configurou VESA e obteve o endereço do LFB.
+ O Boot Manager passou para o Boot Loader esse endereço.
+ Mapeando 2MB da memória fisica começando no 
+ endereço passado pelo Boot Manager.
+ O endereço de memória virtual utilizada é 0xC0400000.
+ lfb_address = Endereço do LFB, passado pelo Boot Manager.
  */
 
     for ( i=0; i < 512; i++ )
@@ -410,14 +402,14 @@ Entry_385:
 Entry_386:
 
 /*
- * user mode BUFFER1 pages 
- * =======================
- * (0X??fis = 0xC0800000virt) (BackBuffer). 0x30800000
- * Esse é o backbuffer para a memória de vídeo.
- * O conteúdo desse buffer é transferido para o LFB. 
- * O endereço de memória virtual utilizada é 0xC0800000.
- * buff_address = 0x01000000. (16MB), provisório.
- * //16mb. (16*1024*1024) = 0x01000000.
+ user mode BUFFER1 pages 
+ =======================
+ (0X??fis = 0xC0800000virt) (BackBuffer). 0x30800000
+ Esse é o backbuffer para a memória de vídeo.
+ O conteúdo desse buffer é transferido para o LFB. 
+ O endereço de memória virtual utilizada é 0xC0800000.
+ buff_address = 0x01000000. (16MB), provisório.
+ //16mb. (16*1024*1024) = 0x01000000.
  */
 
     for ( i=0; i < 512; i++ )
@@ -522,10 +514,12 @@ Entry_386:
 
     go_to_kernel();
 
-    // Not reached
+// Not reached
+
     while(1){
         asm("hlt");
     };
+
     return 0;
 }
 

@@ -37,6 +37,9 @@ extern _system_state
 ; jmp GDT64.Code:0x30001000 in the boot loader would have sent us ...
 ; out of compatibility mode and into 64-bit mode.
 
+; The function _go_to_kernel jumps here
+; from head.s in BL.BIN.
+
 global _kernel_begin 
 _kernel_begin:
 
@@ -50,11 +53,7 @@ align 4
     %include "header.inc"
 align 4
 
-
-;
 ; START
-;
-
 ; #todo
 ; We can save some values just for debug purpose.
 
@@ -86,10 +85,8 @@ START:
 
     mov rsp, _xxxStack
 
-
 ; LDT
 ; Initialize ldt with a NULL selector.
-
     xor rax, rax
     lldt ax
 
@@ -221,7 +218,6 @@ START:
     IODELAY
 
 ; No interrupts
-
     cli
 
 ; Set up registers.
