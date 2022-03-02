@@ -1,4 +1,5 @@
 
+// sprite.h
 
 #ifndef  ____SPRITE_H
 #define  ____SPRITE_H    1
@@ -105,7 +106,7 @@ struct gws_spritedata_d
     
     // window
     struct gws_window_d *window;
-    int x;  // inside the client widnow.
+    int x;  // inside the client window.
     int y;
 
     struct gws_sprite_d *sprite;

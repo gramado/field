@@ -1711,7 +1711,7 @@ void *xxxCreateWindow (
             // as bordas do botao.
             // See: wm.c
 
-            __draw_buttom_borders(
+            __draw_button_borders(
                 (struct gws_window_d *) window,
                 (unsigned int) buttonBorderColor1,
                 (unsigned int) buttonBorderColor2,
@@ -1911,6 +1911,8 @@ void *CreateWindow (
         __w->type = WT_OVERLAPPED;
 
         wm_add_window_into_the_list(__w);
+        
+        // Set the active window.
         set_active_window(__w->id);
 
         goto draw_frame;

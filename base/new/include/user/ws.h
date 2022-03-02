@@ -1,4 +1,6 @@
 
+// ws.h
+
 #ifndef __WS_H
 #define __WS_H    1
 
@@ -366,7 +368,7 @@ typedef enum {
     // the pid of the kernel process.
     
     pid_t WindowServer_pid; 
-    //struct desktop_d *desktop;    // the desktop associated with the widnow server. 
+    //struct desktop_d *desktop;  // The desktop associated with the ws. 
 
     // Limiting the nale to 64.
     char WindowServer_name[64];

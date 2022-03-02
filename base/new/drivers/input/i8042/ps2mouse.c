@@ -698,9 +698,9 @@ void DeviceInterface_PS2Mouse(void)
             // Action after mouse event.
             __ps2mouse_parse_data_packet();
         //}
-        //old_mouse_buttom_1 = mouse_buttom_1;
-        //old_mouse_buttom_2 = mouse_buttom_2;
-        //old_mouse_buttom_3 = mouse_buttom_3;
+        //old_mouse_button_1 = mouse_button_1;
+        //old_mouse_button_2 = mouse_button_2;
+        //old_mouse_button_3 = mouse_button_3;
         break;
     //Se tiver 'wheel'.
     case 3:
@@ -713,12 +713,12 @@ void DeviceInterface_PS2Mouse(void)
         //debug_print ("[default]:\n");
         in8(0x60);
         count_mouse = 0;
-        //old_mouse_buttom_1 = 0;
-        //old_mouse_buttom_2 = 0;
-        //old_mouse_buttom_3 = 0;
-        //mouse_buttom_1 = 0;
-        //mouse_buttom_2 = 0;
-        //mouse_buttom_3 = 0;
+        //old_mouse_button_1 = 0;
+        //old_mouse_button_2 = 0;
+        //old_mouse_button_3 = 0;
+        //mouse_button_1 = 0;
+        //mouse_button_2 = 0;
+        //mouse_button_3 = 0;
         break;
     };
 

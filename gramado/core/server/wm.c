@@ -205,7 +205,7 @@ void __update_fps(void)
 // >>> No checks
 
 void 
-__draw_buttom_borders(
+__draw_button_borders(
     struct gws_window_d *w,
     unsigned int color1,
     unsigned int color2,
@@ -213,7 +213,7 @@ __draw_buttom_borders(
     unsigned int outer_color )
 {
 
-    debug_print("__draw_buttom_borders:\n");
+    debug_print("__draw_button_borders:\n");
 
     if ( (void*) w == NULL ){
         return;
@@ -291,7 +291,7 @@ __draw_buttom_borders(
         w->width-2, 1, 
         outer_color, TRUE, 0 );
 
-    debug_print("__draw_buttom_borders: done\n");
+    debug_print("__draw_button_borders: done\n");
 }
 
 
@@ -1060,6 +1060,10 @@ void flush_frame(void)
 
 void __Tile(void)
 {
+
+// #todo:
+// only overlapped windows?
+
     struct gws_window_d *w;
 
     int cnt=0;
@@ -1150,6 +1154,54 @@ void __Tile(void)
 }
 
 
+void wm_update_window_by_id(int wid)
+{
+    struct gws_window_d *w;
+
+// Redraw and show the root window.
+    redraw_window(__root_window,TRUE);
+
+    if(active_window<0)
+        return;
+    if(active_window>WINDOW_COUNT_MAX)
+        return;  
+    w = (struct gws_window_d *) windowList[active_window];
+
+    if((void*)w==NULL){ return; }
+
+
+    if (w->type != WT_OVERLAPPED)
+        return;
+
+    // #test
+    // Empilhando verticalmente.
+    if( WindowManager.initialized != TRUE )
+        return;
+    
+    
+    if(WindowManager.mode == 1)
+    {
+        //maximized
+        w->left=0;
+        w->top=0;
+        w->width  = WindowManager.wa_width;
+        w->height = WindowManager.wa_height; 
+    }
+    
+    redraw_window(w,FALSE);
+    invalidate_window(w);
+    set_focus(w);
+
+    wm_Update_TaskBar("Active");
+}
+
+
+void wm_update_active_window(void)
+{
+    wm_update_window_by_id(active_window);
+}
+
+
 // #danger: We are testing this funcion.
 // Repinta todas as janelas seguindo a ordem da lista
 // que está em last_window.
@@ -1167,7 +1219,6 @@ void wm_update_desktop(void)
    __Tile();
 
 // Redraw and show the root window.
-
     redraw_window(__root_window,TRUE);
 
 
@@ -1186,11 +1237,13 @@ void wm_update_desktop(void)
 
         if ( (void*) w != NULL )
         {
+            //only overlapped windows.
             if (w->type == WT_OVERLAPPED)
             {
                 redraw_window(w,FALSE);
                 invalidate_window(w);
                 set_focus(w);
+                set_active_window(w->id);
             }
         }
 
@@ -1198,7 +1251,7 @@ void wm_update_desktop(void)
     }; 
 
 // Update the taskbar at the bottom of the screen.
-    wm_Update_TaskBar("Gramado");
+    wm_Update_TaskBar("Desktop");
 }
 
 
@@ -1847,19 +1900,38 @@ wmProcedure(
         if(long1==0){ yellow_status("P0"); }
         if(long1==1){ yellow_status("P1"); }
         if(long1==2){ yellow_status("P2"); }
+
+        // se pressionamos o start menu button
+        // muda o status do botao,
+        // redesenha o botao e exibe.
+        if(mousehover_window==__taskbar_startmenu_button_window->id)
+        {
+            __taskbar_startmenu_button_window->status = BS_PRESSED;
+            redraw_window( 
+                __taskbar_startmenu_button_window, 
+                TRUE);
+        }
         return 0;
         break;
 
     case GWS_MouseReleased:
         if(long1==0){ yellow_status("R0"); }
-        if(long1==1){ yellow_status("R1"); }
-        if(long1==2){ yellow_status("R2"); }
+        if(long1==1){ yellow_status("R1"); wm_update_desktop(); return 0; }
+        if(long1==2){ yellow_status("R2"); return 0; }
         //if(long1==1){ create_main_menu(); return 0; }
         //if(long1==1){ create_main_menu(); return 0; }
         
-        if(mousehover_window==__taskbar_startmenu_button_window->id)
-            wm_update_desktop();
+        //if(mousehover_window==__taskbar_startmenu_button_window->id)
+        //    wm_update_desktop();
 
+        if(mousehover_window==__taskbar_startmenu_button_window->id)
+        {
+            __taskbar_startmenu_button_window->status = BS_RELEASED;
+            redraw_window( 
+                __taskbar_startmenu_button_window, 
+                TRUE);
+            wm_update_active_window();
+        }
         //if(mousehover_window==__taskbar_startmenu_button_window->id)
         //    create_main_menu();
 
@@ -2639,7 +2711,6 @@ redraw_window (
     if (window->used!=TRUE || window->magic!=1234)
         return -1;
 
-
 // Shadow
 // A sombra pertence à janela e ao frame.
 // A sombra é maior que a própria janela.
@@ -2819,10 +2890,11 @@ redraw_window (
                 border2 = COLOR_BLUE;
                 break;
 
-            case BS_PRESS:
+            //case BS_PRESS:
+            case BS_PRESSED:
                 Selected = 1;
-                border1 = GWS_COLOR_BUTTONHIGHLIGHT3;
-                border2 = GWS_COLOR_BUTTONSHADOW3;
+                border1 = GWS_COLOR_BUTTONSHADOW3;
+                border2 = GWS_COLOR_BUTTONHIGHLIGHT3;
                 break;
 
             case BS_HOVER:
@@ -2859,7 +2931,7 @@ redraw_window (
             // #todo:
             // as cores vao depender do etado do botao.
             // #todo: veja como foi feito na hora da criaçao do botao.
-            __draw_buttom_borders(
+            __draw_button_borders(
                 (struct gws_window_d *)window,
                 (unsigned int) border1, //buttonBorderColor1,
                 (unsigned int) border2, //buttonBorderColor2,

@@ -122,11 +122,13 @@ struct gws_window_d *last_window;
 // ## botoes  ##
 //
 
-//button state
+// button state
 #define BS_NULL      0 
 #define BS_DEFAULT   1
+#define BS_RELEASED  1
 #define BS_FOCUS     2
 #define BS_PRESS     3
+#define BS_PRESSED   3
 #define BS_HOVER     4
 #define BS_DISABLED  5
 #define BS_PROGRESS  6
@@ -1299,6 +1301,11 @@ void wm_flush_screen(void);
 void wmCompose(void);
 void wmRefreshDirtyRectangles(void);
 void flush_frame(void);
+
+
+void wm_update_window_by_id(int wid);
+void wm_update_active_window(void);
+
 // #danger: We are testing this funcion.
 void wm_update_desktop(void);
 void set_first_window( struct gws_window_d *window);
@@ -1526,7 +1533,7 @@ __draw_window_border(
     struct gws_window_d *window );
 
 void 
-__draw_buttom_borders(
+__draw_button_borders(
     struct gws_window_d *w,
     unsigned int color1,
     unsigned int color2,

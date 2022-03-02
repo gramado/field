@@ -104,14 +104,14 @@ unsigned long savedmouseoverwindowY;
 
 
 //Estado dos botões do mouse
-int mouse_buttom_1; 
-int mouse_buttom_2;
-int mouse_buttom_3;
+int mouse_button_1; 
+int mouse_button_2;
+int mouse_button_3;
 
 //Estado anterior dos botões do mouse.
-int old_mouse_buttom_1; 
-int old_mouse_buttom_2;
-int old_mouse_buttom_3;
+int old_mouse_button_1; 
+int old_mouse_button_2;
+int old_mouse_button_3;
 
 //se ouve alguma modificação no estado 
 //dos botões.
