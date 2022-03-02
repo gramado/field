@@ -139,7 +139,6 @@ struct engine_d Engine;
 
 struct gws_d 
 {
-
     // The name of the window server.
     char name[64];
     char edition_name[64];

@@ -1302,7 +1302,14 @@ void create_taskbar (void)
         printf             ("create_taskbar: Couldn't register window\n");
         exit(1);
     }
+
+// wid
     __taskbar_window->id = WindowId;
+
+
+// Setup Window manager.
+
+    WindowManager.taskbar = (struct gws_window_d *) __taskbar_window;
 
 // Show
     //flush_window(__taskbar_window);
@@ -1491,7 +1498,6 @@ void create_background (void)
 
 
 /*
- ****************************** 
  * initGraphics:
  *     Initialize the graphics support.
  */
@@ -1531,6 +1537,7 @@ int initGraphics (void)
     create_taskbar();
     wm_Update_TaskBar("Welcome!");
 
+
 //#debug
     //gws_show_backbuffer();
     //while(1){}
@@ -1546,7 +1553,6 @@ int initGraphics (void)
         printf             ("initGraphics: [FAIL] root window doesn't exist\n");
         exit(1);
     }
-
 
 //#debug
     //gws_show_backbuffer();
@@ -2351,10 +2357,13 @@ char *gwssrv_get_version(void)
 }
 
 
+// The window server's main struture.
+// See: gws.h
 void __init_ws_structure(void)
 {
 
 // The window server's main struture.
+// See: gws.h
 
     window_server = (struct gws_d *) malloc ( sizeof( struct gws_d) );
 
@@ -2406,7 +2415,6 @@ void __init_ws_structure(void)
 
 
 /*
- ******************************
  * main: 
  *     + Initializes the gws infrastructure.
  *     + Create the background.
@@ -2431,7 +2439,6 @@ int main (int argc, char **argv)
 
     // #debug flags
     int UseCompositor = TRUE;
-
 
     IsTimeToQuit = FALSE;
     IsAcceptingConnections = TRUE;
@@ -2491,12 +2498,13 @@ int main (int argc, char **argv)
     int i=0;
     int _status = -1;
 
-
-//
-// Window server
-//
-
+// Window server structure
     __init_ws_structure();
+
+// Window manager
+    wmInitializeGlobals();
+    __init_wm_structure();
+
 
 // ===============
 
@@ -2539,7 +2547,6 @@ int main (int argc, char **argv)
 
     invalidate();
     invalidate_background();
-
 
 // #todo:
 // Initialize all the OS dependent stuff.
@@ -2685,6 +2692,47 @@ int main (int argc, char **argv)
     initGraphics();
 
 
+//
+// The window manager
+//
+
+// ===============
+
+    if( (void*) WindowManager.root == NULL )
+    {
+        gwssrv_debug_print("WindowManager.root fail\n");
+        printf("WindowManager.root fail\n");
+        exit(0);
+    }
+
+    if( (void*) WindowManager.taskbar == NULL )
+    {
+        gwssrv_debug_print("WindowManager.taskbar fail\n");
+        printf("WindowManager.taskbar fail\n");
+        exit(0);
+    }
+
+    // the working area.
+    
+    WindowManager.wa_left = 0;
+    WindowManager.wa_top = 0;
+    WindowManager.wa_width = WindowManager.root->width;
+    WindowManager.wa_height =
+        (WindowManager.root->height - WindowManager.taskbar->height);
+
+    WindowManager.initialized =TRUE;
+
+    //#debug
+    //Not working
+    /*
+    printf ("wa: %d %d %d %d",
+        WindowManager.wa_left,
+        WindowManager.wa_top,
+        WindowManager.wa_width,
+        WindowManager.wa_height );
+    */
+// ===============
+
     //gws_show_backbuffer();
     //while(1){}
 
@@ -2759,12 +2807,6 @@ int main (int argc, char **argv)
     //curconn = serverClient->fd;
     newconn = -1;
  
-// Initialize frames counter.
-    //frames_count = 0;
-    //fps = 0;
-
-    wmInitializeGlobals();
-
 
 // #important
 // Here we are exporting some callback to the base kernel.

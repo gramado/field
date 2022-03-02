@@ -10,6 +10,81 @@
 #define ____WINDOW_H    1
 
 
+// The window manager global structure.
+struct gws_windowmanager_d
+{
+    int initialized;
+
+// The window manager mode:
+// 1: tiling.
+// 2: overlapped.
+// ...
+    int mode;
+    
+    // 1= vertical 0=horizontal
+    int vertical;
+
+// The Working area.
+// The screen size, less the task bar.
+    int wa_left;
+    int wa_top;
+    int wa_width;
+    int wa_height;
+
+    // ...
+
+// Default background color.
+    unsigned int default_background_color;
+
+// Custom backgrounc color.
+    unsigned int custom_background_color;
+    int has_custom_background_color;
+
+// Wallpaper
+    int has_wallpaper;
+
+    // ...
+
+// Window stack
+// Quando uma janela foi invalidada, significa que ela foi pintada e que
+// precisa receber o refesh, mas também pode significar
+// que outras janelas foram afetadas pelo pintura da janela.
+// Nesse caso precisado repintar a janelas.
+// Se tiver uma janela em fullscreen então pintamos, invalidamos
+// seu retângulo e validamos todos os outros.
+
+// The root window
+// Size size of the device screen.
+    struct gws_window_d *root;
+    // struct gws_window_d *fullscreen_window;
+
+// The taskbar window
+    struct gws_window_d *taskbar;
+
+
+// #test
+// z-order for all the layers.
+// linked list
+    //struct gws_window_d *layer1_list;
+    //struct gws_window_d *layer2_list;
+    //struct gws_window_d *layer3_list;
+    //struct gws_window_d *layer4_list;
+};
+
+struct gws_windowmanager_d  WindowManager;
+
+// ======
+
+// wm prototypes
+void __set_default_background_color( int color );
+unsigned int __get_default_background_color(void);
+void __set_custom_background_color( int color );
+unsigned int __get_custom_background_color(void);
+int __has_custom_background_color(void);
+int __has_wallpaper(void);
+void __init_wm_structure(void);
+
+
 
 // z-order ?
 // But we can use multiple layers.
@@ -80,23 +155,14 @@ struct gws_window_d *last_window;
 //...
 
 
-//
-// == prototypes =======================================
-//
-
-
 
 // Contagem de janelas existentes.
 // precisa ser inicializada.
 unsigned long windows_count;
 
 
-
-
 int active_window;
 int window_with_focus;
-
-
 
 int top_window;
 
@@ -107,7 +173,6 @@ int show_fps_window;
 
 
 /*
- *************************************
  * gws_button_d:
  *     Structure for button object.
  *     Env: gws in ring3.
@@ -121,11 +186,11 @@ struct gws_button_d
     int used;
     int magic;
 
-    // ??
-    // Ordem dos botões que pertencam à mesma janela.
-    // A qual janela o botão pertence.
-    // Esse índice pode trabalhar junto com 
-    // a lista encadeada de 'next'.
+// ??
+// Ordem dos botões que pertencam à mesma janela.
+// A qual janela o botão pertence.
+// Esse índice pode trabalhar junto com 
+// a lista encadeada de 'next'.
 
     //int index;	
     struct gws_window_d *window; 
@@ -188,8 +253,7 @@ struct gws_button_d
 
 
 /*
- **************************************************
- * rect_d:
+ * gws_rect_d:
  *     Estrutura para gerenciamento de retângulos.
  *     Um retângulo pertence à uma janela.
  */
@@ -202,12 +266,10 @@ struct gws_rect_d
     int used;
     int magic;
 
-
 // Invalidate rectangle.
 // When invalidated it needs to be flushed into the framebuffer.
 
     int dirty;
-
 
     int flag;
 
@@ -405,9 +467,7 @@ struct frame_d
 
 
 /*
- ********************************
  * gws_window_d:
- * 
  *     The window structure.
  */
 
@@ -425,7 +485,6 @@ struct gws_window_d
 // Structure validation
     int used;
     int magic;
-
 
 // #todo
 // We need to review that list of flags.
@@ -1237,22 +1296,15 @@ struct gws_surface_d *xxxCreateSurface(
 void wm_flush_rectangle(struct gws_rect_d *rect);
 void wm_flush_window(struct gws_window_d *window);
 void wm_flush_screen(void);
-
 void wmCompose(void);
 void wmRefreshDirtyRectangles(void);
-
 void flush_frame(void);
-
 // #danger: We are testing this funcion.
 void wm_update_desktop(void);
-
-
 void set_first_window( struct gws_window_d *window);
 struct gws_window_d *get_first_window(void);
-
 void set_last_window( struct gws_window_d *window);
 struct gws_window_d *get_last_window(void);
-
 void activate_first_window(void);
 void activate_last_window(void);
 
@@ -1260,8 +1312,6 @@ void activate_last_window(void);
 // not tested yet
 void wm_add_window_into_the_list( struct gws_window_d *window );
 void wm_remove_window_from_list_and_kill( struct gws_window_d *window);
-
-
 
 unsigned long 
 wmProcedure(
@@ -1279,11 +1329,8 @@ wmHandler(
     unsigned long arg4_rcx );
 
 void wm_Update_TaskBar( char *string );
-
 void wmInitializeGlobals(void);
-
 void yellow_status( char *string );
-
 
 int 
 is_within ( 
@@ -1291,21 +1338,14 @@ is_within (
     unsigned long x, 
     unsigned long y );
 
-
 //refaz zorder.
 void reset_zorder(void);
-
-
-
 void validate_window (struct gws_window_d *window);
 void invalidate_window (struct gws_window_d *window);
-
 void invalidate_root_window(void);
 void invalidate_taskbar_window(void);
-
 void __begin_paint(struct gws_window_d *window);
 void __end_paint(struct gws_window_d *window);
-
 
 // #todo
 // Precisamos usar o esquema de cores.
@@ -1320,10 +1360,8 @@ void *gws_draw_button (
     unsigned long height, 
     unsigned long color );
 
-
 int rect_validate_size( struct gws_rect_d *rect );
 int rect_validate_size2( struct gws_rect_d *rect );
-
 
 int 
 rect_contains_vertically ( 
@@ -1334,8 +1372,6 @@ int
 rect_contains_horizontally ( 
     struct gws_rect_d *rect,
     unsigned long x );
-
-
 
 void 
 rect_set_left ( 
@@ -1358,20 +1394,14 @@ rect_set_bottom (
     unsigned long value );
 
 int is_rect_null( struct gws_rect_d *rect );
-
 int is_rect_empty( struct gws_rect_d *rect );
-
 int is_rect_dirty( struct gws_rect_d *rect );
-
 void *rect_memcpy32 ( void *v_dst, const void *v_src, unsigned long c );
-
 int gwssrv_refresh_this_rect( struct gws_rect_d *rect );
 int flush_rectangle(struct gws_rect_d *rect);
-
 struct gws_rect_d *clientrect_from_window(struct gws_window_d *window);
 struct gws_rect_d *rect_from_window(struct gws_window_d *window);
 
-//======================================
 // Calling kgws in ring0.
 // Using the kgws to draw the rectangle.
 void 
@@ -1383,10 +1413,6 @@ draw_rectangle_via_kgws (
     unsigned int color,
     unsigned long rop_flags );
 
-
-
-
-
 // atualiza o retângulo da surface da thread.
 void 
 setup_surface_retangle ( 
@@ -1395,10 +1421,8 @@ setup_surface_retangle (
     unsigned long width, 
     unsigned long height );
 
-
 void invalidate_surface_retangle (void);
 
-//======================================
 // Calling kgws in ring0.
 // Using the kgws to refresh the rectangle.
 void 
@@ -1408,8 +1432,6 @@ refresh_rectangle_via_kgws (
     unsigned long width, 
     unsigned long height );
 
-
-
 void 
 gws_refresh_rectangle ( 
     unsigned long x, 
@@ -1417,15 +1439,7 @@ gws_refresh_rectangle (
     unsigned long width, 
     unsigned long height );
 
-
-// =======================================
-
-//
-// Update rectangle
-//
-
 // Paint it into the backbuffer.
-
 void 
 rectBackbufferDrawRectangle0 ( 
     unsigned long x, 
@@ -1448,8 +1462,6 @@ rectBackbufferDrawRectangle (
     unsigned long rop_flags );
     
 int update_rectangle( struct gws_rect_d *rect );
-
-// =======================================
 
 int
 set_rect ( 
@@ -1503,15 +1515,15 @@ void *xxxCreateSurfaceWindow(
     unsigned long clientcolor, //11, Cor da área de cliente
     unsigned long color );      //12, Color (bg) (para janela simples).
 
-
-
 void demoTerry(void);
 
 struct gws_window_d *createwCreateRootWindow(void);
 
-
 //worker: no checks
-void __draw_window_border( struct gws_window_d *parent, struct gws_window_d *window );
+void 
+__draw_window_border( 
+    struct gws_window_d *parent, 
+    struct gws_window_d *window );
 
 void 
 __draw_buttom_borders(
@@ -1539,7 +1551,6 @@ wmCreateWindowFrame (
     unsigned int ornament_color2,
     int style );
 
-
 void *xxxCreateWindow ( 
     unsigned long type, 
     unsigned long style,
@@ -1555,7 +1566,6 @@ void *xxxCreateWindow (
     unsigned int clientcolor, 
     unsigned int color,
     unsigned long rop_flags );
-
 
 // Essa será a função que atenderá a interrupção
 // esse é o serviço de criação da janela.
@@ -1576,7 +1586,6 @@ void *CreateWindow (
     unsigned int clientcolor, 
     unsigned int color ); 
 
-
 void 
 grDrawString ( 
     unsigned long x,
@@ -1593,20 +1602,13 @@ dtextDrawText (
     unsigned char *string );
 
 int RegisterWindow(struct gws_window_d *window);
-
 int get_active_window (void);
 void set_active_window (int id);
-
-
 int get_window_with_focus(void);
 int set_window_with_focus(int id);
-
-
 int get_top_window (void);
 void set_top_window (int id);
-
 int get_zorder ( struct gws_window_d *window );
-
 
 int 
 gws_resize_window ( 
@@ -1614,17 +1616,11 @@ gws_resize_window (
     unsigned long cx, 
     unsigned long cy );
 
-
 int 
 gwssrv_change_window_position ( 
     struct gws_window_d *window, 
     unsigned long x, 
     unsigned long y );
-
-
-//================================
-
-// Redraw window
 
 int 
 redraw_window (
@@ -1638,16 +1634,10 @@ update_window (
     struct gws_window_d *window, 
     unsigned long flags );
 
-//================================
-
-
 void gwsWindowLock (struct gws_window_d *window);
 void gwsWindowUnlock (struct gws_window_d *window);
-
 int gwsDefineInitialRootWindow ( struct gws_window_d *window );
-
 int gwssrv_init_windows(void);
-
 
 
 #endif    

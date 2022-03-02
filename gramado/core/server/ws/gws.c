@@ -420,10 +420,8 @@ int gwsInit(void)
 
     //paint_ready = FALSE;
 
-
     // Initializing globals.
     gwssrv_init_globals();
-
 
 // #todo
 // Configurar as estruturas em ordem:

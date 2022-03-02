@@ -1,9 +1,7 @@
 /*
  * File: window.c 
- * 
  *      Creates a window.
  *      It's part of the gws project.
- * 
  * History:
  *     2019 - Created by Fred Nora.
  */
@@ -1817,8 +1815,6 @@ void *CreateWindow (
 // =================
 
 
-
-
 // See:
 // config.h, main.c
     if(config_use_transparency==TRUE)
@@ -1829,9 +1825,9 @@ void *CreateWindow (
 
 
 //
-// #todo: Colocar mascara nos valores passados via parâmetro.
+// #todo: 
+// Colocar mascara nos valores passados via parâmetro.
 //
-
 
     switch (type){
     case WT_OVERLAPPED:  ValidType=TRUE; break;
@@ -1846,9 +1842,8 @@ void *CreateWindow (
     }
 
 
-
-    //1. Começamos criando uma janela simples
-    //2. depois criamos o frame. que decide se vai ter barra de títulos ou nao.
+//1. Começamos criando uma janela simples
+//2. depois criamos o frame. que decide se vai ter barra de títulos ou nao.
     
     /*
     __w = (void *) CreateWindow ( type, status, view, (char *) windowname, 
@@ -1856,19 +1851,17 @@ void *CreateWindow (
                            (struct window_d *) pWindow, desktopid, clientcolor, color );  
     */
     
-    // No caso dos tipos com moldura então criaremos em duas etapas.
-    // no futuro todas serão criadas em duas etapas e 
-    // CreateWindow será mais imples.
+// No caso dos tipos com moldura então criaremos em duas etapas.
+// no futuro todas serão criadas em duas etapas e 
+// CreateWindow será mais imples.
     
-    
-    // #todo
-    // Check parent window validation.
-    // APPLICATION window uses the screen margins for relative positions.
+// #todo
+// Check parent window validation.
+// APPLICATION window uses the screen margins for relative positions.
     //if ( (void*) pWindow == NULL ){}
     
-
-    // #todo
-    // check window name validation.
+// #todo
+// check window name validation.
     //if ( (void*) windowname == NULL ){}
     //if ( *windowname == 0 ){}
 
@@ -1876,10 +1869,25 @@ void *CreateWindow (
 // ============================
 // Types with frame.
 
-    // Overlapped
+//====
+// Overlapped
     if ( type == WT_OVERLAPPED )
     {
-        if ( width < OVERLAPPED_MIN_WIDTH ) { width=OVERLAPPED_MIN_WIDTH; }
+        // #test
+        if( WindowManager.initialized == TRUE)
+        {
+            //tiling mode.
+            if(WindowManager.mode == 1)
+            {
+                x=0;
+                y=0;
+                //#bugbug: Confiando nos valores.
+                width = WindowManager.wa_width;
+                height= WindowManager.wa_height;
+            }
+        }
+
+        if ( width < OVERLAPPED_MIN_WIDTH )  { width=OVERLAPPED_MIN_WIDTH; }
         if ( height < OVERLAPPED_MIN_HEIGHT ){ height=OVERLAPPED_MIN_HEIGHT; }
 
         __w = (void *) xxxCreateWindow ( 
@@ -1887,7 +1895,7 @@ void *CreateWindow (
                            style, 
                            status, 
                            view, 
-                           (char *) name_local_copy, //windowname, 
+                           (char *) name_local_copy, //window name
                            x, y, width, height, 
                            (struct gws_window_d *) pWindow, 
                            desktopid, 
@@ -1908,11 +1916,11 @@ void *CreateWindow (
         goto draw_frame;
     }
 
+// #todo
+// It does not exist by itself. It needs a parent window.
 
-    // #todo
-    // It does not exist by itself. It needs a parent window.
-    
-    //edit box
+//====
+//edit box
     if ( type == WT_EDITBOX )
     {
         //if ( (void*) pWindow == NULL ){ return NULL; }
@@ -1939,10 +1947,12 @@ void *CreateWindow (
     }
 
 
-    // #todo
-    // It does not exist by itself. It needs a parent window.
+// #todo
+// It does not exist by itself. 
+// It needs a parent window.
 
-    //button
+//====
+//button
     if ( type == WT_BUTTON )
     {
         gwssrv_debug_print ("[DEBUG]: CreateWindow WT_BUTTON\n");
@@ -1974,11 +1984,13 @@ void *CreateWindow (
 // ============================
 // Types with no frame!
 
+//====
+//simple
     if ( type == WT_SIMPLE )
     {
         __w = (void *) xxxCreateWindow ( 
                            WT_SIMPLE, 0, status, view, 
-                           (char *) name_local_copy, //windowname, 
+                           (char *) name_local_copy, //window name
                            x, y, width, height, 
                            (struct gws_window_d *) pWindow, 
                            desktopid, clientcolor, color, 0 );  

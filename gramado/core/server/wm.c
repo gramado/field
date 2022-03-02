@@ -13,40 +13,6 @@
 
 int mousehover_window=0;
 
-// Local structure
-
-struct wm_d
-{
-
-// Background
-    unsigned int default_background_color;
-    int has_custom_background_color;
-    unsigned int custom_background_color;
-    // image?
-
-// Wallpaper
-    int has_wallpaper;
-
-// Window stack
-// Quando uma janela foi invalidada, significa que ela foi pintada e que
-// precisa receber o refesh, mas também pode significar
-// que outras janelas foram afetadas pelo pintura da janela.
-// Nesse caso precisado repintar a janelas.
-// Se tiver uma janela em fullscreen então pintamos, invalidamos
-// seu retângulo e validamos todos os outros.
-
-    // struct gws_window_d *fullscreen_window;
-
-// #test
-// z-order for all the layers.
-// linked list
-    //struct gws_window_d *layer1_list;
-    //struct gws_window_d *layer2_list;
-    //struct gws_window_d *layer3_list;
-    //struct gws_window_d *layer4_list;
-};
-
-struct wm_d  WindowManager;
 
 
 //#todo
@@ -74,7 +40,6 @@ unsigned int __get_default_background_color(void)
     return (unsigned int) WindowManager.default_background_color;
 }
 
-
 void __set_custom_background_color( int color )
 {
     WindowManager.custom_background_color = (unsigned int) color;
@@ -100,6 +65,39 @@ int __has_wallpaper(void)
         return TRUE;
 
     return FALSE;
+}
+
+void __init_wm_structure(void)
+{
+
+// Clear the structure.
+    WindowManager.mode = 1;  //tiling
+
+//orientation
+    WindowManager.vertical = TRUE;   //default
+    //WindowManager.vertical = FALSE;
+    
+    WindowManager.root = NULL;
+    WindowManager.taskbar = NULL;
+    WindowManager.wa_left = 0;
+    WindowManager.wa_top = 0;
+    WindowManager.wa_width=0;
+    WindowManager.wa_height=0;
+
+// Default background color.
+    __set_default_background_color(WM_DEFAULT_BACKGROUND_COLOR);
+
+// Default background color.
+    __set_custom_background_color(COLOR_GREEN);
+    WindowManager.has_custom_background_color = FALSE;
+
+// Wallpaper
+    WindowManager.has_wallpaper = FALSE;
+
+// Not initialized yet.
+// We need to setup the windows elements.
+
+    WindowManager.initialized = FALSE;
 }
 
 
@@ -1104,14 +1102,46 @@ void __Tile(void)
         if(i>=cnt)
             break;
 
-        if(i>4)
+        //#bugbug: limite provisorio
+        if(i>4){
+            cnt=4;
             break;
+        }
         
+        /*
+         //original
         w->left = (i*10);
         w->top  = (i*10);
         w->width  = 240;
         w->height = 120;
+        */
+        
+        // #test
+        // Empilhando verticalmente.
+        if( WindowManager.initialized == TRUE )
+        {
+            if(WindowManager.mode == 1)
+            {
+                //VERTICAL
+                if( WindowManager.vertical==TRUE)
+                {
+                    w->width  = WindowManager.wa_width;
+                    w->height = (WindowManager.wa_height / cnt); 
+                    w->left   = 0;
+                    w->top    = (w->height * i);
+                }
 
+                //NOT VERTICAL
+                if( WindowManager.vertical!=TRUE)
+                {
+                    w->height = WindowManager.wa_height; 
+                    w->width  = (WindowManager.wa_width/cnt);
+                    w->left   = (w->width * i);
+                    w->top    = 0;
+                }
+            }
+        }
+        
         w = (struct gws_window_d *) w->next;
         i++;
     };
@@ -3323,6 +3353,7 @@ struct gws_window_d *createwCreateRootWindow(void)
 
     unsigned long left   = 0;
     unsigned long top    = 0;
+//#bugbug: Estamos confiando nesses valores.
     unsigned long width  = (__device_width  & 0xFFFF );
     unsigned long height = (__device_height & 0xFFFF );
 
@@ -3367,12 +3398,8 @@ struct gws_window_d *createwCreateRootWindow(void)
 // invalidate the surface in ring0.
     invalidate_surface_retangle();
 
-// Invalidate again.
-
-    w->dirty = TRUE;
-
+    w->dirty = TRUE;  // Invalidate again.
     w->locked = TRUE;
-
     w->used  = TRUE;
     w->magic = 1234;
 
@@ -3384,7 +3411,7 @@ struct gws_window_d *createwCreateRootWindow(void)
     //return;
     //}
 
-    // Root window
+// Root window
     gwsDefineInitialRootWindow (w);
 
 // End paint
@@ -3394,7 +3421,6 @@ struct gws_window_d *createwCreateRootWindow(void)
 
     return (struct gws_window_d *) w;
 }
-
 
 
 int gwsDefineInitialRootWindow ( struct gws_window_d *window )
@@ -3408,7 +3434,12 @@ int gwsDefineInitialRootWindow ( struct gws_window_d *window )
     }
     
     __root_window = window;
-    
+
+
+// Setup Window manager.
+
+    WindowManager.root = (struct gws_window_d *) window;
+
     // ...
     
     return 0;  //ok
@@ -3881,7 +3912,6 @@ void gwsWindowUnlock (struct gws_window_d *window)
 
 
 /*
- *****************************************
  * gwssrv_init_windows:
  * 
  */
@@ -3906,7 +3936,7 @@ int gwssrv_init_windows (void)
 
     // z order list
     for (i=0; i<ZORDER_MAX; ++i){  zList[i] = 0;  };
-        
+
     // ...
 
     return 0;
