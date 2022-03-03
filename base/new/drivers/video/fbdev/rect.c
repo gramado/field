@@ -5,8 +5,8 @@
 
 
 /* 
- * drawDataRectangle: (API)
- *     Draw a rectangle on backbuffer. 
+ * drawrectangle0: (API)
+ *     Draw a rectangle on backbuffer or frontbuffer.
  */
 
 // Service 9.
@@ -293,7 +293,6 @@ drawDataRectangle (
 /*
  * refresh_rectangle:
  *     Copiar um retângulo do backbuffer para o frontbuffer. 
- * 
  *     @todo: Rotina parecida com essa pode ser criada e usada para manipular 
  * regiões da tela, como área de cliente efetuar scroll de buffer em páginas 
  * de navegador ou menus .. mas para isso, a cópia seria dentro do próprio 
@@ -316,6 +315,8 @@ drawDataRectangle (
 // de lfb mapeados e de apenas 2 mb de backbuffer mapeados.
 // Pois nao queremos escrever em area nao mapeada.
 
+// #
+// Copy a rectangle.
 void 
 refresh_rectangle0 ( 
     unsigned long x, 
@@ -334,8 +335,7 @@ refresh_rectangle0 (
     void *dest       = (void *)      buffer_dest;
     const void *src  = (const void*) buffer_src;
 
-
-    // loop
+// loop
     register unsigned int i=0;
     register unsigned int lines=0;
     unsigned int line_size=0; 
@@ -416,10 +416,9 @@ refresh_rectangle0 (
     dest = (void *)       (dest + offset); 
     src  = (const void *) (src  + offset); 
 
-
-	// #bugbug
-	// Isso pode nos dar problemas.
-	// ?? Isso ainda é necessário nos dias de hoje ??
+// #bugbug
+// Isso pode nos dar problemas.
+// ?? Isso ainda é necessário nos dias de hoje ??
 
     //if ( UseVSync == TRUE){
         //vsync();
@@ -492,7 +491,6 @@ refresh_rectangle0 (
         return;
     }
 }
-
 
 
 // ??

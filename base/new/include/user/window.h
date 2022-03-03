@@ -375,27 +375,25 @@ struct rect_d
 // Invalidate
 //
 
-    // Sujo de tinta.
-    // If the rectangle is dirty, so it needs to be flushed into 
-    // the framebuffer.
-    // When we draw a window it needs to be invalidated.
+// Sujo de tinta.
+// If the rectangle is dirty, so it needs to be flushed into 
+// the framebuffer.
+// When we draw a window it needs to be invalidated.
 
     int dirty;
 
-
-
     int flag;
 
-    // Estilo de design
+// Estilo de design
     int style;
 
-
-
+//dimensoes
     unsigned long x;
     unsigned long y;
     unsigned long cx;
     unsigned long cy;
 
+//margins
     unsigned long left;
     unsigned long top;
     unsigned long width;

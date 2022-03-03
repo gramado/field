@@ -16,8 +16,9 @@
 
 #include <kernel.h>
 
+
+
 /*
- *********************************
  * putpixel0:
  *     Ok. 
  *     O servidor kgws pode acessar um buffer. Mas não tem acesso
@@ -280,7 +281,6 @@ backbuffer_putpixel (
     unsigned long _y, 
     unsigned long _rop_flags )
 {
-
 
 // Putpixel at the given buffer address.
     putpixel0(

@@ -14,6 +14,8 @@
 int mousehover_window=0;
 
 
+static long old_x=0;
+static long old_y=0;
 
 //#todo
 //GetWindowRect
@@ -1163,12 +1165,19 @@ void wm_update_window_by_id(int wid)
 
     if(active_window<0)
         return;
-    if(active_window>WINDOW_COUNT_MAX)
+
+    if(active_window>=WINDOW_COUNT_MAX)
         return;  
+
     w = (struct gws_window_d *) windowList[active_window];
 
     if((void*)w==NULL){ return; }
 
+    if ( w->used != TRUE )
+        return;
+
+    if ( w->magic != 1234 )
+        return;
 
     if (w->type != WT_OVERLAPPED)
         return;
@@ -1276,6 +1285,33 @@ void set_focus(struct gws_window_d *window)
         window->client_tid,
         window->client_tid,
         window->client_tid);
+}
+
+
+void set_focus_by_id( int wid )
+{
+    struct gws_window_d *w;
+
+
+    if(wid<0)
+        return;
+
+    if(wid>=WINDOW_COUNT_MAX)
+        return;  
+
+    w = (struct gws_window_d *) windowList[wid];
+
+    if((void*)w==NULL){ return; }
+    
+    if ( w->used != TRUE )
+        return;
+
+    if ( w->magic != 1234 )
+        return;
+
+//ok
+
+    set_focus(w);
 }
 
 
@@ -1870,11 +1906,19 @@ wmProcedure(
 // as rotinas de pintura de cursor que estao no kernel.
 
     case GWS_MouseMove:
-        
-        // primeiro apaga, depois escreve diretamente no lfb.
+
+        //------
+        //#dangerdanger
+        //#todo: show the backbuffer
+        gws_refresh_rectangle(old_x,old_y,8,8);
+        old_x = long1;
+        old_y = long2;
+        //#todo: print directly into the lfb.
+        frontbuffer_draw_rectangle( 
+            long1, long2, 8, 8, COLOR_YELLOW, 0 );
+        //------        
  
-        // refresh the rectangle. (apaga)
-        // gws_refresh_rectangle ( long1, long2, 8, 8 );
+
     
         // O ponteiro esta dentro do botao do menu iniciar?
         Status = is_within(
@@ -3270,9 +3314,7 @@ fail:
 
 
 /*
- ***********************************************
  * gws_show_window_rect:
- * 
  *     Mostra o retângulo de uma janela que está no backbuffer.
  *     Tem uma janela no backbuffer e desejamos enviar ela 
  * para o frontbuffer.
@@ -3310,62 +3352,48 @@ int gws_show_window_rect (struct gws_window_d *window)
         //return (int) -1;
     }
 
-			//#shadow 
-			// ?? E se a janela tiver uma sombra, 
-			// então precisamos mostrar a sombra também. 
-			
-			//#bugbug
-			//Extranhamente essa checagem atraza a pintura da janela.
-			//Ou talvez o novo tamanho favoreça o refresh rectangle,
-			//ja que tem rotinas diferentes para larguras diferentes
-			
-			//if ( window->shadowUsed == 1 )
-			//{
+//#shadow 
+// ?? E se a janela tiver uma sombra, 
+// então precisamos mostrar a sombra também. 
+//#bugbug
+//Extranhamente essa checagem atraza a pintura da janela.
+//Ou talvez o novo tamanho favoreça o refresh rectangle,
+//ja que tem rotinas diferentes para larguras diferentes
 
-			    //window->width = window->width +4;
-				//window->height = window->height +4;
-			    
-				//refresh_rectangle ( window->left, window->top, 
-				//    window->width +2, window->height +2 ); 
-				//return (int) 0;
-			//}
+    //if ( window->shadowUsed == 1 )
+    //{
+        //window->width = window->width +4;
+        //window->height = window->height +4;
 
+        //refresh_rectangle ( window->left, window->top, 
+        //    window->width +2, window->height +2 ); 
+        //return (int) 0;
+    //}
 
     //p = window->parent;
 
 
-
-
-//
 // Refresh rectangle
-//
-
 // See: rect.c   
 
-    debug_print("gws_show_window_rect: Calling gws_refresh_rectangle\n");
-
+    //debug_print("gws_show_window_rect: Calling gws_refresh_rectangle\n");
     gws_refresh_rectangle ( 
         window->left, 
         window->top, 
         window->width, 
         window->height ); 
-            
 
-//
 // Validate window
-//
-  
-    // Com isso o compositor não vai redesenhar
-    // até que alguém invalide ela.
+// Com isso o compositor não vai redesenhar
+// até que alguém invalide ela.
 
-    debug_print("gws_show_window_rect: Calling validate_window\n");
-
+    //debug_print("gws_show_window_rect: Calling validate_window\n");
     validate_window(window);
 
-
 //done:
-    debug_print("gws_show_window_rect: done\n");
+    //debug_print("gws_show_window_rect: done\n");
     return 0;
+
 fail:
     // fail.
     debug_print("gws_show_window_rect: fail\n");
@@ -4184,6 +4212,9 @@ void wmInitializeGlobals(void)
     frames_count=0;
     ____old_time=0;
     ____new_time=0;
+    
+    old_x=0;
+    old_y=0;
 }
 
 

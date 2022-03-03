@@ -485,6 +485,187 @@ void invalidate_surface_retangle (void)
 }
 
 
+// Copy a rectangle.
+void 
+refresh_rectangle0 ( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height,
+    unsigned long buffer_dest,
+    unsigned long buffer_src )
+{
+
+    //debug_print("refresh_rectangle: r0 :)\n");
+
+    //void *dest       = (void *)      FRONTBUFFER_ADDRESS;
+    //const void *src  = (const void*) BACKBUFFER_ADDRESS;
+    void *dest       = (void *)      buffer_dest;
+    const void *src  = (const void*) buffer_src;
+
+// loop
+    register unsigned int i=0;
+    register unsigned int lines=0;
+    unsigned int line_size=0; 
+    register int count=0; 
+
+    // Screen pitch.
+    // screen line size in pixels * bytes per pixel.
+    unsigned int screen_pitch=0;  
+    // Rectangle pitch
+    // rectangle line size in pixels * bytes per pixel.
+    unsigned int rectangle_pitch=0;  
+
+    unsigned int offset=0;
+
+    // = 3; 24bpp
+    int bytes_count=0;
+
+
+    int FirstLine = (int) (y & 0xFFFF);
+
+    //int UseVSync = FALSE;
+    int UseClipping = TRUE;
+
+
+//==========
+// dc
+    //unsigned long deviceWidth  = (unsigned long) screenGetWidth();
+    //unsigned long deviceHeight = (unsigned long) screenGetHeight();
+// Device info.
+    unsigned long deviceWidth  = (unsigned long) gws_get_device_width();
+    unsigned long deviceHeight = (unsigned long) gws_get_device_height();
+
+
+    if ( deviceWidth == 0 || deviceHeight == 0 )
+    {
+        debug_print ("refresh_rectangle: w h\n");
+        //panic       ("refresh_rectangle: w h\n");
+        return;
+    }
+
+//
+// Internal
+//
+
+    unsigned long X = (unsigned long) (x & 0xFFFF);
+    unsigned long Y = (unsigned long) (y & 0xFFFF);
+
+    line_size = (unsigned int) (width  & 0xFFFF); 
+    lines     = (unsigned int) (height & 0xFFFF);
+
+    switch (SavedBPP){
+
+        case 32:  bytes_count = 4;  break;
+        case 24:  bytes_count = 3;  break;
+        // ... #todo
+        
+        default:
+            //panic ("refresh_rectangle: SavedBPP\n");
+            return;
+            break;
+    };
+
+//
+// Pitch
+//
+
+// Screen pitch.
+// Screen line size in pixels plus bytes per pixel.
+    screen_pitch    = (unsigned int) (bytes_count * deviceWidth);
+
+// Rectangle pitch.
+// rectangle line size in pixels * bytes per pixel.
+//(line_size * bytes_count) é o número de bytes por linha. 
+    rectangle_pitch = (unsigned int) (bytes_count * line_size);
+
+
+// #atenção.
+//offset = (unsigned int) BUFFER_PIXEL_OFFSET( x, y );
+
+    offset = (unsigned int) ( (Y*screen_pitch) + (bytes_count*X) );
+
+
+    dest = (void *)       (dest + offset); 
+    src  = (const void *) (src  + offset); 
+
+// #bugbug
+// Isso pode nos dar problemas.
+// ?? Isso ainda é necessário nos dias de hoje ??
+
+    //if ( UseVSync == TRUE){
+        //vsync();
+    //}
+
+// ================================
+// Se for divisível por 8.
+// Copy lines
+// See:'strength reduction'
+// Clipping?
+// Não copiamos a parte que está fora da janela do dispositivo.
+// memcpy64: 8 bytes per time.
+
+    if ( (rectangle_pitch % 8) == 0 )
+    {
+        count = (rectangle_pitch>>3);
+        for ( i=0; i < lines; i++ ){
+            if ( UseClipping == TRUE ){
+                if ( (FirstLine + i) > deviceHeight ){ break; }
+            }
+            memcpy64 ( (void *) dest, (const void *) src, count );
+            dest += screen_pitch;
+            src  += screen_pitch;
+        };
+        return;
+    }
+
+// ================================
+// Se for divisível por 4.
+// Esse não será usado se for divisóvel por 8.
+// Mas será chamado se for menor que 8, apenas 4.
+// Copy lines
+// See:'strength reduction'
+// Clipping?
+// Não copiamos a parte que está fora da janela do dispositivo.
+// memcpy32: 4 bytes per time.
+
+    if ( (rectangle_pitch % 4) == 0 )
+    {
+        count = (rectangle_pitch>>2);
+        for ( i=0; i < lines; i++ ){
+            if ( UseClipping == TRUE ){
+                if ( (FirstLine + i) > deviceHeight ){ break; }
+            }
+            memcpy32 ( (void *) dest, (const void *) src, count );
+            //rect_memcpy32 ( (void *) dest, (const void *) src, count );
+            dest += screen_pitch;
+            src  += screen_pitch;
+        };
+        return;
+    }
+
+// ================================
+// Se não for divisível por 4. (slow)
+// Copy lines
+// Clipping?
+// Não copiamos a parte que está fora da janela do dispositivo.
+// memcpy: 1 byte per time.
+
+    if ( (rectangle_pitch % 4) != 0 )
+    {
+        for ( i=0; i < lines; i++ ){
+            if ( UseClipping == TRUE ){
+                if ( (FirstLine + i) > deviceHeight ){ break; }
+            }
+            memcpy ( (void *) dest, (const void *) src, rectangle_pitch );
+            dest += screen_pitch; 
+            src  += screen_pitch; 
+        };
+        return;
+    }
+}
+
+
 //======================================
 // Calling kgws in the kernel.
 // Using the kgws to refresh the rectangle.
@@ -589,10 +770,9 @@ gws_refresh_rectangle (
 
     debug_print("gws_refresh_rectangle: Using R3\n");
 
-    // Device info.
+// Device info.
     unsigned long ScreenWidth  = (unsigned long) gws_get_device_width();
     unsigned long ScreenHeight = (unsigned long) gws_get_device_height();
-
 
     if ( ScreenWidth == 0 )
     {
@@ -744,6 +924,284 @@ gws_refresh_rectangle (
 
     debug_print("gws_refresh_rectangle: done :)\n");
 }
+
+
+void 
+backbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+// 1=backbuffer
+// 2=frontbuffer
+
+    drawrectangle0(
+        x,
+        y,
+        width,
+        height,
+        color,
+        rop_flags,
+        1 );      // back or front.
+}
+
+
+void 
+frontbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+// 1=backbuffer
+// 2=frontbuffer
+
+    drawrectangle0(
+        x,
+        y,
+        width,
+        height,
+        color,
+        rop_flags,
+        2 );      // back or front.
+}
+
+
+
+
+/* 
+ * drawrectangle0: (API)
+ *     Draw a rectangle on backbuffer or frontbuffer.
+ */
+
+// Service 9.
+// #bugbug
+// Agora precisamos considerar o limite de apenas 2mb
+// de lfb mapeados e de apenas 2 mb de backbuffer mapeados.
+// Pois nao queremos escrever em area nao mapeada.
+
+// IN:
+// 1=backbuffer
+// 2=frontbuffer
+
+void 
+drawrectangle0( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags,
+    int back_or_front )
+{
+
+    gwssrv_debug_print("drawrectangle0: r0 :)\n");
+
+// Copy.
+
+    unsigned long X      = (x      & 0xFFFF);
+    unsigned long Y      = (y      & 0xFFFF);
+    unsigned long Width  = (width  & 0xFFFF); 
+    unsigned long Height = (height & 0xFFFF);
+    unsigned int Color   = color;
+
+
+// Invalid argument
+    if (back_or_front != 1 && 
+        back_or_front != 2 )
+    {
+         //panic("drawrectangle0: back_or_front\n");
+         gwssrv_debug_print("drawrectangle0: back_or_front\n");
+         return;
+    }
+
+//loop
+    unsigned long internal_height = (unsigned long) Height;
+
+// #todo
+// Get the clipping window/rectangle.
+
+    struct gws_rect_d  Rect;
+    struct gws_rect_d  ClippingRect;
+
+// flag
+    int UseClipping = TRUE;
+
+
+// dc: Clipping
+// Clipping support.
+    //unsigned long deviceWidth  = (unsigned long) screenGetWidth();
+    //unsigned long deviceHeight = (unsigned long) screenGetHeight();
+    unsigned long deviceWidth = (unsigned long) gws_get_device_width();
+    unsigned long deviceHeight = (unsigned long) gws_get_device_height();
+
+    
+    if ( deviceWidth == 0 || deviceHeight == 0 )
+    {
+        gwssrv_debug_print ("drawrectangle0: [PANIC] w h\n");
+        //panic       ("drawrectangle0: [PANIC] w h\n");
+        return;
+    }
+
+
+//
+// Clipping rectangle
+//
+
+// #todo
+// It need to be a blobal thing.
+// We need to handle the surfaces used by 
+// this embedded window server and the loadable one.
+
+    ClippingRect.left   = (unsigned long) 0;
+    ClippingRect.top    = (unsigned long) 0;
+    ClippingRect.width  = (unsigned long) (deviceWidth  & 0xFFFF);
+    ClippingRect.height = (unsigned long) (deviceHeight & 0xFFFF);
+
+    ClippingRect.right  = (ClippingRect.left + ClippingRect.width);
+    ClippingRect.bottom = (ClippingRect.top + ClippingRect.height);
+
+
+// #debug
+// Provisório
+
+    if ( ClippingRect.width > 800 ){
+        gwssrv_debug_print("drawrectangle0: width");
+        return;
+    }
+    
+    if ( ClippingRect.height > 600 ){
+        gwssrv_debug_print("drawrectangle0: height");
+        return;
+    }
+
+    if ( ClippingRect.right > 800 ){
+        gwssrv_debug_print("drawrectangle0: right");
+        return;
+    }
+    
+    if ( ClippingRect.bottom > 600 ){
+        gwssrv_debug_print("drawrectangle0: bottom");
+        return;
+    }
+ 
+//
+// == Target rectangle ================
+//
+
+    Rect.bg_color = (unsigned int) Color;
+
+    // Dimensions
+    Rect.x = 0;
+    Rect.y = 0;
+    Rect.width  = (Width  & 0xFFFF);
+    Rect.height = (Height & 0xFFFF);
+
+    // Margins
+    Rect.left   = (X & 0xFFFF);
+    Rect.top    = (Y & 0xFFFF);
+    Rect.right  = (unsigned long) (Rect.left + Rect.width);
+    Rect.bottom = (unsigned long) (Rect.top  + Rect.height); 
+
+
+//
+// Clipping
+//
+
+// Limits.
+
+// #todo: 
+// Repensar os limites para uma janela.
+// Uma janela poderá ser maior que as dimensões de um dispositivo.
+// mas não poderá ser maior que as dimensões do backbuffer.
+// Ou seja: O dedicated buffer de uma janela deve ser menor que
+// o backbuffer.
+
+    //if ( Rect.right  > SavedX ){  Rect.right  = SavedX;  }
+    //if ( Rect.bottom > SavedY ){  Rect.bottom = SavedY;  }
+
+
+    if ( Rect.left   < ClippingRect.left   ){  Rect.left   = ClippingRect.left;   }
+    if ( Rect.top    < ClippingRect.top    ){  Rect.top    = ClippingRect.top;    }
+    if ( Rect.right  > ClippingRect.right  ){  Rect.right  = ClippingRect.right;  }
+    if ( Rect.bottom > ClippingRect.bottom ){  Rect.bottom = ClippingRect.bottom; }
+
+
+//
+// Draw
+//
+
+// Draw lines on backbuffer.
+
+    if ( internal_height > 600 ){
+        gwssrv_debug_print("drawrectangle0: internal_height");
+        return;
+    }
+
+//
+// Paint
+//
+
+// Paint lines.
+// Incrementa a linha a ser pintada.
+// See: line.c
+
+// IN:
+// 1=backbuffer
+// 2=frontbuffer
+
+    while (1)
+    {
+
+        // 1=backbuffer
+        if( back_or_front == 1 ){
+            backbuffer_draw_horizontal_line ( 
+                Rect.left, Y, Rect.right, Rect.bg_color, rop_flags );
+        }
+
+        // 2=backbuffer
+        if( back_or_front == 2 ){
+            frontbuffer_draw_horizontal_line ( 
+                Rect.left, Y, Rect.right, Rect.bg_color, rop_flags );
+        }
+
+        Y++;
+        
+        // #??
+        // Porque podemos desejar escrever no backbuffer
+        // um retângulo que ultrapasse a área do frontbuffer.
+        
+        if ( UseClipping == TRUE )
+        {
+            if ( Y > ClippingRect.bottom ){ break; };
+        }
+
+        // Decrementa o contador.
+        internal_height--;
+        if (internal_height == 0)
+            break;
+    };
+
+
+// ??
+// Send the rectangle to a list.
+
+// Invalidate
+// Sujo de tinta.
+
+    Rect.dirty = TRUE;
+
+    gwssrv_debug_print("drawrectangle0: Done\n");
+}
+
+
 
 
 /*

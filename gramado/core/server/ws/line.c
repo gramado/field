@@ -1,7 +1,6 @@
 /*
  * File: line.c 
  * 
- * 
  */
 
 
@@ -234,6 +233,67 @@ grBackbufferDrawHorizontalLine (
 
     //debug_print("Line done\n");
 }
+
+
+/*
+ * backbuffer_draw_horizontal_line:
+ *     Draw a horizontal line on backbuffer. 
+ */
+
+void 
+backbuffer_draw_horizontal_line ( 
+    unsigned long x1,
+    unsigned long y, 
+    unsigned long x2, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+// #todo
+// Maybe we need checking some limits here.
+
+    if (x1 > x2){
+        return;
+    }
+
+    while (x1 < x2)
+    {
+        // IN: color, x, y, rop flags.
+        backbuffer_putpixel ( 
+            color, x1, y, rop_flags ); 
+
+        x1++;
+    };
+}
+
+
+void 
+frontbuffer_draw_horizontal_line ( 
+    unsigned long x1,
+    unsigned long y, 
+    unsigned long x2, 
+    unsigned int color,
+    unsigned long rop_flags )
+{
+
+// #todo
+// Maybe we need checking some limits here.
+
+    if (x1 > x2){
+        return;
+    }
+
+    while (x1 < x2)
+    {
+        // IN: color, x, y, rop flags.
+        frontbuffer_putpixel ( 
+            color, x1, y, rop_flags ); 
+
+        x1++;
+    };
+}
+
+
 
 
 //

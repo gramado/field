@@ -1,6 +1,5 @@
 /*
  * File: window.h
- * 
  * History:
  *     2020 - Created by Fred Nora.
  */
@@ -275,14 +274,20 @@ struct gws_rect_d
 
     int flag;
 
-    //estilo de design
+//estilo de design
     int style;
 
-    // Filled or not.
+// Filled or not.
     int is_empty;
 
+// dimensoes
+    unsigned long x;
+    unsigned long y;
+    unsigned long cx;
+    unsigned long cy;
 
-    // ??
+
+// margins
     unsigned long left;
     unsigned long top;
     unsigned long right;
@@ -1282,7 +1287,9 @@ struct gws_surface_d *rootSurface;
 //
 
 void __switch_focus(void);
+
 void set_focus(struct gws_window_d *window);
+void set_focus_by_id( int wid );
 
 // transparence
 void gws_enable_transparence(void);
@@ -1409,6 +1416,37 @@ int flush_rectangle(struct gws_rect_d *rect);
 struct gws_rect_d *clientrect_from_window(struct gws_window_d *window);
 struct gws_rect_d *rect_from_window(struct gws_window_d *window);
 
+
+void 
+backbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags );
+
+void 
+frontbuffer_draw_rectangle( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags );
+
+
+void 
+drawrectangle0( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height, 
+    unsigned int color,
+    unsigned long rop_flags,
+    int back_or_front );
+
+
 // Calling kgws in ring0.
 // Using the kgws to draw the rectangle.
 void 
@@ -1438,6 +1476,16 @@ refresh_rectangle_via_kgws (
     unsigned long y, 
     unsigned long width, 
     unsigned long height );
+
+// Copy a rectangle.
+void 
+refresh_rectangle0 ( 
+    unsigned long x, 
+    unsigned long y, 
+    unsigned long width, 
+    unsigned long height,
+    unsigned long buffer_dest,
+    unsigned long buffer_src );
 
 void 
 gws_refresh_rectangle ( 

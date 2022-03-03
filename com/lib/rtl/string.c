@@ -768,6 +768,47 @@ void *memcpy (
 }
 
 
+void *memcpy32 ( void *v_dst, const void *v_src, unsigned long n )
+{
+    int *src = (int *) v_src;
+    int *dst = (int *) v_dst;
+
+    register unsigned long Copy=n;
+    
+    /* Simple, byte oriented memcpy. */
+    //danger
+    
+    while (Copy--)
+    {
+        *dst++ = *src++;
+    };
+
+    return v_dst;
+}
+
+void *memcpy64 ( void *v_dst, const void *v_src, unsigned long n )
+{
+    long *src = (long *) v_src;
+    long *dst = (long *) v_dst;
+
+    register unsigned long Copy=n;
+    
+    /* Simple, byte oriented memcpy. */
+    //danger
+    
+    while (Copy--)
+    {
+        *dst++ = *src++;
+    };
+
+    return v_dst;
+}
+
+
+
+
+
+
 /*
  * strcpy: 
  *     Copy a string. 

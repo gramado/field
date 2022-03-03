@@ -1,7 +1,5 @@
-
 /*
  * File: line.h
- * 
  * 
  */
 
@@ -39,6 +37,23 @@ grBackbufferDrawHorizontalLine (
     unsigned long x2,  
     unsigned int color );
     
+void 
+backbuffer_draw_horizontal_line ( 
+    unsigned long x1,
+    unsigned long y, 
+    unsigned long x2, 
+    unsigned int color,
+    unsigned long rop_flags );
+
+void 
+frontbuffer_draw_horizontal_line ( 
+    unsigned long x1,
+    unsigned long y, 
+    unsigned long x2, 
+    unsigned int color,
+    unsigned long rop_flags );
+
+
     
 
 //

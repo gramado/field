@@ -1,5 +1,5 @@
 
-// pixel.h
+// bitblt.h
 
 #ifndef __PIXEL_H
 #define __PIXEL_H  1
@@ -22,6 +22,28 @@ fb_BackBufferPutpixel (
     unsigned long flags,
     unsigned long buffer_va );
 
+void 
+putpixel0 ( 
+    unsigned int  _color,
+    unsigned long _x, 
+    unsigned long _y, 
+    unsigned long _rop_flags,
+    unsigned long buffer_va );
+
+
+void 
+backbuffer_putpixel ( 
+    unsigned int  _color,
+    unsigned long _x, 
+    unsigned long _y, 
+    unsigned long _rop_flags );
+
+void 
+frontbuffer_putpixel ( 
+    unsigned int  _color,
+    unsigned long _x, 
+    unsigned long _y, 
+    unsigned long _rop_flags );
 
 int 
 grBackBufferPutpixel2 ( 

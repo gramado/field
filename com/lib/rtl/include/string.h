@@ -1,6 +1,5 @@
 /*
  * File: string.h
- *
  * Descrição:
  *     Operações com strings. Padrão C.
  */
@@ -85,6 +84,8 @@ void *memoryZeroMemory(void* ptr, size_t cnt);
 void *memcpy (void *v_dst, const void *v_src, unsigned long c);
 //@todo: void *memcpy(void *dst, const void *src, size_t c); 
 
+void *memcpy32 ( void *v_dst, const void *v_src, unsigned long n );
+void *memcpy64 ( void *v_dst, const void *v_src, unsigned long n );
 
 size_t strlcpy (char *dst, const char *src, size_t size);
 char *strcpy(char *to, const char *from);
