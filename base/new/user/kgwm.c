@@ -1163,7 +1163,8 @@ xxxMouseEvent(
 
     //debug_print ("xxxMouseEvent:\n");
 
-// pressionado ou liberado
+// Buttons:
+// Pressionado ou liberado
     if( event_id == MSG_MOUSEPRESSED ||
         event_id == MSG_MOUSERELEASED )
     {
@@ -1211,42 +1212,23 @@ xxxMouseEvent(
 
     if ( event_id == MSG_MOUSEMOVE )
     {
-
-// #bugbug
-// #todo
-// Essa rotina de exibiçao de cursor deve acontecer
-// la no window server, quando enviarmos as
-// informaçoes de evento para la. Nao aqui.
-
-// Erease cursor.
-// Ereasing the cursor by refreshing a little
-// part of the backbuffer into the front buffer.
-        refresh_rectangle ( old_x, old_y, 10, 10 );
-
-        old_x = long1;
-        old_y = long2;
-
-// Drawing the cursor.
-// Drawing the cursor directly into
-// the framebuffer.
-
-        frontbuffer_draw_rectangle( 
-            long1, long2, 10, 10, COLOR_RED, 0 );
-
-    //backbuffer_draw_rectangle( 
-    //    x, y, 
-    //    10, 10, COLOR_RED, 0 );
-
-// Draw a pixel.
-// IN: color, x, y, 0, rop_flags
-
-    //backbuffer_putpixel ( 
-    //    COLOR_BLACK,  // color 
-    //    x,      // x
-    //    y,      // y
-    //    0 );          // rop_flags
-
-    //refresh_rectangle ( x, y, 10, 10 );
+        // #bugbug
+        // #todo
+        // Essa rotina de exibiçao de cursor deve acontecer
+        // la no window server, quando enviarmos as
+        // informaçoes de evento para la. Nao aqui.
+        // See: gramado/core/server/wm.c
+        // Erease cursor.
+        // Ereasing the cursor by refreshing a little
+        // part of the backbuffer into the front buffer.
+        //refresh_rectangle ( old_x, old_y, 10, 10 );
+        //old_x = long1;
+        //old_y = long2;
+        // Drawing the cursor.
+        // Drawing the cursor directly into
+        // the framebuffer.
+        //frontbuffer_draw_rectangle( 
+        //    long1, long2, 10, 10, COLOR_RED, 0 );
 
         wmProcedure(
             (struct window_d *) 0,         // opaque pointer

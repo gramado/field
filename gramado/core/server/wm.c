@@ -1907,18 +1907,22 @@ wmProcedure(
 
     case GWS_MouseMove:
 
+        // #
+        // The compositor is doing this job at the
+        // and of it's routine. See: comp.c
+        comp_set_mouse_position(long1,long2);
+        
         //------
         //#dangerdanger
         //#todo: show the backbuffer
-        gws_refresh_rectangle(old_x,old_y,8,8);
-        old_x = long1;
-        old_y = long2;
+        //gws_refresh_rectangle(old_x,old_y,8,8);
+        //old_x = long1;
+        //old_y = long2;
         //#todo: print directly into the lfb.
-        frontbuffer_draw_rectangle( 
-            long1, long2, 8, 8, COLOR_YELLOW, 0 );
+        //frontbuffer_draw_rectangle( 
+        //    long1, long2, 8, 8, COLOR_YELLOW, 0 );
         //------        
  
-
     
         // O ponteiro esta dentro do botao do menu iniciar?
         Status = is_within(

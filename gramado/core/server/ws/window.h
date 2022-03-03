@@ -483,6 +483,10 @@ struct frame_d
 // então podemos colocar ela em foreground quando a janela
 // receber o foco usando o teclado ou mouse.
 
+
+// #important:
+// This is a 'server side' window object.
+
 struct gws_window_d 
 {
 
