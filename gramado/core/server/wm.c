@@ -425,7 +425,6 @@ wmCreateWindowFrame (
     int useIcon        = FALSE;
     // ...
 
-
 // #bugbug
 // os parâmetros 
 // parent, 
@@ -436,28 +435,26 @@ wmCreateWindowFrame (
 // Overlapped.
 // Janela de aplicativos.
 
-// Title bar.
+// Title bar and status bar.
     struct gws_window_d  *tbWindow;
-// Status bar.
     struct gws_window_d  *sbWindow;
-
 
     int id=-1;  //usado pra registrar janelas filhas.
 
     int Type=0;
 
-    unsigned long BorderSize = (border_size & 0xFFFF);
-
+// Border color.
+    unsigned long BorderSize   = (border_size & 0xFFFF);
     unsigned int  BorderColor1 = border_color1;
     unsigned int  BorderColor2 = border_color2;
     unsigned int  BorderColor3 = border_color3;
- 
-    unsigned int  BorderColor = border_color1;
+    unsigned int  BorderColor  = border_color1;
 
+// Ornament color.
     unsigned int OrnamentColor1 = ornament_color1;
     unsigned int OrnamentColor2 = ornament_color2;
 
-
+// Title bar color.
     unsigned int TitleBarColor = COLOR_BLUE1;   // Light blue (Um pouco fosco) 
     //unsigned long TitleBarColor = 0x001473E6;  // Claro.  
     //unsigned long TitleBarColor = 0x00000E80;  // Dark blue
@@ -468,16 +465,15 @@ wmCreateWindowFrame (
     //unsigned long Width = (width & 0xFFFF);
     //unsigned long Height = (height & 0xFFFF);
 
-    gwssrv_debug_print ("wmCreateWindowFrame:\n");
+// #debug
+    //gwssrv_debug_print ("wmCreateWindowFrame:\n");
 
 // #todo
 // Se estamos minimizados ou a janela mãe está minimizada,
 // então não temos o que pintar.
-
 // #todo
 // O estilo de frame é diferente se estamos em full screen ou maximizados.
 // não teremos bordas laterais
-
 // #todo
 // Cada elemento da frame que incluimos, incrementa
 // o w.top do retângulo da área de cliente.
@@ -513,7 +509,6 @@ wmCreateWindowFrame (
 // #todo
 // Desenhar o frame e depois desenhar a barra de títulos
 // caso esse estilo de frame precise de uma barra.
-
 // Editbox
 // EDITBOX NÃO PRECISA DE BARRA DE TÍTULOS.
 // MAS PRECISA DE FRAME ... QUE SERÃO AS BORDAS.
@@ -549,6 +544,8 @@ wmCreateWindowFrame (
         useFrame=TRUE;
         useIcon=FALSE; 
         break;
+
+    //default: break;
     };
 
     if ( useFrame == FALSE ){
@@ -556,10 +553,9 @@ wmCreateWindowFrame (
         return -1;
     }
 
+// ===============================================
+// editbox
 
-    // ===============================================
-    // editbox
-    
     if ( Type == WT_EDITBOX )
     {
 
@@ -618,15 +614,16 @@ wmCreateWindowFrame (
 
 
 // ===============================================
-// overlapped
+// overlapped?
+// Draw border, titlebar and status bar.
 
-    // string at center?
+    // String support.
+    // String at center?
+
     size_t tmp_size = (size_t) strlen ( (const char *) window->name );
-    
-    if (tmp_size > 64)
+    if (tmp_size > 64){
         tmp_size=64;
-
-
+    }
     unsigned long offset = 
         ( ( (unsigned long) window->width - ( (unsigned long) tmp_size * (unsigned long) gcharWidth) ) / 2 );
 
@@ -662,33 +659,8 @@ wmCreateWindowFrame (
             window->borderUsed   = TRUE;
         }
 
-
         // Quatro bordas de uma janela overlapped.
         __draw_window_border(parent,window);
-        
-        /* 
-        // board1, borda de cima e esquerda.
-        rectBackbufferDrawRectangle( 
-            parent->left + window->left, parent->top + window->top, 
-            window->width, window->border_size, 
-            window->border_color, TRUE,0 );
-
-        rectBackbufferDrawRectangle( 
-            parent->left + window->left, parent->top + window->top, 
-            window->border_size, window->height, 
-            window->border_color, TRUE,0 );
-
-        //board2, borda direita e baixo.
-        rectBackbufferDrawRectangle( 
-            (parent->left + window->left + window->width - window->border_size), (parent->top + window->top), 
-            window->border_size, window->height, 
-            window->border_color, TRUE,0 );
-
-        rectBackbufferDrawRectangle ( 
-            (parent->left + window->left), (parent->top + window->top + window->height - window->border_size), 
-            window->width, window->border_size, 
-            window->border_color, TRUE,0 );
-        */
 
         // #important:
         // The border in an overlapped window will affect
@@ -705,13 +677,11 @@ wmCreateWindowFrame (
         // It also has a title bar style.
         // Based on this style, we can setup some
         // ornaments for this title bar.
-
         // #todo
         // Simple title bar.
         // We're gonna have a wm inside the window server.
         // The title bar will be very simple.
         // We're gonna have a client area.
-        
         // #bugbug
         // Isso vai depender da resolução da tela.
         // Um tamanho fixo pode fica muito fino em uma resolução alta
@@ -739,7 +709,7 @@ wmCreateWindowFrame (
                 return -1;
             }
             tbWindow->type = WT_SIMPLE;
-            window->titlebar = tbWindow;
+            window->titlebar = tbWindow;  // Window pointer!
             // Register window
             id = RegisterWindow(tbWindow);
             if (id<0){
@@ -852,7 +822,7 @@ wmCreateWindowFrame (
                 return -1;
             }
             sbWindow->type = WT_SIMPLE;
-            window->statusbar = sbWindow;
+            window->statusbar = sbWindow;  // Window pointer.
             // Register window
             id = RegisterWindow(tbWindow);
             if (id<0){
@@ -861,14 +831,12 @@ wmCreateWindowFrame (
             }
         }
 
-
         // ok
         return 0;
     }
 
-
-    // ===============================================
-    // button
+// ===============================================
+// button
 
     //button
     if ( Type == WT_BUTTON )
@@ -882,21 +850,23 @@ wmCreateWindowFrame (
         return 0;
     }
 
-    // ===============================================
-    // more ... ??
+// ===============================================
+// more ... ??
 
+
+//done:
     // ok
     return 0;
 }
 
 
-
-
 void wm_flush_rectangle(struct gws_rect_d *rect)
 {
-    if( (void*) rect != NULL )
+    if( (void*) rect != NULL ){
         gwssrv_refresh_this_rect(rect);
+    }
 }
+
 
 void wm_flush_window(struct gws_window_d *window)
 {
@@ -2107,16 +2077,8 @@ wmHandler(
     if ( msg == 9091 )
     {
         // debug_print ("wmHandler: 9091\n");
-        wmCompose();  
-        
-        //#test: Mostrar a quantidade de
-        //refreshs a cada 1000 ticks.
-        
-        // ESta funcionando ... mas precis ajustes.
-        //show_fps_window = TRUE;
-        //__update_fps();
-
-        return 0;  //important: We need to return.
+        wmCompose();
+        return 0;
     }
 
 
@@ -2124,17 +2086,20 @@ wmHandler(
 // Redraw all the windows. Back to front.
 // GWS_UpdateDesktop
 
-    if ( msg == 9092 ){
-        debug_print ("wmHandler: 9092\n");
+    if ( msg == 9092 )
+    {
+        //debug_print ("wmHandler: 9092\n");
         wm_update_desktop();
         return 0;  //important: We need to return.
     }
+
 
 // ==============================================
 // #test
 // Testing some random functions.
 
-    if (msg == 9093){
+    if (msg == 9093)
+    {
         debug_print ("wmHandler: 9093\n");
 
         // #test
@@ -2177,7 +2142,6 @@ wmHandler(
         return r;
         break;
 
-
 // #important:
 // Mandaremos input de teclado somente para 
 // a janela com foco de entrada,
@@ -2186,12 +2150,6 @@ wmHandler(
     case GWS_KeyDown:
     case GWS_SysKeyDown:
     case GWS_SwitchFocus:
-        if( window_with_focus < 0 || 
-            window_with_focus >= WINDOW_COUNT_MAX )
-        { 
-            return 0; 
-        }
-        w = windowList[window_with_focus];
         goto do_process_message;
         break;
 
@@ -2208,6 +2166,19 @@ wmHandler(
     };
 
 do_process_message:
+
+// wid
+// window with focus
+
+    if( window_with_focus < 0 || 
+            window_with_focus >= WINDOW_COUNT_MAX )
+    { 
+        return 0; 
+    }
+
+// window structure
+
+    w = (struct gws_window_d *) windowList[window_with_focus];
 
     if ( (void *) w == NULL ){
         printf ("wmHandler: GWS_KeyDown w\n");
