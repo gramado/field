@@ -45,7 +45,7 @@ This repository has the source code for:
 
 ## How to Build?
 
-> See the [Gramado OS build instructions](https://github.com/frednora/gramado/blob/main/admin/docs/build.md)
+> See the [Gramado OS build instructions](admin/docs/build.md)
 
 ## Testing
 
@@ -60,7 +60,7 @@ Please, give us some feedback.
 
 ## Documentation
 
-> See the [docs](https://github.com/frednora/gramado/tree/main/admin/docs).
+> See the [docs](/admin/docs).
 
 ## Author
 
