@@ -1,4 +1,5 @@
 
+// menu.h
 
 
 // Menu item types
@@ -6,28 +7,25 @@
 #define MI_TYPE_TEXT       2000
 
 
-
-struct gwsssrv_menu_item_d
+struct gwssrv_menu_item_d
 {
-    int id;
-
     struct gws_window_d *window;
+
+    int id;
+    int selected;
     
     unsigned long x;
     unsigned long y;
     unsigned long width;
     unsigned long height;
-    
-    unsigned long color;
-    
-    int selected;
+    unsigned int color;
 
-    struct gwsssrv_menu_item_d *next;
+    struct gwssrv_menu_item_d *next;
 };
 
 
 // menu
-struct gwsssrv_menu_d
+struct gwssrv_menu_d
 {
     struct gws_window_d  *window;
     struct gws_window_d  *parent;
@@ -37,24 +35,30 @@ struct gwsssrv_menu_d
     unsigned long width;
     unsigned long height;
 
-    unsigned long color;
+    unsigned int color;
     
     int highlight; //item em destaque
     
     //list
     int itens_count;
-    struct gwsssrv_menu_item_d *list;
+    struct gwssrv_menu_item_d *list;
+
+    //struct gwssrv_menu_d *next;
 };
 
-
+struct gwssrv_menu_d *MainMenu;
 
 //
 // == Prototypes ==============================================
 //
 
-int gwssrv_get_number_of_itens (struct gwsssrv_menu_d *menu);
+// checa se o mouse esta passando sobre o main menu.
+int __is_inside_menu(int x, int y);
 
-struct gwsssrv_menu_d *gwssrv_create_menu (
+
+int gwssrv_get_number_of_itens (struct gwssrv_menu_d *menu);
+
+struct gwssrv_menu_d *gwssrv_create_menu (
     struct gws_window_d *parent,
     int highlight,
     int count,
@@ -62,22 +66,16 @@ struct gwsssrv_menu_d *gwssrv_create_menu (
     unsigned long y,
     unsigned long width,
     unsigned long height,
-    unsigned long color );
+    unsigned int color );
 
-struct gwsssrv_menu_item_d *gwssrv_create_menu_item (
+struct gwssrv_menu_item_d *gwssrv_create_menu_item (
     char *label,
     int id,
-    struct gwsssrv_menu_d *menu);
+    struct gwssrv_menu_d *menu);
     
     
 //test
 int create_main_menu(void);
-
-
-
-
-
-
 
 
 

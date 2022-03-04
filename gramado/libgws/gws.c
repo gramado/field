@@ -2396,7 +2396,7 @@ gws_plot0 (
     unsigned long x,
     unsigned long y,
     unsigned long z,
-    unsigned long color )
+    unsigned int color )
 {
     // Maybe we will not have a response.
     int Value=0;

@@ -182,7 +182,6 @@ gws_send_message_to_thread (
     unsigned long long2 ); 
 
 
-
 //
 // == 3d ==============================================
 //
@@ -194,7 +193,7 @@ gws_plot0 (
     unsigned long x,
     unsigned long y,
     unsigned long z,
-    unsigned long color );
+    unsigned int color );
 
 // Plot a cube.
 int 
@@ -334,7 +333,6 @@ void gws_refresh_yield2 (int fd, int window);
 void gws_yield_n_times (unsigned long n);
 
 
-
 void *gws_create_thread ( 
     unsigned long init_eip, 
     unsigned long init_stack, 
@@ -391,10 +389,7 @@ gws_send_event (
     int window, 
     struct gws_event_d *event );
 
-
 unsigned int gws_explode_byte_32 (unsigned char data);
-
-
 
 void
 gws_async_command ( 

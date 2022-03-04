@@ -221,7 +221,6 @@ void __test_gws(int fd)
     //gws_async_command(fd,11,0,0); //update desktop
 }
 
-
 // Compare the string typed into the terminal.
 // Remember, we have an embedded command interpreter.
 void compareStrings(int fd)
@@ -316,6 +315,7 @@ void compareStrings(int fd)
 // 't1'
     if ( strncmp(prompt,"t1",2) == 0 )
     {
+        
         // pixel: ok
         //gws_plot0(fd, 20, 20, 0, COLOR_RED );
         //gws_plot0(fd, 30, 30, 0, COLOR_GREEN );
@@ -341,11 +341,11 @@ void compareStrings(int fd)
         //demos: IN: fd,service,demo_index,0.
         //gws_async_command(fd,4,1,0); //?
         //gws_async_command(fd,4,5,0); //cube1
-        gws_async_command(fd,4,6,0); //cube2
-        gws_async_command(fd,4,7,0); //curve
+        //gws_async_command(fd,4,6,0); //cube2
+        //gws_async_command(fd,4,7,0); //curve
         gws_async_command(fd,4,9,0); //cat
         
-        gws_async_command(fd,4,11,0); //mesh1
+        //gws_async_command(fd,4,11,0); //mesh1
         
         // #bugbug
         // Não podemos pegar esse falor corretamente.

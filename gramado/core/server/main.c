@@ -1870,7 +1870,7 @@ int initGraphics (void)
     plotCharBackbufferDrawcharTransparentZ ( -50, -50, COLOR_RED, '0', -10 );
     */
        
-    //See: window.c
+    //See: wm.c
     //create_main_menu();
   
     //gws services
