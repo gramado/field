@@ -485,6 +485,7 @@ void *xxxCreateWindow (
 // Position and dimension.
 //
 
+// passado via argumento.
 // left, top, width, height
 
     unsigned long WindowX = (unsigned long) (x & 0xFFFF);
@@ -593,11 +594,8 @@ void *xxxCreateWindow (
 
 	/*
 	if ( (void *) pWindow == NULL ){
-		
 		Parent = (void *) gui->screen;
-
 	} else {
-
 		Parent = (void *) pWindow;
 	};
     */
@@ -678,7 +676,6 @@ void *xxxCreateWindow (
 
     memset( window, 0, sizeof(struct gws_window_d) );
 
-
     window->used   = TRUE;
     window->magic  = 1234;
 
@@ -713,8 +710,6 @@ void *xxxCreateWindow (
     window->ip_pixel_y = 0;
 // ===================================
 
-
-
     window->type  = (unsigned long) type;
     window->style = (unsigned long) style;  // A lot of flags.
 
@@ -724,19 +719,19 @@ void *xxxCreateWindow (
     window->dirty  = FALSE;  // Validate
     window->locked = FALSE;
 
+// We have a valid pointer.
+// Let's set up the elements using the parameters.
 
-    // We have a valid pointer.
-    // Let's set up the elements using the parameters.
+// #todo
+// Object support.
 
-    // #todo
-    // Object support.
     //window->objectType  = ObjectTypeWindow;
     //window->objectClass = ObjectClassGuiObjects;
 
-    // #todo
-    // #importante
-    // Id. 
-    // A janela recebe um id somente na hora de registrar.
+// #todo
+// #importante
+// Id. 
+// A janela recebe um id somente na hora de registrar.
     // window->id = ?.
 
 
@@ -762,7 +757,7 @@ void *xxxCreateWindow (
         debug_print ("xxxCreateWindow: [CHECK THIS] Invalid parent window\n");
     }
     Parent = (void *) pWindow;
-    window->parent = Parent;
+    window->parent = Parent;     //save.
     window->child_list = NULL;
 // ===================================
 
@@ -776,8 +771,6 @@ void *xxxCreateWindow (
 
     //window->procedure = (unsigned long) &system_procedure;
     //window->wProcedure = NULL;  //Estrutura.
-
-
 
 //
 // == Status ============================
@@ -826,6 +819,7 @@ void *xxxCreateWindow (
 // inclui as bordas e a barra de títulos.
 
 // Dimensions
+// Passado via argumento.
     window->width  = (unsigned long) (WindowWidth  & 0xFFFF);
     window->height = (unsigned long) (WindowHeight & 0xFFFF);
 
@@ -892,30 +886,40 @@ void *xxxCreateWindow (
 // =================================
 
 // Deslocamento em relação a janela mãe.
+// Passado via argumento.
     window->x = WindowX;
     window->y = WindowY;
 
 //++
 // Margens.
-// Deslocamento em relação a tela. (Screen)
-// Vai depender do deslocamento da janela mãe.
+// Deslocando em relaçao a janela mae.
     if ( window->parent != NULL )
     {
-        window->left = (window->parent->left + window->x); 
-        window->top  = (window->parent->top  + window->y);
+        // parent + arguments
+        window->left = (window->parent->left + WindowX); 
+        window->top  = (window->parent->top  + WindowY);
+        //window->left = (window->parent->left + window->x); 
+        //window->top  = (window->parent->top  + window->y);
 
 // No caso da primeira janela de todas.
-    }
-    else
-    {
-        window->left = window->x;
-        window->top  = window->y; 
+    }else{
+
+        // Same as arguments
+        window->left = WindowX;
+        window->top  = WindowY; 
+        //window->left = window->x;
+        //window->top  = window->y; 
     };
+
+// right and bottom.
     window->right  = (unsigned long) ( window->left + window->width );
     window->bottom = (unsigned long) ( window->top  + window->height ); 
 //--
 
-    if ( Maximized == TRUE || Fullscreen == TRUE )
+// #bugbug
+// max and full aren't the same thing,
+    if ( Maximized == TRUE || 
+         Fullscreen == TRUE )
     {
         window->left = deviceLeft;
         window->top  = deviceTop;
@@ -942,7 +946,6 @@ void *xxxCreateWindow (
 
 // Window background
     window->bg_color = (unsigned int) color;
-
 // Client area rectangle
     window->clientrect_bg_color = (unsigned int) clientcolor;
 
@@ -1106,15 +1109,12 @@ void *xxxCreateWindow (
 // pois quando chamarmos draw.c a estrutura de janela ja deve estar 
 // inicializada.
 // Rotinas grandes como pintar um barra de rolagem podem ficar em draw.c
-
 // #importante
 // Deveria ter uma variável global indicando o tipo de 
 // design atual, se é 3D ou flat.
-
 // Configurando os elementos de acordo com o tipo.
 // @todo: Salvar as flags para os elementos presentes
 // na estrutura da janela.
-
 // Flags
 // Initializing the flag for all the elements.
 // not used by default.
@@ -1486,8 +1486,8 @@ void *xxxCreateWindow (
             case WT_BUTTON:
                 window->bg_color = color;
                 break;
+            //#fixme
             default:
-                //#fixme
                 window->bg_color = COLOR_PINK;  //BLACK?
                 //window->bg_color = CurrentColorScheme->elements[csiWindowBackground]; 
                 break;
@@ -1507,29 +1507,34 @@ void *xxxCreateWindow (
             }
         }
 
+        // Draw the background.
 
-        // Draw 
-
-        //#bugbug
         //Remember: The first window do not have a parent.
-
         if ( (void*) Parent == NULL )
         { 
-            gwssrv_debug_print ("xxxCreateWindow: [Background] Parent\n"); 
+            gwssrv_debug_print ("xxxCreateWindow: [bg] without Parent\n"); 
             rectBackbufferDrawRectangle ( 
-                    window->left, window->top, 
-                    window->width, window->height, 
-                    window->bg_color, TRUE,
+                    window->left, 
+                    window->top, 
+                    window->width, 
+                    window->height, 
+                    window->bg_color, 
+                    TRUE,
                     rop_flags );  // rop_flags
         }  
 
+        // Yes, we have a parent window.
+        // O deslocamente foi refeito logo acima.
         if ( (void*) Parent != NULL )
         {
-            gwssrv_debug_print ("xxxCreateWindow: [Background] No Parent\n"); 
+            gwssrv_debug_print ("xxxCreateWindow: [bg] with Parent\n"); 
             rectBackbufferDrawRectangle ( 
-                window->left, window->top, 
-                window->width, window->height, 
-                window->bg_color, TRUE,
+                window->left, 
+                window->top, 
+                window->width, 
+                window->height, 
+                window->bg_color, 
+                TRUE,
                 rop_flags );  //rop_flags
         }
     }
@@ -1617,7 +1622,8 @@ void *xxxCreateWindow (
             ( ( (unsigned long) window->width - ( (unsigned long) tmp_size * (unsigned long) gcharWidth) ) >> 1 );
 
 
-        //#debug
+        // #debug
+        // Se o botão não tem uma parent window.
         if ( (void*) Parent == NULL ){
             gwssrv_debug_print ("xxxCreateWindow: [WT_BUTTON] Parent NULL\n"); 
         }

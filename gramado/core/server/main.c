@@ -1294,7 +1294,6 @@ void create_taskbar (void)
     }
 
 // Register the window.
-
     WindowId = (int) RegisterWindow(__taskbar_window);
     if (WindowId<0)
     {
@@ -1306,14 +1305,11 @@ void create_taskbar (void)
 // wid
     __taskbar_window->id = WindowId;
 
-
 // Setup Window manager.
-
     WindowManager.taskbar = (struct gws_window_d *) __taskbar_window;
 
 // Show
     //flush_window(__taskbar_window);
-
 
 // #debug
 
@@ -1345,7 +1341,7 @@ void create_taskbar (void)
         (struct gws_window_d *) CreateWindow ( 
             WT_BUTTON, 0, 1, 1, "1",  
             b_left, b_top, b_width, b_height,   
-             __taskbar_window, 0, COLOR_GRAY, COLOR_GRAY );    
+            __taskbar_window, 0, COLOR_GRAY, COLOR_GRAY );    
 
     if ( (void *) __taskbar_startmenu_button_window == NULL )
     {
@@ -1363,7 +1359,6 @@ void create_taskbar (void)
     }
 
 // Register the button.
-
     menu_wid = RegisterWindow(__taskbar_startmenu_button_window);
     if (menu_wid<0)
     {

@@ -30,6 +30,9 @@ struct gwssrv_menu_d
     struct gws_window_d  *window;
     struct gws_window_d  *parent;
 
+// TRUE = the menu procedure is running at the moment.
+    int in_use;
+
     unsigned long x;
     unsigned long y;
     unsigned long width;
@@ -52,8 +55,8 @@ struct gwssrv_menu_d *MainMenu;
 // == Prototypes ==============================================
 //
 
-// checa se o mouse esta passando sobre o main menu.
-int __is_inside_menu(int x, int y);
+// checa se o mouse esta passando sobre o menu.
+int __is_inside_menu(struct gwssrv_menu_d *menu, int x, int y);
 
 
 int gwssrv_get_number_of_itens (struct gwssrv_menu_d *menu);
@@ -72,10 +75,9 @@ struct gwssrv_menu_item_d *gwssrv_create_menu_item (
     char *label,
     int id,
     struct gwssrv_menu_d *menu);
-    
-    
+
 //test
-int create_main_menu(void);
+int create_main_menu(int mousex, int mousey);
 
 
 

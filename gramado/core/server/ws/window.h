@@ -1329,14 +1329,24 @@ void activate_last_window(void);
 // list support
 // not tested yet
 void wm_add_window_into_the_list( struct gws_window_d *window );
-void wm_remove_window_from_list_and_kill( struct gws_window_d *window);
+void wm_remove_window_from_list_and_kill( struct gws_window_d *window );
 
+
+unsigned long 
+mainmenuDialog(
+    struct gws_window_d *window,
+    int msg,
+    unsigned long long1,
+    unsigned long long2 );
+    
 unsigned long 
 wmProcedure(
     struct gws_window_d *window,
     int msg,
     unsigned long long1,
     unsigned long long2 );
+
+
 
 // Entry point
 unsigned long 
@@ -1349,6 +1359,13 @@ wmHandler(
 void wm_Update_TaskBar( char *string );
 void wmInitializeGlobals(void);
 void yellow_status( char *string );
+
+
+int 
+is_within2 ( 
+    struct gws_window_d *window, 
+    unsigned long x, 
+    unsigned long y );
 
 int 
 is_within ( 

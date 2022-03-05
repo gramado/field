@@ -205,7 +205,7 @@ void __update_fps(void)
 // Paint button borders.
 // Called by xxxCreateWindow
 // >>> No checks
-
+// IN: window, color, color, color, color.
 void 
 __draw_button_borders(
     struct gws_window_d *w,
@@ -217,6 +217,8 @@ __draw_button_borders(
 
     debug_print("__draw_button_borders:\n");
 
+
+// This is the window for relative positions.
     if ( (void*) w == NULL ){
         return;
     }
@@ -228,11 +230,11 @@ __draw_button_borders(
 
 // Cima
     rectBackbufferDrawRectangle ( 
-        w->left+1, w->top,
+        w->left+1, w->top, 
         w->width-2, 1, 
         outer_color, TRUE,0 );
     rectBackbufferDrawRectangle ( 
-        w->left+1, w->top+1,
+        w->left+1, w->top+1, 
         w->width-2, 1, 
         color1, TRUE,0 );
     rectBackbufferDrawRectangle ( 
@@ -1766,6 +1768,24 @@ __add_message_to_into_the_queue(
 }
 
 
+unsigned long 
+mainmenuDialog(
+    struct gws_window_d *window,
+    int msg,
+    unsigned long long1,
+    unsigned long long2 )
+{
+    int Status=FALSE;
+    
+    // ok, it is working
+    Status = __is_inside_menu(MainMenu,long1,long2);
+    if(Status==FALSE)
+        yellow_status("Out ");
+    if(Status==TRUE)
+        yellow_status("In ");
+    return 0;
+}
+
 // Talvez precisaremos de mais parametros.
 unsigned long 
 wmProcedure(
@@ -1775,6 +1795,7 @@ wmProcedure(
     unsigned long long2 )
 {
     int Status=FALSE;
+    unsigned long r=0;
     
 // #debug
     //printf("wmProcedure: w=? m=%d l1=%d l2=%d\n", 
@@ -1877,7 +1898,6 @@ wmProcedure(
 
     case GWS_MouseMove:
 
-        // #
         // The compositor is doing this job at the
         // and of it's routine. See: comp.c
         comp_set_mouse_position(long1,long2);
@@ -1899,6 +1919,14 @@ wmProcedure(
             (struct gws_window_d *) __taskbar_startmenu_button_window,
             long1,
             long2 );
+
+        //sema as above.
+        //mas considera os valores da janela mae.
+        //#bugbug: Not working
+        //Status = is_within2(
+        //    (struct gws_window_d *) __taskbar_startmenu_button_window,
+        //    long1,
+        //    long2 );
         
         // Sim
         if(Status==TRUE)
@@ -1910,6 +1938,23 @@ wmProcedure(
         }
         
         if(Status==FALSE){ mousehover_window=0; }
+
+        //========
+        //o ponteiro do mouse esta dentro do main menu?
+        if( (void*)MainMenu!=NULL)
+        {
+            if(MainMenu->in_use == TRUE)
+            {
+                // Call the main menu dialog
+                r = (unsigned long) mainmenuDialog(
+                    (struct gws_window_d *) 0,
+                    (int) msg,
+                    (unsigned long) long1,
+                    (unsigned long) long2 ); 
+                return r;
+            }
+        }
+        //========
         
         return 0;
         break;
@@ -1934,11 +1979,16 @@ wmProcedure(
 
     case GWS_MouseReleased:
         if(long1==0){ yellow_status("R0"); }
-        if(long1==1){ yellow_status("R1"); wm_update_desktop(); return 0; }
-        //if(long1==1){ yellow_status("R1"); create_main_menu(); return 0; }
+        //if(long1==1){ yellow_status("R1"); wm_update_desktop(); return 0; }
+        if(long1==1){ 
+            yellow_status("R1"); 
+            create_main_menu(100,100);
+            //create_main_menu(200,200); 
+            return 0; 
+        }
         if(long1==2){ yellow_status("R2"); return 0; }
-        //if(long1==1){ create_main_menu(); return 0; }
-        //if(long1==1){ create_main_menu(); return 0; }
+        //if(long1==1){ create_main_menu(mousex,mousey); return 0; }
+        //if(long1==1){ create_main_menu(mousex,mousey); return 0; }
         
         //if(mousehover_window==__taskbar_startmenu_button_window->id)
         //    wm_update_desktop();
@@ -1952,7 +2002,7 @@ wmProcedure(
             wm_update_active_window();
         }
         //if(mousehover_window==__taskbar_startmenu_button_window->id)
-        //    create_main_menu();
+        //    create_main_menu(mousex,mousey);
 
         //if(mousehover_window==__taskbar_startmenu_button_window->id)
         //    __switch_focus();
@@ -2259,6 +2309,77 @@ void yellow_status( char *string )
 }
 
 
+
+int 
+is_within2 ( 
+    struct gws_window_d *window, 
+    unsigned long x, 
+    unsigned long y )
+{
+    struct gws_window_d *pw;
+    struct gws_window_d *w;
+
+// #bugbug
+// E se a janela tem janela mae?
+
+// window validation
+
+    if( (void*) window == NULL )
+        return FALSE;
+
+    if ( window->used != TRUE && 
+         window->magic != 1234 )
+    {
+        return FALSE;
+    }
+
+
+// ====
+
+// parent
+// The parent window.
+    pw = window->parent;
+
+    if( (void*) pw == NULL )
+        return FALSE;
+
+    if ( pw->used != TRUE && 
+         pw->magic != 1234 )
+    {
+        return FALSE;
+    }
+
+// window
+// the window itself
+    w = window;
+
+    if( (void*) w == NULL )
+        return FALSE;
+
+    if ( w->used != TRUE && 
+         w->magic != 1234 )
+    {
+        return FALSE;
+    }
+
+//relative to the parent.
+    int x1= pw->left + w->left; 
+    int x2= x1 + w->width;
+    int y1= pw->top  + w->top;
+    int y2= y1 + w->height;
+
+    if( x > x1 && 
+        x < x2 &&
+        y > y1 && 
+        y < y2 )
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
 //#todo: Explain it.
 int 
 is_within ( 
@@ -2266,6 +2387,9 @@ is_within (
     unsigned long x, 
     unsigned long y )
 {
+
+// #bugbug
+// E se a janela tem janela mae?
 
     if ( (void*) window != NULL )
     {
@@ -3660,6 +3784,12 @@ struct gwssrv_menu_d *gwssrv_create_menu (
         return NULL;
     }
 
+//#todo register
+    int m_wid=-1;
+    m_wid = RegisterWindow(window);
+    if(m_wid<0)
+        return NULL;
+
 // Save window pointer.
     menu->window = window; 
     menu->parent = parent;
@@ -3727,6 +3857,16 @@ struct gwssrv_menu_item_d *gwssrv_create_menu_item (
         goto fail;
     }
 
+    //#todo:
+    //register.
+
+    int mi_wid=-1;
+    mi_wid = RegisterWindow(window);
+    if(mi_wid<0)
+        return NULL;
+
+
+// The window.
     item->window = window;
         
 //ok
@@ -3781,32 +3921,44 @@ int gwssrv_redraw_menu ( struct gwssrv_menu_d *menu )
 
 
 // checa se o mouse esta passando sobre o main menu.
-int __is_inside_menu(int x, int y)
+int __is_inside_menu(struct gwssrv_menu_d *menu, int x, int y)
 {
+
+// #todo
+// Para as janelas do menu precisamos considerar
+// a parent window para encontrarmos o 
+// deslocamento correto.
+
+    struct gwssrv_menu_d *m;
+
     struct gws_window_d *pw;
     struct gws_window_d *mw;
 
-    if( (void*)MainMenu==NULL )
+    m = (struct gwssrv_menu_d *) menu;
+
+    if( (void*)m==NULL )
         return -1;
 
 // parent window
-    pw = MainMenu->parent;
+    pw = m->parent;
     if( (void*)pw == NULL )
         return -1;
 
 // menu window
-    mw = MainMenu->window;
+    mw = m->window;
     if( (void*)mw == NULL )
         return -1;
 
 //parent
-    int x1= pw->left   + mw->left; 
-    int x2= pw->width  + mw->width;
+    int x1= pw->left + mw->left; 
+    int x2= x1 + mw->width;
     int y1= pw->top    + mw->top;
-    int y2= pw->height + mw->height;
+    int y2= y1 + mw->height;
 
-    if( x>x1 && x<x2 &&
-        y>y1 && y<y2 )
+    if( x > x1 && 
+        x < x2 &&
+        y > y1 && 
+        y < y2 )
     {
         return TRUE;
     }
@@ -3816,21 +3968,24 @@ int __is_inside_menu(int x, int y)
 
 
 //test
-int create_main_menu(void)
+int create_main_menu(int mousex, int mousey)
 {
 
 //#provisorio
     struct gwssrv_menu_d *menu;
 
+
+    MainMenu->in_use = FALSE;
+
     // #testing (NEW)
     menu = gwssrv_create_menu (
-               (int) gui->screen_window,
+               (int) gui->screen_window,  //parent
                (int) 0,   //highlight
                (int) 4,   //count
-               (unsigned long) 8, 
-               (unsigned long) 8,
-               (unsigned long) 320,
-               (unsigned long) 280,
+               (unsigned long) mousex,  //8, 
+               (unsigned long) mousey,  //8,
+               (unsigned long) 200,     //320,
+               (unsigned long) 200,     //280,
                (unsigned long) COLOR_WHITE );
 
     if ( (void*) menu == NULL ){
@@ -3864,20 +4019,14 @@ int create_main_menu(void)
 //show
     gws_show_window_rect(menu->window);
 
+
 // global
     MainMenu = (struct gwssrv_menu_d *) menu;
-
+    MainMenu->in_use = TRUE;
     return 0;
 }
 
-
-
-
-
-
-
 /*
- *********************************************
  * gws_resize_window:
  *     Muda as dimensões da janela.
  */
