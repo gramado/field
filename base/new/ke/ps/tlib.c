@@ -449,13 +449,17 @@ void show_reg (int tid){
     };
 }
 
+
+
 /* 
- *********************************
  * set_thread_priority: 
- *
  */
 
 // Muda a prioridade e o quantum de acordo com a prioridade.
+// #bugbug
+// Isso nao eh bom, a funcao deve fazer exatamente
+// o que o nome diz, #todo: devemos criar
+// outra rotina para mudar o quantum.
 
 void 
 set_thread_priority ( 
@@ -463,60 +467,62 @@ set_thread_priority (
     unsigned long priority )
 {
 
+    //unsigned long NewPriority = priority;
     unsigned long OldPriority  = 0;
+
     unsigned long BasePriority = 0;
 
 
-    // Limits
+// Limits
     if ( priority > PRIORITY_MAX )
-        return;
-
-    if ( (void *) t == NULL )
     {
-        //
+        //NewPriority = PRIORITY_MAX;
         return;
+    }
 
-    }else{
+// Thread validation
+    if ( (void *) t == NULL )              { return; }
+    if ( t->used != 1 || t->magic != 1234 ){ return; }
 
-        // Validation
-        if ( t->used != 1 || t->magic != 1234 ){ return; }
+// Save old values.
+    OldPriority  = t->priority;
+    BasePriority = t->base_priority;
 
-        OldPriority  = t->priority;
-        BasePriority = t->base_priority;
+// Se aprioridade solicitada for igual da prioridade atual.
+    if ( priority == OldPriority ){ return; }
 
-        // Se aprioridade solicitada for igual da prioridade atual.
-        if ( priority == OldPriority ){ return; }
+// Se a prioridade solicitada for menor que a prioridade basica.
+// #todo: Ent~ao poderiamos usar a prioridade basica.
+    if ( priority < BasePriority ){ return; }
+
+// Se a prioridade basica pertencer a classe de tempo real
+// nao podemos mudar a prioridade.
+    if ( BasePriority > PRIORITY_NORMAL ){ return; }
+
+// limits again
+    if ( priority > PRIORITY_MAX )
+    {
+        t->priority = PRIORITY_MAX;
+    }
+
+// Set new priority!
+// Set new quantum.
+// Se aprioridade solicitada for diferente da prioridade atual.
+// Tambem nao pode ser menor que a base.
+    if ( priority != OldPriority )
+    {
+        // Set new priority!
+        t->priority = priority;
         
-        // Se a prioridade solicitada for menor que a prioridade basica.
-        if ( priority < BasePriority ){ return; }
+        // Set new quantum!
+        t->quantum = ( priority * TIMESLICE_MULTIPLIER );
+        if ( t->quantum < QUANTUM_MIN ){  t->quantum = QUANTUM_MIN; }
+        if ( t->quantum > QUANTUM_MAX ){  t->quantum = QUANTUM_MAX; }
+    }
 
-        // Se a prioridade basica pertencer a classe de tempo real
-        // nao podemos mudar a prioridade.
-        if ( BasePriority > PRIORITY_NORMAL ){ return; }
-        
-        // limits again
-        if ( priority > PRIORITY_MAX )
-        {
-            t->priority = PRIORITY_MAX;
-        }
-
-        // Change!
-        // Se aprioridade solicitada for diferente da prioridade atual.
-        // Tambem nao pode ser menor que a base.
-        if ( priority != OldPriority )
-        {
-            // Muda a prioridade.
-            t->priority = priority;
-        
-            t->quantum = ( priority * TIMESLICE_MULTIPLIER );
-
-            if ( t->quantum < QUANTUM_MIN ){  t->quantum = QUANTUM_MIN; }
-            if ( t->quantum > QUANTUM_MAX ){  t->quantum = QUANTUM_MAX; }
-        };    
-        // ...
-    };
-    // ??
+    // ...
 }
+
 
 // muda a prioridade para alem dos limites ... teste.
 void threadi_power(
@@ -537,7 +543,6 @@ void threadi_power(
 
 
 /*
- ****************************************
  * release:
  * #importante
  * Isso deve liberar uma thread que estava esperando 
@@ -546,37 +551,35 @@ void threadi_power(
  * liberada, apenas alteramos se estado.
  */
  
-void release ( int tid ){
-
+void release ( int tid )
+{
     struct thread_d *Thread;
-
 
     if ( tid < 0 || tid >= THREAD_COUNT_MAX )
     {
         //  
-		return; 
+        return; 
     }
-	
+
+// struct
+
     Thread = (void *) threadList[tid];
 
     if ( (void *) Thread == NULL ){
-		//
-		return; 
+        return; 
+    }
 
-    }else{
+    if ( Thread->magic != THREAD_MAGIC )
+    {
+        return; 
+    }
 
-        if ( Thread->magic != THREAD_MAGIC )
-        {
-            return; 
-        }
+// #importante:
+// Não estamos selecionando ela para execução
+// Apenas estamos dizendo que ela está pronta para
+// executar.
 
-		//#importante:
-		//Não estamos selecionando ela para execução
-		//Apenas estamos dizendo que ela está pronta para
-		//executar.
-
-        Thread->state = READY; 
-    };
+    Thread->state = READY; 
 }
 
 
@@ -599,6 +602,7 @@ SetThread_PML4PA (
         thread->pml4_PA = (unsigned long) pa;
     };
 }
+
 
 void check_for_dead_thread_collector (void)
 {
@@ -637,21 +641,19 @@ void check_for_dead_thread_collector (void)
  *     #todo: Alertar o processo que a thread morreu.
  */
 
-void dead_thread_collector (void){
-
+void dead_thread_collector (void)
+{
     register int i=0;  //loop
     
     struct process_d  *p; 
     struct thread_d   *Thread; 
 
-
-	//
-	// Check idle
-	//
+//
+// Check idle
+//
 
     if ( (void *) ____IDLE == NULL ){
         panic ("dead_thread_collector: ____IDLE fail");
-
     }else{
 
         if ( ____IDLE->used != 1 || ____IDLE->magic != 1234 )
@@ -661,12 +663,12 @@ void dead_thread_collector (void){
         // ...
     };
 
-    // loop
-    // Scan
+// loop
+// Scan
     for ( i=0; i < THREAD_COUNT_MAX; i++ )
     {
-	    Thread = (void *) threadList[i];
-		
+        Thread = (void *) threadList[i];
+
 		if ( (void *) Thread != NULL )
 		{
 		    if ( Thread->state == ZOMBIE && 
@@ -712,10 +714,11 @@ void dead_thread_collector (void){
 		};
 		//Nothing.
 	};
-	
-	//@todo:
-	// * MOVEMENT 10 (zombie --> Dead)
-	// * MOVEMENT 11 (zombie --> Initialized) .. reinicializar.	
+
+//@todo:
+// MOVEMENT 10 (zombie --> Dead)
+// MOVEMENT 11 (zombie --> Initialized) .. reinicializar.
+
 }
 
 
@@ -725,20 +728,18 @@ void dead_thread_collector (void){
  *     Destroi a estrutura e libera o espaço na lista.
  */
 
-void kill_thread (int tid){
-
+void kill_thread (int tid)
+{
     struct thread_d *__Thread;
 
-
-	//Limits.
+// Limits.
     if ( tid < 0 || tid >= THREAD_COUNT_MAX ){
         debug_print ("kill_thread: tid");
         return;
     }
 
-
-    // #bugbug
-    // The IDLE thread.
+// #bugbug
+// The IDLE thread.
     
     if ( (void *) ____IDLE == NULL ){
         panic ("kill_thread: ____IDLE fail");
@@ -750,31 +751,30 @@ void kill_thread (int tid){
             panic ("kill_thread: ____IDLE validation");
         }
 
-	    // Se queremos deletar a idle.
+        // Se queremos deletar a idle.
         if ( tid == ____IDLE->tid ){
             panic ("kill_thread: Sorry, we can't kill the idle thread!");
-	    }
-	    // ...
+        }
+        // ...
     };
 
-	
-	//
-	// @todo: 
-	//    Deve acordar o pai que está esperando o filho fechar.
-	//    Mas no caso estamos apenas fechando uma thread.
-    //    Caso essa não seja a thread primária, isso não deve 
-    // causar o fechamento do processo.	
-    //
+// @todo: 
+//    Deve acordar o pai que está esperando o filho fechar.
+//    Mas no caso estamos apenas fechando uma thread.
+//    Caso essa não seja a thread primária, isso não deve 
+// causar o fechamento do processo.
 
     __Thread = (void *) threadList[tid];
 
-	// A thread alvo nem existe,
-	// vamos apenas continuar.
+    if ( (void *) __Thread == NULL )
+    {
+        // A thread alvo nem existe,
+        // vamos apenas continuar.
 
-    if ( (void *) __Thread == NULL ){
         printf ("kill_thread: This thread doesn't exist!\n");
         refresh_screen();
         return;
+
     }else{
 
 
@@ -791,12 +791,11 @@ void kill_thread (int tid){
 
         // #todo 
         // Pegar o id do pai e enviar um sinal e acorda-lo
-        //se ele estiver esperando por filho.		
+        //se ele estiver esperando por filho.
         __Thread->used  = 0;
         __Thread->magic = 0; 
         __Thread->state = DEAD; 
         // ...
-
 
 		//ProcessorBlock.threads_counter--;
 		//if ( ProcessorBlock.threads_counter < 1 ){
@@ -809,10 +808,8 @@ void kill_thread (int tid){
             panic ("kill_thread: threads_counter");
         }
 
-
         threadList[tid] = (unsigned long) 0;
-        __Thread = NULL;		
-        
+        __Thread = NULL;
          
         // se matamos a thread atual.         
         if ( tid == current_thread )
@@ -842,14 +839,6 @@ void kill_all_threads (void)
     register int i=0;
     for ( i=0; i < THREAD_COUNT_MAX; ++i ){ kill_thread(i); };
 }
-
-
-
-
-
-
-
-
 
 
 

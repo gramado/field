@@ -1376,7 +1376,10 @@ is_within (
 //refaz zorder.
 void reset_zorder(void);
 void validate_window (struct gws_window_d *window);
+
+void invalidate_window_by_id( int wid );
 void invalidate_window (struct gws_window_d *window);
+
 void invalidate_root_window(void);
 void invalidate_taskbar_window(void);
 void __begin_paint(struct gws_window_d *window);

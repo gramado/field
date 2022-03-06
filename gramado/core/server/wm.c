@@ -1236,16 +1236,23 @@ void wm_update_desktop(void)
 }
 
 
+// Set focus on a window.
+// Change the foreground thread.
+// The new foreground thread will be 
+// the thread associated with this given window.
 void set_focus(struct gws_window_d *window)
 {
-    if( (void*) window == NULL )
+    if( (void*) window == NULL ){
         return;
+    }
 
-    if ( window->used != TRUE )
+    if ( window->used != TRUE ){
         return;
+    }
 
-    if ( window->magic != 1234 )
+    if ( window->magic != 1234 ){
         return;
+    }
 
 // global variable
 
@@ -1264,7 +1271,6 @@ void set_focus_by_id( int wid )
 {
     struct gws_window_d *w;
 
-
     if(wid<0)
         return;
 
@@ -1282,7 +1288,6 @@ void set_focus_by_id( int wid )
         return;
 
 //ok
-
     set_focus(w);
 }
 
@@ -2420,6 +2425,26 @@ void validate_window (struct gws_window_d *window)
             window->dirty = FALSE;
         }
     }
+}
+
+
+void invalidate_window_by_id( int wid )
+{
+    struct gws_window_d *w;
+
+    if(wid<0)
+        return;
+    if(wid>=WINDOW_COUNT_MAX)
+        return;
+    w=(struct gws_window_d *)windowList[wid];
+    if((void*)w==NULL)
+        return;
+    if(w->used!=TRUE)
+        return;
+    if(w->magic!=1234)
+        return;
+
+    invalidate_window(w);    
 }
 
 

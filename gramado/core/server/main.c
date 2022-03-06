@@ -2175,21 +2175,21 @@ int serviceAsyncCommand (void)
     unsigned long *message_address = (unsigned long *) &__buffer[0];
 
     // int window_id=0;
-    unsigned long message_id =0;
-    unsigned long request_id =0;
-    unsigned long subrequest_id = 0;
-    unsigned long Data = 0;
+    unsigned long message_id=0;
+    unsigned long request_id=0;
+    unsigned long subrequest_id=0;
+    unsigned long data=0;
 
 // Parameters
     // window_id  = message_address[0];
     message_id    = message_address[1];   // message code.
     request_id    = message_address[2]; 
     subrequest_id = message_address[3];
-    Data          = message_address[4];
+    data          = message_address[4];
 
     // ...
 
-    gwssrv_debug_print ("serviceAsyncCommand: #bugbug\n");
+    gwssrv_debug_print ("serviceAsyncCommand:\n");
 
 // Validate our message number.
 
@@ -2275,7 +2275,7 @@ int serviceAsyncCommand (void)
     case 7:
         gwssrv_debug_print ("serviceAsyncCommand: [7] Register wm pid\n");
         //printf ("serviceAsyncCommand: [7] [BREAKPOINT] Register wm pid\n");
-         ____saved_wm_magic_pid = (int) Data;
+         ____saved_wm_magic_pid = (int) data;
         //exit(0);
         return 0;
         break;
@@ -2295,7 +2295,7 @@ int serviceAsyncCommand (void)
 
     case 9:
         gwssrv_debug_print ("serviceAsyncCommand: [9] \n");
-        set_window_with_focus(Data);
+        set_window_with_focus(data);
         break;
 
 
@@ -2304,7 +2304,7 @@ int serviceAsyncCommand (void)
     // TRUE = use kgws ; FALSE =  do not use kgws.
     case 10:
         gwssrv_debug_print ("serviceAsyncCommand: [10] \n");
-        printf ("serviceAsyncCommand: [10] \n");
+                    printf ("serviceAsyncCommand: [10] \n");
 
         rectBackbufferDrawRectangle0(
             10, 10, 40, 40,
@@ -2313,9 +2313,7 @@ int serviceAsyncCommand (void)
             0,        // rop falgs
             FALSE );   // TRUE = use kgws. (kernel service)
         refresh_rectangle_via_kgws(10, 10, 40, 40);
-        
-        demoLines();
-        
+        //demoLines();
         return 0;
         
         break;
@@ -2327,6 +2325,11 @@ int serviceAsyncCommand (void)
 
     case 12:
         __switch_focus();
+        return 0;
+        break;
+
+    case 13:
+        invalidate_window_by_id(data);
         return 0;
         break;
 

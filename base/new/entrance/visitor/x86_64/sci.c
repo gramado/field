@@ -934,6 +934,7 @@ void *gde_extra_services (
 
 
 // unit2: Do the job.
+// 0x80 ?
 void *sci0 ( 
     unsigned long number, 
     unsigned long arg2, 
@@ -1802,6 +1803,7 @@ done:
 
 
 // unit2: Do the job.
+// 0x81 ?
 void *sci1 ( 
     unsigned long number, 
     unsigned long arg2, 
@@ -1830,6 +1832,7 @@ void *sci1 (
 
 
 // unit2: Do the job.
+// 0x82 ?
 void *sci2 ( 
     unsigned long number, 
     unsigned long arg2, 
@@ -1844,13 +1847,13 @@ void *sci2 (
     unsigned long *a3 = (unsigned long*) arg3;
     unsigned long *a4 = (unsigned long*) arg4;
 
+    // debug_print("sci2: [TODO]\n");
 
-    //debug_print("sci2: [TODO]\n");
+// Profiling in the process structure.
 
-    // Profiling in the process structure.
-
-    // #todo: limite superior
-    if (current_process<0){
+    if ( current_process < 0 || 
+         current_process >= PROCESS_COUNT_MAX )
+    {
         panic("sci2: current_process\n");
     }
 
@@ -1864,15 +1867,16 @@ void *sci2 (
         panic("sci2: p validation\n");
     }
 
-    // Counting syscalls ...
+// Counting syscalls ...
     p->syscalls_counter++;
 
 //
 // switch
 //
 
-    //set magic
-    // #todo: This operation needs permition?
+//set magic
+// #todo: This operation needs permition?
+
     if ( number == 1 ){
         CONSOLE_TTYS[fg_console].magic = arg2;
         return NULL;
@@ -1886,14 +1890,15 @@ void *sci2 (
     if ( number == 3 ){
         debug_print("sci2: [3] metrics\n");
         //return (void*) systemGetSystemMetrics(arg2);
+        return NULL;
     }
         
     if ( number == 4 ){
         debug_print("sci2: [4] ioctl\n");
         //return (void*) sys_ioctl ( (int) arg2, (unsigned long) arg3, (unsigned long) arg4 );
+        return NULL;
     }
 
-    
     if ( number == 5 ){
         debug_print("sci2: [5] fcntl\n");
         return (void*) sys_fcntl ( (int) arg2, (int) arg3, (unsigned long) arg4 );
@@ -1970,36 +1975,39 @@ void *sci2 (
         return NULL;
     }
 
-    // Pegando informação sobre sincronização de leitura e escrita de arquivos.
-    // principalmente para socket.
-    // A estrutura de arquivo contém uma estrutura de sincronização de leitura e escrita.
-    // #ok: podemos usar ioctl
-    // See: sys.c
-    // IN: fd, request
+// Pegando informação sobre sincronização de leitura e escrita de arquivos.
+// principalmente para socket.
+// A estrutura de arquivo contém uma estrutura de sincronização de leitura e escrita.
+// #ok: podemos usar ioctl
+// See: sys.c
+// IN: fd, request
+
     if ( number == 10001 ){
         //debug_print("sci2: [10000] sys_get_file_sync\n");
         return (void*) sys_get_file_sync( (int) arg2, (int) arg3 );
     }
 
-
-    // Get the tid of the current thread.
+// Get the tid of the current thread.
     if ( number == 10010 ){
         //debug_print("sci2: [10010] GetCurrentTID\n");
         return (void*) GetCurrentTID();
     }
 
-
-    // Set the foreground thread tid.
-    // #todo: We need a method for that.
+// Set the foreground thread tid.
+// #todo: 
+// We need a method for that.
+// IN: arg2=tid.
     if ( number == 10011 )
     {
         debug_print("sci2: [10011] set foreground thread tid\n");
+        //Change the priority of the old foreground thread?
+        //set_thread_priority( threadList[foreground_thread], PRIORITY_NORMAL);
         if (arg2<0 || arg2>=THREAD_COUNT_MAX){ return NULL; }  //fail
         t = (struct thread_d *) threadList[arg2];
         if( (void*) t == NULL ){ return NULL; }; //fail
         if(t->used != TRUE) { return NULL; }; //fail
         if(t->magic != 1234){ return NULL; }; //fail
-        t->quantum = QUANTUM_FIRST_PLANE;
+        t->quantum  = QUANTUM_FIRST_PLANE;
         t->priority = PRIORITY_MAX;
         foreground_thread = (int) arg2;
         // it will select the next input reponder.
@@ -2013,8 +2021,8 @@ void *sci2 (
     return NULL;
 }
 
+
 /*
- ***********************
  * servicesPutChar:
  *     Movendo para terminal/output.c 
  *     Coloca um char usando o 'terminal mode' de stdio selecionado 

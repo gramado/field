@@ -4,23 +4,21 @@
 #include <kernel.h>
 
 
-
 // Thread stats
-unsigned long __GetThreadStats ( int tid, int index ){
-
+unsigned long __GetThreadStats ( int tid, int index )
+{
     struct thread_d  *t;
 
-    //#todo:
-    //checar validade dos argumentos.
-    
-    // safety
+//#todo:
+//checar validade dos argumentos.
+
     if ( tid < 0 || index < 0 )
     {
        return 0;
     }
 
+// Struct
 
-    //Struct.
     t = (void *) threadList[tid];
 
     if ( (void *) t == NULL ){
@@ -33,25 +31,25 @@ unsigned long __GetThreadStats ( int tid, int index ){
         // ...
     };
 
-    // See: 
-    // https://en.wikipedia.org/wiki/Processor_affinity
-    // ...
+// See: 
+// https://en.wikipedia.org/wiki/Processor_affinity
+// ...
  
-    switch ( index ){
+    switch (index){
 
-        case 1:  return (unsigned long) t->tid;  break;
-        case 2:  return (unsigned long) t->ownerPID;  break; 
-        case 3:  return (unsigned long) t->type;  break; 
-        case 4:  return (unsigned long) t->state;  break; 
-        case 5:  return (unsigned long) t->plane;  break; 
-        case 6:  return (unsigned long) t->cpu;  break; 
+        case 1:  return (unsigned long) t->tid;       break;
+        case 2:  return (unsigned long) t->ownerPID;  break;
+        case 3:  return (unsigned long) t->type;      break;
+        case 4:  return (unsigned long) t->state;     break;
+        case 5:  return (unsigned long) t->plane;     break;
+        case 6:  return (unsigned long) t->cpu;       break;
         case 7:  return (unsigned long) t->affinity;  break;
-        
+ 
         // #bugbug: repetido. 6.
         case 8:  return (unsigned long) t->cpu;  break;   
         
         case 9:  return (unsigned long) t->next_cpu;  break; 
-        
+
         // #
         case 10:  
             //return (unsigned long) t->DirectoryPA; 
@@ -123,6 +121,7 @@ unsigned long __GetThreadStats ( int tid, int index ){
     return 0;
 }
 
+
 // Get thread name.
 int getthreadname ( int tid, char *buffer )
 {
@@ -130,16 +129,16 @@ int getthreadname ( int tid, char *buffer )
 
     char *name_buffer = (char *) buffer;
 
-    //#todo
-    //checar validade dos argumentos.
+//#todo
+//checar validade dos argumentos.
 
-    // safety
     if ( tid < 0  )
     {
        return 0;
     }
 
- 
+
+// struct 
     t = (struct thread_d *) threadList[tid]; 
 
     if ( (void *) t == NULL ){
@@ -160,8 +159,8 @@ int getthreadname ( int tid, char *buffer )
     return -1;
 }
 
+
 /*
- ************************
  * FindReadyThread:
  *     Pega a primeira thread READY que encontrar.
  *     E se não encontrar nenhuma, retorna NULL.
@@ -657,7 +656,6 @@ void
 __ps_initialize_thread_common_elements(
     struct thread_d *t )
 {
-
     register int i=0;
 
     t->objectType  = ObjectTypeThread;
@@ -678,19 +676,17 @@ __ps_initialize_thread_common_elements(
 // == Message support ============
 //
 
-    // #todo
-    // Devemos adiar inicialização desses elementos relativos 
-    // a mensagens.
+// #todo
+// Devemos adiar inicialização desses elementos relativos 
+// a mensagens.
 
-    // Single kernel event.
-
+// Single kernel event.
     t->ke_window = NULL;
     t->ke_msg    = 0;
     t->ke_long1  = 0;
     t->ke_long2  = 0;
     t->ke_newmessageFlag = FALSE;
 
-// loop
 // Clear the queue.
     for ( i=0; i<32; ++i )
     {
@@ -707,7 +703,7 @@ __ps_initialize_thread_common_elements(
 
 // ======================
 
-// For the msg_d structure,
+// For the msg_d structure.
 // see: window.h
 
 // Clear the message queue.
@@ -739,13 +735,9 @@ __ps_initialize_thread_common_elements(
     }
 // ===================================
 
-//
 // Signal support
-//
-
     t->signal = 0;
     t->umask = 0;
-
 
     t->exit_code = 0;
 
@@ -753,37 +745,29 @@ __ps_initialize_thread_common_elements(
 }
 
 
-
 /*
- ****************************
  * create_thread:
  *     Cria um thread
- *
  * #todo: 
  * O processo ao qual o thread vai ser atribu�do deve ser passado 
  * via argumento, se o argumento for nulo, ent�o usa-se o 
  * processo atual como dono do thread.
- *
  * Obs: Essa rotina deve fazer a inicializa��o da parte independente
  * da arquitetura e chamar as rotinas referentes � inicializa���es
  * dependentes da arquitetura, que ficar�o em outro diret�rio.
- *
  * IN:
  *     @todo: Esses argumentos presisam ser melhorados.
- *
  * OUT:
  *     Retorno do tipo ponteiro de estrutura.
  *     Retorna o endere�o da estrutura da thread.
  *     Retorna NULL se der errado.
- *
- * 2015, Created - Fred Nora.
+ * 2015 - Created by Fred Nora.
  * 2021 - 64bit version
  */
 
 // #todo
 // Incluir o 'ring' como parâmetro.
 // Isso vai ajudar a função decidir quais seletores de segmento usar.
-
 // #todo
 // This is gonna be the wrapper for this routine.
 // This wrapper will call two workers:
@@ -791,7 +775,6 @@ __ps_initialize_thread_common_elements(
 // setup all the machine independent elements.
 // The second one will setup all the machine dependent elements.
 
-// somente ring3.
 struct thread_d *create_thread ( 
     struct room_d     *room,
     struct desktop_d  *desktop,
@@ -802,9 +785,8 @@ struct thread_d *create_thread (
     char *name,
     int iopl )
 {
-
     struct process_d *Process;
-    struct thread_d *Thread;
+    struct thread_d  *Thread;
 
 // Empty slot
     struct thread_d *Empty;
@@ -822,25 +804,27 @@ struct thread_d *create_thread (
 // check parameters.
 
     if( (void*) room == NULL ){
-        debug_print ("create_thread: [FIXME] room parameter is NULL\n");
+        debug_print ("create_thread: room parameter\n");
     }
     if( (void*) desktop == NULL ){
-        debug_print ("create_thread: [FIXME] desktop parameter is NULL\n");
+        debug_print ("create_thread: desktop parameter\n");
     }
     if( (void*) window == NULL ){
-        debug_print ("create_thread: [FIXME] window parameter is NULL\n");
+        debug_print ("create_thread: window parameter\n");
     }
 
-    // #bugbug
-    // Nao podemos usar isso aqui porque a rotina declonagem
-    // chama essa funçao mas reconfigura esse valor logo em seguida.
+// #bugbug
+// Nao podemos usar isso aqui porque a rotina declonagem
+// chama essa funçao mas reconfigura esse valor logo em seguida.
+
     //if( init_rip == 0 ){
     //    panic ("create_thread: [ERROR] init_rip\n");
     //}
 
-    // #bugbug
-    // Nao podemos usar isso aqui porque a rotina declonagem
-    // chama essa funçao mas reconfigura esse valor logo em seguida.
+// #bugbug
+// Nao podemos usar isso aqui porque a rotina declonagem
+// chama essa funçao mas reconfigura esse valor logo em seguida.
+
     //if( init_stack == 0 ){
     //    panic ("create_thread: [ERROR] init_stack\n");
     //}
@@ -859,7 +843,7 @@ struct thread_d *create_thread (
     }
 
 // iopl
-    if(iopl != RING0 && iopl != RING3 ){
+    if( iopl != RING0 && iopl != RING3 ){
         panic ("create_thread: [ERROR] Invalid iopl\n");
     }
 
@@ -925,11 +909,9 @@ struct thread_d *create_thread (
     }
     memset( Thread, 0, sizeof(struct thread_d) );
 
-
 // Belongs to this process.
-
-    Thread->ownerPID = (pid_t) ProcessID;
-    Thread->process = (void *) Process;
+    Thread->process  = (void *) Process;
+    Thread->ownerPID = (pid_t)  ProcessID;
 
 // Paging
 
@@ -945,22 +927,26 @@ struct thread_d *create_thread (
 // Security
 //
 
-    // #todo
-    // Include these element into the thread structure.
+// #todo
+// Include these element into the thread structure.
+
     //Thread->usession = Process->usession;
     //Thread->room     = Process->room;
     //Thread->desktop  = Process->desktop;
 
 // ====
 
+// #todo
+// The parameters needs to provide us this information.
+
     Thread->type  = THREAD_TYPE_SYSTEM; 
     Thread->plane = FOREGROUND;
-
 
 // ==============
 // Surface rectangle.
 
     struct rect_d *r;
+
     r = (struct rect_d *) kmalloc ( sizeof(struct rect_d) );
     if ( (void*) r == NULL ){
         panic("create_thread: r\n");
@@ -976,22 +962,22 @@ struct thread_d *create_thread (
 // ==============
 
 
-// A prioridade base é fixa e 
-// a thread numca poderá ter sua prioridade rebaixada 
+// A 'prioridade base' é fixa e 
+// a thread nunca poderá ter sua prioridade rebaixada 
 // para menos que a prioridade base.
+// Se pertence ao kernel a prioridade eh maxima.
 
     Thread->base_priority = (unsigned long) PRIORITY_NORMAL;  //static
     Thread->priority      = (unsigned long) PRIORITY_NORMAL;  //dynamic
 
-// Se pertence ao kernel
-    if (Thread->ownerPID == GRAMADO_PID_KERNEL){
-        Thread->priority = (unsigned long) PRIORITY_MAX;  //dynamic
+    if (Thread->ownerPID == GRAMADO_PID_KERNEL)
+    {
+        Thread->base_priority = (unsigned long) PRIORITY_MAX;
+        Thread->priority      = (unsigned long) Thread->base_priority;
     }
 // =====================
 
-//
 // Initializing the common basic elements.
-//
 
     __ps_initialize_thread_common_elements( (struct thread_d *) Thread );
 
@@ -1000,11 +986,13 @@ struct thread_d *create_thread (
 // Input model
 //
 
-    // #suspenso. Vamos usar as flags em 't->input_flags'
+// ??
     //Thread->input_model = THREAD_INPUTMODEL_NULL;
 
     Thread->input_flags = (unsigned long) (INPUT_MODEL_STDIN | INPUT_MODEL_MESSAGEQUEUE );
 
+// ??
+// Explain it better.
     Thread->_protected = FALSE;
 
 // Thread name.
@@ -1016,33 +1004,33 @@ struct thread_d *create_thread (
     strcpy ( Thread->__threadname, (const char *) name );
 
 // ?
+// Explain it better.
     Thread->position = 0;
 
-// This thread can be preempted
+// This thread can be preempted.
+// Explain it better.
     Thread->preempted = PREEMPTABLE;
 
     // ...
 
-	//Nothing.
+    //Nothing.
 
 // Loop.
 // Vamos gerar um TID válido.
 // #bugbug: 
 // Isso pode virar um loop infinito!
 
-    int Round = 0;
+    int Round=0;
 
-get_next:
+try_next_slot:
 
-    // #bugbug
-    // Why 3?
-
+    // 3 rounds.
     if (Round > 3){
         panic ("create_thread: [FAIL] No more slots\n");
         //return NULL;
     }
 
-// Recomeça o loop na base para id de usu�rios.
+// Recomeça o loop na base para id de usuarios.
 
     i++;
     if ( i >= THREAD_COUNT_MAX )
@@ -1060,7 +1048,7 @@ get_next:
     Empty = (void *) threadList[i];
 
     if ( (void *) Empty != NULL ){
-        goto get_next;
+        goto try_next_slot;
     }
     
 // ======================================
@@ -1075,14 +1063,15 @@ get_next:
 //
 
 // Temporizadores. 
-// step - Quantas vezes ela usou o processador no total. 
 
-// step: 
-// How many jiffies. total_jiffies.
+// step:
+// Quantas vezes ela usou o processador no total. 
 // Quantas vezes ela já rodou no total.
+// How many jiffies. total_jiffies.
 
     Thread->step = 0;
 
+// Quantum.
     Thread->quantum           = QUANTUM_MIN;
     Thread->quantum_limit_min = QUANTUM_MIN; 
     Thread->quantum_limit_max = QUANTUM_MAX; 
@@ -1101,7 +1090,7 @@ get_next:
     Thread->blockedCount  = 0; 
     Thread->blocked_limit = BLOCKED_LIMIT;
 
-    // Not used now. But it works fine.
+// Not used now. But it works fine.
     Thread->ticks_remaining = 1000; 
 
     Thread->initial_time_ms = get_systime_ms();
@@ -1128,8 +1117,8 @@ get_next:
 // fecha nesses casos por PG fault. Mas o sistema pode travar 
 // se for a �nica thread e um �nico processo. 
 
-		//if( init_stack == 0 ){ ... }
-		//if( init_eip == 0 ){ ... }
+    //if( init_stack == 0 ){ ... }
+    //if( init_eip == 0 ){ ... }
 
 
 //
@@ -1162,11 +1151,10 @@ get_next:
     //Thread->confined = 0;
     //Thread->CurrentProcessor = 0;
     //Thread->NextProcessor = 0;
-        
 
-    //ServiceTable ..
-    //Ticks ...
-    //DeadLine ... 
+//ServiceTable ..
+//Ticks ...
+//DeadLine ... 
 
 
     //Thread->PreviousMode  //ring???
@@ -1188,11 +1176,12 @@ get_next:
 // Incrementar a contagem de threads no processo.
     //Process->threadCount++;
 
-    //Proxima thread da lista.
+//Proxima thread da lista.
+
     Thread->next = NULL;
 
-    // Coloca na lista.
-    // #bugbug: Check overflow again.
+// Coloca na lista.
+// #bugbug: Check overflow again.
 
     threadList[ Thread->tid ] = (unsigned long) Thread;
 
@@ -1228,9 +1217,9 @@ get_next:
     debug_print ("create_thread: Done\n");
     //printf ("create_thread: Done\n");
 
-    // Warning !!! 
-    // ( NÃO COLOCAR PARA EXECUÇÃO, 
-    //   OUTRA FUNÇÃO DEVE COLOCAR ISSO PARA EXECUÇÃO )
+// Warning !!! 
+// ( NÃO COLOCAR PARA EXECUÇÃO, 
+//   OUTRA FUNÇÃO DEVE COLOCAR ISSO PARA EXECUÇÃO )
 
     //SelectForExecution(t);  //***MOVEMENT 1 (Initialized ---> Standby)
 
@@ -1246,10 +1235,9 @@ get_next:
  *     Outra rotina destruirá as informações de uma estrutura de thread zombie.
  */
  
-void exit_thread (int tid){
-
+void exit_thread (int tid)
+{
     struct thread_d  *Thread;
-
 
     if ( tid < 0 || tid >= THREAD_COUNT_MAX )
     {
@@ -1275,7 +1263,7 @@ void exit_thread (int tid){
     };
 
 
-    // Get thread structure.
+// Get thread structure.
 
     Thread = (void *) threadList[tid];
 
@@ -1334,11 +1322,13 @@ fail:
     return;
 }
 
+
 // exit current thread.
 void exit_current_thread(void)
 {
     exit_thread(current_thread);
 }
+
 
 /*
  * copy_thread_struct:

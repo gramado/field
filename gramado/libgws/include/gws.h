@@ -288,8 +288,12 @@ setup_surface_retangle (
     unsigned long width, 
     unsigned long height );
 
+// #todo: 
+// change to gws_invalidate_surface_rectangle,
+// or gws_invalidate-surface.
 void invalidate_surface_retangle (void);
 
+void gws_invalidate_window(int fd,int wid);
 
 // Create a window.
 int

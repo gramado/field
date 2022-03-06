@@ -3057,8 +3057,18 @@ void invalidate_surface_retangle (void)
 }
 
 
+void gws_invalidate_window(int fd,int wid)
+{
+    if(fd<0)
+        return;
+    if(wid<0)
+        return;
+//No response.
+    gws_async_command(fd,13,0,wid);
+}
+
+
 /*
- ************************************************** 
  * gws_create_window: 
  *     Create a window.
  *     Given it's type.

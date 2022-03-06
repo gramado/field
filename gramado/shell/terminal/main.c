@@ -1,6 +1,5 @@
 /*
  * File: main.c
- *
  *     Simple virtual terminal.
  *     2021 - Created by Fred Nora.
  */
@@ -16,26 +15,21 @@
 // https://en.wikipedia.org/wiki/Computer_terminal
 // ...
 
-
 // Connecting via AF_INET.
 
 // tutorial example taken from. 
 // https://www.tutorialspoint.com/unix_sockets/socket_server_example.htm
  
 /*
-    To make a process a TCP server, you need to follow the steps given below −
-
+    To make a process a TCP server, 
+    you need to follow the steps given below −
     Create a socket with the socket() system call.
-
     Bind the socket to an address using the bind() system call. 
     For a server socket on the Internet, an address consists of a 
     port number on the host machine.
-
     Listen for connections with the listen() system call.
-
     Accept a connection with the accept() system call. 
     This call typically blocks until a client connects with the server.
-
     Send and receive data using the read() and write() system calls.
 */ 
 
@@ -211,8 +205,13 @@ void __test_gws(int fd)
     //text
     //gws_draw_text(fd,test_win,0,0,COLOR_RED,"This is a string");
 
+//redraw and refresh.
     gws_redraw_window(
          fd, test_win, TRUE );
+//redraw and not refresh.
+    //gws_redraw_window(
+         //fd, test_win, FALSE );
+
 
     //text
     //gws_draw_text(fd,test_win,0,0,COLOR_RED,"This is a string");
@@ -363,8 +362,9 @@ void compareStrings(int fd)
 
 
 // Empty buffer
-   if( *prompt == 0 )
+   if( *prompt == 0 ){
        goto exit_cmp;
+   }
 
 // Clone.
 // #important:
@@ -1758,6 +1758,8 @@ int main ( int argc, char *argv[] )
 
 // Invalidate surface.
     invalidate_surface_retangle();
+
+    //while(1){}
 
 //
 // Test 3
