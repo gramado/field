@@ -9,6 +9,20 @@
 #include <gws.h>
 
 
+
+
+#define TB_HEIGHT  40
+#define TB_BUTTON_PADDING  4
+#define TB_BUTTON_HEIGHT  (TB_HEIGHT - (TB_BUTTON_PADDING*2))
+#define TB_BUTTON_WIDTH  TB_BUTTON_HEIGHT
+#define TB_BUTTONS_MAX  8
+int tb_buttons[TB_BUTTONS_MAX];
+unsigned long tb_windows[TB_BUTTONS_MAX];  // ponteiros de estrutura de janelas.
+// Quantos botões ja temos.
+static int tb_buttons_count=0;  
+
+// ---------
+
 #define WM_DEFAULT_BACKGROUND_COLOR   COLOR_GRAY
 
 int mousehover_window=0;
@@ -1267,6 +1281,33 @@ void set_focus(struct gws_window_d *window)
 }
 
 
+
+
+void set_status_by_id( int wid, int status )
+{
+    struct gws_window_d *w;
+
+    if(wid<0)
+        return;
+
+    if(wid>=WINDOW_COUNT_MAX)
+        return;  
+
+    w = (struct gws_window_d *) windowList[wid];
+
+    if((void*)w==NULL){ return; }
+    
+    if ( w->used != TRUE )
+        return;
+
+    if ( w->magic != 1234 )
+        return;
+
+// Set 
+    w->status = status;
+}
+
+
 void set_focus_by_id( int wid )
 {
     struct gws_window_d *w;
@@ -1791,6 +1832,50 @@ mainmenuDialog(
     return 0;
 }
 
+
+//local
+void __probe_tb_botton_hover(long long1, long long2)
+{
+
+    int Status=0;
+    
+    int i=0;
+    struct gws_window_d *tmp_window_button;
+    
+    for(i=0; i<4; i++){
+    
+        // pega um ponteiro da lista
+        tmp_window_button = (struct gws_window_d *) tb_windows[i];
+        
+        // checa a validade do ponteiro.
+        if ( (void*) tmp_window_button != NULL )
+        {
+            //paranoia
+            if(tmp_window_button->magic == 1234)
+            {
+                Status = is_within(
+                    (struct gws_window_d *) tmp_window_button,
+                    long1, long2 );
+                    
+                if(Status==FALSE){ mousehover_window=0; }
+
+                if(Status==TRUE)
+                {
+                    yellow_status("oops");
+                    //rtl_reboot();
+                    // Register the hover window.
+                    mousehover_window = 
+                        (int) tmp_window_button->id;
+                    
+                    //ok.
+                    return;
+                }
+            }
+        }
+    };
+}
+
+
 // Talvez precisaremos de mais parametros.
 unsigned long 
 wmProcedure(
@@ -1801,7 +1886,7 @@ wmProcedure(
 {
     int Status=FALSE;
     unsigned long r=0;
-    
+
 // #debug
     //printf("wmProcedure: w=? m=%d l1=%d l2=%d\n", 
         //msg, long1, long2 );
@@ -1917,32 +2002,9 @@ wmProcedure(
         //frontbuffer_draw_rectangle( 
         //    long1, long2, 8, 8, COLOR_YELLOW, 0 );
         //------        
- 
-    
-        // O ponteiro esta dentro do botao do menu iniciar?
-        Status = is_within(
-            (struct gws_window_d *) __taskbar_startmenu_button_window,
-            long1,
-            long2 );
 
-        //sema as above.
-        //mas considera os valores da janela mae.
-        //#bugbug: Not working
-        //Status = is_within2(
-        //    (struct gws_window_d *) __taskbar_startmenu_button_window,
-        //    long1,
-        //    long2 );
-        
-        // Sim
-        if(Status==TRUE)
-        {
-            yellow_status("oops");
-            //rtl_reboot();
-            // Register the hover window.
-            mousehover_window=(int)__taskbar_startmenu_button_window->id;
-        }
-        
-        if(Status==FALSE){ mousehover_window=0; }
+        // Em qual botão o mouse esta passando por cima.
+        __probe_tb_botton_hover(long1,long2);
 
         //========
         //o ponteiro do mouse esta dentro do main menu?
@@ -1969,16 +2031,18 @@ wmProcedure(
         if(long1==1){ yellow_status("P1"); }
         if(long1==2){ yellow_status("P2"); }
 
-        // se pressionamos o start menu button
-        // muda o status do botao,
-        // redesenha o botao e exibe.
-        if(mousehover_window==__taskbar_startmenu_button_window->id)
-        {
-            __taskbar_startmenu_button_window->status = BS_PRESSED;
-            redraw_window( 
-                __taskbar_startmenu_button_window, 
-                TRUE);
+        // #test
+        // em qual botão.
+        if(mousehover_window == tb_buttons[0] ||
+           mousehover_window == tb_buttons[1] ||
+           mousehover_window == tb_buttons[2] ||
+           mousehover_window == tb_buttons[3] )
+        { 
+            set_status_by_id(mousehover_window,BS_PRESSED);
+            redraw_window_by_id(mousehover_window,TRUE);
+            return 0;
         }
+        
         return 0;
         break;
 
@@ -1987,36 +2051,48 @@ wmProcedure(
         //if(long1==1){ yellow_status("R1"); wm_update_desktop(); return 0; }
         if(long1==1){ 
             yellow_status("R1"); 
-            create_main_menu(100,100);
-            //create_main_menu(200,200); 
+            create_main_menu(8,8);
             return 0; 
         }
         if(long1==2){ yellow_status("R2"); return 0; }
         //if(long1==1){ create_main_menu(mousex,mousey); return 0; }
         //if(long1==1){ create_main_menu(mousex,mousey); return 0; }
-        
-        //if(mousehover_window==__taskbar_startmenu_button_window->id)
-        //    wm_update_desktop();
 
-        if(mousehover_window==__taskbar_startmenu_button_window->id)
+        //tb_button[0]
+        if(mousehover_window == tb_buttons[0])
         {
-            __taskbar_startmenu_button_window->status = BS_RELEASED;
-            redraw_window( 
-                __taskbar_startmenu_button_window, 
-                TRUE);
-            wm_update_active_window();
+            set_status_by_id(mousehover_window,BS_RELEASED);
+            redraw_window_by_id(mousehover_window,TRUE);
+            create_main_menu(8,8);
+            //wm_update_active_window();
         }
-        //if(mousehover_window==__taskbar_startmenu_button_window->id)
-        //    create_main_menu(mousex,mousey);
 
-        //if(mousehover_window==__taskbar_startmenu_button_window->id)
-        //    __switch_focus();
+        //tb_button[1]
+        if(mousehover_window == tb_buttons[1])
+        {
+            set_status_by_id(mousehover_window,BS_RELEASED);
+            redraw_window_by_id(mousehover_window,TRUE);
+            //#fail rtl_clone_and_execute("editor.bin");
+            yellow_status("1");
+        }
 
-        //if(mousehover_window==__taskbar_startmenu_button_window->id)
-        //    redraw_window_by_id(get_top_window(),TRUE);
+        //tb_button[2]
+        if(mousehover_window == tb_buttons[2])
+        {
+            set_status_by_id(mousehover_window,BS_RELEASED);
+            redraw_window_by_id(mousehover_window,TRUE);
+            //#fail rtl_clone_and_execute("fileman.bin");
+            yellow_status("2");
+        }
 
-        //if(mousehover_window==__taskbar_startmenu_button_window->id)
-        //   rtl_clone_and_execute("terminal.bin");
+        //tb_button[3]
+        if(mousehover_window == tb_buttons[3])
+        {
+            set_status_by_id(mousehover_window,BS_RELEASED);
+            redraw_window_by_id(mousehover_window,TRUE);
+            //#fail rtl_clone_and_execute("terminal.bin");
+            yellow_status("3");
+        }
 
         return 0;
         break;
@@ -3563,6 +3639,210 @@ struct gws_window_d *gws_window_from_id (int id)
     return (struct gws_window_d *) w;
 }
 */
+
+
+// Taskbar
+void create_taskbar (void)
+{
+
+    int WindowId = -1;  // bar
+    int menu_wid;       // button
+
+    unsigned long w = gws_get_device_width();
+    unsigned long h = gws_get_device_height();
+
+    gwssrv_debug_print ("gwssrv: create_taskbar\n");
+
+
+    if ( w==0 || h==0 )
+    {
+        gwssrv_debug_print ("create_taskbar: w h\n");
+        printf             ("create_taskbar: w h\n");
+        exit(1);
+    }
+
+// Taskbar.
+// Create  window.
+
+    unsigned long wLeft   = (unsigned long) 0;
+    unsigned long wTop    = (unsigned long) (h-40);
+    unsigned long wWidth  = (unsigned long) w;
+    unsigned long wHeight = (unsigned long) 40;
+
+    __taskbar_window = 
+        (struct gws_window_d *) CreateWindow ( 
+                                    WT_SIMPLE, 
+                                    0, //style
+                                    1, //status 
+                                    1, //view
+                                    "TaskBar",  
+                                    wLeft, wTop, wWidth, wHeight,   
+                                    gui->screen_window, 0, 
+                                    COLOR_GRAY, COLOR_GRAY );
+
+
+
+    if ( (void *) __taskbar_window == NULL )
+    {
+        gwssrv_debug_print ("create_taskbar: __taskbar_window\n"); 
+        printf             ("create_taskbar: __taskbar_window\n");
+        exit(1);
+    }
+
+    if ( __taskbar_window->used != TRUE || 
+         __taskbar_window->magic != 1234 )
+    {
+        gwssrv_debug_print ("create_background: __taskbar_window validation\n"); 
+        printf             ("create_background: __taskbar_window validation\n");
+        exit(1);
+    }
+
+// Register the window.
+    WindowId = (int) RegisterWindow(__taskbar_window);
+    if (WindowId<0)
+    {
+        gwssrv_debug_print ("create_taskbar: Couldn't register window\n");
+        printf             ("create_taskbar: Couldn't register window\n");
+        exit(1);
+    }
+
+// wid
+    __taskbar_window->id = WindowId;
+
+// Setup Window manager.
+    WindowManager.taskbar = (struct gws_window_d *) __taskbar_window;
+
+// Show
+    //flush_window(__taskbar_window);
+
+// #debug
+
+    /*
+    printf ("bar: %d %d %d %d\n",
+        __taskbar_window->left,
+        __taskbar_window->top,
+        __taskbar_window->width,
+        __taskbar_window->height );
+
+    //refresh_screen();
+    //while(1){}
+    */
+
+
+// ===================================
+// Clean the button list.
+    int b=0;
+    for(b=0; b<8; b++){
+        tb_buttons[b]=0;
+    };
+    
+    tb_buttons_count=0;
+
+
+// ========================================
+// start menu button
+
+    //unsigned long Space = TB_BUTTON_PADDING;   //4;
+    //unsigned long b_width  = TB_BUTTON_WIDTH;    //(8*10);
+    //unsigned long b_height = TB_BUTTON_HEIGHT;   //40-(Space*2);
+    //unsigned long b_left   = TB_BUTTON_PADDING;  //Space;
+    //unsigned long b_top    = TB_BUTTON_PADDING;  //Space;
+
+    unsigned long b_left   = 0; 
+    unsigned long b_top    = TB_BUTTON_PADDING;
+    unsigned long b_width  = TB_BUTTON_WIDTH;
+    unsigned long b_height = TB_BUTTON_HEIGHT;
+
+
+    int i=0;         //iterator
+    int nbuttons=4;  //quantidade de botões na lista
+    
+    struct gws_window_d *tmp_button;
+    int tmp_wid=-1;
+    char button_label[32];
+    
+// Creating n buttons in the taskbar,
+
+    for(i=0; i<nbuttons; i++){
+
+    b_left = TB_BUTTON_PADDING + ( (TB_BUTTON_PADDING*i) + (b_width*i) );
+
+    itoa(i,button_label);
+    button_label[2] = 0;
+    
+    tmp_button = 
+        (struct gws_window_d *) CreateWindow ( 
+            WT_BUTTON, 0, 1, 1, 
+            button_label,  //string  
+            b_left, 
+            b_top, 
+            b_width, 
+            b_height,   
+            __taskbar_window, 0, COLOR_GRAY, COLOR_GRAY );    
+
+    if ( (void *) tmp_button == NULL )
+    {
+        gwssrv_debug_print ("create_taskbar: tmp_button\n"); 
+        printf             ("create_taskbar: tmp_button\n");
+        exit(1);
+    }
+
+    if ( tmp_button->used != TRUE || 
+         tmp_button->magic != 1234 )
+    {
+        gwssrv_debug_print ("create_background: tmp_button validation\n"); 
+        printf             ("create_background: tmp_button validation\n");
+        exit(1);
+    }
+
+// Register the button.
+    tmp_wid = RegisterWindow(tmp_button);
+    if (tmp_wid<0)
+    {
+        gwssrv_debug_print ("create_taskbar: Couldn't register button\n");
+        printf             ("create_taskbar: Couldn't register button\n");
+        exit(1);
+    }
+    
+    if(i==0){
+        __taskbar_startmenu_button_window = tmp_button;
+    }
+
+//save
+
+    // id de janelas.
+    tb_buttons[i] = (int) tmp_wid;
+
+    // ponteiros de estruturas de janelas do tipo botão.
+    tb_windows[i] = (unsigned long) tmp_button;
+
+    // Número de botões criados.
+    tb_buttons_count++;
+    };
+
+
+// Show.
+    flush_window_by_id(__taskbar_window->id);
+    //flush_window_by_id(__taskbar_startmenu_button_window->id);
+    //flush_window(__taskbar_window);
+    //flush_window(__taskbar_startmenu_button_window);
+
+// #debug
+
+/*
+    printf ("button: %d %d %d %d\n",
+        __taskbar_startmenu_button_window->left,
+        __taskbar_startmenu_button_window->top,
+        __taskbar_startmenu_button_window->width,
+        __taskbar_startmenu_button_window->height );
+
+    refresh_screen();
+    while(1){}
+*/
+
+    gwssrv_debug_print ("gwssrv: create_taskbar: done\n");
+}
+
 
 
 // Create root window

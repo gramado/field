@@ -1203,6 +1203,7 @@ struct gws_window_d  *button_window;  // Where button was pressed.
 // Taskbar buttons
 //
 
+/*
 #define TB_HEIGHT  40
 #define TB_BUTTON_PADDING  4
 #define TB_BUTTON_HEIGHT  (TB_HEIGHT - (TB_BUTTON_PADDING*2))
@@ -1210,7 +1211,7 @@ struct gws_window_d  *button_window;  // Where button was pressed.
 #define TB_BUTTONS_MAX  8
 int tb_buttons[TB_BUTTONS_MAX];
 int tb_buttons_count;  // Quantos botões ja temos.
-
+*/
 
 // #todo
 // We need to define the root window.
@@ -1292,8 +1293,11 @@ struct gws_surface_d *rootSurface;
 
 void __switch_focus(void);
 
-void set_focus(struct gws_window_d *window);
+
+void set_status_by_id( int wid, int status );
+
 void set_focus_by_id( int wid );
+void set_focus(struct gws_window_d *window);
 
 // transparence
 void gws_enable_transparence(void);
@@ -1596,6 +1600,8 @@ void *xxxCreateSurfaceWindow(
 
 void demoTerry(void);
 
+
+void create_taskbar (void);
 struct gws_window_d *createwCreateRootWindow(void);
 
 //worker: no checks
