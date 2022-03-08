@@ -1345,7 +1345,6 @@ int initGraphics (void)
 
     window_server->graphics_initialization_status = FALSE;
 
-
 // gwsInit
 // Initialize the window server infrastructure.
 // The current display and the current screen.
@@ -1388,7 +1387,6 @@ int initGraphics (void)
     //gws_show_backbuffer();
     //while(1){}
 
-
 // Initialize the graphics support.
 // Now we can use 3d routines.
 // See: grprim.c
@@ -1422,18 +1420,7 @@ int initGraphics (void)
     if (current_mode == GRAMADO_JAIL)
     {
          //demos_startup_animation(1);
-         //demos_startup_animation(5);  //cube1
-         //demos_startup_animation(6);  //cube2
-         //demos_startup_animation(7);  //curve
-         //demos_startup_animation(8);  //matrix 1  #bugbug
-         //demos_startup_animation(9);  //cat
-         
-         //demos_startup_animation(14);  //polygon
-         //demos_startup_animation(15);  //polygon2
-         
-         //gwssrv_show_backbuffer();
          // ...
-         //while(1){}
     }
 
     if (current_mode == GRAMADO_HOME)
@@ -1452,7 +1439,6 @@ int initGraphics (void)
 //#debug
     //gws_show_backbuffer();
     //while(1){}
-
 
     // #debug
     //asm("int $3");
@@ -1835,13 +1821,9 @@ int initGraphics (void)
     //grDCColorChg ( CurrentDisplay, 0x00, 0x80 - 0x30 );
     //while(1){}
 
+//done:
     window_server->graphics_initialization_status = TRUE;
-
-    debug_print("gwssrv: InitGraphics done\n");
-    
-    //printf     ("gwssrv: InitGraphics done *hang\n");
-    //while(1){}
-
+    //debug_print("gwssrv: InitGraphics done\n");
     return 0;
 }
 
@@ -1853,7 +1835,6 @@ int initGraphics (void)
 void gwssrv_init_client_support (void)
 {
     int i=0;
-
 
     gwssrv_debug_print ("gwssrv_init_client_support:\n");
 
@@ -1885,7 +1866,6 @@ void gwssrv_init_client_support (void)
         exit(1);
     }
 
-
     serverClient->id = 0;
     serverClient->is_connected = FALSE;
     serverClient->fd = -1;
@@ -1903,7 +1883,6 @@ void gwssrv_init_client_support (void)
 void init_client_struct ( struct gws_client_d *c )
 {
     register int i=0;
-
 
     if ( (void *) c == NULL ){
         gwssrv_debug_print("init_client_struct: [FAIL] c\n");
@@ -2071,6 +2050,7 @@ int serviceAsyncCommand (void)
         return 0;
         break;
 
+    // Demos:
     // See: demos.c
     case 4:
         gwssrv_debug_print ("serviceAsyncCommand: [4] \n");
@@ -2248,7 +2228,7 @@ void __init_ws_structure(void)
 
 
 /*
- * main: 
+ * on_execute: 
  *     + Initializes the gws infrastructure.
  *     + Create the background.
  *     + Create the taskbar.
@@ -2264,9 +2244,8 @@ void __init_ws_structure(void)
  *       message found in the sockeck we readed.
  */
 
-int main (int argc, char **argv)
+int on_execute(void)
 {
-
     int flagUseClient = FALSE;
     //int flagUseClient = TRUE;
 
@@ -2386,8 +2365,8 @@ int main (int argc, char **argv)
 // ex: OsInit();
 
 // #debug
-    gwssrv_debug_print ("-----------------------\n");
-    gwssrv_debug_print ("gwssrv: Initializing...\n");
+    //gwssrv_debug_print ("-----------------------\n");
+    gwssrv_debug_print ("GWSSRV.BIN: Initializing\n");
     // printf             ("gwssrv: Initializing...\n");
 
 // Init clients support.
@@ -2425,7 +2404,8 @@ int main (int argc, char **argv)
     if (_status<0){
         gwssrv_debug_print ("gwssrv: Couldn't register the server \n");
         printf             ("gwssrv: Couldn't register the server \n");
-        exit(1);
+        return -1;
+        //exit(1);
     }
     gwssrv_debug_print ("gwssrv: Registration ok \n");
     window_server->registration_status = TRUE;
@@ -2456,7 +2436,8 @@ int main (int argc, char **argv)
     if (server_fd<0){
         gwssrv_debug_print ("gwssrv: [FATAL] Couldn't create the server socket\n");
         printf             ("gwssrv: [FATAL] Couldn't create the server socket\n");
-        exit(1);
+        return -1;
+        //exit(1);
     }
 
 // Global variable.
@@ -2467,7 +2448,6 @@ int main (int argc, char **argv)
 
 // The server itself has its own client structure.
     serverClient->fd      = (int) server_fd;
-
 
     // #debug
     //printf ("fd: %d\n", serverClient->fd);
@@ -2489,14 +2469,13 @@ int main (int argc, char **argv)
     if (bind_status<0){
         gwssrv_debug_print ("gwssrv: [FATAL] Couldn't bind to the socket\n");
         printf             ("gwssrv: [FATAL] Couldn't bind to the socket\n");
-        exit(1);
+        return -1;
+        //exit(1);
     }
-
 
     // #debug
     //printf ("fd: %d\n", serverClient->fd);
     //while(1){}
-
 
 //
 // Listen
@@ -2535,17 +2514,19 @@ int main (int argc, char **argv)
     {
         gwssrv_debug_print("WindowManager.root fail\n");
         printf("WindowManager.root fail\n");
-        exit(0);
+        return -1;
+        //exit(0);
     }
 
     if( (void*) WindowManager.taskbar == NULL )
     {
         gwssrv_debug_print("WindowManager.taskbar fail\n");
         printf("WindowManager.taskbar fail\n");
-        exit(0);
+        return -1;
+        //exit(0);
     }
 
-    // the working area.
+// The working area.
     
     WindowManager.wa_left = 0;
     WindowManager.wa_top = 0;
@@ -2738,9 +2719,9 @@ int main (int argc, char **argv)
     };
 // =======================================
 
-    if (IsTimeToQuit != TRUE)
+    if (IsTimeToQuit != TRUE){
         debug_print ("gwssrv: [ERROR] Invalid IsTimeToQuit\n");
-
+    }
 
 // #todo
 // Now we will close the window server.  
@@ -2750,26 +2731,13 @@ int main (int argc, char **argv)
 // We will close all the sockets.
 // ...
 
-
 // Close the server's fd.
     if (server_fd>0)
+    {
         close(server_fd);
+    }
 
-    // #todo
-    // The kernel needs to react when the window server closes.
-    // We can't live without it.
-    
-    // #debug
-    // #bugbug:
-    // Page fault  when exiting ... 
-
-    gwssrv_debug_print ("gwssrv: [FIXME] Hang, not exit \n");
-    printf             ("gwssrv: [FIXME] Hang, not exit \n");
-
-// HANG
-    while(1){};
-
-// Suspended.
+// Teturn to main()
     return 0; 
 }
 
@@ -2785,6 +2753,26 @@ void gwssrv_quit(void)
 {
     IsTimeToQuit = TRUE;
 }
+
+
+// main: entry point
+int main (int argc, char **argv)
+{
+    int Status=-1;
+    
+    Status = on_execute();
+
+// hang
+// Page fault when exiting ... 
+// #fixme
+    gwssrv_debug_print ("GWSSRV.BIN: Hang on exit\n");
+    printf             ("GWSSRV.BIN: Hang on exit\n");
+
+    while(1){};
+
+    return 0;
+}
+
 
 //
 // End

@@ -1,7 +1,5 @@
+
 // gws.h 
-
-
-
 
 
 // ============================
@@ -14,7 +12,6 @@
 #define GRAMADO_CALIFORNIA  0x05
 // ...
 int current_mode;
-
 
 
 
@@ -184,27 +181,6 @@ struct gws_d  *window_server;
 //
 
 
-void invalidate(void);
-void validate(void);
-int isdirty(void);
-
-
-void invalidate_background(void);
-void validate_background(void);
-int is_background_dirty(void);
-
-
-// #test
-// from x window system.
-// #todo: move these to window.h
-//struct gws_window_d *keyboard_window;
-//struct gws_window_d *mouse_window;
-//struct gws_window_d *cursor_window;  // Where cursor came from.
-//struct gws_window_d *button_window;  // Where button was pressed.
-
-
-void gwssrv_set_keyboard_focus(int window);
-
 
 //
 // == buffer ===============================================
@@ -223,11 +199,35 @@ char __buffer[MSG_BUFFER_SIZE];
 unsigned long next_response[32];
 
 
+//
+// prototypes
+//
+
+int on_execute(void);
+
+
+void invalidate(void);
+void validate(void);
+int isdirty(void);
+
+void invalidate_background(void);
+void validate_background(void);
+int is_background_dirty(void);
+
+// #test
+// from x window system.
+// #todo: move these to window.h
+//struct gws_window_d *keyboard_window;
+//struct gws_window_d *mouse_window;
+//struct gws_window_d *cursor_window;  // Where cursor came from.
+//struct gws_window_d *button_window;  // Where button was pressed.
+
+
+void gwssrv_set_keyboard_focus(int window);
 
 
 void xxxThread (void);
 void ____test_threads (void);
-
 
 void *gwssrv_create_thread ( 
     unsigned long init_eip, 
@@ -236,25 +236,19 @@ void *gwssrv_create_thread (
 
 void gwssrv_start_thread (void *thread);
 
-
 // Drain input
 int service_drain_input (void);
-
 
 void gwssrv_debug_print (char *string);
 
 int gwssrv_clone_and_execute ( char *name );
 unsigned long gwssrv_get_system_metrics (int index);
 
-
 void gwssrv_enter_critical_section (void);
 void gwssrv_exit_critical_section (void);
-
 void gwssrv_show_backbuffer (void);
 
-
 char *gwssrv_get_version(void);
-
 
 // init
 int gwsInit(void);
@@ -266,19 +260,12 @@ unsigned long gws_get_device_height(void);
 // #todo: temos que criar isso.
 int serverInit (void);
 
-
 void gws_show_backbuffer(void);
-
 int gwssrv_init_globals(void);
-
 void gwssrv_wait_message(void);
-
 void gwssrv_yield(void);
-
 void gwssrv_quit(void);
-
 void serviceExitGWS(void);
-
 
 // Worker
 // There is a vetor with values for the next response.
@@ -287,7 +274,6 @@ int __send_response(int fd, int is_error);
 
 // Get client's request from socket.
 void dispacher (int fd);
-
 
 
 //

@@ -75,27 +75,26 @@ void setupCatModel(int eyes, int whiskers, int mouth )
     CatModel.mouthVisible    = mouth;
 }
 
+
 void demoCat (void)
 {
     register int i=0;
     int j=0;
     int count = 8;
 
-//
 // Setup model
-//
-
 // eyes, whiskers, mouth
     setupCatModel(TRUE,TRUE,TRUE);
 
-//
 // Loop
-//
 
     while (count>0){
 
     for (i=0; i<8; i++){
 
+    //begin paint
+    validate_background();
+    
 // Clear surface
     demoClearSurface(GRCOLOR_LIGHTCYAN);
 
@@ -106,7 +105,8 @@ void demoCat (void)
     plotCircleZ ( 0, 12, 25, GRCOLOR_LIGHTBLACK, 0); 
 
     // eyes
-    if ( CatModel.eyesVisible == TRUE ){
+    if ( CatModel.eyesVisible == TRUE )
+    {
         plotCircleZ ( -10, 20, 1+i, GRCOLOR_LIGHTBLACK, 0); 
         plotCircleZ (  10, 20, 1+i, GRCOLOR_LIGHTBLACK, 0); 
     }
@@ -132,8 +132,11 @@ void demoCat (void)
 // Begin paint
     //asm("sti");
 
+    // end paint
+    invalidate_background();
+
 // Flush surface
-    demoFlushSurface();
+    //demoFlushSurface();
 
 // Delay
     for (j=0; j<8; j++){ gwssrv_yield();}
@@ -444,7 +447,8 @@ void demoTriangle(void)
 }
 
 
-
+// Build a mesh o triangles.
+// IN: Number of elements: (it needs to be 80 for now.
 struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
 {
 
@@ -453,43 +457,43 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
 
     struct gr_mesh_triangle_d *m;
 
-    int N=number_of_elements;
+    int N = number_of_elements;
 
     struct gr_triandle_d *last_tri;
     struct gr_triandle_d *tmp_tri;
- 
-    debug_print("__demoMesh1_worker:\n");
-    
-    m = (void *) malloc( sizeof( struct gr_mesh_triangle_d ) );
-    if( (void*) m == NULL )
-        return NULL;
-
-    //last_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
-    //if( (void*) last_tri == NULL )
-        //return NULL;
-
-    m->n = N;
 
     int i=0;
     int value=0;
 
-    // clear
-    //demoClearSurface(COLOR_BLACK);
+    // 1=esq | 2=right
+    int sentido=1;
+    //int sentido=2;
 
-    //tmp_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
-    //if( (void*) tmp_tri == NULL )
-        //return NULL;
+    debug_print("__demoMesh1_worker:\n");
 
-    //m->first_triangle = (struct gr_triandle_d *) tmp_tri;
-    //m->last_triangle  = (struct gr_triandle_d *) tmp_tri;
 
-// loop: compose
+// The mesh structure.
+    m = (void *) malloc( sizeof( struct gr_mesh_triangle_d ) );
+    if( (void*) m == NULL ){
+        return NULL;
+    }
+
+// quantidade
+    m->n = N;
+
+
+// loop: 
+// Compose
+// Vamos criar os triangulos e atribuir valores a eles.
 
     for(i=0; i<N; i++){
 
+    // Create a temporary triangle structure.
     tmp_tri = (void *) malloc( sizeof( struct gr_triandle_d ) );
-    if( (void*) tmp_tri == NULL )
+    
+    if( (void*) tmp_tri == NULL ){
         return NULL;
+    }
 
     if ( (void*) tmp_tri != NULL )
     {
@@ -511,21 +515,28 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
             last_tri->next = NULL;
         }; 
 
+        // split: 
+        // fatia e muda o sentido da pintura.
+        //if(value>40){sentido=2;}
+
         // down
-        tmp_tri->p[0].x = (0 -value);
-        tmp_tri->p[0].y = 0;  //(0 +value);
+        if(sentido==1){ tmp_tri->p[0].x = (0 - (value) ); }
+        if(sentido==2){ tmp_tri->p[0].x = (0 + (value) ); }
+        tmp_tri->p[0].y = 0;
         tmp_tri->p[0].z = 0;
         tmp_tri->p[0].color = GRCOLOR_LIGHTRED; 
 
         // left
-        tmp_tri->p[2].x = (-80 -value);
-        tmp_tri->p[2].y = 80;  //( 80 +value);
-        tmp_tri->p[2].z =   0;
+        if(sentido==1){ tmp_tri->p[2].x = (-80 - (value) ); }
+        if(sentido==2){ tmp_tri->p[2].x = (-80 + (value) ); }
+        tmp_tri->p[2].y = 80;
+        tmp_tri->p[2].z =  0;
         tmp_tri->p[2].color = GRCOLOR_LIGHTGREEN; 
 
         // right
-        tmp_tri->p[1].x = (80 -value);
-        tmp_tri->p[1].y = 80;  //(80 -value);
+        if(sentido==1){ tmp_tri->p[1].x = (80 - (value) ); }
+        if(sentido==2){ tmp_tri->p[1].x = (80 + (value) ); }
+        tmp_tri->p[1].y = 80;
         tmp_tri->p[1].z =  0;
         tmp_tri->p[1].color = GRCOLOR_LIGHTBLUE; 
 
@@ -586,12 +597,16 @@ void __demoMesh1_transformation(struct gr_mesh_triangle_d *mesh)
 }
 
 
+// #todo
+// Describe the routine.
+// This builds and show a mesh o triangles.
 void demoMesh1(void)
 {
     struct gr_mesh_triangle_d *m;
 
     int i=0;
     int j=0;
+    int w=0;
     static int N = 80;
 
     debug_print("demoMesh1:\n");
@@ -604,16 +619,20 @@ void demoMesh1(void)
     if (m->n != 80)
         return;
 
+    //if (m->n != N)
+        //return;
+
+
     struct gr_triandle_d *tmp_tri;
 
 
-//
-// loop: draw
-//
-
+// loop: 
+// Draw all the triangles.
 
     for(j=0; j<80; j++)
     {
+        validate_background();  // Begin paint
+        
         demoClearSurface(GRCOLOR_LIGHTYELLOW);
 
         tmp_tri = (struct gr_triandle_d *) m->first_triangle;
@@ -623,6 +642,7 @@ void demoMesh1(void)
             if( (void*) tmp_tri == NULL )
                 break;
         
+            // Draw a valid triangle.
             if( (void*) tmp_tri != NULL )
             {
                 xxxTriangleZ(tmp_tri);
@@ -630,10 +650,16 @@ void demoMesh1(void)
             }
         };
         
-        demoFlushSurface();  
+        // Show the frame.
+        //demoFlushSurface();
+        //#bugbug: The compositor is flushing the backbuffer
+        // into the lfb during the painting routine.
+        invalidate_background();  //End Paint
 
         // transforma o mesh
         __demoMesh1_transformation(m);
+        
+        for (w=0; w<8; w++){ gwssrv_yield();}
     };
 
     debug_print("demoMesh1: done\n");

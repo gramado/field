@@ -516,6 +516,8 @@ done:
  *      2020 - Created by Fred Nora.
  */
 
+// Ortographic view volume.
+
 // Transformation:
 // Estamos tranformando de um 'object space' com origem 
 // no centro da tela para um viewport que ocupa a tela toda, 
@@ -563,6 +565,14 @@ done:
 // See:
 // https://www.cs.uic.edu/~jbell/CourseNotes/ComputerGraphics/Coordinates.html
 //
+
+
+// #important
+// The main goal here is transforming
+// the ortographic view volume into
+// a canonical view volume, without 
+// using matrices operations.
+// See: https://www.youtube.com/watch?v=U0_ONQQ5ZNM
 
 int 
 grPlot0 ( 
@@ -1131,21 +1141,23 @@ rectangle_ras3D (
 // #todo
 // No caso de inclinações da linha,
 // precisamos considerar que temos dois 'top' diferentes.
-// precisamos receber mais paâmetros de função,
+// precisamos receber mais parâmetros de função,
 // ou criarmos uma outra funções que tenha tais parâmetros,
 // ficando essa somente para retâmgulos não inclinados.
 
-    if (top<=bottom)
-        return;
+// #todo
+// isso ta bem confuso.
 
-    if (left>=right)
-        return;
+    if (top  <= bottom){return;} //#bugbug?
+    if (left >= right) {return;}
 
 // #todo
 // device limits.
 
     // Começa com a linha de cima.
-    for ( Line=top; Line >= bottom; Line-- )
+    for ( Line=top; 
+          Line >= bottom; 
+          Line-- )
     {
         // IN: 
         // x0,y0,z0, x1,y1,z1, color.
@@ -2661,6 +2673,7 @@ int servicepixelBackBufferPutpixel(void)
 }
 
 
+//#todo: Explain it better.
 unsigned int 
 interpolate_color(
     unsigned int color1, 
@@ -2686,7 +2699,8 @@ interpolate_color(
     return (unsigned int) final_color;
 }
 
-
+//??
+//#todo: Explain it better.
 unsigned int invert_color(unsigned int color)
 {
     unsigned int Color = (unsigned int) (color ^ 0x00FFFFFF);
