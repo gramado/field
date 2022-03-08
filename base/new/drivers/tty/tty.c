@@ -59,11 +59,7 @@ __tty_read (
     //if ( tty->stopped == TRUE )
         //return -1;
 
-
-//
 // Queue 
-//
-
 // A leitura nas filas vai depender do modo
 // configurado.
 // Temos basicamente os 'raw' e 'canonical'.
@@ -71,11 +67,7 @@ __tty_read (
 // Lembrando que no modo canônico teremos algum tipo de edição.
 // então o usuário receberá uma fila somente depois que ele digitar
 // [enter]
-
-//
 // Get data from the queue.
-//
-
 // Isso tem o mesmo tamanho
 // da fila de tty.
 
@@ -89,7 +81,7 @@ __tty_read (
         return 0;
     }
 
-    // não se pode ler mais que o limite.
+// não se pode ler mais que o limite.
     if (rbytes>TTY_BUF_SIZE){
         rbytes=TTY_BUF_SIZE;
     }
@@ -126,6 +118,7 @@ __tty_read (
     };
 
 // Quantidade de bytes no buffer local.
+
     if ( i <= 0 ){
         printf("__tty_read: i <= 0\n");
         return 0;
@@ -147,6 +140,8 @@ __tty_read (
         (const void *) data, 
         i ); 
 
+
+//#debug
     printf("__tty_read: done\n");
 
 // Retornamos a quantidade de bytes que tinha em nosso buffer local.
@@ -209,10 +204,7 @@ __tty_write (
     //if ( tty->stopped == TRUE )
         //return -1;
 
-//
 // Queue 
-//
-
 // A escrita nas filas vai depender do modo
 // configurado.
 // Temos basicamente os 'raw' e 'canonical'.
@@ -220,11 +212,7 @@ __tty_write (
 // Lembrando que no modo canônico teremos algum tipo de edição.
 // então o usuário receberá uma fila somente depois que ele digitar
 // [enter]
-
-//
 // Get data from the queue.
-//
-
 // Isso tem o mesmo tamanho
 // da fila de tty.
 
@@ -287,6 +275,7 @@ __tty_write (
 
 done:
 
+//#debug
     printf("__tty_write: done\n");
 
 // quantidade de bytes que gravamos na tty
@@ -326,13 +315,12 @@ tty_read (
     struct tty_d *__tty;
     struct process_d *p;
     file *f;
-    
 
     debug_print ("tty_read: [FIXME]\n");
 
 // fd
 
-    if ( fd < 0 || fd > 32 ){
+    if ( fd < 0 || fd > 31 ){
         printf ("tty_read: invalid fd\n");
         refresh_screen();
         return -1;
@@ -340,15 +328,27 @@ tty_read (
 
 
 // process.
+// Vamos pegar o ponteiro de estrutura
+// do processo que chamou essa funçao
 
-    p = (struct process_d *) processList[fd];
+    if(current_process<0 ||
+       current_process >= PROCESS_COUNT_MAX)
+    {
+        return -1;
+    }
+
+    p = (struct process_d *) processList[current_process];
 
     if ((void*) p == NULL){
         debug_print("tty_read: p\n");
         return -1;
     }
 
+    if(p->magic != 1234)
+        return -1;
+
 // file
+// The object
 
     f = (file *) p->Objects[fd];
 
@@ -356,6 +356,9 @@ tty_read (
         debug_print("tty_read: f\n");
         return -1;
     }
+
+    if(f->magic != 1234)
+        return -1;
 
     if( f->____object != ObjectTypeTTY ){
         debug_print("tty_read: ____object\n");
@@ -371,6 +374,9 @@ tty_read (
         debug_print("tty_read: __tty\n");
         return -1;
     }
+
+    //if(__tty->magic != 1234)
+        //return -1;
 
 // Read from tty device.
 
@@ -397,20 +403,32 @@ tty_write (
 
 // fd
 
-    if ( fd < 0 || fd > 32 ){
+    if ( fd < 0 || fd > 31 ){
         printf ("tty_write: invalid fd\n");
         refresh_screen();
         return -1;
     }
 
 // process
+// vamos pegar o ponteiro do processo
+// que chamou essa funçao, dentro da lista global
+// de ponteiros de processos.
 
-    p = (struct process_d *) processList[fd];
+    if(current_process<0 ||
+       current_process >= PROCESS_COUNT_MAX)
+    {
+        return -1;
+    }
+
+    p = (struct process_d *) processList[current_process];
 
     if ((void*) p == NULL){
         debug_print("tty_write: p\n");
         return -1;
     }
+
+    if(p->magic != 1234)
+       return 1;
 
 // file
 
@@ -420,6 +438,9 @@ tty_write (
         debug_print("tty_write: f\n");
         return -1;
     }
+
+    if(f->magic != 1234)
+        return -1;
 
     if ( f->____object != ObjectTypeTTY ){
         debug_print("tty_write: ____object\n");
@@ -435,6 +456,9 @@ tty_write (
         debug_print("tty_write: __tty\n");
         return -1;
     }
+
+     //if(__tty->magic != 1234)
+         //return -1;
 
 // Read tty.
 
@@ -805,6 +829,7 @@ void tty_flush( struct tty_d *tty )
     debug_print("tty_flush: [TODO]\n");
 }
 
+
 void tty_start (struct tty_d *tty)
 {
     if ( (void *) tty == NULL ){
@@ -821,6 +846,7 @@ void tty_start (struct tty_d *tty)
 
     tty->stopped = FALSE;
 }
+
 
 void tty_stop (struct tty_d *tty)
 {
@@ -842,22 +868,22 @@ void tty_stop (struct tty_d *tty)
 // #todo: 
 int tty_delete ( struct tty_d *tty )
 {
-    // Nothing to do.
+
+// Nothing to do.
     if ( (void *) tty == NULL ){
         debug_print ("tty_delete: tty\n");
         //debug_print("...");
         return -1;
-    }else{
-         
-         //#bugbug: fast way
-         //free (tty);
-         
-         //reusar
-         tty->magic = 216;
-         tty_stop(tty);
-         
-         //...
-    };
+    }
+
+    //#bugbug: fast way
+    //free (tty);
+
+    //reusar
+    tty->magic = 216;
+    tty_stop(tty);
+
+    // ...
 
     return 0;
 }
@@ -909,6 +935,9 @@ tty_sets (
         return -1;
     }
 
+    if(tty->magic != 1234)
+        return -1;
+
     if (options < 0){
         debug_print("tty_sets: [FAIL] options\n");
         return -1;
@@ -919,28 +948,27 @@ tty_sets (
         return -1;
     }
 
-//
-// Options.
-//
+// Options
 
-    switch (options)
-    {
-        // Now. The change occurs immediately. 
-        case TCSANOW:
-            memcpy ( &tty->termios, termiosp, sizeof(struct termios) );
-            break;
+    switch (options){
 
-        // ...
+    // Now. The change occurs immediately. 
+    case TCSANOW:
+        memcpy ( &tty->termios, termiosp, sizeof(struct termios) );
+        break;
 
-        default:
-            debug_print ("tty_sets: [FAIL] default\n");
-            //ret = -EINVAL;
-            ret = -1;
-            break;
+    // ...
+
+    default:
+        debug_print ("tty_sets: [FAIL] default\n");
+        //ret = -EINVAL;
+        ret = -1;
+        break;
     };
 
-    return ret;
+    return (int) ret;
 }
+
 
 int tty_init_module (void)
 {
@@ -990,8 +1018,11 @@ tty_ioctl (
 // podemos checar novamente se realmente se trata de
 // um tty. Mas isso ja foi feito no wrapper sys_ioctl.
 
-    //if (current_process < 0) 
-        //return -1;
+    if (current_process < 0 ||
+        current_process >= PROCESS_COUNT_MAX)
+    { 
+        return -1;
+    }
 
 // process
 
@@ -1002,12 +1033,20 @@ tty_ioctl (
         return -1;
     }
 
+    if(p->magic != 1234){
+        return -1;
+    }
+
 // file. (Object).
 
     f = (file*) p->Objects[fd];
     
     if ( (void *) f == NULL ){
         debug_print ("tty_ioctl: [FAIL] f\n"); 
+        return -1;
+    }
+
+    if(f->magic != 1234){
         return -1;
     }
 
@@ -1028,80 +1067,77 @@ tty_ioctl (
 
     switch (request){
 
-        // Get termios.
-        case TCGETS:
-            debug_print ("tty_ioctl: TCGETS\n");
-            return (int) tty_gets ( tty, (struct termios *) arg );
-            break;
+    // Get termios.
+    case TCGETS:
+        debug_print ("tty_ioctl: TCGETS\n");
+        return (int) tty_gets ( tty, (struct termios *) arg );
+        break;
 
-        // Set termios.
-        case TCSETS:
-            debug_print ("tty_ioctl: TCSETS\n");
-            return (int) tty_sets ( tty, 
-                             TCSANOW, (struct termios *) arg );
-            break;
+    // Set termios.
+    case TCSETS:
+        debug_print ("tty_ioctl: TCSETS\n");
+        return (int) tty_sets ( tty, 
+                         TCSANOW, (struct termios *) arg );
+        break;
 
-        // ??
-        // Discards data written to the object referred to by fd .
-        case TCFLSH:
-            debug_print ("tty_ioctl: TCFLSH [TODO]\n");
-            return -1;
-            break;
-            
-         case TCIFLUSH:
-             debug_print ("tty_ioctl: TCIFLUSH [TODO]\n");
-             return -1;
-             break;
-             
-         case TCOFLUSH:
-             debug_print ("tty_ioctl: TCOFLUSH [TODO]\n");
-             return -1;
-             break;
-             
-         case TCIOFLUSH:
-             debug_print ("tty_ioctl: TCIOFLUSH [TODO]\n");
-             return -1;
-             break;
-             
-         // Set termio.   
-         case TCGETA:
-             debug_print ("tty_ioctl: TCGETA [TODO]\n");
-             return -1;
-             break;
-             
-         // Get termio.
-         case TCSETA:
-             debug_print ("tty_ioctl: TCSETA [TODO]\n");
-             return -1;
-             break;
+    // ??
+    // Discards data written to the object referred to by fd .
+    case TCFLSH:
+        debug_print ("tty_ioctl: TCFLSH [TODO]\n");
+        return -1;
+        break;
+
+    case TCIFLUSH:
+        debug_print ("tty_ioctl: TCIFLUSH [TODO]\n");
+        return -1;
+        break;
+
+    case TCOFLUSH:
+        debug_print ("tty_ioctl: TCOFLUSH [TODO]\n");
+        return -1;
+        break;
+
+    case TCIOFLUSH:
+        debug_print ("tty_ioctl: TCIOFLUSH [TODO]\n");
+        return -1;
+        break;
+
+    // Set termio.   
+    case TCGETA:
+         debug_print ("tty_ioctl: TCGETA [TODO]\n");
+         return -1;
+         break;
+
+    // Get termio.
+    case TCSETA:
+         debug_print ("tty_ioctl: TCSETA [TODO]\n");
+         return -1;
+         break;
 
 
-         // TCSETSF, TCSETSW, , TCSETAF, TCSETAW, , TCSBRK
-         // TCXONC
-         // TIOCGWINSZ, TIOCSWINSZ, TIOCGPGRP, TIOCSPGRP, TIOCNOTTY
-         // TIOCEXCL, TIOCNXCL, TIOCSCTTY, TIOCGPGRP, TIOCSPGRP, TIOCOUTQ
-         // TIOCINQ, TIOCSTI, TIOCMGET, TIOCMBIS, TIOCMBIC, TIOCMSET,
-         // TIOCGSOFTCAR, TIOCSSOFTCAR
-         
-        //CLEAN
-        case 900:
-             //tty->_rbuffer->_w = 0;
-             //tty->_rbuffer->_r = 0;
-             //tty->_rbuffer->_p = tty->_rbuffer->_base; 
-             //tty->_rbuffer->_cnt = tty->_rbuffer->_lbfsize;
-             //for( xxxi=0; xxxi<BUFSIZ; xxxi++){ tty->_rbuffer->_p[xxxi] = 0; };
-            break;
-        
-      
-        default:
-            debug_print ("tty_ioctl: [FAIL] default\n");
-            return -1;
-            break;
+    // TCSETSF, TCSETSW, , TCSETAF, TCSETAW, , TCSBRK
+    // TCXONC
+    // TIOCGWINSZ, TIOCSWINSZ, TIOCGPGRP, TIOCSPGRP, TIOCNOTTY
+    // TIOCEXCL, TIOCNXCL, TIOCSCTTY, TIOCGPGRP, TIOCSPGRP, TIOCOUTQ
+    // TIOCINQ, TIOCSTI, TIOCMGET, TIOCMBIS, TIOCMBIC, TIOCMSET,
+    // TIOCGSOFTCAR, TIOCSSOFTCAR
+
+    //CLEAN
+    case 900:
+        //tty->_rbuffer->_w = 0;
+        //tty->_rbuffer->_r = 0;
+        //tty->_rbuffer->_p = tty->_rbuffer->_base; 
+        //tty->_rbuffer->_cnt = tty->_rbuffer->_lbfsize;
+        //for( xxxi=0; xxxi<BUFSIZ; xxxi++){ tty->_rbuffer->_p[xxxi] = 0; };
+        break;
+
+    default:
+        debug_print ("tty_ioctl: [FAIL] default\n");
+        return -1;
+        break;
     };
 
     //fail.
     return -1;
 }
-
-
 

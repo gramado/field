@@ -1799,8 +1799,7 @@ int sys_fcntl ( int fd, int cmd, unsigned long arg )
 {
     debug_print ("sys_fcntl:\n");
 
-
-    // fd.
+// fd.
     if ( fd < 0 || fd >= NUMBER_OF_FILES )
     {
         debug_print("sys_fcntl: fd\n");
@@ -1812,78 +1811,76 @@ int sys_fcntl ( int fd, int cmd, unsigned long arg )
         debug_print ("sys_fcntl: cmd\n");
         return -1;
     }
-    
-    //POSIX Table 6-1.
-    //See: fcntl.h
-    switch (cmd)
-    {
-        //duplicate file descriptor
-        case F_DUPFD:
-            debug_print ("sys_fcntl: [TODO] F_DUPFD\n");
-            return -1;
-            break;
 
-        //get file descriptor flags
-        case F_GETFD:
-            debug_print ("sys_fcntl: [TODO] F_GETFD\n");
-            return -1;
-            break;
+//POSIX Table 6-1.
+//See: fcntl.h
+    switch (cmd){
 
-        //set file descriptor flags
-        case F_SETFD:
-            debug_print ("sys_fcntl: [TODO] F_SETFD\n");
-            return -1;
-            break;
+    //duplicate file descriptor
+    case F_DUPFD:
+        debug_print ("sys_fcntl: [TODO] F_DUPFD\n");
+        return -1;
+        break;
 
-        //get file status flags
-        case F_GETFL:
-            debug_print ("sys_fcntl: [TODO] F_GETFL\n");
-            return -1;
-            break;
+    //get file descriptor flags
+    case F_GETFD:
+        debug_print ("sys_fcntl: [TODO] F_GETFD\n");
+        return -1;
+        break;
 
-        //set file status flags
-        case F_SETFL:
-            debug_print ("sys_fcntl: [TODO] F_SETFL\n");
-            return -1;
-            break;
+    //set file descriptor flags
+    case F_SETFD:
+         debug_print ("sys_fcntl: [TODO] F_SETFD\n");
+         return -1;
+         break;
 
-        //get record locking information
-        case F_GETLK:
-            debug_print ("sys_fcntl: [TODO] F_GETLK\n");
-            return -1;
-            break;
+    //get file status flags
+    case F_GETFL:
+        debug_print ("sys_fcntl: [TODO] F_GETFL\n");
+        return -1;
+        break;
 
-        // set record locking information
-        case F_SETLK:
-            debug_print ("sys_fcntl: [TODO] F_SETLK\n");
-            return -1;
-            break;
+    //set file status flags
+    case F_SETFL:
+        debug_print ("sys_fcntl: [TODO] F_SETFL\n");
+        return -1;
+        break;
 
-        //set record locking info; wait if blocked
-        case F_SETLKW:
-            debug_print ("sys_fcntl: [TODO] F_SETLKW\n");
-            return -1;
-            break;
+    //get record locking information
+    case F_GETLK:
+        debug_print ("sys_fcntl: [TODO] F_GETLK\n");
+        return -1;
+        break;
 
-        //free a section of a regular file
-        case F_FREESP:
-            debug_print ("sys_fcntl: [TODO] F_FREESP\n");
-            return -1;
-            break;
-           
-        
-        // ...
-            
-        default:
-            debug_print ("sys_fcntl: default command\n");
-            break;
+    // set record locking information
+    case F_SETLK:
+        debug_print ("sys_fcntl: [TODO] F_SETLK\n");
+        return -1;
+        break;
+
+    //set record locking info; wait if blocked
+    case F_SETLKW:
+        debug_print ("sys_fcntl: [TODO] F_SETLKW\n");
+        return -1;
+        break;
+
+    //free a section of a regular file
+    case F_FREESP:
+        debug_print ("sys_fcntl: [TODO] F_FREESP\n");
+        return -1;
+        break;
+
+    // ...
+
+    default:
+        debug_print ("sys_fcntl: default command\n");
+        break;
     };
 
-
     debug_print ("sys_fcntl: FAIL\n");
-
     return -1; //#todo
 }
+
 
 // 178
 // Only root dir.
@@ -2072,6 +2069,7 @@ int sys_initialize_component (int n)
 }
 
 
+// Called by sc82 in sci.c
 int sys_ioctl ( int fd, unsigned long request, unsigned long arg )
 {
 
@@ -2085,14 +2083,13 @@ int sys_ioctl ( int fd, unsigned long request, unsigned long arg )
         return (int) (-EINVAL);
     }
 
-    // Enquanto sys_ioctl eh chamada pelos applicativos,
-    // io_ioctl eh chamada pelas rotinas dentro do kernel.
-    // See: io.c
-    
-    return -1;
-    //return (int) io_ioctl (fd,request,arg);
-}
+// Enquanto sys_ioctl eh chamada pelos applicativos,
+// io_ioctl eh chamada pelas rotinas dentro do kernel.
+// See: io.c
 
+    return (int) io_ioctl (fd,request,arg);
+    //return -1;
+}
 
 
 

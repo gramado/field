@@ -4,8 +4,6 @@
 #include <kernel.h> 
 
 
-
-
 int ioInit(void)
 {
     int Status = 0;
@@ -17,10 +15,11 @@ int ioInit(void)
     return (int) Status;
 }
 
+
 //==========================================
 // This is called by ioctl() in ring3.
 
-// OK Isso � um wrapper.
+// OK Isso eh um wrapper.
 // Chamaremos tty_ioctl() ou outros ...  
 // ...
 
@@ -51,42 +50,47 @@ int ioInit(void)
     // We are using argument not as an address sometimes.
     // it depends on the request number.
 
-// Called by sys_ioctl().
+// Called by sys_ioctl() in sys.c
 // But this routine can be called by the routines inside the kernel.
 
-int io_ioctl ( int fd, unsigned long request, unsigned long arg )
+int 
+io_ioctl ( 
+    int fd, 
+    unsigned long request, 
+    unsigned long arg )
 {
+
     struct process_d *p;
     file *f;
+
     int ObjectType = -1;
 
 
     debug_print ("io_ioctl: [TODO]\n");
 
-    // fd must to be on open file descriptor.
 
-    if ( fd<0 || fd>31 )
-    {
+// fd must to be on open file descriptor.
+
+    if ( fd<0 || fd>31 ){
        debug_print("io_ioctl: [FAIL] Invalid fd\n");
        return -1;  //EBADF
     }
 
+// #bugbug
+// arg is the address for the arguments.
+// We are using argument not as an address sometimes.
+// it depends on the request number.
 
-    // #bugbug
-    // arg is the address for the arguments.
-    // We are using argument not as an address sometimes.
-    // it depends on the request number.
+    if (current_process<0 || 
+        current_process >= PROCESS_COUNT_MAX)
+    {
+        return -1;
+    }
 
-
-    //if (current_process<0)
-    //{
-    //    return -1;
-    //}
-
-    // #todo
-    // Check the arg pointer validation
-    // EFAULT
-    // But we will not use this argument in all the cases.
+// #todo
+// Check the arg pointer validation
+// EFAULT
+// But we will not use this argument in all the cases.
 
     p = (struct process_d *) processList[current_process];
 
@@ -99,20 +103,20 @@ int io_ioctl ( int fd, unsigned long request, unsigned long arg )
         debug_print("io_ioctl: [FAIL] validation fail\n");
         return -1;
     }
-  
-    // pega o arquivo.
-    // checa o tipo de objeto.
-    // Isso deve ser usado principalmente com dispositivos 
-    // de caracteres como o terminal.
-    // #todo
-    // check file structure validation.
-    // The TIOCSTI (terminal I/O control, 
-    // simulate terminal input) ioctl 
-    // function can push a character into a device stream
-    // ENOTTY -  "Not a typewriter"
-    // #todo
-    // Now we can use a swit to call different
-    // functions, as tty_ioctl etc.
+
+// pega o arquivo.
+// checa o tipo de objeto.
+// Isso deve ser usado principalmente com dispositivos 
+// de caracteres como o terminal.
+// #todo
+// check file structure validation.
+// The TIOCSTI (terminal I/O control, 
+// simulate terminal input) ioctl 
+// function can push a character into a device stream
+// ENOTTY -  "Not a typewriter"
+// #todo
+// Now we can use a swit to call different
+// functions, as tty_ioctl etc.
 
     f = (file *) p->Objects[fd];
 
@@ -121,64 +125,72 @@ int io_ioctl ( int fd, unsigned long request, unsigned long arg )
         return -1;
     }
 
-    // Object types.
+// #todo
+// Check validation
+
+    if( f->magic != 1234 ){
+        return -1;
+    }
+
+// Object types.
 
     ObjectType = (int) f->____object;
 
     switch (ObjectType){
 
-        // Pode isso ??
-        // Normal file ???
-        // See: kstdio.c
-        case ObjectTypeFile:
-            debug_print ("io_ioctl: ObjectTypeFile [TEST]\n");
-            return (int) regularfile_ioctl ( 
-                             (int) fd, 
-                             (unsigned long) request, 
-                             (unsigned long) arg );
-            break;
+    // Pode isso ??
+    // Normal file ???
+    // See: lib/kstdio.c
+    case ObjectTypeFile:
+        debug_print ("io_ioctl: ObjectTypeFile [TEST]\n");
+        return (int) regularfile_ioctl ( 
+                         (int) fd, 
+                         (unsigned long) request, 
+                         (unsigned long) arg );
+        break;
 
-        // tty object
-        // See: tty.c ? tty_io.c ?
-        case ObjectTypeTTY:
-        //case ObjectTypeTerminal: 
-            debug_print ("io_ioctl: ObjectTypeTTY\n"); 
-            return (int) tty_ioctl ( (int) fd, 
-                            (unsigned long) request, 
-                            (unsigned long) arg );
-            break;
-        
-        // socket object
-        // see: socket.c ??
-        case ObjectTypeSocket:
-            debug_print ("io_ioctl: ObjectTypeSocket\n");
-            return (int) socket_ioctl ( (int) fd, 
-                            (unsigned long) request, 
-                            (unsigned long) arg );
-            break;
-        
-        // Console object
-        // See: console.c
-        case ObjectTypeVirtualConsole: 
-            debug_print ("io_ioctl: ObjectTypeVirtualConsole\n");
-            return (int) console_ioctl ( (int) fd, 
-                            (unsigned long) request, 
-                            (unsigned long) arg );
-            break; 
+    // tty object
+    // See: drivers/tty/tty.c
+    case ObjectTypeTTY:
+    //case ObjectTypeTerminal: 
+        debug_print ("io_ioctl: ObjectTypeTTY\n"); 
+        return (int) tty_ioctl ( 
+                         (int) fd, 
+                         (unsigned long) request, 
+                         (unsigned long) arg );
+        break;
 
+    // socket object
+    // see: socket.c ??
+    case ObjectTypeSocket:
+        debug_print ("io_ioctl: ObjectTypeSocket\n");
+        return (int) socket_ioctl ( 
+                         (int) fd, 
+                         (unsigned long) request, 
+                         (unsigned long) arg );
+        break;
 
-        // keyboard
-        // mouse
-        // serial
-        // disk
+    // Console object
+    // See: console.c
+    case ObjectTypeVirtualConsole: 
+        debug_print ("io_ioctl: ObjectTypeVirtualConsole\n");
+        return (int) console_ioctl ( 
+                         (int) fd, 
+                         (unsigned long) request, 
+                         (unsigned long) arg );
+        break; 
 
-        //...    
- 
-        default:
-            debug_print ("io_ioctl: [FAIL] default object\n");
-            return -1;  //ENOTTY maybe
-            break;
-    }
+    // keyboard
+    // mouse
+    // serial
+    // disk
+    // ...
+
+    default:
+        debug_print ("io_ioctl: [FAIL] default object\n");
+        return -1;  //ENOTTY maybe
+        break;
+    };
 
     //fail
     debug_print ("io_ioctl: Fail\n");

@@ -3,9 +3,7 @@
 
 #include <sys/ioctl.h>
 #include <stdarg.h>
-
 #include <stdio.h>
-
 #include <rtl/gramado.h>
 
 
@@ -19,7 +17,6 @@
 
 
 /*
- *************************************************
  * ioctl:
  */
 
@@ -45,22 +42,20 @@ int ioctl (int fd, unsigned long request, ...)
 
     //++
     va_list ap;
-    va_start(ap, request);
+    va_start(ap,request);
     unsigned arg = va_arg(ap, unsigned long);
-    
 
-    //__ret = (int) gramado_system_call ( 8000,
-    //                  (unsigned long) fd,
-    //                  (unsigned long) request,
-    //                  (unsigned long) arg );
-    
     // # Using this syscall to have full access to the ring0 data.
-
     __ret = (int) sc82 ( 
                       8000,
                       (unsigned long) fd,
                       (unsigned long) request,
                       (unsigned long) arg );
+
+    //__ret = (int) gramado_system_call ( 8000,
+    //                  (unsigned long) fd,
+    //                  (unsigned long) request,
+    //                  (unsigned long) arg );
 
     va_end (ap);
     //--

@@ -1952,8 +1952,18 @@ void *sci2 (
                             (unsigned long) arg3 );
     }
 
+    // ioctl()
+    // See: ke/sys.c
+    if ( number == 8000 ){
+        debug_print("sci2: [8000] ioctl\n");
+        return (void *) sys_ioctl ( 
+                            (int) arg2, 
+                            (unsigned long) arg3, 
+                            (unsigned long) arg4 );
+    }
+
     // fcntl()
-    // See: sci/sys/sys.c    
+    // See: ke/sys.c
     if ( number == 8001 ){
         debug_print("sci2: [8001] fcntl\n");
         return (void *) sys_fcntl (
