@@ -342,7 +342,7 @@ void compareStrings(int fd)
         //gws_async_command(fd,4,5,0); //cube1
         //gws_async_command(fd,4,6,0); //cube2
         //gws_async_command(fd,4,7,0); //curve
-        gws_async_command(fd,4,9,0); //cat
+        //gws_async_command(fd,4,9,0); //cat
         gws_async_command(fd,4,11,0); //mesh1
         
         // #bugbug

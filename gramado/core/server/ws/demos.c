@@ -76,39 +76,18 @@ void setupCatModel(int eyes, int whiskers, int mouth )
 }
 
 
-void demoCat (void)
+//worker
+void __draw_cat(int eye_scale)
 {
-    register int i=0;
-    int j=0;
-    int count = 8;
-
-// Setup model
-// eyes, whiskers, mouth
-    setupCatModel(TRUE,TRUE,TRUE);
-
-// Loop
-
-    while (count>0){
-
-    for (i=0; i<8; i++){
-
-    //begin paint
-    validate_background();
-    
-// Clear surface
-    demoClearSurface(GRCOLOR_LIGHTCYAN);
-
-// Begin paint
-    //asm("cli");
-
+//---
     // head
     plotCircleZ ( 0, 12, 25, GRCOLOR_LIGHTBLACK, 0); 
 
     // eyes
     if ( CatModel.eyesVisible == TRUE )
     {
-        plotCircleZ ( -10, 20, 1+i, GRCOLOR_LIGHTBLACK, 0); 
-        plotCircleZ (  10, 20, 1+i, GRCOLOR_LIGHTBLACK, 0); 
+        plotCircleZ ( -10, 20, 1+eye_scale, GRCOLOR_LIGHTBLACK, 0); 
+        plotCircleZ (  10, 20, 1+eye_scale, GRCOLOR_LIGHTBLACK, 0); 
     }
 
     // whiskers
@@ -128,24 +107,36 @@ void demoCat (void)
     if ( CatModel.mouthVisible == TRUE ){
         plotLine3d ( -10, -2,0, 10, -2,0, GRCOLOR_LIGHTBLACK); 
     }
+//---
+}
 
-// Begin paint
-    //asm("sti");
+void demoCat (void)
+{
+    register int i=0;
+    int j=0;
+    int count = 8;
 
-    // end paint
-    invalidate_background();
+// Setup model
+// eyes, whiskers, mouth
+    setupCatModel(TRUE,TRUE,TRUE);
 
-// Flush surface
-    //demoFlushSurface();
-
-// Delay
-    for (j=0; j<8; j++){ gwssrv_yield();}
-    
-    };
-    
-    count--;
+// Loop
+    while (count>0)
+    {
+        for (i=0; i<8; i++)
+        {
+            validate_background();                 //begin paint
+            demoClearSurface(GRCOLOR_LIGHTCYAN);   // Clear surface
+            __draw_cat(i);                         // IN: eye scale
+            invalidate_background();               // end paint
+            //demoFlushSurface();                  // Flush surface
+            for (j=0; j<8; j++){ gwssrv_yield();}  // Delay
+        };
+        
+        count--;
     };
 }
+
 
 void demoLine1(void)
 {
@@ -598,6 +589,45 @@ void __demoMesh1_transformation(struct gr_mesh_triangle_d *mesh)
 }
 
 
+void 
+__draw_mesh1(
+    struct gr_mesh_triangle_d *mesh, 
+    int number_of_elements )
+{
+
+    struct gr_mesh_triangle_d *m;
+    
+    m = (struct gr_mesh_triangle_d *) mesh;
+
+    if( (void*) m == NULL )
+        return;
+
+//
+    struct gr_triandle_d *tmp_tri;
+
+    int i=0;
+    int N=number_of_elements;
+
+    //--
+    tmp_tri = (struct gr_triandle_d *) m->first_triangle;
+            
+    for(i=0; i<N; i++)
+    {
+        if( (void*) tmp_tri == NULL )
+            break;
+        
+        // Draw a valid triangle.
+        if( (void*) tmp_tri != NULL )
+        {
+            xxxTriangleZ(tmp_tri);        
+            tmp_tri = (struct gr_triandle_d *) tmp_tri->next;
+        }
+    };
+    //--
+}
+
+
+
 // #todo
 // Describe the routine.
 // This builds and show a mesh o triangles.
@@ -608,7 +638,7 @@ void demoMesh1(void)
     int i=0;
     int j=0;
     int w=0;
-    static int N = 80;
+    static int N=80;
 
     debug_print("demoMesh1:\n");
 
@@ -623,9 +653,11 @@ void demoMesh1(void)
     //if (m->n != N)
         //return;
 
-
     struct gr_triandle_d *tmp_tri;
 
+
+//Quais elementos teremos no gato.
+    setupCatModel(TRUE,TRUE,TRUE);
 
 // loop: 
 // Draw all the triangles.
@@ -636,23 +668,10 @@ void demoMesh1(void)
         
         demoClearSurface(GRCOLOR_LIGHTYELLOW);
 
-        tmp_tri = (struct gr_triandle_d *) m->first_triangle;
-            
-        for(i=0; i<N; i++)
-        {
-            if( (void*) tmp_tri == NULL )
-                break;
-        
-            // Draw a valid triangle.
-            if( (void*) tmp_tri != NULL )
-            {
-                xxxTriangleZ(tmp_tri);        
-
-                //xxxTriangleZ(tmp_tri);
-                tmp_tri = (struct gr_triandle_d *) tmp_tri->next;
-            }
-        };
-        
+        __draw_mesh1(m,N);  // Draw the mesh1
+        __draw_demo_curve1(j>>3);
+        __draw_cat(j>>3);   // Draw the cat. IN: eye scale.
+                        
         // Show the frame.
         //demoFlushSurface();
         //#bugbug: The compositor is flushing the backbuffer
@@ -1201,6 +1220,32 @@ void demoCube2 (void)
 }
 
 
+
+void __draw_demo_curve1(int position)
+{
+    int i=position;
+
+    // line
+    //a variaçao de y2 me pareceu certa.
+    //IN: ??
+    plotQuadBezierSeg ( 
+        0,   0,  0,      //x0, y0, z0, //ponto inicial
+        40,  40, 0,      //x1, y1, z1, //?
+       100,  20+i+i, 0,  //x2, y2, z2, //ponto final
+       GRCOLOR_LIGHTBLACK );
+
+    //string! char by char
+    //IN: ??
+    plotCharBackbufferDrawcharTransparentZ ( 40+ (8*0), 20+i+i, GRCOLOR_LIGHTRED, 'G', 0 );
+    plotCharBackbufferDrawcharTransparentZ ( 40+ (8*1), 20+i+i, GRCOLOR_LIGHTRED, 'R', 0 );   
+    plotCharBackbufferDrawcharTransparentZ ( 40+ (8*2), 20+i+i, GRCOLOR_LIGHTRED, 'A', 0 );
+    plotCharBackbufferDrawcharTransparentZ ( 40+ (8*3), 20+i+i, GRCOLOR_LIGHTRED, 'M', 0 );
+    plotCharBackbufferDrawcharTransparentZ ( 40+ (8*4), 20+i+i, GRCOLOR_LIGHTRED, 'A', 0 );
+    plotCharBackbufferDrawcharTransparentZ ( 40+ (8*5), 20+i+i, GRCOLOR_LIGHTRED, 'D', 0 );
+    plotCharBackbufferDrawcharTransparentZ ( 40+ (8*6), 20+i+i, GRCOLOR_LIGHTRED, 'O', 0 );
+}
+
+
 void demoCurve(void)
 {
     register int i=0;
@@ -1211,32 +1256,18 @@ void demoCurve(void)
 
         count--;
 
-    for (i=0; i<10; i++){
-
+    for (i=0; i<10; i++)
+    {
+        validate_background();
         demoClearSurface(GRCOLOR_LIGHTYELLOW);
-        
-        // line
-        //a variaçao de y2 me pareceu certa.
-        plotQuadBezierSeg ( 
-            0,   0,  0,      //x0, y0, z0, 
-            40,  40, 0,      //x1, y1, z1,
-           100,  20+i+i, 0,  //x2, y2, z2, 
-           GRCOLOR_LIGHTBLACK );
 
-        //string! char by char
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*0), 20+i+i, GRCOLOR_LIGHTRED, 'G', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*1), 20+i+i, GRCOLOR_LIGHTRED, 'R', 0 );   
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*2), 20+i+i, GRCOLOR_LIGHTRED, 'A', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*3), 20+i+i, GRCOLOR_LIGHTRED, 'M', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*4), 20+i+i, GRCOLOR_LIGHTRED, 'A', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*5), 20+i+i, GRCOLOR_LIGHTRED, 'D', 0 );
-        plotCharBackbufferDrawcharTransparentZ ( 40+ (8*6), 20+i+i, GRCOLOR_LIGHTRED, 'O', 0 );
-        
-        // flush surface
-        demoFlushSurface();
+        __draw_demo_curve1(i);
+
+        invalidate_background();
+        //demoFlushSurface();          // flush surface
         
         // delay  
-        for (j=0; j<80; j++){ gwssrv_yield();}
+        for (j=0; j<8; j++){ gwssrv_yield();}
     };
     }
 }

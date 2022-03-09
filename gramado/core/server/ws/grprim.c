@@ -2551,12 +2551,14 @@ void grDCColorChg (
 // Bézier curve
 // This program example plots a quadratic Bézier curve 
 // limited to gradients without sign change.
-
+// IN: ?? #todo: explain the input values.
+// IN: ponto inicial, ?? , ponto final.
 void 
 plotQuadBezierSeg ( 
     int x0, int y0, int z0, 
     int x1, int y1, int z1,
-    int x2, int y2, int z2, unsigned long color )
+    int x2, int y2, int z2, 
+    unsigned long color )
 { 
                            
     int  sx = x2-x1, sy = y2-y1;
