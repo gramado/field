@@ -514,10 +514,9 @@ int main ( int argc, char *argv[] )
 
 
 // interrupts
-    gws_debug_print ("logon.bin: Enable interrupts \n");
-    printf          ("logon.bin: Enable interrupts \n");
-
-    asm ("int $199 \n");
+    //gws_debug_print ("logon.bin: Enable interrupts \n");
+    //printf          ("logon.bin: Enable interrupts \n");
+    //asm ("int $199 \n");
 
 
 // interrupts
@@ -525,17 +524,15 @@ int main ( int argc, char *argv[] )
 // Unlock the scheduler embedded into the base kernel.
 // Only the init process is able to do this.
 
-    gws_debug_print ("logon.bin: Unlock taskswitching and scheduler \n");
-    printf          ("logon.bin: Unlock taskswitching and scheduler \n");
-
-    gramado_system_call (641,0,0,0);
-    gramado_system_call (643,0,0,0);
+    //gws_debug_print ("logon.bin: Unlock taskswitching and scheduler \n");
+    //printf          ("logon.bin: Unlock taskswitching and scheduler \n");
+    //gramado_system_call (641,0,0,0);
+    //gramado_system_call (643,0,0,0);
 
 // Create the rectangle
-    gws_debug_print ("logon.bin: Create rectangle \n");
-    printf          ("logon.bin: Create rectangle \n");
-
-    gramado_system_call(897,0,0,0);
+    //gws_debug_print ("logon.bin: Create rectangle \n");
+    //printf          ("logon.bin: Create rectangle \n");
+    //gramado_system_call(897,0,0,0);
 
 
 //
@@ -1016,7 +1013,7 @@ int main ( int argc, char *argv[] )
 // Setup the flag to show or not the fps window.
 // Request number 6.
 
-    gws_async_command(client_fd,6,FALSE,0);
+    //gws_async_command(client_fd,6,FALSE,0);
 
 
 //
@@ -1038,20 +1035,17 @@ int main ( int argc, char *argv[] )
 // Podemos nesse momento ler alguma configuração
 // que nos diga qual interface devemos inicializar.
 
-    if(launchChild == TRUE){
-
-// Interface 1: File manager.
-    gws_clone_and_execute("fileman.bin");
-
-// Interface 1: Test app.
-    //gws_clone_and_execute("editor.bin");
-
+    if(launchChild == TRUE)
+    {
+        // Interface 1: File manager.
+        // gws_clone_and_execute("fileman.bin");
+        // Interface 1: Test app.
+        // gws_clone_and_execute("editor.bin");
     }
 
 //
 // Input
 //
-
 
     //=================================
     
@@ -1069,8 +1063,8 @@ int main ( int argc, char *argv[] )
 
     //gws_enable_input_method(1);
 
-    //=================================
-
+/*
+//=================================
     // Podemos chamar mais de um diálogo
     // Retorna TRUE quando o diálogo chamado 
     // consumiu o evento passado à ele.
@@ -1090,7 +1084,8 @@ int main ( int argc, char *argv[] )
                 RTLEventBuffer[3] );
         }
     };
-    //=================================
+//=================================
+*/
 
     // Isso eh estranho ... um cliente remoto nao deve poder fazer isso.
     //gws_debug_print ("gws: Sending command to close the server. \n");

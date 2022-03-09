@@ -544,6 +544,7 @@ struct gr_mesh_triangle_d *__demoMesh1_worker(int number_of_elements)
     }
     };
 
+
 // finaliza a lista
     last_tri->next = NULL;
 
@@ -645,7 +646,9 @@ void demoMesh1(void)
             // Draw a valid triangle.
             if( (void*) tmp_tri != NULL )
             {
-                xxxTriangleZ(tmp_tri);
+                xxxTriangleZ(tmp_tri);        
+
+                //xxxTriangleZ(tmp_tri);
                 tmp_tri = (struct gr_triandle_d *) tmp_tri->next;
             }
         };

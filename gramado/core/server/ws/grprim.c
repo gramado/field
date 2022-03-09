@@ -1987,7 +1987,6 @@ void noraDrawingStuff(void)
 
 
 /*
- ********************************************************
  * noraDrawingStuff3: 
  *    Lot of dots in the right place. (prime stuff)
  *    2020 - Created by Fred Nora. 
@@ -2142,9 +2141,7 @@ int fib (int n){
 } 
 
 
-
 /*
- ******************************************************
  * plotCharBackbufferDrawcharTransparent:
  *     Desenha um caractere sem alterar o pano de fundo.
  *     >> no backbuffer.

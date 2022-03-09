@@ -1159,6 +1159,17 @@ int main ( int argc, char *argv[] )
 
     printf ("Gramado OS\n");
 
+//#tests
+    printf ("#test s null: %s\n",NULL);
+    printf ("#test S null: %S\n",NULL);
+    printf ("#test u:  %u  \n",12345678);         //ok
+    printf ("#test lu: %lu \n",1234567887654321); //ok
+    printf ("#test x:  %x  \n",0x1234ABCD);         //
+    printf ("#test lx: %lx \n",0x1234ABCDDCBA4321); //
+    printf ("#test X:  %X  \n",0x1000ABCD);         //
+    printf ("#test lX: %lX \n",0x1000ABCDDCBA0001); //
+    // ...
+
 // Show prompt.
     doPrompt(client_fd);
 

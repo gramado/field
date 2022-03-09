@@ -2101,9 +2101,62 @@ int printf3 ( const char *format, ... )
 
 
 
+//======================
+//#todo: poderia se chamar l2hex?
+void 
+kinguio_i2hex_versao2(
+    unsigned long val, 
+    char* dest, 
+    int len)
+{
+
+    char* cp;
+    int i=0; 
+    int x=0;
+    unsigned long n=0;
+
+    if(val == 0)
+    {
+        cp = &dest[0];
+        *cp++ = '0';
+        *cp = '\0';
+        return;
+    }
+
+
+	n = val;
+	cp = &dest[len];
+	while (cp > dest)
+	{
+		x = n & 0xF;
+		n >>= 4;
+		*--cp = x + ((x > 9) ? 'A' - 10 : '0');
+	}
+    
+	dest[len]='\0';
+
+	cp = &dest[0];
+	for(i=0; i < len;i++) {
+	
+		if(*cp == '0') {
+			cp++;
+		}
+		else {
+			strcpy(dest,cp);
+			 break;
+		}
+			
+	}
+
+	cp = &dest[0];
+	n = strlen(cp);
+	memset(dest + n,0,len-n);
+}
+
 //=============================================================
 // Usada por kinguio_printf
 
+//local
 void 
 kinguio_i2hex( 
     unsigned int val, 
@@ -2162,7 +2215,133 @@ kinguio_i2hex(
 
     cp = &dest[0];
     n = strlen(cp);
-    memset( dest + n, 0, 8-n );
+
+    memset( 
+        dest + n, 
+        0, 
+        8-n );   //32bit
+}
+
+
+void 
+kinguio_l2hex( 
+    unsigned long val, 
+    char *dest, 
+    int len )
+{
+
+    char* cp;
+
+    int i=0; 
+    int x=0;
+    unsigned n=0;
+
+// Simplesmente coloca '0' no buffer.
+    if (val == 0)
+    {
+        cp = &dest[0];
+        *cp++ = '0';
+        *cp = '\0';
+        return;
+    }
+
+
+// error
+    if(len<0)
+        return;
+
+// #todo
+// Qual é o tamanho desse buffer?
+
+    n = val;
+    cp = &dest[len];
+    while (cp > dest)
+    {
+        // Pega um nibble.
+        x = (n & 0xF);
+        // Próximo nibble.
+        n >>= 4;
+        
+        *--cp = x + ((x > (HEX_LEN+1)) ? 'A' - 10 : '0' );
+    };
+    
+    dest[len]='\0';
+
+    cp = &dest[0];
+    for (i=0; i<len; i++)
+    {
+        if (*cp == '0') 
+        {
+            cp++;
+        }else{
+            strcpy(dest,cp);
+            break;
+        };
+    };
+
+    cp = &dest[0];
+    n = strlen(cp);
+   
+    //memset( 
+    //    dest + n, 
+    //    0, 
+    //    8-n );
+
+    memset( 
+        dest + n, 
+        0, 
+        16-n );   //64bit
+}
+
+
+
+
+//local
+static char *__utoa_r (unsigned long val, char *str)
+{
+    char* valuestring = (char*) str;
+    unsigned long value = val;
+    char swap, *p;
+
+    p = valuestring;
+
+    do
+    {
+        *p++ = (char)(value % 10) + '0';
+        value /= 10;
+
+    } while (value);
+
+    *p-- = '\0';
+
+    while (p > valuestring)
+    {
+        swap = *valuestring;
+        *valuestring++ = *p;
+        *p-- = swap;
+    }
+
+    return str;
+}
+
+
+//local
+char *kinguio_utoa(
+    unsigned long val, 
+    char *dst, 
+    int radix )
+{
+    char *cp = (char *) dst;
+    unsigned long lu = (unsigned long)val;
+
+
+    if(radix == 16)
+        kinguio_i2hex_versao2(lu, cp, 16);
+    else 
+        __utoa_r(lu, cp);
+    return dst;
+
+    return dst;  //#bugbug
 }
 
 
@@ -2279,63 +2458,113 @@ kinguio_vsprintf(
     const char *fmt, 
     va_list ap )
 {
+
+    int index=0;
+
+
+// Char/String support.
+
+    char c=0;  //c
+    char *s;   //s
+
     char *str_tmp = str;
-
     char _c_r[] = "\0\0";
-
-    int index = 0;
-
     char buffer[256];
 
-// c
-    char c=0; 
-
-// s
-    char *s;
 
 // d|i|x
-    int d=0;
-
+    int   d=0;
+    long ld=0;  //signed long
+    
 // u
-    unsigned char u=0;
+    //unsigned char u=0;
+    unsigned int   u=0;
+    unsigned long lu=0;
 
 
+// 64bit Format Specifier
+    int type64bit = FALSE;
 
+// loop
 
     while (fmt[index])
     {
         switch (fmt[index]){
+        
         case '%':
             ++index;
             
+            // Estamos lidando com 64bit?
+            // Vamos para o próximo char e
+            // indicaremos essa condição.
+            if ( fmt[index] == 'l' ){
+                ++index;
+                type64bit = TRUE;
+            }
+            
             switch (fmt[index]){
             
+            //int
             case 'c':
-                *_c_r = c = (char) va_arg (ap, int);
-                str_tmp  = _vsputs_r(str_tmp,_c_r);
+                //*_c_r = c = (char) va_arg (ap, int);
+                c = (char) va_arg (ap, int);
+                *_c_r = c;
+                str_tmp = _vsputs_r( str_tmp, _c_r );  //print
                 break;
 
+            //char*
             case 's':
-                s = va_arg (ap,char*);
-                str_tmp  = _vsputs_r(str_tmp,s);
+            case 'S':
+                s = va_arg(ap, char*);
+                if( (void*) s != NULL ){
+                    str_tmp = _vsputs_r(str_tmp,s);
+                }
+                if( (void*) s == NULL ){
+                    str_tmp = _vsputs_r(str_tmp,"(null)");
+                }
                 break;
 
+            // int
             case 'd':
             case 'i':
                 d = va_arg (ap, int);
                 kinguio_itoa (d,buffer);
-                str_tmp  = _vsputs_r(str_tmp,buffer);
+                str_tmp = _vsputs_r(str_tmp,buffer);
                 break;
 
+            //unsigned int
             case 'u':
+                //'lu'
+                if(type64bit==TRUE){
+                    lu = va_arg (ap, unsigned long);
+                    //kinguio_itoa (lu,buffer);
+                    kinguio_utoa(lu, buffer, 10);  //ok
+                    str_tmp  = _vsputs_r(str_tmp,buffer);
+                    type64bit=FALSE;
+                    break;
+                }
+                //if(type64bit==FALSE){
                 u = va_arg (ap, unsigned int);
-                kinguio_itoa  (u,buffer);
+                kinguio_itoa (u,buffer);
+                //utoa(u, buffer, 10);
                 str_tmp  = _vsputs_r(str_tmp,buffer);
+                //}
                 break;
 
+            //int  (hexa)
             case 'X':
             case 'x':
+                //'lx'  #fail
+                if(type64bit==TRUE){
+                    lu = va_arg (ap, unsigned long);
+                    //kinguio_itoa (lu,buffer);
+                    kinguio_utoa(lu, buffer, 16);
+                    str_tmp  = _vsputs_r(str_tmp,buffer);
+                    type64bit=FALSE;
+                    break;
+                }
                 d = va_arg (ap, int);
+                //d = va_arg (ap, unsigned int);
                 kinguio_i2hex(d,buffer,8);
                 str_tmp  = _vsputs_r(str_tmp,buffer);
                 break;
