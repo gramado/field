@@ -1127,8 +1127,11 @@ int grRectangle( struct gr_rectangle_d *rect )
 // using the viewport 2d coordenates.
 // It uses the model 3d coordenates.
 // It applies only on few cases.
-// The upper-left corner and lower-right corner.
- 
+// IN:
+// upper-left corner, 
+// lower-right corner,
+// color
+
 void
 rectangle_ras3D (
     int left,  int top,    int z0,
@@ -1143,22 +1146,28 @@ rectangle_ras3D (
 // precisamos considerar que temos dois 'top' diferentes.
 // precisamos receber mais parâmetros de função,
 // ou criarmos uma outra funções que tenha tais parâmetros,
-// ficando essa somente para retâmgulos não inclinados.
+// ficando essa somente para retângulos não inclinados.
 
 // #todo
 // isso ta bem confuso.
+// Estamos no eixo y, para cima, maior que 0.
+// Entao top tem um valor maior que bottom.
 
-    if (top  <= bottom){return;} //#bugbug?
+    if (top  <= bottom){return;} 
     if (left >= right) {return;}
 
 // #todo
 // device limits.
 
     // Começa com a linha de cima.
-    for ( Line=top; 
+    // Estamos no eixo y, para cima, maior que zero.
+    // Enquanto for maior que o bottom.
+    for ( Line=top;
           Line >= bottom; 
           Line-- )
     {
+        // Pintamos uma linha por vez, horizontalmente.
+        
         // IN: 
         // x0,y0,z0, x1,y1,z1, color.
         plotLine3d ( 
@@ -1442,36 +1451,39 @@ fail:
 // and another one for cube with some kind of rasterization.
 
 
-int xxxCubeZ ( struct gr_cube_d *cube )
+int xxxDrawCubeZ ( struct gr_cube_d *cube )
 {
-    // #todo: Comment these variables.
+
+// #todo: 
+// Comment these variables.
+
     int h=0;
     int d=0;
     int i=0;
 
-    // #todo
-    // Maybe we will receive a function parameter for that.
-    
+// #todo
+// Maybe we will receive a function parameter for that.
     int UseRasterization = TRUE;
 
-
-    if ( (void*) cube == NULL ){
+    if ( (void*) cube == NULL )
+    {
         return -1;
     }
 
+// #todo
+// Temos que rever a forma em que estamos usado os parâmetros
+// para pintarmos o objeto cubo.
+// Tudo aqui ainda está bem improvisado.
 
-    // #todo
-    // Temos que rever a forma em que estamos usado os parâmetros
-    // para pintarmos o objeto cubo.
-    // Tudo aqui ainda está bem improvisado.
 
-    // north
-    // Primeiro desenha o north porque ele sera sobreposto 
-    // pelo sul nessa camera.
+// ===========
+// north
+// Primeiro desenha o north porque ele sera sobreposto 
+// pelo sul nessa camera.
+// -- back face ----------------------------------------
+// north - back
+// Retângulo com os 4 pontos de trás.
 
-    // -- back face ----------------------------------------
-    // north - back
-    // Retângulo com os 4 pontos de trás.
     plotLine3d (  // cima
         cube->p[4].x, cube->p[4].y, cube->p[4].z, 
         cube->p[5].x, cube->p[5].y, cube->p[5].z, cube->p[4].color );
@@ -1485,14 +1497,15 @@ int xxxCubeZ ( struct gr_cube_d *cube )
         cube->p[4].x, cube->p[4].y, cube->p[4].z, 
         cube->p[7].x, cube->p[7].y, cube->p[7].z, cube->p[4].color );
 
-    // #improviso: 
-    // Isso é um teste de rasterização, não usando triangulo.
-    // #todo:
-    // Temos que criar a tasterização via retângulos.
-    // Isso só funciona para retângulos não inclinados.
-
-    // p4 = left top 
-    // p6 = right bottom
+// #improviso: 
+// Isso é um teste de rasterização, não usando triangulo.
+// #todo:
+// Temos que criar a tasterização via retângulos.
+// Isso só funciona para retângulos não inclinados.
+// p4 = left top 
+// p6 = right bottom
+    
+    // north rasterization
     if (UseRasterization == TRUE)
     {
         rectangle_ras3D ( 
@@ -1501,10 +1514,8 @@ int xxxCubeZ ( struct gr_cube_d *cube )
             (unsigned int) cube->p[4].color  );
     }
 
-    //=================================================================
-    
-    // -- top face ----------------------------------------
-        
+//====================
+// -- top face ----------------------------------------
     // 1st line 
     plotLine3d (cube->p[0].x, cube->p[0].y, cube->p[0].z, 
                 cube->p[4].x, cube->p[4].y, cube->p[4].z, cube->p[0].color );
@@ -1512,8 +1523,8 @@ int xxxCubeZ ( struct gr_cube_d *cube )
     plotLine3d (cube->p[1].x, cube->p[1].y, cube->p[1].z, 
                 cube->p[5].x, cube->p[5].y, cube->p[5].z, cube->p[1].color );
 
-    // -- bottom face ----------------------------------------
-    
+//====================
+// -- bottom face -------------------------------------
     // 1rd line
     plotLine3d (cube->p[2].x, cube->p[2].y, cube->p[2].z, 
                 cube->p[6].x, cube->p[6].y, cube->p[6].z, cube->p[2].color );
@@ -1521,24 +1532,27 @@ int xxxCubeZ ( struct gr_cube_d *cube )
     plotLine3d (cube->p[3].x, cube->p[3].y, cube->p[3].z, 
                 cube->p[7].x, cube->p[7].y, cube->p[7].z, cube->p[3].color );
 
-    //=================================================================
+//=================================================================
 
-    // left ok
-    // Isso só funciona para retângulos não inclinados.
-    // p0 = left top da frente 
-    // p7 = left bottom de trás
+// left 
+// Isso só funciona para retângulos não inclinados.
+// p0 = left top da frente 
+// p7 = left bottom de trás
+    //left raterization?
     if (UseRasterization == TRUE)
     {
         rectangle_ras3D ( 
             cube->p[0].x, cube->p[0].y, cube->p[0].z, 
             cube->p[7].x, cube->p[7].y, cube->p[7].z, 
             cube->p[0].color  );
+
     }
 
-    // right ok
-    // Isso só funciona para retângulos não inclinados.
-    // p1 = right top da frente 
-    // p7 = right bottom de trás
+// right
+// Isso só funciona para retângulos não inclinados.
+// p1 = right top da frente 
+// p7 = right bottom de trás
+    // right rasterization?
     if (UseRasterization == TRUE)
     {
         rectangle_ras3D( 
@@ -1561,10 +1575,10 @@ int xxxCubeZ ( struct gr_cube_d *cube )
     //    cube->p[0].x, cube->p[0].y, cube->p[0].z,
     //    cube->p[3].color  );
 
-
-    // -- front face ----------------------------------------
-    // south - front
-    // Retângulo com os 4 pontos da frente.
+//==========
+// -- front face ----------------------------------------
+// south - front
+// Retângulo com os 4 pontos da frente.
     plotLine3d (  // cima
         cube->p[0].x, cube->p[0].y, cube->p[0].z, 
         cube->p[1].x, cube->p[1].y, cube->p[1].z, cube->p[0].color );
@@ -1578,21 +1592,22 @@ int xxxCubeZ ( struct gr_cube_d *cube )
         cube->p[0].x, cube->p[0].y, cube->p[0].z, 
         cube->p[3].x, cube->p[3].y, cube->p[3].z, cube->p[0].color );
 
-    // #improviso: 
-    // Isso é um teste de rasterização, não usando triangulo.
-    // #todo:
-    // Temos que criar a tasterização via retãngulos.
-    // Isso só funciona para retângulos não inclinados.
+// #improviso: 
+// Isso é um teste de rasterização, não usando triangulo.
+// #todo:
+// Temos que criar a tasterização via retãngulos.
+// Isso só funciona para retângulos não inclinados.
+// p0 = left top 
+// p2 = right bottom
 
-    // p0 = left top 
-    // p2 = right bottom
+    // south rasterization
     if (UseRasterization == TRUE){
         rectangle_ras3D (  
             cube->p[0].x, cube->p[0].y, cube->p[0].z, 
             cube->p[2].x, cube->p[2].y, cube->p[2].z, 
             cube->p[0].color );
     }
-    
+
     // ok
     return 0;
 }
@@ -1603,21 +1618,21 @@ int xxxCubeZ ( struct gr_cube_d *cube )
 // Called by gwsProcedure.
 int serviceGrCubeZ(void)
 {
-    // #todo:
-    // Vamos pegar os vertices do cubo nos argumentos
-    // e completar a estrtutura local.
-    // entao passamos o endereço da estrutura para a funçao helper.
+
+// #todo:
+// Vamos pegar os vertices do cubo nos argumentos
+// e completar a estrtutura local.
+// entao passamos o endereço da estrutura para a funçao helper.
 
     unsigned long *message_address = (unsigned long *) &__buffer[0];
     
     struct gr_cube_d cube;
 
-    
     gwssrv_debug_print("serviceGrCubeZ: [2041]\n");
 
-    // Circular, sentido horário.
+// Circular, sentido horário.
 
-    // south
+// south
     cube.p[0].x     = message_address[10];
     cube.p[0].y     = message_address[11];
     cube.p[0].z     = message_address[12];
@@ -1638,7 +1653,7 @@ int serviceGrCubeZ(void)
     cube.p[3].z     = message_address[24];
     cube.p[3].color = message_address[25];
 
-    // north
+// north
     cube.p[4].x     = message_address[26];
     cube.p[4].y     = message_address[27];
     cube.p[4].z     = message_address[28];
@@ -1659,10 +1674,10 @@ int serviceGrCubeZ(void)
     cube.p[7].z     = message_address[40];
     cube.p[7].color = message_address[41];
 
-    // #test
-    // Temos que passar corretamente o endereço da estrutura.
+// #test
+// Temos que passar corretamente o endereço da estrutura.
 
-    xxxCubeZ ( (struct gr_cube_d *) &cube );
+    xxxDrawCubeZ ( (struct gr_cube_d *) &cube );
 
     return 0;
 }

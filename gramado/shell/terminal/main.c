@@ -338,12 +338,15 @@ void compareStrings(int fd)
         //gws_async_command(fd,6,0,0);  // show fps bar.
 
         //demos: IN: fd,service,demo_index,0.
-        //gws_async_command(fd,4,1,0); //?
-        //gws_async_command(fd,4,5,0); //cube1
-        //gws_async_command(fd,4,6,0); //cube2
-        //gws_async_command(fd,4,7,0); //curve
-        //gws_async_command(fd,4,9,0); //cat
-        gws_async_command(fd,4,11,0); //mesh1
+        //gws_async_command(fd,4,1,0); // points (works, but sometimes it fails)
+        //gws_async_command(fd,4,5,0);  //cube1 (ok)
+        //gws_async_command(fd,4,6,0);  //cube2 (ok)
+        //gws_async_command(fd,4,7,0);  //curve (ok)
+        //gws_async_command(fd,4,9,0);  //cat   (ok)
+        //gws_async_command(fd,4,10,0);  // triangle (ok)
+        gws_async_command(fd,4,11,0); //mesh1 (ok)
+        //gws_async_command(fd,4,14,0);  //polygon (ok)
+        //gws_async_command(fd,4,15,0);  //polygon2 (ok)
         
         // #bugbug
         // Não podemos pegar esse falor corretamente.

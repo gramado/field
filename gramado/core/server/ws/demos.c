@@ -259,18 +259,21 @@ void demoFred2(void)
 }
 
 
-//demo
-//start up animation
-//matrix multiplication
+// demo
+// start up animation
+// matrix multiplication
+// #testing:
+// Sometimes it fails.
 void demoSA1(void)
 {
 
-    int useClippingWindow =  FALSE;
-    
-    //++
-    //=================
-    struct gws_window_d *w;
+    int useClippingWindow = FALSE;
+    //int useClippingWindow = TRUE;
 
+//++
+//=================
+    struct gws_window_d *w;
+    int wid=-1;
 
     if ( useClippingWindow == TRUE )
     {
@@ -284,18 +287,25 @@ void demoSA1(void)
                                     __root_window, 0, 
                                     COLOR_PINK, COLOR_YELLOW ); 
     
-        RegisterWindow(w);
-        gws_show_window_rect(w);
-    
         if ( (void*) w == NULL ){
-            printf ("demoSA1: Invalid clipping window\n");
+            printf ("demoSA1: w\n");
             //useClippingWindow = FALSE;
             return;
         }
+        
+        wid = RegisterWindow(w);
+
+        if (wid<0){
+            printf ("demoSA1: wid\n");
+            //useClippingWindow = FALSE;
+            return;
+        }
+
+        gws_show_window_rect(w);
     }
-    
-    //=================
-    //--
+//=================
+//--
+
 
     register int i=0;
 
@@ -315,25 +325,22 @@ void demoSA1(void)
 
         
     
-    if (current_mode != GRAMADO_JAIL)
+    if (current_mode != GRAMADO_JAIL){
         return;
+    }
     
 
-    int count=3;    
-    while ( count>0){
+    int count=8;    
+
+// loop
+    while ( count>0 )
+    {
 
         for (i=0; i<8; i++){
-        
-            // black background.
-            //rectBackbufferDrawRectangle ( 
-               //0, 0, 320, 200, COLOR_BLACK, 1,0 );
 
            demoClearSurface(COLOR_BLACK);
-      
-            // transform.
-            multiply4 ( projection4x4, mat2, res );
-       
-            // PLot for dots.
+             
+            // Plot four dots.
             // z,x,y
             if ( useClippingWindow == TRUE){
             grPlot0 ( w, res[0][2], res[0][0], res[0][1], COLOR_WHITE); 
@@ -372,8 +379,15 @@ void demoSA1(void)
             // projection4x4[3][2] = 0;
             // projection4x4[3][3] = 0;
   
+            // transform
+            multiply4 ( projection4x4, mat2, res );
+
             // Refresh and yield.
-            refresh_device_screen(); 
+            demoFlushSurface();
+            
+            gwssrv_yield();
+            gwssrv_yield();
+            gwssrv_yield();
             gwssrv_yield();
             gwssrv_yield();
             gwssrv_yield();
@@ -394,47 +408,51 @@ void demoTriangle(void)
 
     triangle = (void *) malloc( sizeof( struct gr_triandle_d ) );
 
+    if ( (void*) triangle == NULL )
+        return;
+
+
+    // down
+    triangle->p[0].x = 0; 
+    triangle->p[0].y = 0;
+    triangle->p[0].z = 0;
+    triangle->p[0].color = COLOR_RED;
+
+    // right
+    triangle->p[1].x = 80; 
+    triangle->p[1].y = 80;
+    triangle->p[1].z =  0;
+    triangle->p[1].color = COLOR_GREEN;
+
+    // left
+    triangle->p[2].x = -80;
+    triangle->p[2].y =  80;
+    triangle->p[2].z =   0;
+    triangle->p[2].color = COLOR_BLUE;
+
+
     int i=0;
     int T=0;
-    for(i=0; i<10; i++){
 
-    if ( (void*) triangle != NULL )
+    for(i=0; i<10; i++)
     {
+
         // clear
         demoClearSurface(COLOR_BLACK);
 
-        // down
-        triangle->p[0].x = 0;   // +T translation in x
-        triangle->p[0].y = 0;
-        triangle->p[0].z = 0;
-        triangle->p[0].color = COLOR_RED;
-
-        // right
-        triangle->p[1].x = 80;  // +T
-        triangle->p[1].y = 80;
-        triangle->p[1].z =  0;
-        triangle->p[1].color = COLOR_GREEN;
-
-        // left
-        triangle->p[2].x = -80;  //+T
-        triangle->p[2].y =  80;
-        triangle->p[2].z =   0;
-        triangle->p[2].color = COLOR_BLUE;
-
         // Draw
         xxxTriangleZ(triangle);
+        
+        // translation
+        triangle->p[0].x++;
+        triangle->p[1].x++;
+        triangle->p[2].x++;
 
         // flush surface
         demoFlushSurface();  
         
         T++;
-    }
     };
-
-    //Debug
-    //exit(0);
-
-    //printf("demoTriangle: done\n");
 }
 
 
@@ -816,11 +834,9 @@ void demoPolygon(void)
     xxxPolygonZ(p);
 
     // Show
-
-    //gws_refresh_rectangle(0,0,320,200);
     demoFlushSurface();  
     
-    for (j=0; j<20; j++){ gwssrv_yield();}
+    for (j=0; j<8; j++){ gwssrv_yield(); }
 
     };
     };   //while
@@ -975,9 +991,6 @@ void demoPolygon2(void)
 }
 
 
-
-// inflate varias vezes.
-//only on jail
 void demoCube1(void)
 {
     register int i=0;
@@ -985,96 +998,71 @@ void demoCube1(void)
 
     struct gr_cube_d *cube;
     cube = (void *) malloc( sizeof( struct gr_cube_d ) );
-    if ( (void*) cube != NULL )
-    {
-        // marcador.
-        noraDrawingStuff3 (0,0,0);
+    
+    if ( (void*) cube == NULL )
+        return;
 
-		//while(1){
+// marcador.
+//#bugbug: Esse nao eh momento de pintura,
+// apenas estamos setando os valores dos vertices.
 
-        //south     
-        cube->p[0].x = 0;
-        cube->p[0].y = 40;
-        cube->p[0].z = 0;
-        cube->p[0].color = COLOR_WHITE;
-        
-        cube->p[1].x = 40;
-        cube->p[1].y = 40;
-        cube->p[1].z = 0;
-        cube->p[1].color = COLOR_WHITE;
-        
-        cube->p[2].x = 40;
-        cube->p[2].y = 0;
-        cube->p[2].z = 0;
-        cube->p[2].color = COLOR_WHITE;
-        
-        cube->p[3].x = 0;
-        cube->p[3].y = 0;
-        cube->p[3].z = 0;
-        cube->p[3].color = COLOR_WHITE;
+    //noraDrawingStuff3 (0,0,0);
 
-        //north
-        cube->p[4].x = 0;
-        cube->p[4].y = 40;
-        cube->p[4].z = 40;
-        cube->p[4].color = COLOR_BLACK;
+// =========
+//south     
+
+    cube->p[0].x = 0;
+    cube->p[0].y = 40;
+    cube->p[0].z = 0;
+    cube->p[0].color = COLOR_WHITE;
         
-        cube->p[5].x = 40;
-        cube->p[5].y = 40;
-        cube->p[5].z = 40;
-        cube->p[5].color = COLOR_BLACK;
+    cube->p[1].x = 40;
+    cube->p[1].y = 40;
+    cube->p[1].z = 0;
+    cube->p[1].color = COLOR_WHITE;
         
-        cube->p[6].x = 40;
-        cube->p[6].y = 0;
-        cube->p[6].z = 40;
-        cube->p[6].color = COLOR_BLACK;
+    cube->p[2].x = 40;
+    cube->p[2].y = 0;
+    cube->p[2].z = 0;
+    cube->p[2].color = COLOR_WHITE;
         
-        cube->p[7].x = 0;
-        cube->p[7].y = 0;
-        cube->p[7].z = 40;
-        cube->p[7].color = COLOR_BLACK;
-                
+    cube->p[3].x = 0;
+    cube->p[3].y = 0;
+    cube->p[3].z = 0;
+    cube->p[3].color = COLOR_WHITE;
+
+// =========
+//north
+
+    cube->p[4].x = 0;
+    cube->p[4].y = 40;
+    cube->p[4].z = 40;
+    cube->p[4].color = COLOR_YELLOW;
+        
+    cube->p[5].x = 40;
+    cube->p[5].y = 40;
+    cube->p[5].z = 40;
+    cube->p[5].color = COLOR_YELLOW;
+        
+    cube->p[6].x = 40;
+    cube->p[6].y = 0;
+    cube->p[6].z = 40;
+    cube->p[6].color = COLOR_YELLOW;
+        
+    cube->p[7].x = 0;
+    cube->p[7].y = 0;
+    cube->p[7].z = 40;
+    cube->p[7].color = COLOR_YELLOW;
 
 
-        //rectBackbufferDrawRectangle ( 
-        //   0, 0, 320, 200, COLOR_BLACK, 1,0 );
-        xxxCubeZ(cube);
-        //gws_refresh_rectangle(0,0,320,200);
-        //for(i=0;i<16;i++){ gwssrv_yield(); }
+    // clear
+    demoClearSurface(GRCOLOR_LIGHTCYAN);
+    
+    // draw
+    xxxDrawCubeZ(cube);
 
-        //for(j=0; j<30; j++){        
-        //rectBackbufferDrawRectangle ( 
-        //   0, 0, 320, 200, COLOR_BLACK, 1,0 );        
-        //xxxInflateCubeZ (cube, 1);
-        //xxxCubeZ(cube);
-        //gws_refresh_rectangle(0,0,320,200);
-        //for(i=0;i<16;i++){ gwssrv_yield(); }
-        //}
-        
-        //}
-       
-        
-        //xxxInflateCubeZ (cube, 10);
-        //xxxCubeZ(cube);
-
-        //xxxInflateCubeZ (cube, 20);
-        //xxxCubeZ(cube);
-
-        //xxxDeflateCubeZ (cube, 5);
-        //xxxCubeZ(cube);
-        
-        //xxxDeflateCubeZ (cube, 10);
-        //xxxCubeZ(cube);
-
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x,  cube->p[0].y, COLOR_BLACK, 'G', cube->p[0].z );
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[1].x,  cube->p[1].y, COLOR_BLACK, 'R', cube->p[1].z );
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[2].x,  cube->p[2].y, COLOR_BLACK, 'A', cube->p[2].z );
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[3].x,  cube->p[3].y, COLOR_BLACK, 'M', cube->p[3].z );
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[4].x,  cube->p[4].y, COLOR_BLACK, 'A', cube->p[4].z );
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[5].x,  cube->p[5].y, COLOR_BLACK, 'D', cube->p[5].z );
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[6].x,  cube->p[6].y, COLOR_BLACK, '0', cube->p[6].z );
-        //plotCharBackbufferDrawcharTransparentZ ( cube->p[7].x,  cube->p[7].y, COLOR_BLACK, '*', cube->p[7].z );
-    }
+    // show
+    demoFlushSurface();  
 }
 
 
@@ -1099,75 +1087,63 @@ void demoCube2 (void)
 
     struct gr_cube_d *cube;
     cube = (void *) malloc( sizeof( struct gr_cube_d ) );
-    if ( (void*) cube != NULL )
+
+    if ( (void*) cube == NULL )
+        return;
+
+// =========
+//south     
+
+    cube->p[0].x = 0;
+    cube->p[0].y = 40;
+    cube->p[0].z = 0;
+    cube->p[0].color = COLOR_WHITE;
+        
+    cube->p[1].x = 40;
+    cube->p[1].y = 40;
+    cube->p[1].z = 0;
+    cube->p[1].color = COLOR_WHITE;
+        
+    cube->p[2].x = 40;
+    cube->p[2].y = 0;
+    cube->p[2].z = 0;
+    cube->p[2].color = COLOR_WHITE;
+        
+    cube->p[3].x = 0;
+    cube->p[3].y = 0;
+    cube->p[3].z = 0;
+    cube->p[3].color = COLOR_WHITE;
+
+// =========
+//north
+
+    cube->p[4].x = 0;
+    cube->p[4].y = 40;
+    cube->p[4].z = 40;
+    cube->p[4].color = COLOR_YELLOW;
+        
+    cube->p[5].x = 40;
+    cube->p[5].y = 40;
+    cube->p[5].z = 40;
+    cube->p[5].color = COLOR_YELLOW;
+        
+    cube->p[6].x = 40;
+    cube->p[6].y = 0;
+    cube->p[6].z = 40;
+    cube->p[6].color = COLOR_YELLOW;
+        
+    cube->p[7].x = 0;
+    cube->p[7].y = 0;
+    cube->p[7].z = 40;
+    cube->p[7].color = COLOR_YELLOW;
+
+
+//marcador.
+//    noraDrawingStuff3 (0,0,0);
+
+    while (count>0)
     {
-        //marcador.
-        noraDrawingStuff3 (0,0,0);
-
-        while (count>0) {
-
         count--;
-
-        //south     
-        cube->p[0].x = 0;
-        cube->p[0].y = 40;
-        cube->p[0].z = 0;
-        cube->p[0].color = COLOR_WHITE;
-        
-        cube->p[1].x = 40;
-        cube->p[1].y = 40;
-        cube->p[1].z = 0;
-        cube->p[1].color = COLOR_WHITE;
-        
-        cube->p[2].x = 40;
-        cube->p[2].y = 0;
-        cube->p[2].z = 0;
-        cube->p[2].color = COLOR_WHITE;
-        
-        cube->p[3].x = 0;
-        cube->p[3].y = 0;
-        cube->p[3].z = 0;
-        cube->p[3].color = COLOR_WHITE;
-
-        //north
-        cube->p[4].x = 0;
-        cube->p[4].y = 40;
-        cube->p[4].z = 40;
-        cube->p[4].color = COLOR_YELLOW;
-        
-        cube->p[5].x = 40;
-        cube->p[5].y = 40;
-        cube->p[5].z = 40;
-        cube->p[5].color = COLOR_YELLOW;
-        
-        cube->p[6].x = 40;
-        cube->p[6].y = 0;
-        cube->p[6].z = 40;
-        cube->p[6].color = COLOR_YELLOW;
-        
-        cube->p[7].x = 0;
-        cube->p[7].y = 0;
-        cube->p[7].z = 40;
-        cube->p[7].color = COLOR_YELLOW;
-
-        // =============================
-        // Drawing for the first time.
-
-        //rectBackbufferDrawRectangle ( 0, 0, 320, 200, COLOR_BLACK, 1,0 );
-        demoClearSurface(GRCOLOR_LIGHTCYAN);
-    
-        xxxCubeZ(cube);
-        //string!
-        plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*0), cube->p[0].y, COLOR_RED, 'G', cube->p[0].z );
-        plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*1), cube->p[0].y, COLOR_RED, 'R', cube->p[0].z );   
-        plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*2), cube->p[0].y, COLOR_RED, 'A', cube->p[0].z );
-        plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*3), cube->p[0].y, COLOR_RED, 'M', cube->p[0].z );
-        plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*4), cube->p[0].y, COLOR_RED, 'A', cube->p[0].z );
-        plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*5), cube->p[0].y, COLOR_RED, 'D', cube->p[0].z );
-        plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*6), cube->p[0].y, COLOR_RED, 'O', cube->p[0].z );
-        //gws_refresh_rectangle(0,0,320,200);
-        demoFlushSurface();  
-        for(i=0;i<16;i++){ gwssrv_yield(); }
 
         // =============================
         // Drawing 20 times while inflate or while deflating.
@@ -1178,8 +1154,9 @@ void demoCube2 (void)
         
         //porque o z eh reduzido duas vezes.
         //entao esse eh o limite da reduçao.
-        for (j=0; j < zMaxModulus; j++){
 
+        for (j=0; j < zMaxModulus; j++)
+        {
             //rectBackbufferDrawRectangle ( 0, 0, 320, 200, COLOR_BLACK, 1,0 ); 
             demoClearSurface(GRCOLOR_LIGHTCYAN);
             if (action==1000){
@@ -1191,8 +1168,11 @@ void demoCube2 (void)
                 //if (modelZ < zFar)     // se nos afastamos mas não chegamos no limite.
                     xxxDeflateCubeZ (cube, 1);  // go far
             };
-            xxxCubeZ(cube);
             
+            // draw cube
+            xxxDrawCubeZ(cube);
+            
+            // draw string
             plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*0), cube->p[0].y, COLOR_RED, 'G', cube->p[0].z );
             plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*1), cube->p[0].y, COLOR_RED, 'R', cube->p[0].z );   
             plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*2), cube->p[0].y, COLOR_RED, 'A', cube->p[0].z );
@@ -1200,9 +1180,10 @@ void demoCube2 (void)
             plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*4), cube->p[0].y, COLOR_RED, 'A', cube->p[0].z );
             plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*5), cube->p[0].y, COLOR_RED, 'D', cube->p[0].z );
             plotCharBackbufferDrawcharTransparentZ ( cube->p[0].x + (8*6), cube->p[0].y, COLOR_RED, 'O', cube->p[0].z );
+            
             //gws_refresh_rectangle(0,0,320,200);
             demoFlushSurface();  
-            for(i=0;i<32;i++){ gwssrv_yield(); }
+            for(i=0;i<8;i++){ gwssrv_yield(); }
         };
         
         // Switch action.
@@ -1215,10 +1196,9 @@ void demoCube2 (void)
         };
 
         // 'count' times
-        }; //while--
-    }
+    
+    }; //while--
 }
-
 
 
 void __draw_demo_curve1(int position)

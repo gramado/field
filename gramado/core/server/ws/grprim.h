@@ -495,7 +495,9 @@ int xxxPolygonZ ( struct gr_polygon_d *polygon );
 
 int xxxInflateCubeZ ( struct gr_cube_d *cube, int value );
 int xxxDeflateCubeZ ( struct gr_cube_d *cube, int value );
-int xxxCubeZ ( struct gr_cube_d *cube );
+
+int xxxDrawCubeZ ( struct gr_cube_d *cube );
+
 //sevice 2041
 int serviceGrCubeZ(void);
 
