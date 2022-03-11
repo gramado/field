@@ -1,6 +1,6 @@
 
 
-Remember:
+Remember::
 	The graphical routines depends on a 
 	rich infra-structure to survive.
 	A client/server ipc model runs all the communication

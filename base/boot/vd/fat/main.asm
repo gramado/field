@@ -21,35 +21,26 @@
 ;; a opção de configurarmos uma GPT logo após o MBR.
 ;;    O modo de vídeo usado é o modo texto, herdado do BIOS.
 ;; O modo de vídeo não será alterado no MBR.
-;; Histórico:
 ;;     2017 - Created by Fred Nora.
-;;     2019 -
-;;     ...
-;;
 
-;;
-;; codename db 'londrina'
-;;
 
-;;
-;; A origem fica em 0, e os segmentos são configurados em 0x7c0, pois
-;; o BIOS carrega o MBR em 0x07c0:0, ou seja 0x7c00.
-;;
-
+; ==================
+; A origem fica em 0, e os segmentos são configurados em 0x7c0, pois
+; o BIOS carrega o MBR em 0x07c0:0, ou seja 0x7c00.
 
 [ORG 0]
 
-
-
-;16bit. Entry point do MBR.
+; ==================
+; 16bit. Entry point do MBR.
 [bits 16]
 
+; ===============
 
-boot_main:
+MBR_main:
 
-    ;;============================================
-    ;;    ****    Entry point do MBR    ****    ;;
-    ;;============================================
+    ;;============================
+    ;;    Entry point do MBR    ;;
+    ;;============================
     ; Stage 1. Esse é o MBR. Carrega o stage 2.
 
     %include "stage1.asm"
@@ -63,7 +54,7 @@ boot_main:
 ;;     PS: The char 'b' is the number 62H                 ;
 ;;                                                        ;  
 eof:                                                      ; 
-    times (63*512) - (eof-boot_main) db 'b' ;63 sec.
+    times (63*512) - (eof-MBR_main) db 'b' ;63 sec.
 ;;=========================================================
 
 
@@ -220,8 +211,8 @@ fs_fat16_data_area:
 ;; menos 4 bytes de assinatura antes do footer.
 
 ; Fill data area with zeros.                                           
-    times  (32*1024*1024) - ( fs_fat16_data_area - boot_main ) -(4) db 0  
-    ;times  (64*1024*1024) - ( fs_fat16_data_area - boot_main ) -(4) db 0  
+    times  (32*1024*1024) - ( fs_fat16_data_area - MBR_main ) -(4) db 0  
+    ;times  (64*1024*1024) - ( fs_fat16_data_area - MBR_main ) -(4) db 0  
     
 .end_of_disk:    
     db '*EOD'    ;; ## END OF DISK ##        

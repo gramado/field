@@ -7,6 +7,25 @@
 extern unsigned long InitializationPhase;
 
 
+static int __using_serial_debug = FALSE;
+
+
+int is_using_serial_debug(void)
+{
+    return (int) __using_serial_debug;
+}
+
+void enable_serial_debug(void)
+{
+    __using_serial_debug = TRUE;
+}
+
+void disable_serial_debug(void)
+{
+    __using_serial_debug = FALSE;
+}
+
+
 // debug_compute_checksum: 
 // retorna um checksum dado um buffer e um tamanho.
 
@@ -32,8 +51,20 @@ void debug_print ( char *data )
     register int i=0;
 
 
-    if( Initialization.serial_log != TRUE )
+// Are we using this debug method 
+// at this moment or not?
+
+    int using_serial_debug = (int) is_using_serial_debug();
+
+    if ( using_serial_debug == FALSE ){
         return;
+    }
+
+// Is it fully initialized?
+
+    if( Initialization.serial_log != TRUE ){
+        return;
+    }
 
     if ( (void *) data == NULL ){ return; }
     if (*data == 0)             { return; }
@@ -51,7 +82,6 @@ void debug_print ( char *data )
 
 void PROGRESS( char *string )
 {
-
     if( Initialization.serial_log != TRUE )
         return;
 

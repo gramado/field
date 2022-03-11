@@ -26,12 +26,10 @@ PYTHON3 = python3
 # Config
 #
 
-
 # use verbose
 ifndef CONFIG_USE_VERBOSE
     CONFIG_USE_VERBOSE = 1
 endif
-
 
 # ========
 
@@ -51,7 +49,7 @@ PHONY := all
 # build: User command.
 all:  \
 build-gramado-os \
-/mnt/gramadoxvhd    \
+/mnt/gramadoxvhd \
 vhd-mount \
 vhd-copy-files \
 vhd-unmount \
@@ -107,7 +105,6 @@ build-gramado-os: \
 base-tier \
 communication-tier \
 presentation-tier    
-
 
 
 #1

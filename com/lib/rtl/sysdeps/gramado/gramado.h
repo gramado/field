@@ -9,7 +9,7 @@
  * Qualquer processo pode obter sua prioridade e analizar através 
  * dessas definições.
  */
- 
+
 //Definições principais. 
 #define PRIORITY_LOW4      1  //4
 #define PRIORITY_LOW3      2  //3

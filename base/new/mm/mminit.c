@@ -210,7 +210,6 @@ void memory_destroy_heap (struct heap_d *heap)
 
 
 /*
- ******************************************
  * mmInit:
  *   Inicializa o memory manager.
  */

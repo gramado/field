@@ -235,12 +235,12 @@ bm_main:
 ; O valor do n�mero de cilindros � aprentado
 ; de forma parcial, uma parte em cada registrador.
 
-	;spt.
-	;  bits [5:0] logical last index of sectors per track = number_of 
-	;  (because index starts with 1).
-	;cyl.
-	;   bits [7:6] [15:8] logical last index of cylinders = number_of - 1 
-	;  (because index starts with 0).
+;spt.
+;  bits [5:0] logical last index of sectors per track = number_of 
+;  (because index starts with 1).
+;cyl.
+;   bits [7:6] [15:8] logical last index of cylinders = number_of - 1 
+;  (because index starts with 0).
 
 
 ; Sectors Per Track - (SPT).
@@ -667,31 +667,26 @@ bootmanagermsgCRLF      db  0x0D, 0x0A, 0x00
 ; Gramado Boot Manager - This is the stage 2 for the boot manager.
 ; It's a 16bit/32bit program to make some basic system initialization and 
 ; to load the Boot Loader program.
-; (c) Copyright 2015-2017 Fred Nora.
+; 2015-2017 Fred Nora.
 ;
 ; It starts on second sector.
-;
 ; Importante:
 ; O arquivo stage2.inc faz uma sequ�ncia de inclus�es de m�dulos
 ; de 16bit que comp�em o stage2. Os promeiros devem ser s2metafile.inc 
 ; e s2header.inc que servir�o de suporte para todos os outros modulos
 ; do stage2.
-;
 ; IMPORTANTE:
 ;      � IMPRESSIND�VEL A POSSIBILIDADE DE CARREGAR O 'BOOT LOADER' USANDO 
 ; OS RECURSOS DO BIOS DE 16BIT. Esse arquivo deve chamar a rotina de 
 ; carregamento de arquivo. Obs: J� est� implementada a rotina de carregar 
 ; um setor usando fat16 em 16bit usando recursos do BIOS.   
-;
 ; Atribuiçoes:
 ;     +1 - Configura o sistema. 
-;     +2 - Entra no modo de inicializa��o configurado. 
-;
+;     +2 - Entra no modo de inicializa��o configurado.
 ; Modo de v�deo do Boot Manager:
 ; =============================
 ;     O Boot Manager usa o modo de texto, mas configura o modo de video
 ; de acordo com as especifica��es do metafile que est� no segundo setor.
-;
 ; Estado dos registradores:
 ; ========================
 ; O 'stage2 e o resto do Boot Manager' s�o carregados em 0000h:1000h pelo 
@@ -740,17 +735,14 @@ bootmanagermsgCRLF      db  0x0D, 0x0A, 0x00
 ; � importante receber bem os par�metros de disco passados pelo stage1. 
 ; O stage2 salva os par�metros de disco no META$FILE carregado na mem�ria. 
 ; (volatil).
-
 ; Algumas constantes usadas pelo stage 2.
 ; Obs: Por conveni�ncia, o desenvolvedor pode manipular essas constantes.
-
 ;;Tipos de bootloader que poder�o ser carregados pelo boot manager.
 ;BOOTLOADER_TYPE_NONE      EQU 0  ;Sem tipo definido. Negligenciado.
 ;BOOTLOADER_TYPE_GRAMADO   EQU 1  ;Boot Loader do sistema operacional Gramado.
 ;BOOTLOADER_TYPE_MULTIBOOT EQU 1  ;Usando o padr�o multiboot.
 ;BOOTLOADER_TYPE_UNKNOW    EQU 2  ;Desconhecido.
 ;;...
-
 
 ; ==========================================
 ; Importante:
@@ -780,13 +772,11 @@ ROOT_SEGMENT  equ  4000H
 ROOT_OFFSET   equ  0
 ROOT_LBA      equ  559
 
-
 ; ========================
 ; Aqui está a localização do bootloader na memória. 
 ; A LBAn�o importa, pois ele foi carregado do sistema sistema de 
 ; arquivos e a LBA inicial dele estava armazenada na entrada do 
 ; diret�rio raiz.
-
 
 ; Boot Loader.
 BL_SEGMENT  equ  2000H
@@ -799,15 +789,13 @@ BL_LBA      equ  0
 ; RED     equ     02f00h
 ; GREEN   equ     04f00h
 
+
 ;==================================
 ; stage2_main:
-;
 ;     Início do stage 2. 
 ;     O endereço do stage 2 é 0000H:1000H.
 ;     O stage 2 fica no segundo setor do disco.
-
-; Jump
-
+;     Jump
 stage2_main:
     PUSH 0 
     PUSH AFTER_DATA 
@@ -818,11 +806,8 @@ stage2_main:
 ;
 
     %include "fs/s2metafile.inc"
-
     %include "s2header.inc"
-    
     %include "fs/s2bpb.inc"
-    
     %include "x86/s2gdt.inc"
 
 ; ===============================
@@ -831,20 +816,16 @@ stage2_main:
 ; Vamos tentar passar os dados de s2config16.inc, pois esta
 ; relativamente proximo.
 
-    %include "drivers/s2vesa.inc"  
-    
-    %include "s2config16.inc"  
+    %include "drivers/s2vesa.inc" 
+    %include "s2config16.inc" 
 ; ================================
 
 ; lib.
 
     %include "x86/s2a20.inc"
-
     %include "s2lib.inc"
-    
     %include "fs/s2fat12.inc"
     %include "fs/s2fat16.inc"
-
     %include "s2menu16.inc"
     %include "s2modes.inc"
     %include "s2detect.inc"
@@ -867,13 +848,15 @@ stage2_main:
 
 AFTER_DATA:
 
-; Message: Boot Manager Splash.
-; See: s2header.inc
+; Segments at '0'.
 
     mov ax, 0 
     mov ds, ax
     mov es, ax 
- 
+
+; Message: Boot Manager Splash.
+; See: s2header.inc
+
     mov si, msg_bm_splash
     call DisplayMessage
 
@@ -1023,17 +1006,15 @@ xxx_Config:
 
     cmp al, 1
     je .xxxxGUI
-
     cmp al, 0
     je .xxxxCLI
-
     jmp .xxxxGUI
 ;; =====================================
 ;; --
 
 
 ;;
-;; == Text mode ================================================
+;; == Text mode ==============================
 ;;
 
 ; text mode.
@@ -1047,7 +1028,7 @@ xxx_Config:
 
 
 ;;
-;; == Graphics mode =============================================
+;; == Graphics mode ==========================
 ;;
 
 
@@ -1071,7 +1052,7 @@ xxx_Config:
 ;
 
 ; Activate the chosen mode.
-; (lib16/s2modes.inc)
+; (s2modes.inc)
 
 .xxxxGO:
     JMP s2modesActivateMode  

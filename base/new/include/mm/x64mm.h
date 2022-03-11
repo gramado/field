@@ -1092,6 +1092,13 @@ void *CreateAndIntallPageTable (
     unsigned long region_pa );
 
 
+// IN:
+// Endereço virtual do diretório de páginas.
+// Índice da entrada no diretório indicado.
+// Endereço virtual da tabela de páginas.
+// Endereço físico da região de 2MB que queremos mapear.
+// As flags usadas em todas as entradas da pagetable
+// e na entrada do diretório de páginas.
 int 
 mm_fill_page_table( 
     unsigned long directory_va, 

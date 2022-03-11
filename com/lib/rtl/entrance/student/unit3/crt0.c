@@ -1,8 +1,8 @@
 /*
- * File: unit3/crt0.c
- *
+ * File: student/unit3/crt0.c
  * Usado para inicializar a rt na libc for 64bit.
  */
+
 
 #include <types.h>
 #include <stddef.h>
@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
 #include <rtl/gramado.h>
+
 
 static char *argv[] = { 
     "-flag1", 
@@ -21,6 +21,7 @@ static char *argv[] = {
     "-flag4", 
     NULL 
 };
+
 
 /*
 	$USER:      Gives current user's name.
@@ -65,35 +66,37 @@ static char *my_environ[] = {
 extern int main ( int argc, char *argv[] );
 
 
-#define LSH_TOK_DELIM " \t\r\n\a" 
-#define SPACE " "
-#define TOKENLIST_MAX_DEFAULT 80
-
+#define LSH_TOK_DELIM  " \t\r\n\a" 
+#define SPACE  " "
+#define TOKENLIST_MAX_DEFAULT  80
 
 // # importante
 // Esses aplicativos rodam no terminal.
 // Esses aplicativos escrevem em stdout.
 // O terminal precisa conhecer esse stdout para ler.
 
-
 //#todo
 //int crt0 ( int argc, char **argv, char **envp ){
 //    environ = envp;
 
 
+// #todo
+// Explain this argument better.
+int crt0 (unsigned long rdi)
+{
 
-//int crt0 (void){
-
-int crt0( unsigned long rdi){
-
-    // Retorno de main().
+// Retorno de main().
     int retval=0;
 
-    // Token support.
+// Token support.
     char *tokenList[TOKENLIST_MAX_DEFAULT];
     char *token;
     int token_count=0;
     int index=0;
+
+// #todo
+// Explain it better.
+// Is it possible to access this address?
 
     unsigned long *surface_config = (unsigned long *) rdi;
 
@@ -113,12 +116,13 @@ int crt0( unsigned long rdi){
 
     char *shared_info = "nothing nothing";
     
-    // Environment.
+// Environment.
+// The library will have this default environment.
+// #todo: Change the name to '__libc_default_environ'
     environ = my_environ;
 
 /*
- // #debug
-
+// #debug
 #ifdef TEDITOR_VERBOSE
 	printf ("\n");
 	printf ("crt0: Initializing ...\n");
@@ -134,6 +138,7 @@ int crt0( unsigned long rdi){
 #endif
 */
 
+
 //
 // Tokenizing.
 //
@@ -143,10 +148,9 @@ int crt0( unsigned long rdi){
 
     tokenList[0] = strtok ( &shared_info[0], LSH_TOK_DELIM );
 
-    // Salva a primeira palavra digitada.
+// Salva a primeira palavra digitada.
     token = (char *) tokenList[0];
-
-    index = 0; 
+    index=0; 
 
     while ( token != NULL )
     {
@@ -166,7 +170,7 @@ int crt0( unsigned long rdi){
         token_count = index;
     };
 
-    //Finalizando a lista.
+// Finalizando a lista.
     tokenList[index] = NULL;
 
 
@@ -188,7 +192,6 @@ int crt0( unsigned long rdi){
             printf ("crt0: for fail!\n")
             goto hang;
         }
-
         printf ("# argv{%d}={%s} #\n", index, tokenList[index] );
     };
 #endif
@@ -203,22 +206,33 @@ int crt0( unsigned long rdi){
 
 
 // See: stdlib/stdlib.c
-    //gramado_system_call(65,'1',0,0);  //#debug: put char
+
+    // #debug: put char
+    //gramado_system_call(65,'1',0,0); 
+
     rt_status = libcInitRT();
 
-    if (rt_status != 0){
-        gramado_system_call(65,'e',0,0);    //#debug: put char
+    if (rt_status != 0)
+    {
+        // #debug: put char
+        gramado_system_call(65,'e',0,0);
     }
-    
+
+
 // return void
 // See: stdio/stdio.c
-    //gramado_system_call(65,'2',0,0);    //#debug: put char
+
+    // #debug: put char
+    //gramado_system_call(65,'2',0,0);
+
     stdioInitialize();
 
-    // #todo
-    // Chamar esse ao invés de chamar os dois acima.
-    //See: sysdeps/x86/x86start.c
+// #todo
+// Chamar esse ao invés de chamar os dois acima.
+//See: sysdeps/x86/x86start.c
+
     //x86start ( ( token_count, tokenList, default_env );
+
 
 /*
 #ifdef TEDITOR_VERBOSE
@@ -228,39 +242,38 @@ int crt0( unsigned long rdi){
 */
 
   
-  
-    // Calling main().
+// Calling main().
 
     retval = (int) main ( token_count, tokenList );
 
-    switch (retval)
-    {
-        case 0:
-            //printf ("crt0: main returned 0\n");
-            exit (0);
-            break;
-
-        case 1:
-            //printf ("crt0: main returned 1\n");
-            exit (1);
-            break;
-
-        //...
-
-        default:
-            //printf ("crt0: main returned default\n");
-            exit (-1);
-            break; 
+    switch (retval){
+    case 0:
+        //printf ("crt0: main returned 0\n");
+        exit(0);
+        break;
+    case 1:
+        //printf ("crt0: main returned 1\n");
+        exit(1);
+        break;
+    // ...
+    default:
+        //printf ("crt0: main returned default\n");
+        exit(-1);
+        break; 
     };
 
-    //
-    // No return!
-    //
+//
+// No return!
+//
 
     //printf ("libc03-crts-crt0: *fail\n");
-    exit (-1);
+
+    exit(-1);
 
     //printf ("libc03-crts-crt0: *hang\n");
-    while (1) { asm ("pause"); };
+
+    while (1) { 
+        asm ("pause"); 
+    };
 }
 

@@ -1,6 +1,6 @@
 
 // assert.c
-// Credits: serenity os
+// Credits: Serenity OS
 
 #include <assert.h>
 #include <stdio.h>
@@ -17,7 +17,6 @@ __assertion_failed (
     unsigned line, 
     const char* func )
 {
-
     printf ("USERSPACE(%d) ASSERTION FAILED: ", getpid() );
     printf (" %s \n %s:%u in %s \n",  msg, file, line, func );
     
@@ -27,6 +26,7 @@ __assertion_failed (
     //abort ();
     //for (;;)
 }
+
 #endif
 
 
@@ -109,10 +109,8 @@ __diagassert(const char *file, int line, const char *failedexpr);
 void
 __diagassert(const char *file, int line, const char *failedexpr)
 {
-
 	__diagassert13(file, line, NULL, failedexpr);
 }
 */
-
 
 

@@ -12,19 +12,18 @@
 ;     AL  = New initialization mode.
 ;     EBX = ECX = EDX = 0.
 ; History:
-;     ? - Created by Fred Nora.
+;     ?    - Created by Fred Nora.
 ;     2015 - Adapted from older version.
-;     Oct 2016 - Revision.
- 
+;     2016 - Revision.
 
-;; ===============================================================
-;; pmInit:
-;;     Switching to Protected Mode.
-;; obs: 
-;; Talvez essa rotina deva receber argumentos. 
-;; Na inicialização essa rotina é chamada em modo texto.
-;; Called by mShell in s2modes.inc
 
+; ===========================================================
+; pmInit:
+;     Switching to Protected Mode.
+; obs: 
+; Talvez essa rotina deva receber argumentos. 
+; Na inicialização essa rotina é chamada em modo texto.
+; Called by mShell in s2modes.inc
 ; routine:
 ; Keep the interrupts disabled.
 ; Setup registers 
@@ -124,15 +123,16 @@ Gramado_pm32:
 ; debug message.
 
 .debug_textmode:    
-    nop
 
-	;mov byte [0B8000h], byte 'P'
-	;mov byte [0B8001h], byte 7
-	;mov byte [0B8002h], byte 'M'
-	;mov byte [0B8003h], byte 7
-	;jmp $
+    nop
+    ;mov byte [0B8000h], byte 'P'
+    ;mov byte [0B8001h], byte 7
+    ;mov byte [0B8002h], byte 'M'
+    ;mov byte [0B8003h], byte 7
+    ;jmp $
 
 .debug_graphicmode:
+    
     nop 
     ;jmp $
 
@@ -158,7 +158,7 @@ Gramado_pm32:
 ; #bugbug: 
 ; Podemos ter um proble nessa variável BOOT BOOT.modo.
 ; start.inc
-; See: /start.inc
+; See: start.inc
 
 ;;
 ;; == Go to Start =======================================

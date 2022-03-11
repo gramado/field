@@ -177,6 +177,15 @@ void preinit_OutputSupport(void)
 
 int kernel_main(int arch_type)
 {
+
+// Setup debug mode.
+// Enable the usage of the serial debug.
+// It is not initialized yet.
+
+    //enable_serial_debug();
+    disable_serial_debug();
+
+    
     Initialization.phase1 = FALSE;
     Initialization.phase2 = FALSE;
     Initialization.phase3 = FALSE;
@@ -362,14 +371,12 @@ int kernel_main(int arch_type)
     //    while(1){}
     //}
 
-
 // ============================
 // #progress
 // name:level:sublevel
 // ============================
 
 // Now we have serial port output.
-
     PROGRESS("kernel_main: Initializing ...\n");
 
 // =================================================

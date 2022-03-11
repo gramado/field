@@ -64,6 +64,8 @@ get_video_mode:
 
 s2modesActivateMode:
 
+; Creating a fancy screen with a status bar at the bottom.
+
     call Window.ClearScreen
 
     pusha
@@ -75,9 +77,9 @@ s2modesActivateMode:
     ; Debug
     ; jmp $
 
-    ; Pega o modo de inicializaçao no metafile.
-    ; O modo configurado retornara em al.
-    ; al = META$FILE.INIT_MODE
+; Pega o modo de inicializaçao no metafile.
+; O modo configurado retornara em al.
+; al = META$FILE.INIT_MODE
 
 .switch:
 
@@ -97,45 +99,44 @@ s2modesActivateMode:
     jmp $
 
 
-
-;;=================================================================
+;;===========================================
 ;; mShell:
-;; 
 ;;     +1 (boot mode shell) -  
 ;;     Inicia a prompt de comandos do Boot Manager. #shell.   
-;;
 
 mShell:
 
     pusha
     call Window.StatusBar
-    mov si, msg_modo1
+    mov si, msg_mode1
     call PoeString
     popa
 
-
 .videoMode:
 
-    ; Use video mode 3.
+; Use video mode 3.
+; #todo: Explain it better.
 
     xor eax, eax
     mov ax, word 3    
     call set_video_mode
 
-    ; Screen.
+;Screen.
+
     ; call Window.ClearScreen  
 
-    ; Cursor.
+; Hide cursor.
+
     call Cursor.Hide 
 
-    ;; Boot mode.
-    ;; Ativar modo de inicializaçao.
-    ;; Obs: 
-    ;; #todo: 
-    ;; Talvez os argumentos devam ser preparados antes.
-    ;; Inicializao do modo protegido.
-    ;; Switching to Protected Mode.
-    ;; See: stage3/pm.inc
+; Boot mode.
+; Ativar modo de inicializaçao.
+; Obs: 
+; #todo: 
+; Talvez os argumentos devam ser preparados antes.
+; Inicializao do modo protegido.
+; Switching to Protected Mode.
+; See: stage3/pm.inc
 
 .bootMode:
 
@@ -146,29 +147,20 @@ mShell:
     jmp $  
 
 
-
-;;==============================================================
+;; ==========================================
 ;; mGui:
-;;
 ;;     +2 (boot mode gui) - Graphycs mode.
-;;
-
-
-;;
 ;; VESA:
-;;     + Verifica se suporta vesa.	
+;;     + Verifica se suporta vesa.
 ;;     + Inicia configura��o de video usando vesa.
-;;
 ;;     Ativa o modo usando BIOS e valores do metafile.
 ;;     todo: 
 ;;     (bugbug) aqui estamos usando vesa para configurar o modo de
 ;;     de video, sem saber nada sobre a placa de v�deo.
-;;
-;;
-;; * IMPORTANTE:
-;;   O OBJETIVO EH CHEGARMOS AQUI COM O ARQUIVO BL.BIN CARREGADO 
-;;   NA MEMORIA E PASSARMOS O COMANDO PARA ELE, SEM TERMOS QUE 
-;;   CARREGA-LO USANDO RECURSOS DE 32BIT.
+;; IMPORTANTE:
+;; O OBJETIVO EH CHEGARMOS AQUI COM O ARQUIVO BL.BIN CARREGADO 
+;; NA MEMORIA E PASSARMOS O COMANDO PARA ELE, SEM TERMOS QUE 
+;; CARREGA-LO USANDO RECURSOS DE 32BIT.
 ;++
 
 
@@ -176,17 +168,17 @@ mGui:
     nop
 .videoMode:
 
-    ;; Set video mode.
-    ;; Usa um modo previamente configurado.
+; Set video mode.
+; Usa um modo previamente configurado.
 
     xor eax, eax
     mov ax, word [META$FILE.VIDEO_MODE]    
     call set_video_mode
 
-    ; Salva modo.
+; Salva modo.
     mov al, byte BOOTMODE_GUI
 
-    ;Verifica suporte a VESA.
+;Verifica suporte a VESA.
 
 .probeVESA:
 
@@ -201,18 +193,18 @@ mGui:
     call PoeString
     popa
 
-    ; Configura modo de video usando VESA.
+; Configura modo de video usando VESA.
 .initVESA:
 
     pusha
     call s2vesaInitVESA
     popa
 
+; #test
+; Set start
+; Tested on real machine.
+; I didn't see any difference in the visible area position.
 
-    ;; #test
-    ;; Set start
-    ;; Tested on real machine.
-    ;; I didn't see any difference in the visible area position.
     ;pusha
     ;mov   ax,4F07h 
     ;xor   bx,bx 
@@ -221,14 +213,13 @@ mGui:
     ;int   10h 
     ;popa
 
-
 .setupVideoMode:
 
-    ; Registra o modo escolhido.
+; Registra o modo escolhido.
     mov al, byte BOOTMODE_GUI
     call set_boot_mode
 
-    ; Setup registers.
+; Setup registers.
 
     cli
     mov ax, 0 
@@ -256,16 +247,14 @@ mGui:
 ;
 ; CR0 - PE
 ;
-	;Muda PE.
+
+; Muda PE.
 
     mov eax, cr0
     or al, 1
     mov cr0, eax
 
-
-;
 ; Flush pipeline
-;
 
 s2modesFlushPipeline:
     jmp stage2_CODE_SEL:s2modespm32 
@@ -278,7 +267,7 @@ s2modesFlushPipeline:
 
 s2modespm32:
 
-    ;setup registers.
+; Setup registers.
 
     mov ax, stage2_DATA_SEL  
     mov ds, ax
@@ -292,23 +281,20 @@ s2modespm32:
     mov ebx, dword 0
     mov eax, dword 0    
 
+;
+; ========================================================
+;
 
-    ;;
-    ;; ========================================================
-    ;;
-
-    ;; Setup the boot block.
-
-    ;; VESA data.
-    ;; Get some value from the vesa blodck and
-    ;; and save it in the boot block structure.
-
-    ; LFB physical address.
-    ; Width in pixels.
-    ; Height in pixel.
-    ; BPP.
-    ; Metafile structure physical address
-    ; ...
+; Setup the boot block.
+; VESA data.
+; Get some value from the vesa blodck and
+; and save it in the boot block structure.
+; LFB physical address.
+; Width in pixels.
+; Height in pixel.
+; BPP.
+; Metafile structure physical address
+; ...
 
     xor eax, eax
     mov eax, dword [ModeInfo_PhysBasePtr]  
@@ -326,76 +312,75 @@ s2modespm32:
     mov al, byte [ModeInfo_BitsPerPixel]   
     mov dword [BootBlock.bpp], eax 
 
+; #bugbug
+; provavelmente so podemos salvar o endereço do metafile
+; e nao seus elementos como estrutura.
 
-    ;; #bugbug
-    ;; provavelmente so podemos salvar o endereço do metafile
-    ;; e nao seus elementos como estrutura.
     xor eax, eax
     mov eax, dword META$FILE  
     mov dword [BootBlock.metafile_address], eax
     ;; ...
 
-    ;;
-    ;; ========================================================
-    ;;
+;;
+;; ========================================================
+;;
 
-    ;; The boot block
-    ;; Putting the boot block address in ebp.
+; The boot block
+; Putting the boot block address in ebp.
     
     mov ebp, dword BootBlock
 
-    ;; Now let's setup eax, ebx, ecx and edx.
+; Now let's setup eax, ebx, ecx and edx.
 
-    ;; > eax
-    ;; 'G' flag in al. It indicates the graphics mode.
-    ;; We wish to use the  'ah' register too, so let's clean eax first.
+;; > eax
+;; 'G' flag in al. It indicates the graphics mode.
+;; We wish to use the  'ah' register too, so let's clean eax first.
 
     xor eax, eax
-    mov al, byte 'G'                       ; Flag. (useing graphics)
+    mov al, byte 'G'    ; Flag. (useing graphics)
 
-    ;; > ebx
-    ;; Putting the address of the vesa structure in ebx.
-    ;; #bugbug: We are losing this address. We need to put this
-    ;; address into the boot block.
+;; > ebx
+;; Putting the address of the vesa structure in ebx.
+;; #bugbug: We are losing this address. We need to put this
+;; address into the boot block.
+
     mov ebx, dword [ModeInfo_PhysBasePtr]  ; LFB address (PA)
 
-    ;; > ecx 
-    ;; > edx
-    ;; Saving the boot block in ecx and edx
+;; > ecx 
+;; > edx
+;; Saving the boot block in ecx and edx
+
     mov ecx, ebp 
     mov edx, ebp 
 
-    ;;
-    ;; ========================================================
-    ;;
+;;
+;; ========================================================
+;;
 
-	;; Aqui estamos em modo protegido e no modo grafico, 
-	;; vamos testar se as mensagens para esse ambiente 
-	;; estao funcionando.
-
-	;; @todo: Poderiamos limpar a tela entes de 
-	;; apresentarmos essa mensagem.
-
-	;; #debug
-	;; #bugbug
-	;; Is it working ??
-	;; Testando mensagem.
+;; Aqui estamos em modo protegido e no modo grafico, 
+;; vamos testar se as mensagens para esse ambiente 
+;; estao funcionando.
+;; @todo: Poderiamos limpar a tela entes de 
+;; apresentarmos essa mensagem.
+;; #debug
+;; #bugbug
+;; Is it working ??
+;; Testando mensagem.
 
     mov eax, 0x00ffff00    ;color
     mov esi, s2modes_initmessageinGM
     call lib32PrintString
 
+;#debug
+;#bugbug isso demora.
 
-    ;#debug
-    ;#bugbug isso demora.
     ;call _asm_refresh_screen
 
-	;#debug
-	;jmp $
+    ;#debug
+    ;jmp $
 
-    ; Opçao eh saltar para uma area de inicializaçao em 
-	; 32bit modo grafico.
-
+; Opçao eh saltar para uma area de inicializaçao em 
+; 32bit modo grafico.
 
 ;
 ; == \o/ ============================
@@ -415,35 +400,43 @@ s2modespm32:
 ; == \o/ ============================
 ;
 
+; Strings:
 
-s2modes_initmessageinGM db "s2modes: Initializing PM in GM", 13, 10, 0
+s2modes_initmessageinGM: 
+    DB "s2modes.inc: Initializing PM in GM", 13, 10, 0
 
 ;;
-;;#####################################################################
+;; ##############################################################
 ;;
 
-;;n�o queremos estragar as rotinas de 16bit.	
+;; nao queremos estragar as rotinas de 16bit.	
 [bits 16]	
-;N�o suporta VESA, entrar no Shell do Boot Manager.
 
+; Nao suporta VESA, 
+; entrar no Shell do Boot Manager.
 noVesa:
-	mov al, byte BOOTMODE_SHELL
-	call set_boot_mode	
-	mov al, byte BOOTMODE_SHELL
-	jmp s2modesActivateMode
-	jmp $
-;--
 
+    mov al, byte BOOTMODE_SHELL
+    call set_boot_mode
+
+    mov al, byte BOOTMODE_SHELL
+    jmp s2modesActivateMode
+    jmp $
+;--
 
 ;
 ;--------------------------------------------
 ; 
- 
+
+; Strings:
+
 ;; #todo: 
 ;; Change to msg_mode1_selected and msg_mode2_selected. 
 
-msg_modo1 db "s2: MSM Shell", 13,10,0
-msg_modo2 db "s2: GUI",       13,10,0
+msg_mode1: 
+    DB "s2modes.inc: BM-Shell", 13, 10, 0
+msg_mode2: 
+    DB "s2modes.inc: BM-GUI",   13, 10, 0
 
 
 ;

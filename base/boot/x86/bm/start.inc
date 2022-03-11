@@ -4,20 +4,17 @@
 ; Descricao: 
 ;     Inicio do modo protegido. 
 ;     O modo protegido ja foi configurado e 
-; começam aqui as rotinas em 32 bit. 
-;
+; começam aqui as rotinas em 32 bit.
 ; Atribuiçoes: 
 ;     +Efetivar a escolha do modo de inicializaçao.
 ;     +Passar o comando para Shell do Boot Manager
 ;      se essa for a escolha.
 ;     +Carregar o Boot Loader e passar o comando 
 ;      pra ele se essa for a escolha.
-;
 ; Opçoes de inicializaçao:
 ; ========================
 ; +1 - Inicia o Shell do Boot Manager no modo texto.
 ; +2 - Inicia o Boot Loader (BL.BIN) no modo GRAFICO. (GUI).
-;
 ; Contexto dos registradores:
 ; ===========================
 ; Segments:
@@ -42,16 +39,15 @@
 ;;     Inicio do modo protegido de 32 bit
 ;; IN:
 ;;     AL = New mode.  (o modo a ser inicializado)
-;;
 ;; Pega o modo de video passado pelo stage 2 atraves de AL e 
 ;; salva no contexto de 32 bits.
 ;; Called by pm32 in stage3/pm.inc
 
 start:
 
-    ;; #bugbug 
-    ;; Esse valor pode estar errado durante a 
-    ;; inicializaçao em modo texto.
+; #bugbug 
+; Esse valor pode estar errado durante a 
+; inicializaçao em modo texto.
 
     mov byte [BOOT.modo], al
 
@@ -107,8 +103,8 @@ startCLI:
 
     call setup_machine
 
-    ; Segments and stack.
-    ; Keep interrupts disabled.
+; Segments and stack.
+; Keep interrupts disabled.
     
     cli
     mov ax, word 0x10  
@@ -117,29 +113,30 @@ startCLI:
     mov eax, stack_ptr
     mov esp, eax 
 
-
-    ; Configura volume.
-    ; ?? onde ?? blconfig.inc
+; Configura volume.
+; ?? onde ?? blconfig.inc
 
     mov al, byte 1
     call set_fs_volume  
 
-    ; Configura fs type.
+; Configura fs type.
 
     mov al, byte 1
     call set_fs_type
 
 ; Limpa a tela em modo texto.
+
     ; call clear_screen
 
-;; Enable all the interrupts.
+; Enable all the interrupts.
 
 .LenableInterrupts:
+
     mov al, 0
     out 0xA1, al 
     out 0x21, al 
-    sti 
 
+    sti 
 
 ;; startShellLoop:
 ;; The shell loop.
@@ -148,9 +145,9 @@ startCLI:
 ;; Esse eh loop do shell do boot manager.
 
 ; Splash message.
-; See: stage3/shell/shmsg.inc
-;; Go to the loop.
-;; stage3/shell/shell.inc
+; See: shell32/shmsg.inc
+; Go to the loop.
+; shell32/shell.inc
 
 startShellLoop:
 
@@ -162,14 +159,13 @@ startShellLoop:
     jmp os_command_line
     jmp $
 
-;
-; Strings
-;
+
+; Strings:
 
 start_msg_saving_metafile: 
-    DB 'start: Saving metafile..', 13, 10, 0
+    DB 'start.inc: Saving metafile..', 13, 10, 0
 start_msg_rebooting: 
-    DB 'start: Rebooting..',       13, 10, 0
+    DB 'start.inc: Rebooting..',       13, 10, 0
 
 
 ; =================================
@@ -398,19 +394,19 @@ startGUI:
 ; #todo: 
 ; Testar rotina de mostrar uma string.
 
-	;debug break
-	;jmp $
-	
+    ;debug break
+    ;jmp $
+
 ;Debug:
 ;Pinta uma janela pra testar modo gr�fico.
-	
-	;mov eax, 0    ;x.
-	;mov ebx, 0    ;y.
-	;mov ecx, 20   ;largura.
-	;mov edx, 20   ;altura.	
+
+    ;mov eax, 0    ;x.
+    ;mov ebx, 0    ;y.
+    ;mov ecx, 20   ;largura.
+    ;mov edx, 20   ;altura.	
     ;mov edi, dword  0x80808000    ;blue 
-	;call CreateWindow
-	;call _asm_refresh_screen
+    ;call CreateWindow
+    ;call _asm_refresh_screen
   
 ; #BUGBUG
 ; O teste indicou que as rotinas de char e string est�o
@@ -423,10 +419,10 @@ startGUI:
 
 ;Char.
 
-    ; a =  cor (rrggbbaa)
-    ; b =  x
-    ; c =  y
-    ; d =  Char.    
+; a =  cor (rrggbbaa)
+; b =  x
+; c =  y
+; d =  Char.    
   
 .LTestingPrintChar:  
 
@@ -443,8 +439,8 @@ startGUI:
 	;pop ebx 
 	;pop eax 
 	;call _asm_refresh_screen
-	
-	
+
+
 	;push eax
 	;push ebx
 	;push ecx 
@@ -494,9 +490,11 @@ startGUI:
 
 .LTestingPrintString:
 
-	;; Cursor
-	mov dword [g_cursor_x], 4
-	mov dword [g_cursor_y], 4
+; Cursor
+
+    mov dword [g_cursor_x], 8
+    mov dword [g_cursor_y], 8
+
 
 ;String
     ;mov esi, msg_start_loading
@@ -505,7 +503,6 @@ startGUI:
 
 ; debug
 ; Verbose: 'startGUI'
-
     ;mov esi, startMsgTest1   
     ;call lib32PrintString
     ;call _asm_refresh_screen
@@ -529,10 +526,10 @@ startGUI:
 ; passa o comando para ele.
 ; Enviando argumento em AL, e EBX.
 
-;;;; ATENÇAO 
-;;;; O BL.BIN FOI CARREGADO PELO MBR USANDO RECURSOS DO BIOS.
-;;;; NAO DEVEMOS CARREGA-LO NOVAMENTE NESSE MOMENTO 
-;;;; USANDO RECURSO DE 32BIT.
+; ATENÇAO 
+; O BL.BIN FOI CARREGADO PELO MBR USANDO RECURSOS DO BIOS.
+; NAO DEVEMOS CARREGA-LO NOVAMENTE NESSE MOMENTO 
+; USANDO RECURSO DE 32BIT.
 
 ; .LoadBootLoader:
 
@@ -804,10 +801,14 @@ setup_buffer:
 
 ; Start mensagens.
 
-startMsgTest1      db "BM-start: startGUI:",            13, 10, 0
-msg_start_ok       db "BM-startGUI: OK",                13, 10, 0
-msg_start_jumping  db "BM-startGUI: Jumping to BL.BIN", 13, 10, 0
-msg_start_sig      db "BM-startGUI: PE sig fail",       13, 10, 0
+startMsgTest1:      
+    db "BM-start: startGUI:",            13, 10, 0
+msg_start_ok:       
+    db "BM-startGUI: OK",                13, 10, 0
+msg_start_jumping:  
+    db "BM-startGUI: Jumping to BL.BIN", 13, 10, 0
+msg_start_sig:      
+    db "BM-startGUI: PE sig fail",       13, 10, 0
 
 
 ;
