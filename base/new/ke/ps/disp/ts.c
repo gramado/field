@@ -29,8 +29,12 @@ void task_switch (void)
     struct process_d  *TargetProcess;
     struct thread_d   *TargetThread;
 
-    pid_t pid = -1;
+
+// The owner of the current thread.
+    pid_t owner_pid = (pid_t) (-1);  //fail
+
     int tmp_tid = -1;
+
 
 // =======================================================
 
@@ -48,7 +52,8 @@ void task_switch (void)
 
     CurrentThread = (void *) threadList[current_thread]; 
 
-    if ( (void *) CurrentThread == NULL ){
+    if ( (void *) CurrentThread == NULL )
+    {
         panic ("ts: CurrentThread\n");
     }
 
@@ -65,34 +70,48 @@ void task_switch (void)
 // Current process
 //
 
-    pid = (pid_t) CurrentThread->ownerPID;
+// The owner of the current thread.
+
+    owner_pid = (pid_t) CurrentThread->ownerPID;
 
 // #todo: 
 // Check overflow too.
 // Check max limit.
 
-    if ( pid < 0 ||
-         pid >= PROCESS_COUNT_MAX )
+    if ( owner_pid < 0 ||
+         owner_pid >= PROCESS_COUNT_MAX )
     {
-        panic ("ts: pid\n");
+        panic ("ts: owner_pid\n");
     }
 
-    CurrentProcess = (void *) processList[pid];
+// The current process.
 
-    if ( (void *) CurrentProcess == NULL ){
+    CurrentProcess = (void *) processList[owner_pid];
+
+    if ( (void *) CurrentProcess == NULL )
+    {
         panic ("ts: CurrentProcess\n");
     }
 
-// validation
     if ( CurrentProcess->used != TRUE ||  
          CurrentProcess->magic != 1234 )
     {
         panic ("ts: CurrentProcess validation\n");
     }
 
-// Update the global variable.
+    // check
+    if ( CurrentProcess->pid != owner_pid )
+    {
+        panic("ts: CurrentProcess->pid != owner_pid \n");
+    }
 
-   current_process = (int) CurrentProcess->pid;
+
+//
+// Update the global variable.
+//
+
+    //current_process = (pid_t) owner_pid;
+    set_current_process( owner_pid );
 
 //
 //  == Conting =================================
@@ -157,7 +176,8 @@ The remainder ??
 // Taskswitch locked? 
 // Return without saving.
 
-    if ( task_switch_status == LOCKED ){
+    if ( task_switch_status == LOCKED )
+    {
         IncrementDispatcherCount (SELECT_CURRENT_COUNT);
         debug_print ("ts: Locked $\n");
         return; 
@@ -472,6 +492,10 @@ dispatch_current:
         panic ("ts: [Dispatch current] current_thread\n");
     }
 
+//
+// The target thread!
+//
+
     TargetThread = (void *) threadList[current_thread];
 
     if ( (void *) TargetThread == NULL ){
@@ -524,12 +548,12 @@ dispatch_current:
 // Owner validation.
 // Owner PID.
 
-    pid_t OwnerPID = (pid_t) TargetThread->ownerPID;
+    pid_t targetthread_OwnerPID = (pid_t) TargetThread->ownerPID;
 
-    if ( OwnerPID < 0 || 
-         OwnerPID >= THREAD_COUNT_MAX )
+    if ( targetthread_OwnerPID < 0 || 
+         targetthread_OwnerPID >= THREAD_COUNT_MAX )
     {
-       printf ("ts: ownerPID ERROR \n", OwnerPID );
+       printf ("ts: targetthread_OwnerPID ERROR \n", targetthread_OwnerPID );
        die();
     }
 
@@ -537,7 +561,7 @@ dispatch_current:
 // Target process 
 //
 
-    TargetProcess = (void *) processList[OwnerPID];
+    TargetProcess = (void *) processList[ targetthread_OwnerPID ];
 
     if ( (void *) TargetProcess == NULL ){
         printf ("ts: TargetProcess %s struct fail \n", TargetProcess->name );
@@ -550,11 +574,23 @@ dispatch_current:
         die();
     }
 
+    if( TargetProcess->pid != targetthread_OwnerPID )
+    {
+        panic("ts: TargetProcess->pid != targetthread_OwnerPID\n");
+    }
+
+//
 // Update global variable.
+//
 
-    current_process = (int) TargetProcess->pid;
+    //current_process = (pid_t) TargetProcess->pid;
+    set_current_process (TargetProcess->pid);
 
-    if ( (unsigned long) TargetProcess->pml4_PA == 0 ){
+
+// check pml4_PA
+
+    if ( (unsigned long) TargetProcess->pml4_PA == 0 )
+    {
         printf ("ts: Process %s pml4 fail\n", TargetProcess->name );
         die();
     }
@@ -615,6 +651,18 @@ void psTaskSwitch(void)
 {
 
 // Filters.
+
+// #::
+// A interrupçao de timer pode acontecer 
+// enquanto um processo em ring3 ou ring0 esta rodando.
+// Durante essa rotina de handler de timer
+// pode ser que chamaremos um callout dentro do
+// window server, mas esse callout não sera interrompido
+// por outra interrupçao de timer, pois ainda
+// não chamamos EOI.
+
+    pid_t current_process = (pid_t) get_current_process();
+
 
     if ( current_process < 0 || 
          current_process >= PROCESS_COUNT_MAX )

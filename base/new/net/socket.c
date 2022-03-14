@@ -17,7 +17,6 @@ static pid_t gramado_ports[GRAMADO_PORT_MAX];
 
 
 /*
- ******************************************
  * create_socket_object: 
  *     It creates a socket structure.
  *     Every process has its own socket structure.
@@ -44,7 +43,7 @@ struct socket_d *create_socket_object(void)
     //s->objectType =
     //s->objectClass =
 
-    s->pid = (pid_t) current_process;
+    s->pid = (pid_t) get_current_process();  //current_process;
     s->uid = (uid_t) current_user;
     s->gid = (gid_t) current_group;
 
@@ -136,8 +135,11 @@ struct socket_d *get_socket_from_fd (int fd){
 
     struct process_d *p;
     file *_file;
-    
-    
+
+
+    pid_t current_process = (pid_t) get_current_process();    
+
+
     if (fd<0 || fd>=32){
         //msg
         return (struct socket_d *) 0;
@@ -246,6 +248,8 @@ socket_gramado (
     int protocol )
 {
 
+    pid_t current_process = (pid_t) get_current_process();
+
 // Esse é o arquivo usado pelos aplicativos.
 // Retornaremos seu fd.
 
@@ -302,9 +306,15 @@ socket_gramado (
 // Para evitar, começaremos depois deles.
 
 // Reserva um slot.
-    for ( i=3; i<NUMBER_OF_FILES; i++ )
+    __slot = -1; //fail
+    //for ( i=3; i<NUMBER_OF_FILES; i++ )
+    for ( i=3; i<31; i++ )
     {
-        if ( Process->Objects[i] == 0 ){ __slot = i; break; }
+        if ( Process->Objects[i] == 0 )
+        { 
+            __slot = i; 
+            break; 
+        }
     };
 
 // Check slot validation. 
@@ -323,7 +333,7 @@ socket_gramado (
 
     if ( (void *) buff == NULL )
     {
-        Process->Objects[__slot] = (unsigned long) 0;
+        //Process->Objects[__slot] = (unsigned long) 0;
 
         debug_print ("socket_gramado: [FAIL] Buffer allocation fail\n");
         printf      ("socket_gramado: [FAIL] Buffer allocation fail\n");
@@ -339,7 +349,7 @@ socket_gramado (
 
     if ( (void *) _file == NULL  )
     {
-        Process->Objects[__slot] = (unsigned long) 0;
+        //Process->Objects[__slot] = (unsigned long) 0;
         
         debug_print ("socket_gramado: [FAIL] _file fail\n");
         printf      ("socket_gramado: [FAIL] _file fail\n");
@@ -461,6 +471,9 @@ socket_inet (
     int i=0;
     int __slot = -1;
 
+    pid_t current_process = (pid_t) get_current_process();
+
+
 
     if ( (void*) sock == NULL ){
         debug_print ("socket_unix: [FAIL] sock\n");
@@ -506,13 +519,18 @@ socket_inet (
 	// pode ser que peguemos os índices reservados.
 	// Para evitar, começaremos depois deles.
     
-    for ( i=3; i< NUMBER_OF_FILES; i++ )
+    __slot=-1;
+    //for ( i=3; i< NUMBER_OF_FILES; i++ )
+    for ( i=3; i< 31; i++ )
     {
-        if ( Process->Objects[i] == 0 ){ __slot = i; break; }
+        if ( Process->Objects[i] == 0 )
+        { 
+            __slot = i; 
+            break; 
+        }
     };
 
-
-    // Fail.
+// Fail.
     if ( __slot == -1 )
     {
         printf ("socket_inet: No free slots\n");
@@ -528,7 +546,7 @@ socket_inet (
 
     if ( (void *) buff == NULL )
     {
-        Process->Objects[__slot] = (unsigned long) 0;
+        //Process->Objects[__slot] = (unsigned long) 0;
 
         debug_print ("socket_inet: [FAIL] Buffer allocation fail\n");
         printf      ("socket_inet: [FAIL] Buffer allocation fail\n");
@@ -543,7 +561,7 @@ socket_inet (
 
     if ( (void *) _file == NULL  )
     {
-        Process->Objects[__slot] = (unsigned long) 0;
+        //Process->Objects[__slot] = (unsigned long) 0;
         
         printf ("socket_inet: _file fail\n");
         goto fail;
@@ -664,7 +682,8 @@ int socket_ioctl ( int fd, unsigned long request, unsigned long arg )
 
     debug_print ("socket_ioctl: TODO\n");
 
-
+    pid_t current_process = (pid_t) get_current_process();
+    
     if (fd<=0){
         debug_print ("socket_ioctl: fd <= 0\n");
         return -1;
@@ -813,6 +832,8 @@ socket_unix (
     debug_print ("socket_unix:\n");
 
 
+    pid_t current_process = (pid_t) get_current_process();
+
     if ( (void*) sock == NULL )
     {
         debug_print ("socket_unix: [FAIL] sock\n");
@@ -859,14 +880,19 @@ socket_unix (
 	// pode ser que peguemos os índices reservados.
 	// Para evitar, começaremos depois deles.
 
+    __slot = -1;
     // Reserva um slot.
-    for ( i=3; i< NUMBER_OF_FILES; i++ )
+    //for ( i=3; i< NUMBER_OF_FILES; i++ )
+    for ( i=3; i< 31; i++ )
     {
-        if ( Process->Objects[i] == 0 ){ __slot = i; break; }
+        if ( Process->Objects[i] == 0 )
+        { 
+            __slot = i; 
+            break; 
+        }
     };
 
-
-    // Check slot validation. 
+// Check slot validation. 
     if ( __slot == -1 )
     {
         printf ("socket_unix: No free slots\n");
@@ -883,7 +909,7 @@ socket_unix (
 
     if ( (void *) buff == NULL )
     {
-        Process->Objects[__slot] = (unsigned long) 0;
+        //Process->Objects[__slot] = (unsigned long) 0;
         
         debug_print ("socket_unix: [FAIL] Buffer allocation fail\n");
         printf      ("socket_unix: [FAIL] Buffer allocation fail\n");
@@ -899,7 +925,7 @@ socket_unix (
 
     if ( (void *) _file == NULL  )
     {
-        Process->Objects[__slot] = (unsigned long) 0;
+        //Process->Objects[__slot] = (unsigned long) 0;
         
         printf ("socket_unix: _file fail\n");
         goto fail;
@@ -1058,6 +1084,8 @@ sys_accept (
 
     // #debug
     // debug_print ("sys_accept:\n");
+
+    pid_t current_process = (pid_t) get_current_process();
 
 //
 // fd Server 
@@ -1399,6 +1427,8 @@ sys_bind (
     // #debug
     //debug_print ("sys_bind:\n");
 
+    pid_t current_process = (pid_t) get_current_process();
+
     // #debug
     if (Verbose==TRUE){
         printf("sys_bind: PID %d | fd %d | \n",
@@ -1614,6 +1644,8 @@ sys_connect (
     struct sockaddr_in *addr_in;
 
     int Verbose=FALSE;
+
+    pid_t current_process = (pid_t) get_current_process();
 
 
     if (Verbose==TRUE){
@@ -1987,10 +2019,16 @@ sys_connect (
 // Procurando um slot livre na lista de objetos abertos
 // presente na estrutura do processo servidor.
 
-    int __slot=0;
-    for (__slot=0; __slot<32; __slot++)
+    int __slot=-1;  //fail
+    int ii=0;
+    //for (__slot=0; __slot<32; __slot++)
+    for (ii=3; ii<31; ii++)
     {
-         if ( sProcess->Objects[__slot] == 0 ){ goto __OK_new_slot; }
+         if ( sProcess->Objects[ii] == 0 )
+         {
+             __slot = ii;
+             goto __OK_new_slot; 
+         }
     };
 
 // #fail: No more slots.
@@ -1999,6 +2037,11 @@ sys_connect (
 
 // ok
 __OK_new_slot:
+
+    if( __slot == -1){
+        printf("sys_connect: no empty slor\n");
+        goto fail;
+    }
 
 // Esse é o socket do processo servidor.
 // Sim, porque é o cliente que está tentando se conectar.
@@ -2024,7 +2067,7 @@ __OK_new_slot:
 // O arquivo de socket do cliente agora tem um fd
 // no processo servidor.
 
-    sProcess->Objects[__slot] = (unsigned long) f;  // no que encontramos
+    //sProcess->Objects[__slot] = (unsigned long) f;  // no que encontramos
     sProcess->Objects[31]     = (unsigned long) f;  // no 31.
 
 //
@@ -2117,6 +2160,8 @@ sys_getsockname (
     struct file_d     *f;
     struct socket_d   *s;
 
+
+    pid_t current_process = (pid_t) get_current_process();
 
     if ( sockfd < 0 || sockfd >= 32 ){
         printf ("sys_getsockname: [FAIL ]sockfd \n");
@@ -2233,6 +2278,7 @@ int sys_listen (int sockfd, int backlog)
     struct socket_d  *s;
     int n=0;
 
+    pid_t current_process = (pid_t) get_current_process();
 
 // #debug
     //debug_print ("sys_listen: [TODO]\n");
@@ -2407,6 +2453,8 @@ int sys_socket_shutdown (int socket, int how)
     //    socket, how );
 
 
+    pid_t current_process = (pid_t) get_current_process();
+
     // Invalid fd.
     if ( socket < 0 || socket >= NUMBER_OF_FILES ){
         debug_print ("sys_socket_shutdown: [FAIL] fd\n");
@@ -2499,7 +2547,6 @@ update_socket (
 
 
 /*
- ********************** 
  *  sys_socket:
  *       Essa é função oferece suporte à função socket da libc.
  *       Estamos na klibc dentro do kernel base.
@@ -2534,7 +2581,6 @@ int sys_socket ( int family, int type, int protocol )
     //#todo
     // call create_socket(...)
     // it will return a pointer.
-
 
     // Socket structure.
     struct socket_d  *__socket;
@@ -2576,6 +2622,9 @@ int sys_socket ( int family, int type, int protocol )
 
     int Verbose = FALSE;
 
+
+    pid_t current_process = (pid_t) get_current_process();
+    
     // #debug
     // Slow.
 
@@ -2733,6 +2782,8 @@ fail:
     refresh_screen();
     return (int) (-1);
 }
+
+
 
 // Os dois são arquivos no mesmo processo. O processo atual.
 int

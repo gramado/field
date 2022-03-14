@@ -103,12 +103,17 @@ off_t sys_lseek (int fd, off_t offset, int whence)
 
     debug_print("sys_lseek: [WORK IN PROGRESS]\n");
 
+
+
+
     if (fd<0 || fd >= 32){
         debug_print("sys_lseek: fd\n");
         return -1; 
     }
 
 // Process
+
+    pid_t current_process = (pid_t) get_current_process();
     
     p = (struct process_d *) processList[current_process];
 

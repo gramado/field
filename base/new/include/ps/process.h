@@ -923,6 +923,9 @@ unsigned long processList[PROCESS_COUNT_MAX];
 //
 
 
+void set_current_process( pid_t pid );
+pid_t get_current_process(void);
+
 
 
 //==============

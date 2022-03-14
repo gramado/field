@@ -982,7 +982,10 @@ int kernel_main(int arch_type)
 
     printf("\n");
     printf("KernelProcess:\n");
-    current_process = KernelProcess->pid;
+    
+    //current_process = KernelProcess->pid;
+    set_current_process(KernelProcess->pid);
+    
     show_currentprocess_info();
 
     // #fail

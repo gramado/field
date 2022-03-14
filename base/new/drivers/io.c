@@ -69,6 +69,8 @@ io_ioctl (
     debug_print ("io_ioctl: [TODO]\n");
 
 
+    pid_t current_process = (pid_t) get_current_process();
+
 // fd must to be on open file descriptor.
 
     if ( fd<0 || fd>31 ){

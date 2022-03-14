@@ -266,36 +266,30 @@ updateStatusBar(
 int gws(void)
 {
 
-    // Vamos nos concetar com o processo identificado 
-    // com o nome 'ws'
-    // The port name is 'port:/ws'
-
-    //==============================
+//==============================
+// Vamos nos concetar com o processo identificado 
+// com o nome 'ws'
+// The port name is 'port:/ws'
     struct sockaddr addr; 
     int addrlen;
-    
     addr.sa_family = AF_GRAMADO; 
     addr.sa_data[0] = 'w';
     addr.sa_data[1] = 's';  
-
     addrlen = sizeof(addr);
-    //==============================
-    
+//==============================
+
     
     int client_fd = -1;
     
     
-    
-    
-    gws_debug_print ("-------------------------\n"); 
+    //gws_debug_print ("-------------------------\n"); 
     //printf          ("-------------------------\n"); 
-    gws_debug_print ("gws.bin: Initializing ...\n");
+    gws_debug_print ("gws.bin: Initializing\n");
     //printf          ("gws.bin: Initializing ...\n");
 
-
-    //
-    // Socket
-    // 
+//
+// Socket
+// 
 
     // #debug
     //printf ("gws: Creating socket\n");
@@ -304,7 +298,8 @@ int gws(void)
     // AF_GRAMADO = 8000
     client_fd = socket ( AF_GRAMADO, SOCK_STREAM, 0 );
     
-    if ( client_fd < 0 ){
+    if ( client_fd < 0 )
+    {
        gws_debug_print ("gws: [FAIL] Couldn't create socket\n");
        printf          ("gws: [FAIL] Couldn't create socket\n");
        exit(1);  //#bugbug Cuidado.
@@ -321,7 +316,8 @@ int gws(void)
 
     //printf ("gws: Trying to connect to the address 'ws' ...\n");      
 
-    while (TRUE){
+    while (TRUE)
+    {
         if ( connect (client_fd, (struct sockaddr *) &addr, addrlen ) < 0 )
         { 
             gws_debug_print ("gws: Connection Failed\n");
@@ -332,6 +328,7 @@ int gws(void)
 
     return (int) client_fd;
 }
+
 
 void doPrompt(int fd)
 {
@@ -577,7 +574,6 @@ int main ( int argc, char *argv[] )
     int launchChild = TRUE;
     // ...
 
-
     int client_fd = -1;
     int main_window = -1;
     
@@ -588,10 +584,9 @@ int main ( int argc, char *argv[] )
 
 
 // interrupts
-    gws_debug_print ("cmdline.bin: Enable interrupts \n");
-    printf          ("cmdline.bin: Enable interrupts \n");
-
-    asm ("int $199 \n");
+    //gws_debug_print ("cmdline.bin: Enable interrupts \n");
+    //printf          ("cmdline.bin: Enable interrupts \n");
+    //asm ("int $199 \n");
 
 
 // interrupts
@@ -599,17 +594,16 @@ int main ( int argc, char *argv[] )
 // Unlock the scheduler embedded into the base kernel.
 // Only the init process is able to do this.
 
-    gws_debug_print ("cmdline.bin: Unlock taskswitching and scheduler \n");
-    printf          ("cmdline.bin: Unlock taskswitching and scheduler \n");
+    //gws_debug_print ("cmdline.bin: Unlock taskswitching and scheduler \n");
+    //printf          ("cmdline.bin: Unlock taskswitching and scheduler \n");
 
-    gramado_system_call (641,0,0,0);
-    gramado_system_call (643,0,0,0);
+    //gramado_system_call (641,0,0,0);
+    //gramado_system_call (643,0,0,0);
 
 // Create the rectangle
-    gws_debug_print ("cmdline.bin: Create rectangle \n");
-    printf          ("cmdline.bin: Create rectangle \n");
-
-    gramado_system_call(897,0,0,0);
+    //gws_debug_print ("cmdline.bin: Create rectangle \n");
+    //printf          ("cmdline.bin: Create rectangle \n");
+    //gramado_system_call(897,0,0,0);
 
 
 //
@@ -622,16 +616,25 @@ int main ( int argc, char *argv[] )
 
 //================================
    
-// connection.
+// Connection.
 // Only connect. Nothing more.
+// Create socket and call connect()
 
     client_fd = gws();
 
-    if ( client_fd < 0 ){
+    if ( client_fd < 0 )
+    {
          gws_debug_print ("cmdline.bin: gws initialization fail \n");
          printf          ("cmdline.bin: gws initialization fail \n");
          exit(1);
     }
+
+// #ebug
+    printf(":: Entering CMDLINE.BIN pid{%d} fd{%d}\n",
+        getpid(),
+        client_fd);
+    
+    //while(1){}
 
 
 //========================================
@@ -639,7 +642,7 @@ int main ( int argc, char *argv[] )
     // Waiting ...
     // Wait for the moment where the server says: 'yes'
 
-    gws_debug_print ("cmdline.bin:  \n");
+    //gws_debug_print ("cmdline.bin:  \n");
     //         printf ("cmdline.bin:  \n");
 
 
@@ -745,6 +748,10 @@ int main ( int argc, char *argv[] )
     game_window = main_window;
     //========================
 
+    //printf ("CMDLINE.BIN: main_window created\n");
+    //while(1){}
+
+
     //printf("gws.bin: [2] after create simple green window :)\n");
 
     //asm ("int $3");
@@ -756,22 +763,27 @@ int main ( int argc, char *argv[] )
     //asm ("int $3");
 
 
-    //===============================
+// barra azul no topo.
+//===============================
     gws_debug_print ("cmdline.bin:  Creating  window \n");
     //printf          ("cmdline.bin: Creating main window \n");
     int tmp1;
-    tmp1 = gws_create_window (client_fd,
-                      WT_SIMPLE, 1, 1, "status",
-                      0, 0, w, 24,
-                      0, 0, COLOR_BLUE, COLOR_BLUE );
+    tmp1 = gws_create_window (
+        client_fd,
+        WT_SIMPLE, 1, 1, "status",
+        0, 0, w, 24,
+        0, 0, COLOR_BLUE, COLOR_BLUE );
 
     if (tmp1<0){
         printf ("cmdline.bin: tmp1\n");
         exit(1);
     }
     status_window = tmp1;
-    //========================
+//========================
 
+    //printf ("CMDLINE.BIN: status_window created\n");
+    //while(1){}
+    
 
     //printf("gws.bin: [2] after create simple gray bar window :)\n");
 
@@ -784,10 +796,15 @@ int main ( int argc, char *argv[] )
     //===================
     gws_debug_print ("cmdline.bin: 2 Drawing a char \n");
     //printf          ("cmdline.bin: Drawing a char \n");
-    if(main_window>0){
+    if(main_window>0)
+    {
+        //gws_draw_char ( 
+        //    client_fd, 
+        //    main_window, 0, 0, COLOR_YELLOW, 'G' );
+
         gws_draw_char ( 
             client_fd, 
-            main_window, 0, 0, COLOR_YELLOW, 'G' );
+            status_window, 0, 0, COLOR_YELLOW, 'G' );
     }
     //====================   
 
@@ -880,6 +897,8 @@ int main ( int argc, char *argv[] )
     int north_color = COLOR_RED;
     int south_color = COLOR_BLUE;
 
+
+/*
     struct gr_cube_d  *cube;
     cube = (void *) malloc( sizeof( struct gr_cube_d ) );
 
@@ -938,11 +957,11 @@ int main ( int argc, char *argv[] )
         }
     }
     //}; //for
+*/
 
-
-    //
-    // == rectangle ==================================
-    //
+//
+// == rectangle ==================================
+//
 
     /*
     gws_debug_print ("gws.bin: 5 Testing Plot rect \n");
@@ -986,10 +1005,15 @@ int main ( int argc, char *argv[] )
     // #debug
     //while (1){
 
-    if( main_window > 0 ){
+    if( main_window > 0 )
+    {
+        //gws_draw_char ( 
+        //    client_fd, 
+        //    main_window, 8, 8, COLOR_YELLOW, 'x' );
+
         gws_draw_char ( 
             client_fd, 
-            main_window, 8, 8, COLOR_YELLOW, 'x' );
+            status_window, 8, 8, COLOR_YELLOW, 'x' );
     }
 
         // ...
@@ -1090,7 +1114,7 @@ int main ( int argc, char *argv[] )
 // Setup the flag to show or not the fps window.
 // Request number 6.
 
-    gws_async_command(client_fd,6,FALSE,0);
+    //gws_async_command(client_fd,6,FALSE,0);
 
 
 //
@@ -1192,7 +1216,7 @@ int main ( int argc, char *argv[] )
                 RTLEventBuffer[3] );
         }
     };
-    //=================================
+//=================================
 
     // Isso eh estranho ... um cliente remoto nao deve poder fazer isso.
     //gws_debug_print ("gws: Sending command to close the server. \n");

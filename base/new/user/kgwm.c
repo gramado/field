@@ -552,10 +552,12 @@ wmProcedure (
                 case VK_F11:
                 // #todo:
                 // [Window Manager]: Restore
-                    if (ctrl_status == TRUE){
-                        tmp_value = get_update_screen_frequency();
-                        tmp_value--;
-                        set_update_screen_frequency(tmp_value);
+                    if (ctrl_status == TRUE)
+                    {
+                        show_slots();
+                        //tmp_value = get_update_screen_frequency();
+                        //tmp_value--;
+                        //set_update_screen_frequency(tmp_value);
                     }
                     if (alt_status == TRUE){
                         printf ("wmProcedure: alt + f11\n");
@@ -572,10 +574,12 @@ wmProcedure (
                 case VK_F12:
                 // #todo:
                 // [Window Manager]: Close
-                    if (ctrl_status == TRUE){
-                        tmp_value = get_update_screen_frequency();
-                        tmp_value++;
-                        set_update_screen_frequency(tmp_value);
+                    if (ctrl_status == TRUE)
+                    {
+                        show_process_information();
+                        //tmp_value = get_update_screen_frequency();
+                        //tmp_value++;
+                        //set_update_screen_frequency(tmp_value);
                     }
                     if (alt_status == TRUE){
                         printf ("wmProcedure: alt + f12\n");

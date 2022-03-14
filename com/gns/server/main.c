@@ -12,6 +12,7 @@
 
 #include <gns.h>
 
+int __saved_sync_id = -1;
 
 //
 // == Gramado Network Protocol ===============================
@@ -150,7 +151,7 @@ void xxxHandleNextRequest(int fd)
 
 // Check if we heave a new request.
 
-    int value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
+    int value = rtl_get_global_sync( __saved_sync_id, SYNC_REQUEST_GET_ACTION );
 
     // Not a request.
     if ( value != ACTION_REQUEST )
@@ -168,8 +169,8 @@ void xxxHandleNextRequest(int fd)
         debug_print ("gnssrv: xxxHandleNextRequest n_reads\n");
 
         // No reply
-        rtl_set_file_sync( 
-            fd, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
+        rtl_set_global_sync( 
+            __saved_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
 
         // Cleaning
         message_buffer[0] = 0;
@@ -190,8 +191,8 @@ void xxxHandleNextRequest(int fd)
         debug_print ("gnssrv: xxxHandleNextRequest Unknown message\n");
 
         // No reply
-        rtl_set_file_sync( 
-            fd, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
+        rtl_set_global_sync( 
+            __saved_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
 
         // Cleaning
         message_buffer[0] = 0;
@@ -235,8 +236,8 @@ void xxxHandleNextRequest(int fd)
 
     if (NoReply == TRUE)
     {
-        rtl_set_file_sync( 
-            fd, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
+        rtl_set_global_sync( 
+            __saved_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
         return;
     }
 
@@ -277,7 +278,7 @@ void xxxHandleNextRequest(int fd)
 //
 
 // set response
-    rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REPLY );
+    rtl_set_global_sync( __saved_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_REPLY );
 
 //
 // Send
@@ -288,8 +289,8 @@ void xxxHandleNextRequest(int fd)
         debug_print ("gnssrv: xxxHandleNextRequest Response fail\n");
         
         // No response. It fails.
-        rtl_set_file_sync( 
-            fd, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
+        rtl_set_global_sync( 
+            __saved_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
         return;
     }
 
@@ -591,6 +592,22 @@ int main (int argc, char **argv)
     debug_print ("-----------------------\n");
     debug_print ("gnssrv: Initializing...\n");
     printf      ("gnssrv: Initializing...\n");
+
+
+    //sincronizaçao provisoria
+    //vamos precisar disso antes de tudo;
+    // vamos pegar a que foi criada pelo primeiro cliente.
+    // ele cria no começo da rotina.
+    // Dai usaremos essa id por enquanto, pois o sistema so tem ela ainda.
+    
+    while(1)
+    {
+        __saved_sync_id = sc82 (10005,0,0,0);
+        if( __saved_sync_id > 0 && __saved_sync_id < 1024 )
+            break;
+    }
+
+
 
 // Register
 // Register this process as the network server.

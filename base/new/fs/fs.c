@@ -2321,6 +2321,9 @@ void fsUpdateWorkingDiretoryString ( char *string )
     string_size = sizeof(string);
 
 
+    pid_t current_process = (pid_t) get_current_process();
+
+
     // Initialized ?
     if ( CWD.initialized != TRUE )
     {
@@ -3225,7 +3228,9 @@ void sys_pwd (void)
 {
     // #todo: Check overflow.
 
-    if ( current_process < 0 ){
+    pid_t current_process = (pid_t) get_current_process();
+
+    if ( current_process < 0 || current_process >= PROCESS_COUNT_MAX ){
         panic ("sys_pwd: [FAIL] current_process\n");
     }
 
@@ -3853,6 +3858,9 @@ sys_read_file_from_disk (
 
 
     debug_print ("sys_read_file_from_disk: $\n");
+
+
+    pid_t current_process = (pid_t) get_current_process();
 
 
     if ( (void*) file_name == NULL ){

@@ -318,6 +318,9 @@ tty_read (
 
     debug_print ("tty_read: [FIXME]\n");
 
+
+    pid_t current_process = (pid_t) get_current_process();
+
 // fd
 
     if ( fd < 0 || fd > 31 ){
@@ -400,6 +403,8 @@ tty_write (
     file *f;
 
     debug_print ("tty_write: [FIXME]\n");
+
+    pid_t current_process = (pid_t) get_current_process();
 
 // fd
 
@@ -1008,6 +1013,8 @@ tty_ioctl (
 
     debug_print ("tty_ioctl: TODO\n");
 
+
+    pid_t current_process = (pid_t) get_current_process();
 
     if (fd<0){
         debug_print ("tty_ioctl: fd\n");

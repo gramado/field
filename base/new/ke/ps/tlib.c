@@ -5,7 +5,6 @@
 
 
 /*
- *********************** 
  * sys_get_message:
  *     Get a message from the current thread and 
  * put it into the given buffer.
@@ -401,10 +400,12 @@ void show_slots(void)
             show_slot(t->tid);
         }
     };
+
+    refresh_screen();
 }
 
+
 /*
- *************************************************
  * show_reg:
  *     Show the content of the registers.
  * 

@@ -565,6 +565,20 @@ int main ( int argc, char *argv[] )
 // Unlock the scheduler embedded into the base kernel.
 // Only the init process is able to do this.
 
+
+//============
+// Criando um sync point e retornando o id.
+// Provisoriamente o id ficara salvo no kernel.
+    int sync_id = sc82 (10004,0,0,0);
+
+    if(sync_id <= 0 || sync_id >= 1024){
+        printf("GWS.BIN: sync_id fail %d\n",sync_id);
+        while(1){}
+    }
+    printf("GWS.BIN: sync_id %d\n",sync_id);
+//============
+
+
     //gws_debug_print ("gws.bin: Unlock taskswitching and scheduler \n");
     //printf          ("gws.bin: Unlock taskswitching and scheduler \n");
     gramado_system_call (641,0,0,0);
@@ -847,6 +861,8 @@ int main ( int argc, char *argv[] )
     int north_color = COLOR_RED;
     int south_color = COLOR_BLUE;
 
+
+/*
     struct gr_cube_d  *cube;
     cube = (void *) malloc( sizeof( struct gr_cube_d ) );
 
@@ -905,6 +921,8 @@ int main ( int argc, char *argv[] )
         }
     }
     //}; //for
+*/
+
 
 
 //
@@ -1054,7 +1072,7 @@ int main ( int argc, char *argv[] )
 // Setup the flag to show or not the fps window.
 // Request number 6.
 
-    gws_async_command(client_fd,6,FALSE,0);
+    //gws_async_command(client_fd,6,FALSE,0);
 
 
 //
@@ -1065,7 +1083,86 @@ int main ( int argc, char *argv[] )
 // nem precisa ja que todas as rotinas que criam as janelas 
 // estao mostrando as janelas.
 
-    gws_refresh_window (client_fd, main_window);
+    //gws_refresh_window (client_fd, main_window);
+
+
+/*
+    //overlapped
+    gws_create_window (
+        client_fd,
+        WT_OVERLAPPED, 1, 1, "W1",
+        50, 50, 100, 100,
+        0,
+        0x0000,
+        COLOR_GRAY, 
+        COLOR_GRAY );
+*/
+
+/*
+    //overlapped
+    gws_create_window (
+        client_fd,
+        WT_OVERLAPPED, 1, 1, "W2",
+        150, 150, 100, 100,
+        0,
+        0x0000,
+        COLOR_GRAY, 
+        COLOR_GRAY );
+*/
+
+/*
+    //overlapped
+    gws_create_window (
+        client_fd,
+        WT_OVERLAPPED, 1, 1, "W3",
+        150, 150, 100, 100,
+        0,
+        0x0000,
+        COLOR_GRAY, 
+        COLOR_GRAY );
+*/
+
+
+/*
+    int ii=0;
+    for(ii=0; ii<8; ii++){
+    //overlapped
+    gws_create_window (
+        client_fd,
+        WT_OVERLAPPED, 1, 1, "++",
+        150+(8*ii), 150, 100, 100,
+        0,
+        0x0000,
+        COLOR_GRAY, 
+        COLOR_GRAY );
+    }
+*/
+
+
+
+//
+// break point
+//
+
+    //printf("GWS.BIN: Calling child\n");
+
+/*
+    //gws_clone_and_execute("cmdline.bin");  // ok on real machine.
+    gws_clone_and_execute("terminal.bin");   // ok on real machine
+    //gws_clone_and_execute("fileman.bin");  // not tested.
+    // ...
+    printf(":: Leaving GWS.BIN pid{%d} fd{%d}\n",getpid(),client_fd);
+    while(1){}
+    printf("GWS.BIN: clone fail 1\n");
+    while(1){}
+    printf("GWS.BIN: clone fail 2\n");
+    while(1){}
+    printf("GWS.BIN: clone fail 3\n");
+    while(1){}
+*/
+
+//#debug
+    //printf(":: Leaving GWS.BIN pid{%d} fd{%d}\n",getpid(),client_fd);
 
 
 //
@@ -1078,14 +1175,20 @@ int main ( int argc, char *argv[] )
 
     if(launchChild == TRUE)
     {
+        
+        //gws_refresh_window (client_fd, main_window);
+        
         //game_window
-        gws_redraw_window(client_fd,main_window,0);
+        //gws_redraw_window(client_fd,main_window,0);
 
         // Interface: terminal.
         // Uma interface voltada para window manager estilo tiling.
         // Janelas com frames simples e textos dentro delas.
         // Sem botões.
+        
         gws_clone_and_execute("terminal.bin");
+        //while(1){}
+        //exit(0);
 
         // Interface: Command line interpreter.
         //gws_clone_and_execute("cmdline.bin");

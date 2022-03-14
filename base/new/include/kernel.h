@@ -434,12 +434,16 @@ pid_t foreground_process;
 int foreground_thread;
 
 
+
+
 // [Processing time]
 // Only these can read the keyboard input.
 // Sometime it's the terminal.
 // It's child will read into a file.
-pid_t current_process;   // Currently having the processing time.
+//pid_t current_process;   // Currently having the processing time.
 int current_thread;    // Currently having the processing time.
+
+
 
 int criticalsection_pid;
 

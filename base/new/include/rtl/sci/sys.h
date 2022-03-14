@@ -46,6 +46,17 @@ int sys_get_file_sync (int fd, int request);
 void sys_set_file_sync(int fd, int request, int data);
 
 
+//10002
+int sys_get_global_sync (int sync_id, int request);
+//10003
+void sys_set_global_sync(int sync_id, int request, int data);
+//10004
+int sys_create_new_sync(void);
+//10005
+int get_saved_sync(void);
+
+
+
 int sys_getpid (void);
 int sys_getppid (void);
 

@@ -195,7 +195,6 @@ void *gde_extra_services (
     
     struct window_d  *__window;
 
-
 	//generic file pointer
     file *__fp;
 
@@ -204,6 +203,9 @@ void *gde_extra_services (
 
 
     unsigned long *message_address = (unsigned long *) arg2;
+
+
+    pid_t current_process = (pid_t) get_current_process();
 
     //Deprecated.
     //Outro n�mero fará esse trabalhao.
@@ -954,6 +956,9 @@ void *sci0 (
 
     int desktopID=0;
 
+    pid_t current_process = (pid_t) get_current_process();
+
+
     // #debug
     //debug_print("sc0:\n");
     //printf("sc0:\n");
@@ -1407,10 +1412,14 @@ void *sci0 (
 
         case 85:
         //case SYS_GETPID: 
-            return (void *) newos_getpid();
+            //return (void *) newos_getpid();
+            return (void *) get_current_process();
             break;
 
         // 86 - livre.
+        //case 86:
+            //return (void*) 
+            //break;
 
         // Testa se o processo é válido
         // se for valido retorna 1234
@@ -1813,6 +1822,8 @@ void *sci1 (
 
     debug_print ("sci1: [TODO]\n");
 
+    pid_t current_process = (pid_t) get_current_process();
+
     switch (number){
 
         case 1:  return NULL;  break;  
@@ -1846,6 +1857,11 @@ void *sci2 (
     unsigned long *a2 = (unsigned long*) arg2;
     unsigned long *a3 = (unsigned long*) arg3;
     unsigned long *a4 = (unsigned long*) arg4;
+
+
+
+    pid_t current_process = (pid_t) get_current_process();
+
 
     // debug_print("sci2: [TODO]\n");
 
@@ -1944,8 +1960,12 @@ void *sci2 (
 // See: clone.c
 
     // IN: file name, parent pid, clone flags.
-    if ( number == 900 ){
+    if ( number == 900 )
+    {
         debug_print("sci2: [900] clone and execute\n");
+        // #debug
+        printf("sci2: copy_process called by pid{%d}\n",current_process);
+        refresh_screen();
         return (void *) copy_process( 
                             (const char *) arg2, 
                             (pid_t) current_process, 
@@ -1996,6 +2016,33 @@ void *sci2 (
         //debug_print("sci2: [10000] sys_get_file_sync\n");
         return (void*) sys_get_file_sync( (int) arg2, (int) arg3 );
     }
+
+
+
+//=====
+// See: sys.c
+    // set
+    if ( number == 10002 ){
+        sys_set_global_sync( (int) arg2, (int) arg3, (int) arg4 );
+        return NULL;
+    }
+    //get
+    if ( number == 10003 ){
+        return (void*) sys_get_global_sync( (int) arg2, (int) arg3 );
+    }
+    //create
+    // OUT: sync id.
+    if (number == 10004){
+        return (void*) sys_create_new_sync();
+    }
+    //provisorio para teste
+    if(number == 10005){
+        return (void*) get_saved_sync();
+    }
+//=====
+
+
+
 
 // Get the tid of the current thread.
     if ( number == 10010 ){

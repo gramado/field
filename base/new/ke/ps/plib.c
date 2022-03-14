@@ -25,7 +25,6 @@ void show_process_information (void)
 
     printf ("show_process_information: \n");
 
-
     for ( i=0; i<PROCESS_COUNT_MAX; i++ )
     {
 
@@ -68,6 +67,7 @@ void show_currentprocess_info (void)
 {
     struct process_d  *Current;
 
+    pid_t current_process = (pid_t) get_current_process();
 
     if ( current_process < 0 || 
          current_process >= PROCESS_COUNT_MAX )

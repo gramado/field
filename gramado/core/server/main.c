@@ -1,6 +1,7 @@
 
 // GWSSRV.BIN
 // This is a ring0 display server and window manager.
+// It has the same PID of the kernel, 0.
 // #todo: 
 // We need a fancy name for this project,
 // not only 'gws'.
@@ -54,6 +55,9 @@ See: https://wiki.osdev.org/Graphics_stack
 // It is NOT a library.
 
 #include <gws.h>
+
+
+int __saved_sync_id = -1;
 
 
 #define VERSION  "0.1"
@@ -450,7 +454,7 @@ int __send_response(int fd, int type)
 // == Response ============================
 //
 
-    gwssrv_debug_print ("dispacher: Sending response ...\n");
+    gwssrv_debug_print ("__send_response: Sending response ...\n");
 
     // #todo:
     // while(1){...}
@@ -465,7 +469,7 @@ int __send_response(int fd, int type)
     */
 
 
-    if(fd<0){
+    if(fd<0 || fd>31){
         Status = -1;
         goto exit2;
     }
@@ -473,6 +477,23 @@ int __send_response(int fd, int type)
 //
 // Send
 //
+
+//nao podemos escrever em nosso proprio socket.
+    if( fd == ____saved_server_fd )
+    {
+        printf("__send_response: fd == ____saved_server_fd\n");
+        printf("The server can't write on your own socket\n");
+        while(1){}
+    }
+
+
+    if( fd != 31 )
+    {
+        printf("__send_response: fd != 31\n");
+        while(1){}
+    }
+
+// Write
 
     n_writes = write ( fd, __buffer, sizeof(__buffer) );
     //n_writes = send ( fd, __buffer, sizeof(__buffer), 0 );
@@ -532,7 +553,7 @@ exit1:
 
 // Sync. Set response.
 exit0:
-    rtl_set_file_sync( fd, SYNC_REQUEST_SET_ACTION, ACTION_REPLY );
+    rtl_set_global_sync( __saved_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_REPLY );
     return (int) Status;
 }
 
@@ -624,7 +645,7 @@ void dispacher (int fd)
 // We can handle only requests.
 // Drop it!
 
-    int value = rtl_get_file_sync( fd, SYNC_REQUEST_GET_ACTION );
+    int value = rtl_get_global_sync( __saved_sync_id, SYNC_REQUEST_GET_ACTION );
     if ( value != ACTION_REQUEST ){
         goto exit2;
     }
@@ -639,6 +660,22 @@ void dispacher (int fd)
 //
 // Recv
 //
+
+
+//nao podemos escrever em nosso proprio socket.
+    if( fd == ____saved_server_fd )
+    {
+        printf("dispacher: fd == ____saved_server_fd\n");
+        printf("The server can't read on your own socket\n");
+        while(1){}
+    }
+
+    if( fd != 31 )
+    {
+        printf("dispacher: fd != 31\n");
+        while(1){}
+    }
+
 
     n_reads = read ( fd, __buffer, sizeof(__buffer) );
     if (n_reads <= 0){
@@ -707,8 +744,8 @@ void dispacher (int fd)
 // No momento todos os requests esperam por reposta?
 
     if (NoReply == TRUE){
-        rtl_set_file_sync( 
-            fd, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
+        rtl_set_global_sync( 
+            __saved_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_NULL );
         goto exit0;
     }
 
@@ -2706,9 +2743,26 @@ int on_execute(void)
         }
 
         // Dispatch
-        if (IsAcceptingConnections == TRUE){
+        if (IsAcceptingConnections == TRUE)
+        {
             //gwssrv_debug_print("gwssrv: accept returned OK\n");
-            dispacher(newconn);
+            if( newconn == ____saved_server_fd ){
+                printf("GWSSRV.BIN: newconn == ____saved_server_fd\n");
+                while(1){}
+            }
+
+            //#debug
+            //if( newconn != 31 )
+            //{
+            //    printf("GWSSRV.BIN: newconn != 31\n");
+            //    while(1){}
+            //}
+
+             // sys_accept() pega na fila e coloca em fd=31.
+             if(newconn == 31){
+                 dispacher(newconn);
+             }
+            
             //close(newconn);
         }
 
@@ -2759,6 +2813,20 @@ void gwssrv_quit(void)
 int main (int argc, char **argv)
 {
     int Status=-1;
+    
+    
+    //sincronizaçao provisoria
+    //vamos precisar disso antes de tudo;
+    // vamos pegar a que foi criada pelo primeiro cliente.
+    // ele cria no começo da rotina.
+    // Dai usaremos essa id por enquanto, pois o sistema so tem ela ainda.
+    
+    while(1)
+    {
+        __saved_sync_id = sc82 (10005,0,0,0);
+        if( __saved_sync_id > 0 && __saved_sync_id < 1024 )
+            break;
+    }
     
     Status = on_execute();
 

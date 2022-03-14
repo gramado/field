@@ -4,8 +4,27 @@
 #include <kernel.h>
 
 
+//
+// current pid
+//
+
+static pid_t __current_pid = (pid_t) (-1);  //fail
+
+
 int caller_process_id;
-int processNewPID;
+//int processNewPID;
+
+
+void set_current_process( pid_t pid )
+{
+    __current_pid = (pid_t) pid;
+}
+
+pid_t get_current_process(void)
+{
+    return (pid_t) __current_pid;
+}
+
 
 // Quando criamos um novo processo.
 //int NewProcessInitialized = FALSE;
@@ -13,7 +32,8 @@ int processNewPID;
 
 int GetCurrentPID (void)
 {
-    return (int) current_process;
+    //return (int) current_process;
+    return (pid_t) get_current_process();
 }
 
 
@@ -21,6 +41,8 @@ int GetCurrentPID (void)
 struct process_d *GetCurrentProcess(void)
 {
     struct process_d *p;
+    
+    pid_t current_process = (pid_t) get_current_process();
     
     if ( current_process < GRAMADO_PID_BASE || 
          current_process >= PROCESS_COUNT_MAX )
@@ -612,7 +634,11 @@ pid_t getNewPID (void)
 // See:
 // gpid.h
 
+    // GRAMADO_PID_BASE = GRAMADO_PID_KERNEL = 0.
+    
     int i = GRAMADO_PID_BASE;
+    
+    //register int i=10;
     
     struct process_d  *p;
 
@@ -620,8 +646,12 @@ pid_t getNewPID (void)
     {
         p = (struct process_d *) processList[i];
 
-        if ( (void *) p == NULL ){ return (pid_t) i; }
-       
+        if ( (void *) p == NULL )
+        { 
+            // return the new pid.
+            return (pid_t) i; 
+        }
+        
         i++;
     };
 
@@ -724,7 +754,8 @@ void init_processes (void)
 // ?? Ativa o kernel switch do scheduler.
     kernel_switch = 0;
 
-    current_process = 0;
+    set_current_process(0);
+    //current_process = 0;
 
 // Clear process list.
 
@@ -990,11 +1021,11 @@ struct process_d *create_process (
 // contagem de processos criados.
 // processNewPID � global ?
 
-    if ( processNewPID < GRAMADO_PID_BASE || 
-         processNewPID >= PROCESS_COUNT_MAX )
-    {
-        processNewPID = (int) GRAMADO_PID_BASE;
-    }
+    //if ( processNewPID < GRAMADO_PID_BASE || 
+    //     processNewPID >= PROCESS_COUNT_MAX )
+    //{
+    //    processNewPID = (int) GRAMADO_PID_BASE;
+    //}
 
 // Base priority.
 // Please, don't inherit base priority!
@@ -1062,7 +1093,7 @@ struct process_d *create_process (
     // Not a protected process!
     Process->_protected = 0;
 
-    processNewPID = (int) PID;
+    //processNewPID = (int) PID;
         
     // Identificadores.
     // PID. PPID. UID. GID.
@@ -1549,7 +1580,7 @@ int init_process_manager (void)
 {
     caller_process_id = (int) 0;
 
-    processNewPID = (int) GRAMADO_PID_BASE;
+    //processNewPID = (int) GRAMADO_PID_BASE;
 
     //...
 
@@ -1874,9 +1905,12 @@ file *process_get_file_from_pid ( pid_t pid, int fd )
 // Return the file pointer from a given fd.
 // the fd represents a index in the object list of the
 // current process.
-
+//#todo: IN: pid, fd
 file *process_get_file ( int fd )
 {
+
+    pid_t current_process = (pid_t) get_current_process();
+
 // #todo: max limit
     if( fd<0){
         return NULL;
@@ -1950,10 +1984,14 @@ int process_get_tty (int pid)
 }
 
 
+// OUT: process struture pointer.
 struct process_d *__create_and_initialize_process_object(void)
 {
+
+    pid_t NewPID = (pid_t) (-1);  //fail
+
+
     struct process_d  *new_process;
-    int PID=-1;
     register int i=0;
 
 // process structure.
@@ -1975,20 +2013,25 @@ struct process_d *__create_and_initialize_process_object(void)
     new_process->pid = -1;
 
 // Get new pid.
+// #:: We have a valid range here!
+// #todo: Change to generate_new_pid();
 
-    PID = (int) getNewPID();
-    if ( PID < GRAMADO_PID_BASE || PID >= PROCESS_COUNT_MAX )
+    NewPID = (pid_t) getNewPID();
+    
+    if ( NewPID < GRAMADO_PID_BASE || 
+         NewPID >= PROCESS_COUNT_MAX )
     {
-        debug_print ("clone_and_execute_process: [FAIL] getNewPID\n");
-        printf      ("clone_and_execute_process: [FAIL] getNewPID %d \n", 
-            PID );
+        debug_print ("__create_and_initialize_process_object: [FAIL] NewPID\n");
+        printf      ("__create_and_initialize_process_object: [FAIL] NewPID={%d}\n", 
+            NewPID );
         goto fail;
     }
 
 // Initializing the process structure.
 // Saving the process pointer in the list.
 
-    new_process->pid = (pid_t) PID;
+    new_process->pid = (pid_t) NewPID;  // :)
+
     new_process->uid = (uid_t) current_user;
     new_process->gid = (gid_t) current_group;
     new_process->syscalls_counter = 0;
@@ -2049,7 +2092,7 @@ struct process_d *__create_and_initialize_process_object(void)
 
 // Stack for the clone. 
 
-    new_process->control->rsp = CONTROLTHREAD_STACK;
+    new_process->control->rsp = (unsigned long) CONTROLTHREAD_STACK;
 
     new_process->StackStart = 
         (unsigned long) CONTROLTHREAD_STACK;
@@ -2068,7 +2111,8 @@ struct process_d *__create_and_initialize_process_object(void)
 // #todo:
 // Maybe we need to save this index in some place.
 
-    for (i=0; i<32; ++i){
+    for (i=0; i<32; ++i)
+    {
         new_process->socket_pending_list[i] = 0; 
     };
 
@@ -2081,7 +2125,9 @@ struct process_d *__create_and_initialize_process_object(void)
 
     new_process->used = TRUE;
     new_process->magic = 1234;
-    processList[PID] = (unsigned long) new_process;
+    
+// :)
+    processList[ NewPID ] = (unsigned long) new_process;
 
 // OUT:
 // Pointer for a structure of a new process.

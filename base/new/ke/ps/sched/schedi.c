@@ -366,6 +366,7 @@ int do_waitpid (pid_t pid, int *status, int options)
 {
     struct process_d *p;  
 
+    pid_t current_process = (pid_t) get_current_process();
 
     //#debug
     //printf ( "do_waitpid: current_process=%d pid=%d \n", 

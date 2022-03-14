@@ -242,12 +242,14 @@ int I_x64CreateInitialProcess (void)
     //InitThread->tss = current_tss;
 
     // [Processing time]
-    current_process = InitProcess->pid;
+    //current_process = InitProcess->pid;
+    set_current_process(InitProcess->pid);
     current_thread  = InitThread->tid;
 
     // [Focus]
-    active_process = current_process;
-    active_thread  = current_thread;
+    //active_process = current_process;
+    active_process = InitProcess->pid;
+    active_thread  = InitThread->tid; //current_thread;
         
     // foreground thread ?
 
@@ -364,7 +366,8 @@ void I_x64ExecuteInitialProcess (void)
 
 // Current process.
 
-    current_process = (pid_t) Thread->process->pid;
+    //current_process = (pid_t) Thread->process->pid;
+    set_current_process(Thread->process->pid);
 
 // List
 // Dispatcher ready list.
@@ -887,7 +890,9 @@ void init_globals (void)
     
     foreground_process = (pid_t) 0;
     foreground_thread  = (int) 0;
-    current_process    = (pid_t) 0;
+    
+    //current_process    = (pid_t) 0;
+    set_current_process(0);
     current_thread     = (int) 0;
 
 // Network

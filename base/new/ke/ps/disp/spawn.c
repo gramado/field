@@ -16,7 +16,7 @@ void __spawn_load_pml4_table(unsigned long phy_addr)
 
 void spawn_thread (int tid)
 {
-    struct thread_d  *Target;
+    struct thread_d *target_thread;
 
     int next_tid = (int) (tid & 0xFFFF);
 
@@ -30,7 +30,7 @@ void spawn_thread (int tid)
 // Target 
 //
 
-    debug_print ("spawn_thread: Target\n");
+    debug_print ("spawn_thread: target_thread\n");
 
     if ( next_tid < 0 || next_tid >= THREAD_COUNT_MAX )
     {
@@ -38,79 +38,91 @@ void spawn_thread (int tid)
         die();
     }
 
-    Target = (void *) threadList[next_tid]; 
+// target thread.
 
-    if ( (void *) Target == NULL ){
-        printf ("spawn_thread: Target next_tid={%d}", next_tid );  
+    target_thread = (void *) threadList[next_tid]; 
+
+    if ( (void *) target_thread == NULL )
+    {
+        printf ("spawn_thread: target_thread, next_tid={%d}", 
+            next_tid );  
         die();
     }
 
-    if ( Target->used != TRUE || Target->magic != 1234 )
+    if ( target_thread->used != TRUE || target_thread->magic != 1234 )
     {
-        panic("spawn_thread: Target validation");
+        panic("spawn_thread: target_thread validation");
     }
 
+// Is it a new clone?
 // new clone
-    if ( Target->new_clone == TRUE ){
+    if ( target_thread->new_clone == TRUE )
+    {
         debug_print ("spawn_thread: Spawning the control thread of a new clone\n");
         //refresh_screen();
     }
 
 
 // Check tid validation
-    if (Target->tid != next_tid){
-        panic("spawn_thread: tid validation");
+    if (target_thread->tid != next_tid){
+        panic("spawn_thread: target_thread->tid validation");
     }
 
     // State: Needs to be in Standby,
-    if ( Target->state != STANDBY ){
+    if ( target_thread->state != STANDBY )
+    {
         printf ("spawn_thread: TID={%d} not in Standby\n", next_tid );
         die();
     }
 
     // Saved:
     // If the context is saved, so it is not the first time.
-    if ( Target->saved == TRUE ){
+    if ( target_thread->saved == TRUE ){
         printf ("spawn_thread: Saved TID={%d}\n", next_tid );
         die();
     }
 
-    // Initializing
-    Target->saved = FALSE;
+// Initializing
+// Not saved
+    target_thread->saved = FALSE;
 
 // ??
 // More checks ?
 // Prepare some elements.
 
-    Target->standbyCount = 0;
-    Target->standbyCount_ms = 0;
-    Target->runningCount = 0;
-    Target->runningCount_ms = 0;
-    Target->readyCount = 0;
-    Target->readyCount_ms = 0;
-    Target->waitingCount = 0;
-    Target->waitingCount_ms = 0;
-    Target->blockedCount = 0;
-    Target->blockedCount_ms = 0;
+// #todo
+// Talvez ja exista um worker para essa rotina.
+
+    target_thread->standbyCount = 0;
+    target_thread->standbyCount_ms = 0;
+    target_thread->runningCount = 0;
+    target_thread->runningCount_ms = 0;
+    target_thread->readyCount = 0;
+    target_thread->readyCount_ms = 0;
+    target_thread->waitingCount = 0;
+    target_thread->waitingCount_ms = 0;
+    target_thread->blockedCount = 0;
+    target_thread->blockedCount_ms = 0;
     // ...
 
-    Target->initial_jiffie = jiffies;  // initial jiffie
-    Target->step = 0;                  // how much tick untill now.
+    target_thread->initial_jiffie = jiffies;  // initial jiffie
+    target_thread->step = 0;                  // how much tick untill now.
 
-    Target->initial_time_ms = 0;
-    Target->total_time_ms = 0;
+    target_thread->initial_time_ms = 0;
+    target_thread->total_time_ms = 0;
 
+// Linked list
 // The next thread will be the window server.
 
-    Target->next = (void *) ws_thread; 
+    target_thread->next = (void *) ws_thread; 
 
 //
 // MOVEMENT 2 (Standby --> Running).
 //
 
-    if ( Target->state == STANDBY )
+    if ( target_thread->state == STANDBY )
     {
-        Target->state = RUNNING;
+        target_thread->state = RUNNING;
         
         // #bugbug
         // #todo
@@ -130,26 +142,52 @@ void spawn_thread (int tid)
 
     // Paranoia: Check state.
 
-    if ( Target->state != RUNNING ){
+    if ( target_thread->state != RUNNING ){
         printf ("spawn_thread: State TID={%d}\n", next_tid );
         die();
     }
 
-    // Set current process
 
-    if ( (void*) Target->process == NULL ){
-        panic("spawn_thread: Target->process\n");
+// ??
+// Set current process
+
+    if ( (void*) target_thread->process == NULL )
+    {
+        panic("spawn_thread: target_thread->process\n");
     }
 
-    current_process = Target->process->pid;
-    if ( current_process < 0 ){
-        panic("spawn_thread: current_process\n");
+
+// Pegamos o pid.
+// #bugbug: 
+// Talvez o ponteiro t->process nao foi devidamente inicializado.
+
+    //pid_t cur_pid = (pid_t) target_thread->process->pid;
+    
+    pid_t cur_pid = (pid_t) target_thread->ownerPID;
+    
+    if ( cur_pid < 0 || 
+         cur_pid >= PROCESS_COUNT_MAX )
+    {
+        panic("spawn_thread: cur_pid\n");
     }
 
-    // Set current thread
+//
+// The current process will be the owner pid.
+//
 
-    current_thread = (int) Target->tid;
-    if ( current_thread < 0 ){
+    set_current_process(cur_pid);
+    
+
+// Set current thread
+// (global) (tid)
+
+    //(tid)
+    current_thread = (int) target_thread->tid;
+
+// paranoia
+    if ( current_thread < 0 || 
+         current_thread >= THREAD_COUNT_MAX )
+    {
         panic("spawn_thread: current_thread\n");
     }
 
@@ -161,10 +199,12 @@ void spawn_thread (int tid)
 // Set cr3 and flush TLB.
 
     debug_print ("spawn_thread: Load pml4\n");
-    __spawn_load_pml4_table ( Target->pml4_PA );
+    __spawn_load_pml4_table ( target_thread->pml4_PA );
     // #bugbug: rever isso.
     asm ("movq %cr3, %rax");
+    // #todo: wait here, (remember: we're using registers.)
     asm ("movq %rax, %cr3");
+
 
 //
 // iretq
@@ -172,11 +212,12 @@ void spawn_thread (int tid)
 
     debug_print ("spawn_thread: iretq\n");
 
-    // #todo
-    // Configurar a stackframe para saltar para
-    // qualquer ring.
+// #todo
+// Configurar a stackframe para saltar para
+// qualquer ring.
 
-    if ( Target->iopl == RING0 ){
+    if ( target_thread->iopl == RING0 )
+    {
         debug_print ("spawn_thread: RING0\n");
         printf      ("spawn_thread: RING0\n");
         //debug_print ("spawn_thread: RING0 not supported yet\n");
@@ -184,8 +225,8 @@ void spawn_thread (int tid)
         refresh_screen();
         spawn_enter_kernelmode( 
             TRUE,  // EOI
-            (unsigned long) Target->rip,
-            (unsigned long) Target->rsp );
+            (unsigned long) target_thread->rip,
+            (unsigned long) target_thread->rsp );
     }
 
     // #debug
@@ -199,11 +240,12 @@ void spawn_thread (int tid)
     // Target->cs     & 0xffff
     // Target->rip
     
-    if ( Target->iopl == RING3 ){
+    if ( target_thread->iopl == RING3 )
+    {
         spawn_enter_usermode( 
             TRUE,  // EOI
-            (unsigned long) Target->rip,
-            (unsigned long) Target->rsp );
+            (unsigned long) target_thread->rip,
+            (unsigned long) target_thread->rsp );
     }
 
     /*

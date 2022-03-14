@@ -135,32 +135,23 @@ void rtl_set_input_mode(int mode)
 // sync
 //
 
-// #todo: explique isso melhor, bem melhor.
-// Configurando sincronização de leitura e escrita em arquivo.
-// principalmente socket.
-// A estrutura de arquivo contém uma estrutura de sincronização 
-// de leitura e escrita.
 
-void rtl_set_file_sync(int fd, int request, int data)
+
+//=====================================
+
+void rtl_set_global_sync(int sync_id, int request, int data)
 {
-    if (fd<0)
+    if (sync_id<0)
         return;
 
     //if (request<0)
         //return;
 
     //debug_print ("rtl_set_file_sync:\n");
-    sc82 (10000,fd,request,data);
+    sc82 (10002,sync_id,request,data);
 }
 
-
-// #todo: explique isso melhor, bem melhor.
-// Pegando informação sobre sincronização de leitura e escrita de arquivos.
-// principalmente para socket.
-// A estrutura de arquivo contém uma estrutura de sincronização 
-// de leitura e escrita.
-
-int rtl_get_file_sync(int fd, int request)
+int rtl_get_global_sync(int sync_id, int request)
 {
 
     //debug_print ("rtl_get_file_sync:\n");
@@ -171,10 +162,10 @@ int rtl_get_file_sync(int fd, int request)
     //if(request<0)
     //    return -1;
 
-    return (int) sc82 (10001,fd,request,0);
+    return (int) sc82 (10003,sync_id,request,0);
 }
 
-//=====================================
+
 
 unsigned char rtl_to_uchar (char ch)
 {

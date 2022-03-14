@@ -123,6 +123,9 @@ void *sys_create_process (
     refresh_screen();
     //return NULL;
 
+
+    pid_t current_process = (pid_t) get_current_process();
+
     // ==============
 
     struct thread_d *CurrentThread;
@@ -317,10 +320,14 @@ sys_read (
     //debug_print("------------------------------------ R --\n");
     //debug_print("sys_read:\n");
 
+
+    pid_t current_process = (pid_t) get_current_process();
+
     // #bugbug
     // O argumento é 'unsigned int'
     // Não precisa checar <0.
     // Deveria ser apenas int?
+
 
 // fd
     if ( fd < 0 || fd >= NUMBER_OF_FILES )
@@ -395,6 +402,7 @@ sys_read (
     {
         debug_print ("sys_read: __file not open\n");
         printf      ("sys_read: __file not open\n");
+        printf      ("fd{%d} pid{%d}\n",fd,current_process);
         goto fail; 
     }
 
@@ -760,6 +768,9 @@ int sys_write (unsigned int fd, char *ubuf, int count)
     //debug_print("------------------------------------ W --\n");
     //debug_print("sys_write: :)\n");
 
+    pid_t current_process = (pid_t) get_current_process();
+
+
 
 // fd
     if ( fd < 0 || fd >= NUMBER_OF_FILES )
@@ -837,7 +848,15 @@ int sys_write (unsigned int fd, char *ubuf, int count)
     if ( (void *) __file == NULL )
     {
         debug_print ("sys_write: __file not open\n");
-        printf      ("sys_write: __file not open\n");
+        printf      ("sys_write: __file not open #hang\n");
+        printf      ("fd{%d} pid{%d}\n",fd,current_process);
+        printf("entry0: %x\n", __P->Objects[0]);
+        printf("entry1: %x\n", __P->Objects[1]);
+        printf("entry2: %x\n", __P->Objects[2]);
+        printf("entry3: %x\n", __P->Objects[3]);
+        printf("entry4: %x\n", __P->Objects[4]);
+        //refresh_screen();
+        //while(1){}
         goto fail;
     }
 
@@ -1600,8 +1619,8 @@ fail:
     return EOF;
 }
 
+
 /*
- **************************
  *  sys_close:
  * 
  */
@@ -1617,6 +1636,9 @@ int sys_close (int fd)
 {
     struct process_d *p;
     file *object;
+
+
+    pid_t current_process = (pid_t) get_current_process();
 
 
     // ??
@@ -1921,9 +1943,16 @@ unsigned long sys_get_file_size ( char *path )
 
 int sys_get_file_sync (int fd, int request)
 {
+	
+	// #deprecated
+
+
     struct process_d  *p;
     file *object;
 
+
+    pid_t current_process = (pid_t) get_current_process();
+    
     //#bugbug
     // Pensaremos nessa possibilidade.
 
@@ -1997,12 +2026,79 @@ int sys_get_file_sync (int fd, int request)
     return 0;
 }
 
+
+
+
+// 10002
+void sys_set_global_sync(int sync_id, int request, int data)
+{
+    struct kstdio_sync_d *s;
+    
+    s = (struct kstdio_sync_d *) syncList[sync_id];
+    
+    if( request == SYNC_REQUEST_SET_ACTION )
+        s->action = data;
+}
+
+
+// 10003 
+int sys_get_global_sync (int sync_id, int request)
+{ 
+    struct kstdio_sync_d *s;
+    
+    s = (struct kstdio_sync_d *) syncList[sync_id];
+    
+    if( request == SYNC_REQUEST_GET_ACTION )
+    {
+        return (int) s->action;
+    }
+
+    return -1; 
+}
+
+
+// 10004
+int sync_count=0;
+static int __saved_sync_id=0;
+int sys_create_new_sync(void)
+{
+    struct kstdio_sync_d *s;
+    s = (struct kstdio_sync_d *) kmalloc( sizeof(struct kstdio_sync_d) );
+    if( (void*) s == NULL )
+        return -1;
+    s->used=TRUE;
+    s->magic=1234;
+    s->action = ACTION_NULL;
+    sync_count++;
+    if( sync_count > 0 && 
+        sync_count < SYNC_COUNT_MAX )
+    {
+        syncList[sync_count] = (unsigned long) s;
+        __saved_sync_id = (int) sync_count;
+        return (int) sync_count;
+    }
+    return -1;
+}
+
+//provisorio, para testes
+int get_saved_sync(void)
+{
+    return (int) __saved_sync_id;
+}
+
+
+
+
+
+
 // 85 
 // Get PID of the current process.
+//#todo: change to 'pid_t'
 int sys_getpid (void)
 {
-    return (int) current_process;
+    return (pid_t) get_current_process();
 }
+
 
 // 81
 // Get the PID of the father.
@@ -2011,6 +2107,7 @@ int sys_getppid (void)
     struct process_d *p;
     pid_t pid = -1;
 
+    pid_t current_process = (pid_t) get_current_process();
 
     pid = (int) current_process;
 
@@ -2198,9 +2295,17 @@ int sys_serial_debug_printk ( char *s )
 
 void sys_set_file_sync(int fd, int request, int data)
 {
+
+    //
+    // #deprecated
+    //
+
     struct process_d  *p;
     file *object;
 
+
+    pid_t current_process = (pid_t) get_current_process();
+    
     //#bugbug
     // Pensaremos nessa possibilidade.
     
@@ -2304,8 +2409,8 @@ void sys_set_file_sync(int fd, int request, int data)
     // ...
 }
 
+
 /*
- **********************************
  * sys_shutdown:
  *     Chama uma rotina interna para desligar a máquina.
  */
@@ -2368,6 +2473,9 @@ int sys_sleep_if_socket_is_empty ( int fd )
     file *object;
 
 
+    pid_t current_process = (pid_t) get_current_process();
+
+
     if ( fd < 0 || 
          fd >= NUMBER_OF_FILES )
     {
@@ -2378,7 +2486,7 @@ int sys_sleep_if_socket_is_empty ( int fd )
 
 // #todo: max lim.
 
-    if ( current_process < 0 ){
+    if ( current_process < 0 || current_process >= PROCESS_COUNT_MAX ){
         debug_print("sys_sleep_if_socket_is_empty: current_process\n");
         return (int) (-1);
     }

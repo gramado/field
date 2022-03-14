@@ -514,8 +514,15 @@ gid_t getegid(void)
 // pid
 pid_t getpid (void)
 {
-    return (pid_t) gramado_system_call ( 
-                       UNISTD_SYSTEMCALL_GETPID, 0, 0, 0 );
+    unsigned long ul_value = 0;
+    
+    ul_value = (unsigned long) gramado_system_call ( 
+                    UNISTD_SYSTEMCALL_GETPID, 
+                    0, 
+                    0, 
+                    0 );
+    
+    return (pid_t) (ul_value & 0xFFFFFFFF);
 }
 
 
@@ -523,10 +530,16 @@ pid_t getpid (void)
 // ppid
 pid_t getppid (void)
 {
-    return (pid_t) gramado_system_call ( 
-                       UNISTD_SYSTEMCALL_GETPPID, 0, 0, 0 );
-}
+    unsigned long ul_value = 0;
+    
+    ul_value = (unsigned long) gramado_system_call ( 
+                       UNISTD_SYSTEMCALL_GETPPID, 
+                       0, 
+                       0, 
+                       0 );
 
+    return (pid_t) (ul_value & 0xFFFFFFFF);
+}
 
 
 /*

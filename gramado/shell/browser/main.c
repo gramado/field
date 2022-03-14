@@ -66,7 +66,7 @@ int main ( int argc, char *argv[] ){
     addr_in.sin_addr.s_addr = IP(192, 168, 1, 112); 
 
 
-    debug_print ("-------------------------\n");
+    //debug_print ("-------------------------\n");
     debug_print ("browser: Initializing ...\n");
 
 

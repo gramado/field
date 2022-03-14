@@ -1607,7 +1607,7 @@ int main ( int argc, char *argv[] )
 
     int client_fd = -1;
 
-    //debug_print ("--------------------------\n");
+
     debug_print ("terminal: Initializing\n");
 
 // Device info
@@ -1639,17 +1639,27 @@ int main ( int argc, char *argv[] )
     // #debug
     //printf ("terminal: Creating socket\n");
 
+    //client_fd = socket ( AF_GRAMADO, SOCK_STREAM, 0 );
     client_fd = socket ( AF_INET, SOCK_STREAM, 0 );
-    if ( client_fd < 0 ){
+    if ( client_fd < 0 )
+    {
        debug_print ("terminal: Couldn't create socket\n");
        printf      ("terminal: Couldn't create socket\n");
        exit(1);
     }
 
+
+
 // Saving the fd in the main struct.
     Terminal.client_fd = client_fd;
     //...
 
+    // pid=2 fd=4
+    printf ("TERMINAL.BIN: pid{%d} fd{%d}\n",
+        Terminal.pid,
+        Terminal.client_fd );
+
+    //while(1){}
 
 //
 // connect

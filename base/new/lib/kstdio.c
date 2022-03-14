@@ -12,6 +12,9 @@ int sys_setup_stdin( int stdin_fd )
     struct process_d *p;
     file *f;
 
+    pid_t current_process = (pid_t) get_current_process();
+
+
     if( current_process < 0 || current_process >= PROCESS_COUNT_MAX )
         return FALSE;
 

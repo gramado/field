@@ -6,8 +6,8 @@
 
 unsigned long sys_time_hz=0;
 
+
 /*
- ***************************************
  * systemGetSystemMetrics:
  *     Retorna informações sobre o sistema.
  * 
@@ -358,8 +358,14 @@ unsigned long systemGetSystemMetrics ( int index )
        // When a thread is running to call this service,
        // so, this thread is the current thread.
        // But, current for what processor?
-       case 140:  return (unsigned long) current_process;  break;
-       case 141:  return (unsigned long) current_thread;   break;
+       case 140:  
+           //return (unsigned long) current_process;
+           return (unsigned long) get_current_process(); //#bugbug mask?  
+           break;
+       
+       case 141:  
+           return (unsigned long) current_thread;   
+           break;
 
        //case 150:  break;
        //case 151:  break;

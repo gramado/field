@@ -213,7 +213,8 @@ int request (void){
         case KR_NEW:
             debug_print ("request: Start a new thread\n");
             //Start a new thread. 
-            if (start_new_task_status == 1){
+            if (start_new_task_status == 1)
+            {
                 current_thread = start_new_task_id;
             }
             break;
@@ -282,7 +283,8 @@ int request (void){
         //cuidado.
         case 13:
             debug_print ("request: Get current process\n");
-            current_process = REQUEST.target_pid;
+            //current_process = REQUEST.target_pid;
+            set_current_process(REQUEST.target_pid);
             break;
 
 
@@ -305,13 +307,14 @@ int request (void){
 		
 		// clone and execute process.
         case 111:
-            current_process = REQUEST.target_pid;
+            //current_process = REQUEST.target_pid;
+            set_current_process(REQUEST.target_pid);
             current_thread  = REQUEST.target_tid;
             
             // IN: file name, parent pid, clone flags.
             return (void *) copy_process( 
                                  (const char *) REQUEST.long1, 
-                                 (pid_t) current_process,
+                                 (pid_t) get_current_process(),//current_process,
                                  (unsigned long) REQUEST.long2 );
             break;
 

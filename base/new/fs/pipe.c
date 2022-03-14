@@ -32,6 +32,8 @@ int sys_dup ( int oldfd ){
     int i=0;
     int slot = -1;
 
+    pid_t current_process = (pid_t) get_current_process();
+
 
     Process = (void *) processList[current_process];
 
@@ -127,6 +129,7 @@ int sys_dup2 (int oldfd, int newfd){
 
     struct process_d *Process;
 
+    pid_t current_process = (pid_t) get_current_process();
 
     Process = (void *) processList[current_process];
 
@@ -201,6 +204,7 @@ int sys_dup3 (int oldfd, int newfd, int flags){
 
     struct process_d *Process;
 
+    pid_t current_process = (pid_t) get_current_process();
 
     Process = (void *) processList[current_process];
 
@@ -299,7 +303,10 @@ int sys_pipe ( int *pipefd, int flags )
 
 
     debug_print ("sys_pipe:\n");
-    
+
+
+    pid_t current_process = (pid_t) get_current_process();
+        
     // Why ?    
     // Reject flags other than O_CLOEXEC.
     //if ((flags & O_CLOEXEC) != flags)
