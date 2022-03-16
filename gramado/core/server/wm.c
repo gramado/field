@@ -331,7 +331,8 @@ __draw_window_border(
         return;
 
 
-    if( window->type == WT_EDITBOX )
+    if( window->type == WT_EDITBOX || 
+        window->type == WT_EDITBOX_MULTIPLE_LINES )
     {
         // board1, borda de cima e esquerda.
         rectBackbufferDrawRectangle( 
@@ -541,11 +542,12 @@ wmCreateWindowFrame (
     switch (Type){
     
     case WT_EDITBOX:     
+    case WT_EDITBOX_MULTIPLE_LINES:     
         useFrame=TRUE; 
         useIcon=FALSE;
         useBorder=TRUE;
         break;
-    
+
     case WT_OVERLAPPED:  
         useFrame=TRUE; 
         useIcon=TRUE;
@@ -572,7 +574,8 @@ wmCreateWindowFrame (
 // ===============================================
 // editbox
 
-    if ( Type == WT_EDITBOX )
+    if ( Type == WT_EDITBOX || 
+         Type == WT_EDITBOX_MULTIPLE_LINES )
     {
 
         // #todo
@@ -1539,32 +1542,33 @@ __draw_char_into_the_window(
         // Update input pointers for this window.
         
         // right
-        if(ch==0x4D)
-            window->ip_x++;
+        if(ch==0x4D){ window->ip_x++; }
 
         // down
-        if(ch==0x50)
-            window->ip_y++;
+        if(ch==0x50){ window->ip_y++; }
 
         return;
     }
 
+// Backspace
 // #todo: 
 // Isso tem que voltar apagando.
     if(ch==VK_BACK)
     {
         window->ip_x--;
-        if(window->ip_x < 0)
+        if(window->ip_x < 0){
             window->ip_x = 0;
+        }
         
         return;
     }
 
+// TAB
     if(ch==VK_TAB)
     {
         window->ip_x += 8;
         //#todo limits
-        if(window->ip_x >= window->width_in_bytes)
+        if(window->ip_x >= window->width_in_chars)
         {
             window->ip_x = 0;
             if(window->type == WT_EDITBOX_MULTIPLE_LINES)
@@ -1577,6 +1581,7 @@ __draw_char_into_the_window(
         return;
     }
 
+// string
    _string[0] = (unsigned char) ch;
    _string[1] = 0;
 
@@ -1603,7 +1608,13 @@ __draw_char_into_the_window(
     if( window->type == WT_ICON )
         return;
 
+//
 // Editbox
+//
+
+// Print the char into an window 
+// of type Editbox.
+
     if( window->type == WT_EDITBOX ||
         window->type == WT_EDITBOX_MULTIPLE_LINES )
     {
@@ -1621,14 +1632,22 @@ __draw_char_into_the_window(
             8, 
             8 );
 
+        // Increment pointer.
         window->ip_x++;
-        if(window->ip_x >= window->width_in_bytes)
+        // Se for maior que a quantidade
+        // de bytes (chars?) na janela.
+        if(window->ip_x >= window->width_in_chars)
         {
-            if (window->type == WT_EDITBOX_MULTIPLE_LINES)
-                window->ip_y++; 
-            
             window->ip_x=0;
-        }   
+            
+            if (window->type == WT_EDITBOX_MULTIPLE_LINES)
+            {    
+                window->ip_y++;
+                
+                //if( window->ip_y > window->height_in_chars)
+                //     fail!
+            }
+        }
     }
 }
 
@@ -1836,10 +1855,9 @@ mainmenuDialog(
 //local
 void __probe_tb_botton_hover(long long1, long long2)
 {
-
     int Status=0;
-    
     int i=0;
+ 
     struct gws_window_d *tmp_window_button;
     
     for(i=0; i<4; i++){
@@ -2302,8 +2320,7 @@ do_process_message:
 // wid
 // window with focus
 
-    if( window_with_focus < 0 || 
-            window_with_focus >= WINDOW_COUNT_MAX )
+    if( window_with_focus < 0 || window_with_focus >= WINDOW_COUNT_MAX )
     { 
         return 0; 
     }
@@ -3206,7 +3223,8 @@ redraw_window (
 
 
     //#todo:
-    if ( (unsigned long) window->type == WT_EDITBOX )
+    if ( window->type == WT_EDITBOX || 
+         window->type == WT_EDITBOX_MULTIPLE_LINES )
     {
         gwssrv_debug_print ("redraw_window: [TODO] Type Editbox\n");
         //...
@@ -3216,12 +3234,13 @@ redraw_window (
 
 draw_frame:
 
-    // #todo
-    // Precisamos de uma rotina que redesenhe o frame,
-    // sem alocar criar objetos novos.
+// #todo
+// Precisamos de uma rotina que redesenhe o frame,
+// sem alocar criar objetos novos.
 
     if ( window->type == WT_OVERLAPPED || 
          window->type == WT_EDITBOX || 
+         window->type == WT_EDITBOX_MULTIPLE_LINES || 
          window->type == WT_BUTTON )
     {
         if ( (void*) window != NULL )

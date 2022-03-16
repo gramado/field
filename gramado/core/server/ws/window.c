@@ -841,8 +841,10 @@ void *xxxCreateWindow (
         window->height = deviceHeight; 
     }
 
-    window->width_in_bytes  = (unsigned long) (window->width / 8);  //>>3
-    window->height_in_bytes = (unsigned long) (window->height / 8); //>>3
+    window->width_in_chars  = 
+        (unsigned long) (window->width / 8);  //>>3
+    window->height_in_chars = 
+        (unsigned long) (window->height / 8); //>>3
 
 // =================================
 
@@ -1162,6 +1164,7 @@ void *xxxCreateWindow (
     // Edit box. (Simples + borda preta).
     // Editbox não tem sombra, tem bordas. 
     case WT_EDITBOX:
+    case WT_EDITBOX_MULTIPLE_LINES:
         window->ip_device = IP_DEVICE_KEYBOARD;
         window->frame.used = TRUE;
         Background = TRUE;
@@ -1481,6 +1484,7 @@ void *xxxCreateWindow (
             case WT_SIMPLE:
             case WT_POPUP:
             case WT_EDITBOX:
+            case WT_EDITBOX_MULTIPLE_LINES:
             case WT_CHECKBOX:
             case WT_ICON:
             case WT_BUTTON:
@@ -1496,7 +1500,7 @@ void *xxxCreateWindow (
         // Se a janela for edibox, vamos colocar ela 
         // dentro da área de cliente da janela mãe.
         // Editbox só pode existir dentro da área de cliente.
-        if(type==WT_EDITBOX)
+        if(type==WT_EDITBOX || type==WT_EDITBOX_MULTIPLE_LINES)
         {
             // agora seu posicionamento em relação a tela
             // também leva em conta o posicionamento 
@@ -1755,7 +1759,12 @@ void *CreateWindow (
 
     switch (type){
     case WT_OVERLAPPED:  ValidType=TRUE; break;
-    case WT_EDITBOX:     ValidType=TRUE; break;
+    case WT_EDITBOX:
+        ValidType=TRUE; 
+        break;
+    case WT_EDITBOX_MULTIPLE_LINES:  
+        ValidType=TRUE; 
+        break;
     case WT_BUTTON:      ValidType=TRUE; break;
     case WT_SIMPLE:      ValidType=TRUE; break;
     };
@@ -1847,7 +1856,7 @@ void *CreateWindow (
 
 //====
 //edit box
-    if ( type == WT_EDITBOX )
+    if ( type == WT_EDITBOX || type==WT_EDITBOX_MULTIPLE_LINES )
     {
         //if ( (void*) pWindow == NULL ){ return NULL; }
 
@@ -1868,7 +1877,8 @@ void *CreateWindow (
          }
 
         //pintamos simples, mas a tipagem será  overlapped
-        __w->type = WT_EDITBOX;   
+        //__w->type = WT_EDITBOX;   
+        __w->type = type;
         goto draw_frame;
     }
 
@@ -1958,6 +1968,7 @@ draw_frame:
 
     if ( type == WT_OVERLAPPED || 
          type == WT_EDITBOX || 
+         type == WT_EDITBOX_MULTIPLE_LINES || 
          type == WT_BUTTON )
     {
         

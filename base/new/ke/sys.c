@@ -5,6 +5,71 @@
 
 
 
+// dado o fd, pegamos o ponteiro 
+// para estrutura de arquivo na lista de
+// objetos abertos no processo atual.
+// ## Talvez essa rotina ja foi implementada
+// em algum outro lugar.
+// Prototype in rtl/sci/sys.h
+file *__get_file_from_fd(int fd)
+{
+    struct process_d *p;  // current process
+    file *f;              // object
+
+    pid_t current_pid = (pid_t) get_current_process();
+
+    if( current_pid < 0 ||
+        current_pid >= PROCESS_COUNT_MAX )
+    {
+        // msg
+        return NULL;
+    }
+
+    p = (struct process_d *) processList[current_pid];
+
+    if( (void*) p == NULL )
+    {
+        debug_print ("__get_file_from_fd: p\n");
+        panic       ("__get_file_from_fd: p\n");
+        //return NULL;
+    }
+    
+    if(p->used != TRUE)
+    {
+        //msg
+        return NULL;
+    }
+
+    if(p->magic != 1234)
+    {
+        //msg
+        return NULL;
+    }
+    
+
+    if (fd < 0 ||
+        fd >= 32)
+    {
+        //msg
+        return NULL;
+    }
+
+    f = (file *) p->Objects[fd];
+
+    if( (void*) f == NULL )
+    {
+        //#debug
+        printf("fd{%d} pid{%d}\n",fd,current_pid);
+        //printf("entry0: %x\n", p->Objects[0]);
+        //printf("entry1: %x\n", p->Objects[1]);
+        //printf("entry2: %x\n", p->Objects[2]);
+        //printf("entry3: %x\n", p->Objects[3]);
+        //printf("entry4: %x\n", p->Objects[4]);
+    }
+
+    return (file *) f;
+}
+
 // See:
 // unistd.h
 // https://man7.org/linux/man-pages/man2/alarm.2.html
@@ -117,14 +182,10 @@ void *sys_create_process (
 // Not tested
 //
 
-
     debug_print("sys_create_process: [TODO]\n");
     printf     ("sys_create_process: [TODO]\n");
     refresh_screen();
     //return NULL;
-
-
-    pid_t current_process = (pid_t) get_current_process();
 
     // ==============
 
@@ -168,14 +229,21 @@ void *sys_create_process (
     }
 
 //
-// Create process.
-//   
+// Create process
+//
+
+    pid_t current_pid = (pid_t) get_current_process();
+
+    if(current_pid<0 || current_pid >= PROCESS_COUNT_MAX)
+    {
+        panic("sys_create_process: current_pid\n");
+    }
 
     new = (void *) create_process ( 
                        NULL, NULL, NULL, 
                        (unsigned long) CONTROLTHREAD_BASE, //0x00200000 
                        PRIORITY_HIGH, 
-                       (int) current_process, 
+                       (int) current_pid, 
                        (char *) NewName, 
                        RING3, 
                        (unsigned long ) pml4_va,
@@ -211,7 +279,6 @@ fail:
 
 
 /*
- *********************************************************
  * sys_create_thread:
  *     Create thread system interface.
  */
@@ -310,9 +377,8 @@ sys_read (
     char *ubuf, 
     int count )
 {
+    file *__file;
 
-    struct process_d  *__P;
-    file              *__file;
     struct socket_d   *s;
     int nbytes=0; 
     int ubuf_len=0;
@@ -321,13 +387,9 @@ sys_read (
     //debug_print("sys_read:\n");
 
 
-    pid_t current_process = (pid_t) get_current_process();
-
-    // #bugbug
-    // O argumento é 'unsigned int'
-    // Não precisa checar <0.
-    // Deveria ser apenas int?
-
+// #bugbug
+// O argumento é 'unsigned int'.
+// Deveria ser int?
 
 // fd
     if ( fd < 0 || fd >= NUMBER_OF_FILES )
@@ -380,29 +442,19 @@ sys_read (
         //ubuf_len = 512;
     }
 
-//
-// Process
-//
-
-    __P = (struct process_d *) processList[current_process];
-
-    if ( (void *) __P == NULL )
-    {
-        debug_print ("sys_read: __P\n");
-        panic       ("sys_read: __P\n");
-    }
 
 //
 // File
 //
 
-    __file = (file *) __P->Objects[fd];  
+// Get the object pointer.
+
+    __file = (file *) __get_file_from_fd(fd);
 
     if ( (void *) __file == NULL )
     {
         debug_print ("sys_read: __file not open\n");
         printf      ("sys_read: __file not open\n");
-        printf      ("fd{%d} pid{%d}\n",fd,current_process);
         goto fail; 
     }
 
@@ -757,19 +809,16 @@ int sys_write (unsigned int fd, char *ubuf, int count)
 // do socket privado do processo. Pois poderemos estar
 // escrevendo em outro socket que nao o privado.
 
-    struct process_d  *__P;
     file *__file;
+
     struct socket_d  *s1;
-    //struct socket_d  *s2;
+    struct socket_d  *s2;
     int nbytes=0;
     int ubuf_len=0;
     size_t ncopy=0;
 
     //debug_print("------------------------------------ W --\n");
     //debug_print("sys_write: :)\n");
-
-    pid_t current_process = (pid_t) get_current_process();
-
 
 
 // fd
@@ -828,33 +877,24 @@ int sys_write (unsigned int fd, char *ubuf, int count)
 
 
 //
-// Process pointer
-//
-
-    __P = (struct process_d *) processList[current_process];
-
-    if ( (void *) __P == NULL )
-    {
-        debug_print ("sys_write: __P\n");
-        panic       ("sys_write: __P\n");
-    }
-
-//
 // __file
 //
 
-    __file = (file *) __P->Objects[fd]; 
+// Get the object pointer from the list
+// in the process structure.
+
+    __file = (file *) __get_file_from_fd(fd);
     
     if ( (void *) __file == NULL )
     {
         debug_print ("sys_write: __file not open\n");
         printf      ("sys_write: __file not open #hang\n");
-        printf      ("fd{%d} pid{%d}\n",fd,current_process);
-        printf("entry0: %x\n", __P->Objects[0]);
-        printf("entry1: %x\n", __P->Objects[1]);
-        printf("entry2: %x\n", __P->Objects[2]);
-        printf("entry3: %x\n", __P->Objects[3]);
-        printf("entry4: %x\n", __P->Objects[4]);
+        //printf      ("fd{%d} pid{%d}\n",fd,current_process);
+        //printf("entry0: %x\n", __P->Objects[0]);
+        //printf("entry1: %x\n", __P->Objects[1]);
+        //printf("entry2: %x\n", __P->Objects[2]);
+        //printf("entry3: %x\n", __P->Objects[3]);
+        //printf("entry4: %x\n", __P->Objects[4]);
         //refresh_screen();
         //while(1){}
         goto fail;
@@ -1634,10 +1674,10 @@ fail:
 
 int sys_close (int fd)
 {
-    struct process_d *p;
+
     file *object;
 
-
+    struct process_d *p;
     pid_t current_process = (pid_t) get_current_process();
 
 
@@ -1777,7 +1817,10 @@ int sys_close (int fd)
             (char)           0x20 );                 // flag ??
 
         object = NULL;
+        
+        // ??
         p->Objects[fd] = (unsigned long) 0;
+        
         debug_print("sys_close: [FIXME] Done\n");
         return 0;
     }

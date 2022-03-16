@@ -359,10 +359,18 @@ void doPrompt(int fd)
     gws_refresh_window(fd,game_window);
 }
 
+
 void compareStrings(int fd)
 {
 
     printf("\n");
+
+    if ( strncmp(prompt,"ascii",5) == 0 )
+    {
+         //not working
+         //print_ascii_table(fd);
+         goto exit_cmp;
+    }
 
     if ( strncmp(prompt,"test",4) == 0 )
     {
@@ -562,6 +570,33 @@ done:
 }
 
 
+
+void print_ascii_table(int fd)
+{
+    int i=0;
+    int line=0;
+    
+    printf("ascii: :)\n");
+
+    gws_redraw_window(fd,game_window,TRUE);
+    //#define SYSTEMCALL_SETCURSOR  34
+    gramado_system_call ( 34, 2, 2, 0 );
+
+    if(fd<0){return;}
+    for(i=0; i<256; i++)
+    {
+        gws_draw_char ( 
+            fd, 
+            game_window, 
+            i*8,  //x 
+            (8*line),  //y
+            COLOR_YELLOW, i );
+        
+        if(i%10)line++;
+    };
+}
+
+
 //==========================================
 // Main
 
@@ -573,15 +608,12 @@ int main ( int argc, char *argv[] )
     int ShowCube = FALSE;
     int launchChild = TRUE;
     // ...
-
     int client_fd = -1;
     int main_window = -1;
-    
 
 // hello
-    gws_debug_print ("cmdline.bin: Hello world \n");
-    printf          ("cmdline.bin: Hello world \n");
-
+    //gws_debug_print ("cmdline.bin: Hello world \n");
+    //printf          ("cmdline.bin: Hello world \n");
 
 // interrupts
     //gws_debug_print ("cmdline.bin: Enable interrupts \n");
@@ -630,10 +662,8 @@ int main ( int argc, char *argv[] )
     }
 
 // #ebug
-    printf(":: Entering CMDLINE.BIN pid{%d} fd{%d}\n",
-        getpid(),
-        client_fd);
-    
+    //printf(":: Entering CMDLINE.BIN pid{%d} fd{%d}\n",
+        //getpid(), client_fd);
     //while(1){}
 
 

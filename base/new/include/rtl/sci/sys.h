@@ -5,6 +5,8 @@
 #define ____SYS_H  1
 
 
+// See: sys.c
+file *__get_file_from_fd(int fd);
 
 unsigned long sys_get_system_metrics ( int n );
 

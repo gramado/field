@@ -878,6 +878,7 @@ void __initialize_ram_usage_varables(void)
 // local worker
 void __initialize_default_physical_regions(void)
 {
+
 // =============================================================
 // Regions
 // =============================================================
@@ -1002,8 +1003,7 @@ void __initialize_ring0area(void)
         (int) PD_ENTRY_RING0AREA,           // entry
         (unsigned long) &pt_ring0area[0],   // pt
         (unsigned long) kernel_address_pa,  // region base
-        (unsigned long) 3 );                // flags
-
+        (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 }
 
 
@@ -1056,7 +1056,7 @@ void __initialize_ring3area(void)
         (int) PD_ENTRY_RING3AREA,          // entry
         (unsigned long) &pt_ring3area[0],  // pt
         (unsigned long) user_address_pa,   // region base
-        (unsigned long) 7 );               // flags
+        (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
 
@@ -1111,7 +1111,7 @@ void __initialize_kernelimage_region(void)
         (int) PD_ENTRY_KERNELIMAGE,          // entry
         (unsigned long) &pt_kernelimage[0],  // pt
         (unsigned long) kernel_base_pa,      // region base
-        (unsigned long) 3 );                 // flags
+        (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 }
 
 
@@ -1177,7 +1177,7 @@ void __initialize_frontbuffer(void)
         (int) PD_ENTRY_FRONTBUFFER,           // entry
         (unsigned long) &pt_frontbuffer[0],   // pt
         (unsigned long) framebuffer_pa,       // region base
-        (unsigned long) 7 );                  // flags
+        (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
 
@@ -1223,8 +1223,7 @@ void __initialize_backbuffer(void)
         (int) PD_ENTRY_BACKBUFFER,          // entry
         (unsigned long) &pt_backbuffer[0],  // pt
         (unsigned long) backbuffer_pa,      // region base
-        (unsigned long) 7 );                // base
-
+        (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
 
@@ -1260,8 +1259,7 @@ void __initialize_pagedpool(void)
         (int) PD_ENTRY_PAGEDPOOL,            // entry
         (unsigned long) &pt_pagedpool[0],    // pt
         (unsigned long) SMALL_pagedpool_pa,  // region base 
-        (unsigned long) 7 );                 // flags
-
+        (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
 
@@ -1305,7 +1303,7 @@ void __initialize_heappool(void)
         (int) PD_ENTRY_HEAPPOOL,            // entry
         (unsigned long) &pt_heappool[0],    // pt
         (unsigned long) SMALL_heappool_pa,  // region base
-        (unsigned long) 7 );                // flags
+        (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
 
@@ -1346,8 +1344,7 @@ void __initialize_extraheap1(void)
         (int) PD_ENTRY_EXTRAHEAP1,             // entry
         (unsigned long) &pt_extraheap1[0],     // pt
         (unsigned long) SMALL_extraheap1_pa,   // region base
-        (unsigned long) 3 );                   // flags
-
+        (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 }
 
 // local worker
@@ -1379,7 +1376,7 @@ void __initialize_extraheap2(void)
       (int) PD_ENTRY_EXTRAHEAP2,            // entry
       (unsigned long) &pt_extraheap2[0],    // pt
       (unsigned long) SMALL_extraheap2_pa,  // region base
-      (unsigned long) 3 );                  // flags
+      (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 }
 
 
@@ -1404,8 +1401,7 @@ void __initialize_extraheap3(void)
         (int) PD_ENTRY_EXTRAHEAP3,             // entry
         (unsigned long) &pt_extraheap3[0],     // pt
         (unsigned long) SMALL_extraheap3_pa,   // region base
-        (unsigned long) 3 );                   // flags
-
+        (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 }
 
 
@@ -1609,20 +1605,21 @@ int mmSetUpPaging (void)
 //
 
 // Clear levels 4, 3 and 2.
+// Páginas não presentes, pode ler e escrever.
 
 // Clear level 4
     for ( i=0; i < 512; i++ ){
-        kernel_pml4[i] = (unsigned long) 0 | 2;
+        kernel_pml4[i] = (unsigned long) 0 | PAGE_WRITE;
     };
 
 // Clear level 3
     for ( i=0; i < 512; i++ ){
-       kernel_pdpt0[i] = (unsigned long) 0 | 2;
+       kernel_pdpt0[i] = (unsigned long) 0 | PAGE_WRITE;
     };
 
 // Clear level 2
     for ( i=0; i < 512; i++ ){
-        kernel_pd0[i] = (unsigned long) 0 | 2;
+        kernel_pd0[i] = (unsigned long) 0 | PAGE_WRITE;
     };
 
 //
@@ -1638,15 +1635,19 @@ int mmSetUpPaging (void)
 // Pointing the 'page directory' address 
 // at the first entry in the 'page directory pointer table'.
 
+// Páginas presentes, pode ler e escrever, user mode.
+// flags=7
     kernel_pdpt0[0] = (unsigned long) &kernel_pd0[0];
-    kernel_pdpt0[0] = (unsigned long) kernel_pdpt0[0] | 7;
+    kernel_pdpt0[0] = (unsigned long) ( kernel_pdpt0[0] | PAGE_USER | PAGE_WRITE | PAGE_PRESENT );
 
 // pdpt >> pml4
 // Pointing the 'page directory pointer table' address 
 // at the first entry in the kernel_pml4.
 
+// Páginas presentes, pode ler e escrever, user mode.
+// flags=7
     kernel_pml4[0] = (unsigned long) &kernel_pdpt0[0];
-    kernel_pml4[0] = (unsigned long) kernel_pml4[0] | 7;
+    kernel_pml4[0] = (unsigned long) ( kernel_pml4[0] | PAGE_USER | PAGE_WRITE | PAGE_PRESENT );
 
 //
 // ============================

@@ -4,6 +4,8 @@
 #include <kernel.h>
 
 
+int current_thread=0;
+
 // Thread stats
 unsigned long __GetThreadStats ( int tid, int index )
 {

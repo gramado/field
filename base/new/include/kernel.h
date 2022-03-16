@@ -422,6 +422,7 @@ int current_group;
 
 // Organização dos processos
 
+// ------
 
 // Process used by the console during the job control.
 // #hackhack: 
@@ -431,28 +432,31 @@ int current_group;
 // But we need to use the control thread of the foreground process
 // associated with the console TTY.
 pid_t foreground_process;
-int foreground_thread;
-
-
-
 
 // [Processing time]
 // Only these can read the keyboard input.
 // Sometime it's the terminal.
 // It's child will read into a file.
-//pid_t current_process;   // Currently having the processing time.
-int current_thread;    // Currently having the processing time.
-
-
-
+// See: ps/process.c
+// pid_t current_process;   // Currently having the processing time.
 int criticalsection_pid;
 
 // [Focus]
 pid_t active_process;    // This is the process with the active thread.
+
+// ------
+
+// See: ps/thread.c
+extern int current_thread;    // Currently having the processing time.
+
+int foreground_thread;
+
 int active_thread;     // This thread will receive the input.
 
 //[Scheduler]
 int next_thread;     //next user mode thread.
+
+// ------
 
 
 // Current runlevel. Used in init process.

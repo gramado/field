@@ -620,22 +620,19 @@ struct gws_window_d
     unsigned long full_width;
     unsigned long full_height;
 
-
 //
 // cursor ?
 // 
 
-    // Offset inside the window.
-    // Can be used by the rectangles.
-    // Deslocamento em relação a janela mãe.
+// Offset inside the window.
+// Can be used by the rectangles.
+// Deslocamento em relação a janela mãe.
     unsigned long x;
     unsigned long y; 
-    
-    
+
     // #todo    
     //unsigned long border_color;
     //unsigned long border_width;
-
 
     // Cliente area in chars.
     //unsigned long client_area_width;
@@ -653,13 +650,13 @@ struct gws_window_d
 // Qual eh o dispositivo de input.
     gws_ip_device_t ip_device;
 
-// para input do tipo teclado
+// Para input do tipo teclado
+
     int ip_x;
     int ip_y;
     unsigned int ip_color;
-
-    unsigned long width_in_bytes;
-    unsigned long height_in_bytes;
+    unsigned long width_in_chars;
+    unsigned long height_in_chars;
 
     //unsigned long ip_type; //?? algum estilo especifico de cursor?
     //unsigned long ip_style;

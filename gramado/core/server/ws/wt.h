@@ -10,7 +10,8 @@
 #define WT_NULL          0 
 #define WT_SIMPLE        1
 // Igual simples, mais uma bordinha preta.
-#define WT_EDITBOX       2
+#define WT_EDITBOX_SINGLE_LINE  2
+#define WT_EDITBOX  WT_EDITBOX_SINGLE_LINE
 // Sobreposta(completa)(barra de titulo + borda + client area)  
 #define WT_OVERLAPPED    3  
 // Um tipo especial de sobreposta,

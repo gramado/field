@@ -339,7 +339,7 @@ int main ( int argc, char *argv[] )
 
 // Tamanho da janela.
     unsigned long w_width  = (w>>1);
-    unsigned long w_height =  (h - 100); //(h>>1);
+    unsigned long w_height = (h - 100); //(h>>1);
 
 // original
     unsigned long viewwindowx = ( ( w - w_width ) >> 1 );
@@ -455,6 +455,7 @@ int main ( int argc, char *argv[] )
 // == Client window =======================
 //
 
+// (Editbox)
 // Client window (White)
 // Inside the main window.
 // Lembre-se que temos uma status bar.
@@ -466,7 +467,7 @@ int main ( int argc, char *argv[] )
 
     client_window = gws_create_window ( 
                         client_fd,
-                        WT_EDITBOX,1,1,"Client",
+                        WT_EDITBOX_MULTIPLE_LINES,1,1,"Client",
                         cw_left, cw_top, cw_width, cw_height,
                         main_window,0,COLOR_WHITE,COLOR_WHITE );
 
