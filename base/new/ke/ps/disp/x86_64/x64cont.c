@@ -16,51 +16,54 @@
 // Algumas poucas rotinas vão importar essas variáveis.
 
 
-unsigned long contextSS;        // User mode.
-unsigned long contextRSP;       // User mode.
-unsigned long contextRFLAGS; 
-unsigned long contextCS;
-unsigned long contextRIP;
+unsigned long contextSS=0;        // User mode.
+unsigned long contextRSP=0;       // User mode.
+unsigned long contextRFLAGS=0; 
+unsigned long contextCS=0;
+unsigned long contextRIP=0;
 
-unsigned long contextDS;
-unsigned long contextES;
-unsigned long contextFS;  // ?
-unsigned long contextGS;  // ?
+unsigned long contextDS=0;
+unsigned long contextES=0;
+unsigned long contextFS=0;  // ?
+unsigned long contextGS=0;  // ?
 
-unsigned long contextRAX;
-unsigned long contextRBX;
-unsigned long contextRCX;
-unsigned long contextRDX;
+unsigned long contextRAX=0;
+unsigned long contextRBX=0;
+unsigned long contextRCX=0;
+unsigned long contextRDX=0;
 
-unsigned long contextRSI;
-unsigned long contextRDI;
+unsigned long contextRSI=0;
+unsigned long contextRDI=0;
 
-unsigned long contextRBP;
+unsigned long contextRBP=0;
 
-unsigned long contextR8;
-unsigned long contextR9;
-unsigned long contextR10;
-unsigned long contextR11;
-unsigned long contextR12;
-unsigned long contextR13;
-unsigned long contextR14;
-unsigned long contextR15;
+unsigned long contextR8=0;
+unsigned long contextR9=0;
+unsigned long contextR10=0;
+unsigned long contextR11=0;
+unsigned long contextR12=0;
+unsigned long contextR13=0;
+unsigned long contextR14=0;
+unsigned long contextR15=0;
 
 // The cpl of the thread.
 // Updated by irq0.
-unsigned long contextCPL;
+unsigned long contextCPL=0;
+
+// fpu buffer
+// Defined in unit1hw.asm
+unsigned char context_fpu_buffer[512];
+// char fxsave_region[512] __attribute__((aligned(16)));
 
 // ===============================================
 
 
 /*
  * save_current_context: 
- * 
  *    Salvando o contexto da thread interrompida pelo timer IRQ0.
  *    O contexto da tarefa interrompida foi salvo em vari�veis pela 
  * isr do timer. Aqui esse contexto � colocado na estrutura que 
  * organiza as threads.
- *
  * @todo: 
  *     Est�o faltando vari�veis nesse contexto, como registradores de 
  * debug e float point por exemplo.
@@ -160,9 +163,14 @@ void save_current_context (void)
     t->r15 = (unsigned long) contextr15[0];
 
 
-//
+// Save
+
+    register int i=0;
+    for(i=0; i<512; i++){
+         t->fpu_buffer[i] = (unsigned char) context_fpu_buffer[i];
+    };
+
 // stime and utime
-//
 
     int cpl=-1;
     unsigned long tmp_cpl = (unsigned long) context_cpl[0];
@@ -198,13 +206,13 @@ fail0:
  *     Pegando os valores na estrutura e colocando nas vari�veis 
  * que ser�o usadas pelo arquivo em assembly para carregar os valores 
  * dentro dos registradores.
- *
  * @todo:   
  *     Mudar nome para contextRestoreCurrent();.
  */
 
 // unit 3: Release the context.
-// Burgundy ?
+// Burgundy?
+
 void restore_current_context (void)
 {
     struct thread_d  *t;
@@ -293,7 +301,15 @@ void restore_current_context (void)
     contextr14[0] = (unsigned long) t->r14;  
     contextr15[0] = (unsigned long) t->r15;  
 
-    // Restore CR3 and flush TLB.
+
+// Restore
+
+    register int i=0;
+    for(i=0; i<512; i++){
+        context_fpu_buffer[i] = (unsigned char) t->fpu_buffer[i];
+    };
+
+// Restore CR3 and flush TLB.
 
     load_pml4_table ( (unsigned long) t->pml4_PA );
     

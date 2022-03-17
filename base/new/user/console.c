@@ -1337,10 +1337,22 @@ void __test_path(void)
 int consoleCompareStrings(void)
 {
     int status=0;
+    int fpu_status = -1;
 
     debug_print("consoleCompareStrings: \n");
     printf("\n");
 
+
+    if ( strncmp(prompt,"fpu",3) == 0 )
+    {
+        printf("Initialize fpu support\n");
+        fpu_status = x64_init_fpu_support();
+        if(fpu_status<0){
+            printf("Initialization fail\n");
+        }
+        printf("done\n");
+        goto exit_cmp;
+    }
 
     if ( strncmp( prompt, "smp", 3 ) == 0 )
     {

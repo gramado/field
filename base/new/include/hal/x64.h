@@ -80,6 +80,8 @@ void get_cpu_intel_parameters(void);
 //
 
 void x64_init_fpu (void);
+int x64_init_fpu_support(void);
+
 void fpu_load_control_word(const uint16_t control);
 
 void x64_disable_interrupts (void);

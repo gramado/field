@@ -1224,22 +1224,6 @@ int main ( int argc, char *argv[] )
     printf ("#test lX: %lX \n",0x1000ABCDDCBA0001); //
     // ...
 
-// ===============================
-// Testing fpu
-
-// float. ok on qemu.
-    float float_var = 1.5;
-    unsigned int float_res = (unsigned int) (float_var + float_var);
-    printf("float_res={%d}\n",(unsigned int)float_res);
-
-// double. ok on qemu.
-    double double_var = 2.5000;
-    unsigned int double_res = (unsigned int) (double_var + double_var);
-    printf("double_res={%d}\n",(unsigned int)double_res);
-
-// ===============================
-
-
 // Show prompt.
     doPrompt(client_fd);
 

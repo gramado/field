@@ -639,6 +639,62 @@ void x64_init_fpu (void)
 }
 
 
+// See: unit1hw.asm
+extern void DisableSSE(void);
+extern void EnableSSE(void);
+
+
+int x64_init_fpu_support(void)
+{
+    if( (void*) processor == NULL )
+    {
+        printf("fail: processor\n");
+        return -1;
+    }
+
+    if( processor->hasX87FPU != TRUE )
+    {
+        printf("fail: processor->hasX87FPU\n");
+        return -1;
+    }
+
+    if( processor->hasSSE != TRUE )
+    {
+        printf("fail: processor->hasSSE\n");
+        return -1;
+    }
+
+    if( processor->hasSSE2 != TRUE )
+    {
+        printf("fail: processor->hasSSE2\n");
+        return -1;
+    }
+
+    if( processor->hasSSE3 != TRUE )
+    {
+        printf("fail: processor->hasSSE3\n");
+        return -1;
+    }
+
+// Enable
+
+    asm volatile (
+        " movq %%cr4, %%rax;  "
+        " orl $0x600, %%eax;  "    /*Set OSFXSR and OSXMMEXCPT*/
+        " movq %%rax, %%cr4;  "
+        
+        " movq %%cr0, %%rax;  "
+        " andw $0xFFFB, %%ax; "    /*Clear EM*/
+        " orw $0x2, %%ax;     "    /*Set MP*/
+        " movq %%rax, %%cr0;  " :: );
+
+    x64_init_fpu();
+    EnableSSE();
+    
+    return 0;
+}
+
+
 // These functions can be used with GCC (or TCC) 
 // to perform some FPU operations without 
 // resorting to dedicated assembly.

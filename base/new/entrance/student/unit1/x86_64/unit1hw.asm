@@ -2,6 +2,29 @@
 ; unit1hw.asm
 ; This file handles the traps for the x86_64 processors.
 
+
+
+;================================
+global _DisableSSE
+_DisableSSE:
+    push rax
+    mov rax, cr0
+    or ax, 1 << 3    ;Set TS
+    mov cr0, rax
+    pop rax
+    ret
+
+;================================
+global _EnableSSE
+_EnableSSE:
+    push rax
+    mov rax, cr0
+    and ax, ~(1 << 3)    ; Clear TS
+    mov cr0, rax
+    pop rax
+    ret
+
+
 ;;=====================================================
 ;;  ## TIMER ##
 ;;=====================================================
@@ -56,6 +79,10 @@ extern _contextR15
 
 extern _contextCPL
 
+; Array.
+; Defined in x64cont.c
+extern _context_fpu_buffer
+
 ; ...
 
 ;================================
@@ -107,6 +134,13 @@ _irq0:
     mov ax, ds
     mov word [_contextDS], ax
 
+; FPU
+; See:
+; https://wiki.osdev.org/SSE
+
+    fxsave [_context_fpu_buffer]
+
+
 ; #todo
 ; Media, float pointers, debug.
 ; #important:
@@ -129,6 +163,10 @@ _irq0:
 ; See: ke/hal/x86_64/pit.c
 
     call _irq0_TIMER
+
+; FPU
+
+    fxrstor [_context_fpu_buffer]
 
 ; Release a bandit.
     jmp unit3Irq0Release

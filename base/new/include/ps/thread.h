@@ -828,6 +828,8 @@ struct thread_d
     // 512 bytes, alinhados em 16.
     // unsigned char fxsave[512]__atribute_aligned(...);
 
+    unsigned char fpu_buffer[512];
+
 //
 //  tss
 //

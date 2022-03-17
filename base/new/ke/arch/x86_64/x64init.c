@@ -1237,12 +1237,21 @@ int I_init (void)
     //}
 
     processor->Type = (int) ProcessorType;
-    
+
+
+    int fpu_status = -1;   // fail
+
     switch (ProcessorType){
     case Processor_INTEL:  
     case Processor_AMD:
         x64_init_intel();   
         //init_amd(); 
+        fpu_status = (int) x64_init_fpu_support();
+        if(fpu_status<0){
+            printf("I_init: [FAIL] FPU Initialization fail\n");
+            return FALSE;
+        }
+
         break;
     // ...
     default:

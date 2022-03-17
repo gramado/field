@@ -33,6 +33,8 @@ void show_cpu_intel_parameters (void)
 // #todo
 // Check the pointer validation?
 
+    //if( (void*) processor == NULL )
+        //fail
 
 // Vendor and brand.
     printf("        Vendor: {%s}\n", &processor->Vendor[0] );
