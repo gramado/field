@@ -944,7 +944,7 @@ struct process_d *create_process (
     struct window_d  *window,
     unsigned long base_address, 
     unsigned long priority, 
-    pid_t ppid, 
+    ppid_t ppid, 
     char *name, 
     unsigned long iopl,
     unsigned long pml4_va,

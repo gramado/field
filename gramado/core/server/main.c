@@ -118,11 +118,6 @@ static int IsAcceptingConnections = FALSE;
 //
 
 
-
-// Get system message from the thread's queue.
-void xxxHandleNextSystemMessage (void);
-
-
 int
 gwsProcedure (
     int client_fd,
@@ -155,8 +150,8 @@ void gwssrv_debug_print (char *string)
 }
 
 
-// Clone and execute a process.
-// #todo: We can use the rtl.
+// #bugbug
+// For now we can't use this function in ring0, I guess.
 int gwssrv_clone_and_execute ( char *name )
 {
     
@@ -820,21 +815,6 @@ void ____get_system_message( unsigned long buffer )
 }
 */
 
-/*
- ********************************** 
- * xxxGetNextSystemMessage: 
- *
- */
-
-// internal
-// System ipc messages. (It's like a signal)
-// Get system message from the thread's queue.
-
-void xxxHandleNextSystemMessage (void)
-{
-    printf("xxxHandleNextSystemMessage: deprecated\n");
-}
-
 
 #define wsMSG_KEYDOWN     20
 #define wsMSG_KEYUP       21
@@ -1322,9 +1302,7 @@ void create_background (void)
         exit(1);
     }
 
-
 // Register the window.
-
     WindowId = RegisterWindow(__root_window);
     if (WindowId<0){
         gwssrv_debug_print ("create_background: Couldn't register window\n");
@@ -1355,7 +1333,7 @@ void create_background (void)
         //refresh_screen();
     }
 
-    gwssrv_debug_print ("gwssrv: create_background: done\n");
+    //gwssrv_debug_print ("gwssrv: create_background: done\n");
 
 // #debug
     //refresh_screen();
@@ -1377,7 +1355,7 @@ int initGraphics (void)
 {
     int __init_status = -1;
 
-    debug_print("initGraphics\n");
+    //debug_print("initGraphics\n");
     //printf("initGraphics: \n");
 
     window_server->graphics_initialization_status = FALSE;
@@ -1393,7 +1371,8 @@ int initGraphics (void)
     {
         debug_print ("initGraphics: [PANIC] Couldn't initialize the graphics\n");
         printf      ("initGraphics: [PANIC] Couldn't initialize the graphics\n");
-        exit(1);
+        goto fail;
+        //exit(1);
     }
 
 // Create root window.
@@ -1417,7 +1396,8 @@ int initGraphics (void)
     {
         gwssrv_debug_print ("initGraphics: [FAIL] root window doesn't exist\n");
         printf             ("initGraphics: [FAIL] root window doesn't exist\n");
-        exit(1);
+        goto fail;
+        //exit(1);
     }
 
 //#debug
@@ -1428,7 +1408,7 @@ int initGraphics (void)
 // Now we can use 3d routines.
 // See: grprim.c
     
-    gwssrv_debug_print ("initGraphics: Calling grInit() \n");
+    //gwssrv_debug_print ("initGraphics: Calling grInit() \n");
     //printf ("initGraphics: Calling grInit() \n");
     grInit();
 
@@ -1860,8 +1840,11 @@ int initGraphics (void)
 
 //done:
     window_server->graphics_initialization_status = TRUE;
-    //debug_print("gwssrv: InitGraphics done\n");
     return 0;
+
+fail:
+    window_server->graphics_initialization_status = FALSE;
+    return -1;
 }
 
 
@@ -2187,6 +2170,20 @@ int serviceAsyncCommand (void)
 
     // ...
 
+    // Set flag to quit the server.
+    case 88:
+        printf("88: IsTimeToQuit\n");
+        IsTimeToQuit = TRUE;
+        break;
+
+    // Reboot the system via ws.
+    case 89:
+        printf("89: Reboot via ws\n");
+        rtl_reboot();
+        break;
+
+    // ...
+
     default:
         gwssrv_debug_print ("serviceAsyncCommand: [ERROR] bad request\n");
                  // printf ("serviceAsyncCommand: [ERROR] bad request\n");
@@ -2323,7 +2320,6 @@ int on_execute(void)
 // =============
     //gws_enable_transparence();
     gws_disable_transparence();
-
 
 //==================
     struct sockaddr server_address;
@@ -2538,7 +2534,15 @@ int on_execute(void)
 // Initialize the '3D' graphics support.
 // Let's create the standard green background.
 
-    initGraphics();
+    int graphics_status = -1;
+
+    graphics_status = (int) initGraphics();
+    if(graphics_status<0){
+        printf("gwssrv: initGraphics failed\n");
+        return -1;
+        //while(1){}
+        //exit(1);
+    }
 
 
 //
@@ -2549,8 +2553,8 @@ int on_execute(void)
 
     if( (void*) WindowManager.root == NULL )
     {
-        gwssrv_debug_print("WindowManager.root fail\n");
-        printf("WindowManager.root fail\n");
+        gwssrv_debug_print("gwssrv: WindowManager.root fail\n");
+                    printf("gwssrv: WindowManager.root fail\n");
         return -1;
         //exit(0);
     }
@@ -2786,8 +2790,7 @@ int on_execute(void)
 // ...
 
 // Close the server's fd.
-    if (server_fd>0)
-    {
+    if (server_fd>0){
         close(server_fd);
     }
 
@@ -2813,10 +2816,10 @@ void gwssrv_quit(void)
 int main (int argc, char **argv)
 {
     int Status=-1;
-    
-    
-    //sincronizaçao provisoria
-    //vamos precisar disso antes de tudo;
+
+    // ##
+    // Sincronizaçao provisoria.
+    // Vamos precisar disso antes de tudo;
     // vamos pegar a que foi criada pelo primeiro cliente.
     // ele cria no começo da rotina.
     // Dai usaremos essa id por enquanto, pois o sistema so tem ela ainda.
@@ -2826,18 +2829,36 @@ int main (int argc, char **argv)
         __saved_sync_id = sc82 (10005,0,0,0);
         if( __saved_sync_id > 0 && __saved_sync_id < 1024 )
             break;
-    }
-    
+    };
+
     Status = on_execute();
+
+    //0 = Time to quit.
+    if(Status == 0)
+    {
+        gwssrv_debug_print ("GWSSRV.BIN: exit(0)\n");
+        printf             ("GWSSRV.BIN: exit(0)\n");
+        // #bugbug
+        // The thread state didn't change.
+        // We are still in RUNNING state.
+        // It probably hang in the exit function.
+        exit(0);
+    }
+
+// fail
 
 // hang
 // Page fault when exiting ... 
 // #fixme
+
     gwssrv_debug_print ("GWSSRV.BIN: Hang on exit\n");
     printf             ("GWSSRV.BIN: Hang on exit\n");
 
-    while(1){};
+    while(1)
+    {
+    };
 
+// Not reached.
     return 0;
 }
 

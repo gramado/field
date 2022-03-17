@@ -1,18 +1,13 @@
 /*
  * Arquivo: types.h 
- * 
  * Descrição:
  *     Define tipos de variáveis.
  *     Obs: System types. 
  */
- 
- 
+
 
 #ifndef ____TYPES_H
 #define ____TYPES_H    1 
-
-
-
 
 
 #define NULL ((void *)0)
@@ -23,28 +18,33 @@
 /* Void */
 typedef void VOID; 
 
+
+
 // It will help us to find the irq handlers.
 typedef void __VOID_IRQ; 
 
 
 /* Basics */
-typedef char  CHAR;
-typedef short SHORT;
-typedef int INT;        //32bit
-typedef long  LONG;     //32bit
+typedef char  CHAR;     //  8bit
+typedef short SHORT;    // 16bit
+typedef int   INT;      // 32bit
+typedef long  LONG;     // 64bit
 
 
 /* Unsigned Basics */
-typedef unsigned char  UCHAR;
-typedef unsigned short USHORT;
-typedef unsigned int   UINT;      //32bit
-typedef unsigned long  ULONG;     //32bit
+typedef unsigned char  UCHAR;     //  8bit
+typedef unsigned short USHORT;    // 16bit
+typedef unsigned int   UINT;      // 32bit
+typedef unsigned long  ULONG;     // 64bit
 
 /* sysv - unix system v */
 typedef unsigned char   unchar;
 typedef unsigned short  ushort;
 typedef unsigned int    uint;
 typedef unsigned long   ulong;
+// extra
+// //typedef unsigned char   uchar;
+
 
 /* bsd */
 typedef unsigned char   u_char;
@@ -54,25 +54,33 @@ typedef unsigned long   u_long;
 
 
 /* bsd - Basic integral types. */ 
-typedef char            int8_t;
+typedef char             int8_t;
 typedef unsigned char   uint8_t;
-typedef short           int16_t;
+typedef short            int16_t;
 typedef unsigned short  uint16_t;
-typedef int             int32_t;
+typedef int              int32_t;
 typedef unsigned int    uint32_t;
+
+// #todo
+//typedef long             int64_t;
+//typedef unsigned long    uint64_t;
+//typedef unsigned long    u_int64_t;
+
 //typedef	long long		  int64_t;
 //typedef	unsigned long long	u_int64_t;
 
+
 /* Windows CE virtual address */
-typedef uint32_t		vaddr_t;
-typedef uint32_t		vsize_t;
+typedef uint32_t  vaddr_t;
+typedef uint32_t  vsize_t;
+
 /* Physical address */
-typedef uint32_t		paddr_t;
-typedef uint32_t		psize_t;
+typedef uint32_t  paddr_t;
+typedef uint32_t  psize_t;
 
 /* kernel virtual address */
-typedef uint32_t		kaddr_t;
-typedef uint32_t	ksize_t;
+typedef uint32_t  kaddr_t;
+typedef uint32_t  ksize_t;
 
 
 //
@@ -96,25 +104,26 @@ typedef char **POLL;
 
 //array de unsigned longs contendo ponteiros 
 //para pools de strings;
-typedef unsigned long pool_list_t;
-typedef unsigned long POOLLIST;
+typedef unsigned long  pool_list_t;
+typedef unsigned long  POOLLIST;
 
 
 /*
  *  HANDLE
  */
-typedef void *HANDLE;              //Generic handle.
-typedef void *HPROCESS;            //Process.
-typedef void *HTHREAD;             //Thread.
-typedef void *HUSERSESSION;        // *User Session.
-typedef void *HWINDOWSTATION;      // *Window Station.
-typedef void *HDESKTOP;            // *Desktop.
-typedef void *HWINDOW;             // *Window.
-typedef void *HMENU;               //Menu.
-//typedef void *KHANDLE;             //Kernel Handle.
-//typedef void *OHANDLE;             //Object Handle. 
-//typedef void *RPC_HANDLE;            //Remote Procedure Call Handle.
-//typedef void *LPC_HANDLE;            //Local Procedure Call Handle.
+
+typedef void *HANDLE;            // Generic handle.
+typedef void *HPROCESS;          // Process.
+typedef void *HTHREAD;           // Thread.
+typedef void *HUSERSESSION;      // User Session.
+typedef void *HWINDOWSTATION;    // Window Station.
+typedef void *HDESKTOP;          // Desktop.
+typedef void *HWINDOW;           // Window.
+typedef void *HMENU;             // Menu.
+//typedef void *KHANDLE;         // Kernel Handle.
+//typedef void *OHANDLE;         // Object Handle. 
+//typedef void *RPC_HANDLE;      // Remote Procedure Call Handle.
+//typedef void *LPC_HANDLE;      // Local Procedure Call Handle.
 //...
 
 
@@ -123,10 +132,8 @@ typedef  unsigned long  vm_offset_t;
 typedef  unsigned long  vm_size_t;
 
 
-
 // Parent Process IDentifier 
 typedef  int  ppid_t;
-
 
 // Thread IDentifier. linux,  
 typedef  int  tid_t; 

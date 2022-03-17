@@ -46,6 +46,9 @@
 // We need to change the name of this document??
 #include "noraterm.h"
 
+// #test:
+// Testing ioctl()
+#include <termios.h>
 
 
 int cursor_x = 0;
@@ -229,6 +232,47 @@ void compareStrings(int fd)
     }
 
     //printf("\n");
+
+    // Quit 'ws'.
+    if ( strncmp(prompt,"ws-quit",7) == 0 )
+    {
+        //gws_async_command(fd,88,0,0);  //ok
+        goto exit_cmp;
+    }
+
+    // Reboot via 'ws'
+    if ( strncmp(prompt,"ws-reboot",9) == 0 )
+    {
+        gws_async_command(fd,89,0,0);
+        goto exit_cmp;
+    }
+
+    //testing ioctl
+    if( strncmp(prompt,"ioctl",5) == 0 )
+    {
+        printf ("~ioctl: tests ...\n");
+
+        // flush
+        //ioctl ( STDIN_FILENO,  TCIFLUSH, 0 ); // input
+        //ioctl ( STDOUT_FILENO, TCIFLUSH, 0 ); // console
+        //ioctl ( STDERR_FILENO, TCIFLUSH, 0 ); // regular file
+        //ioctl ( 4,             TCIFLUSH, 0 ); // invalid?
+        
+        // invalid limits
+        //ioctl ( -1, -1, 0 );
+        //ioctl ( 33, -1, 0 );
+
+        // 1 = Virtual Console.
+        // Changing the color.
+        // ok: it is working
+        //ioctl(1, 1000,COLOR_CYAN);
+        //ioctl(1, 1001, 10);  //change x
+        //ioctl(1, 1002, 10);  //change y
+        //ioctl(1, 1003,  2);  //switch to the virtual console 2. 
+        
+        printf ("done\n");
+        goto exit_cmp;
+    }
 
     if ( strncmp(prompt,"winmax",6) == 0 )
     {

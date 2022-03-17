@@ -1,4 +1,7 @@
 
+// termios.h
+// ring0, kernel base.
+
 // #todo
 // kernel side termios support.
 
@@ -16,9 +19,8 @@
 // control functions.
 
 
-
 #ifndef _TERMIOS_H
-#define _TERMIOS_H
+#define _TERMIOS_H    1
 
 
 // Types.
@@ -199,8 +201,6 @@ struct termios
 #define  _POSIX_VDISABLE  (cc_t)0xFF
 
 
-
-
 /* Values for the baud rate settings.  POSIX Table 7-6. */
 #define  B0      0x0000  /* hang up the line */
 #define  B50     0x1000  /* 50 baud */
@@ -221,7 +221,6 @@ struct termios
 
 
 
-
 /* Optional actions for tcsetattr().  POSIX Sec. 7.2.1.2. */
 #define  TCSANOW    1  /* changes take effect immediately */
 #define  TCSADRAIN  2  /* changes take effect after output is done */
@@ -232,21 +231,22 @@ struct termios
 //#endif
 
 
-
-/* Queue_selector values for tcflush().  POSIX Sec. 7.2.2.2. */
+/* 
+ * Queue_selector values for tcflush(). 
+ * POSIX Sec. 7.2.2.2. 
+ */
 
 /* flush accumulated input data */
 //flushes data received but not read. 
-#define  TCIFLUSH     1
+#define  TCIFLUSH  1
 
 /* flush accumulated output data */
 //flushes data written but not transmitted. 
-#define  TCOFLUSH     2
+#define  TCOFLUSH  2
 
 /* flush accumulated input and output data */
 //flushes both data received but not read, and data written but not transmitted. 
-#define  TCIOFLUSH    3
-
+#define  TCIOFLUSH  3
 
 
 /* Action values for tcflow().  POSIX Sec. 7.2.2.2. */

@@ -1,4 +1,7 @@
-// File: termios.h
+
+// termios.h
+// ring3/ring0 client-side library.
+// Not inside the kernel base.
 
 //suporte ao gerenciamento de terminais.
 //http://man7.org/linux/man-pages/man3/termios.3.html
@@ -14,10 +17,8 @@
 // control functions.
 
 
-
 #ifndef _TERMIOS_H
-#define _TERMIOS_H
-
+#define _TERMIOS_H    1
 
 
 /* Indices into c_cc array.  Default values in parentheses. POSIX Table 7-5. */
@@ -38,13 +39,10 @@
 #define  NCCS  20  
 
 
-
 /* Terminal input output data types. */
-
 typedef unsigned char   cc_t;      // Terminal special characters.
 typedef unsigned int    speed_t;   // Terminal baud rates.
 typedef unsigned short  tcflag_t;  // Terminal modes.
-
 
 
 /* 
@@ -54,7 +52,6 @@ typedef unsigned short  tcflag_t;  // Terminal modes.
  * (unsigned char)
  */
 
-
 #ifndef _POSIX_VDISABLE
 #define  _POSIX_VDISABLE  0xff
 #endif
@@ -62,7 +59,6 @@ typedef unsigned short  tcflag_t;  // Terminal modes.
 #ifndef _POSIX_SOURCE
 #define  CCEQ(val, c)  ((c) == (val) ? (val) != _POSIX_VDISABLE : 0)
 #endif
-
 
 
 
@@ -209,7 +205,6 @@ struct termios
 #define  B38400  0xF000  /* 38400 baud */
 
 
-
 /*
 #ifndef _POSIX_SOURCE
 #define B7200	7200
@@ -225,31 +220,33 @@ struct termios
 */
 
 
+/* 
+ * Optional actions for tcsetattr().  
+ * POSIX Sec. 7.2.1.2. 
+ */
 
-
-
-
-/* Optional actions for tcsetattr().  POSIX Sec. 7.2.1.2. */
 #define  TCSANOW    1  /* changes take effect immediately */
 #define  TCSADRAIN  2  /* changes take effect after output is done */
 #define  TCSAFLUSH  3  /* wait for output to finish and flush input */
 
 
 
-
-/* Queue_selector values for tcflush().  POSIX Sec. 7.2.2.2. */
+/* 
+ * Queue_selector values for tcflush().  
+ * POSIX Sec. 7.2.2.2. 
+ */
 
 /* flush accumulated input data */
 //flushes data received but not read. 
-#define TCIFLUSH    1
+#define TCIFLUSH  1
 
 /* flush accumulated output data */
 //flushes data written but not transmitted. 
-#define TCOFLUSH    2
+#define TCOFLUSH  2
 
 /* flush accumulated input and output data */
 //flushes both data received but not read, and data written but not transmitted. 
-#define TCIOFLUSH    3
+#define TCIOFLUSH  3
 
 
 /* Action values for tcflow().  POSIX Sec. 7.2.2.2. */

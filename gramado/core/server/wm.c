@@ -220,6 +220,8 @@ void __update_fps(void)
 // Called by xxxCreateWindow
 // >>> No checks
 // IN: window, color, color, color, color.
+// color1: left,top
+// color2: right, bottom
 void 
 __draw_button_borders(
     struct gws_window_d *w,
@@ -229,7 +231,7 @@ __draw_button_borders(
     unsigned int outer_color )
 {
 
-    debug_print("__draw_button_borders:\n");
+    //debug_print("__draw_button_borders:\n");
 
 
 // This is the window for relative positions.
@@ -243,6 +245,7 @@ __draw_button_borders(
 // board1, borda de cima e esquerda.
 
 // Cima
+// top, top+1,top+2
     rectBackbufferDrawRectangle ( 
         w->left+1, w->top, 
         w->width-2, 1, 
@@ -257,6 +260,7 @@ __draw_button_borders(
         color1, TRUE,0 );
 
 // Esq
+// left, left+1, left+2
     rectBackbufferDrawRectangle ( 
         w->left, w->top+1, 
         1, w->height-2,
@@ -276,12 +280,13 @@ __draw_button_borders(
 // board2, borda direita e baixo.
 
 // Dir
+// right-3, right-2, right-1
     rectBackbufferDrawRectangle ( 
-        ((w->left) + (w->width) -1 -1 -1), 
-        w->top+1+1, 
+        ((w->left) + (w->width) -1), 
+        w->top+1, 
         1, 
-        w->height-4, 
-        color2_light, TRUE, 0 );
+        w->height-2, 
+        outer_color, TRUE, 0 );
     rectBackbufferDrawRectangle ( 
         ((w->left) + (w->width) -1 -1), 
         w->top+1, 
@@ -289,27 +294,29 @@ __draw_button_borders(
         w->height-2, 
         color2, TRUE, 0 );
     rectBackbufferDrawRectangle ( 
-        ((w->left) + (w->width) -1), 
-        w->top+1, 
+        ((w->left) + (w->width) -1 -1 -1), 
+        w->top+1+1, 
         1, 
-        w->height-2, 
-        outer_color, TRUE, 0 );
+        w->height-4, 
+        color2_light, TRUE, 0 );
+
 
 // Baixo
+// bottom-1, bottom-2, bottom-3
     rectBackbufferDrawRectangle ( 
-        w->left+1+1, ( (w->top) + (w->height) -1 -1 -1),  
-        w->width-4, 1, 
-        color2_light, TRUE, 0 );
+        w->left+1, ( (w->top) + (w->height) -1 ),  
+        w->width-2, 1, 
+        outer_color, TRUE, 0 );
     rectBackbufferDrawRectangle ( 
         w->left+1, ( (w->top) + (w->height) -1 -1),  
         w->width-2, 1, 
         color2, TRUE, 0 );
     rectBackbufferDrawRectangle ( 
-        w->left+1, ( (w->top) + (w->height) -1 ),  
-        w->width-2, 1, 
-        outer_color, TRUE, 0 );
+        w->left+1+1, ( (w->top) + (w->height) -1 -1 -1),  
+        w->width-4, 1, 
+        color2_light, TRUE, 0 );
 
-    debug_print("__draw_button_borders: done\n");
+    //debug_print("__draw_button_borders: done\n");
 }
 
 
@@ -1879,7 +1886,7 @@ void __probe_tb_botton_hover(long long1, long long2)
 
                 if(Status==TRUE)
                 {
-                    yellow_status("oops");
+                    //yellow_status("oops");
                     //rtl_reboot();
                     // Register the hover window.
                     mousehover_window = 
@@ -1895,6 +1902,9 @@ void __probe_tb_botton_hover(long long1, long long2)
 
 
 // Talvez precisaremos de mais parametros.
+// The keyboard input messages will affect
+// the window with focus.
+// For the mouse input, the window has a NULL pointer.
 unsigned long 
 wmProcedure(
     struct gws_window_d *window,
@@ -2045,9 +2055,9 @@ wmProcedure(
         break;
 
     case GWS_MousePressed:
-        if(long1==0){ yellow_status("P0"); }
-        if(long1==1){ yellow_status("P1"); }
-        if(long1==2){ yellow_status("P2"); }
+        //if(long1==0){ yellow_status("P0"); }
+        //if(long1==1){ yellow_status("P1"); }
+        //if(long1==2){ yellow_status("P2"); }
 
         // #test
         // em qual botão.
@@ -2065,14 +2075,14 @@ wmProcedure(
         break;
 
     case GWS_MouseReleased:
-        if(long1==0){ yellow_status("R0"); }
+        //if(long1==0){ yellow_status("R0"); }
         //if(long1==1){ yellow_status("R1"); wm_update_desktop(); return 0; }
         if(long1==1){ 
-            yellow_status("R1"); 
-            create_main_menu(8,8);
+            //yellow_status("R1"); 
+            //create_main_menu(8,8);
             return 0; 
         }
-        if(long1==2){ yellow_status("R2"); return 0; }
+        //if(long1==2){ yellow_status("R2"); return 0; }
         //if(long1==1){ create_main_menu(mousex,mousey); return 0; }
         //if(long1==1){ create_main_menu(mousex,mousey); return 0; }
 
@@ -2081,7 +2091,8 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            create_main_menu(8,8);
+            yellow_status("0");
+            //create_main_menu(8,8);
             //wm_update_active_window();
         }
 
@@ -2090,8 +2101,8 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            //#fail rtl_clone_and_execute("editor.bin");
             yellow_status("1");
+            //#fail rtl_clone_and_execute("editor.bin");
         }
 
         //tb_button[2]
@@ -2099,8 +2110,8 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            //#fail rtl_clone_and_execute("fileman.bin");
             yellow_status("2");
+            //#fail rtl_clone_and_execute("fileman.bin");
         }
 
         //tb_button[3]
@@ -2108,8 +2119,8 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            //#fail rtl_clone_and_execute("terminal.bin");
             yellow_status("3");
+            //#fail rtl_clone_and_execute("terminal.bin");
         }
 
         return 0;
@@ -2285,7 +2296,7 @@ wmHandler(
         //#debug
         //if( msg == GWS_MousePressed ){ printf("%d\n",long1); }
         r = (unsigned long) wmProcedure(
-                (struct gws_window_d *) 0,
+                NULL,  //(struct gws_window_d *) 0,
                 (int) msg,
                 (unsigned long) long1,
                 (unsigned long) long2 ); 
@@ -3155,8 +3166,8 @@ redraw_window (
             //case BS_PRESS:
             case BS_PRESSED:
                 Selected = 1;
-                border1 = GWS_COLOR_BUTTONSHADOW3;
-                border2 = GWS_COLOR_BUTTONHIGHLIGHT3;
+                border1 = xCOLOR_GRAY1;  //GWS_COLOR_BUTTONSHADOW3;
+                border2 = COLOR_WHITE; //GWS_COLOR_BUTTONHIGHLIGHT3;
                 break;
 
             case BS_HOVER:
@@ -3173,8 +3184,8 @@ redraw_window (
             case BS_DEFAULT:
             default: 
                 Selected = 0;
-                border1 = GWS_COLOR_BUTTONHIGHLIGHT3;
-                border2 = GWS_COLOR_BUTTONSHADOW3;
+                border1 = COLOR_WHITE;  //GWS_COLOR_BUTTONHIGHLIGHT3;
+                border2 = xCOLOR_GRAY1;   //GWS_COLOR_BUTTONSHADOW3;
                 break;
         };
         
@@ -3195,9 +3206,9 @@ redraw_window (
             // #todo: veja como foi feito na hora da criaçao do botao.
             __draw_button_borders(
                 (struct gws_window_d *)window,
-                (unsigned int) border1, //buttonBorderColor1,
-                (unsigned int) border2, //buttonBorderColor2,
-                (unsigned int) xCOLOR_GRAY5, //buttonBorderColor2_light,
+                (unsigned int) border1,        //buttonBorderColor1,
+                (unsigned int) border2,        //buttonBorderColor2,
+                (unsigned int) xCOLOR_GRAY5,   //buttonBorderColor2_light,
                 (unsigned int) COLOR_BLACK );  //buttonBorder_outercolor );
              
             // Button label

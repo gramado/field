@@ -2212,6 +2212,7 @@ int sys_initialize_component (int n)
 // Called by sc82 in sci.c
 int sys_ioctl ( int fd, unsigned long request, unsigned long arg )
 {
+    int retvalue = (-1);
 
     debug_print ("sys_ioctl: [FIXME] \n");
 
@@ -2225,10 +2226,15 @@ int sys_ioctl ( int fd, unsigned long request, unsigned long arg )
 
 // Enquanto sys_ioctl eh chamada pelos applicativos,
 // io_ioctl eh chamada pelas rotinas dentro do kernel.
-// See: io.c
+// See: drivers/io.c
 
-    return (int) io_ioctl (fd,request,arg);
-    //return -1;
+    retvalue = (int) io_ioctl(fd,request,arg);
+
+    if( retvalue<0){
+        printf("sys_ioctl: io_ioctl fail\n");
+    }
+    
+    return retvalue;
 }
 
 

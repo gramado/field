@@ -406,10 +406,8 @@ int gwssrv_init_globals(void)
 
 
 /*
- ************************************
  * gwsInit:
  *     Initialize the server. 
- *
  */
 
 // Called by initGraphics() in main.c

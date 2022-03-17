@@ -52,11 +52,8 @@
 #define UNPREEMPTABLE  0    // No
 
 
-
-
-
-	//#importante
-	//razões para esperar
+//#importante
+//razões para esperar
 	//#todo: isso precisa ser inicializado.
 	//@todo: tem que fazer um enum para enumerar as razões.
 	//o índice é o selecionador da razão pela 
@@ -160,14 +157,26 @@ typedef enum {
 
 typedef enum {
 
-	INITIALIZED,    //0 Earth, Criado o contexto e parâmetros.
-	STANDBY,        //1 Earth, Pronta para rodar pela primeira vez. Ir para o 'espaço'.
-	ZOMBIE,         //2 Earth, Terminou a execução. Voltou para a 'terra'.
-	DEAD,           //3 Earth, Deleted.
-	READY,          //4 Space, Thread is ready to run again.
-	RUNNING,        //5 Space, Thread is currently running.
-	WAITING,        //6 Space, Thread is waiting.
-	BLOCKED,        //7 Space, Thread is blocked by an event.
+//0 Earth, Criado o contexto e parâmetros.
+    INITIALIZED,
+//1 Earth, Pronta para rodar pela primeira vez. 
+//         Ir para o 'espaço'.
+    STANDBY,
+//2 Earth, Terminou a execução. Voltou para a 'terra'.
+    ZOMBIE,
+//3 Earth, Deleted.
+    DEAD,
+
+//----
+
+//4 Space, Thread is ready to run again.
+    READY,
+//5 Space, Thread is currently running.
+    RUNNING,
+//6 Space, Thread is waiting.
+    WAITING,
+//7 Space, Thread is blocked by an event.
+    BLOCKED,
 
 }thread_state_t;
 
@@ -1007,10 +1016,9 @@ struct thread_d *create_thread (
     struct window_d   *window,
     unsigned long init_rip, 
     unsigned long init_stack, 
-    int pid, 
+    pid_t pid, 
     char *name,
     int iopl );
-
 
 
 // =====

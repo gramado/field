@@ -463,16 +463,14 @@ void *xxxCreateWindow (
 // Border
 //
 
-    // #
-    // Improvisando uma largura de borda.
-    // Talvez devamos receber isso via parâmetros.
+// #
+// Improvisando uma largura de borda.
+// Talvez devamos receber isso via parâmetros.
+// Ou ser baseado no estilo.
 
-    unsigned int border_size = 0;
-    unsigned int border_color = COLOR_BORDER;
-
-
+    //unsigned int border_size = METRICS_BORDER_SIZE;
+    //unsigned int border_color = COLOR_BORDER;
     unsigned int __tmp_color=0;
-
 
 
 // Device context
@@ -676,9 +674,8 @@ void *xxxCreateWindow (
 
     memset( window, 0, sizeof(struct gws_window_d) );
 
-    window->used   = TRUE;
-    window->magic  = 1234;
-
+    window->used = TRUE;
+    window->magic = 1234;
 
 //
 // Locked
@@ -1609,8 +1606,8 @@ void *xxxCreateWindow (
             default: 
                 buttonFocus = FALSE;
                 buttonSelected = FALSE;
-                buttonBorderColor1       = COLOR_WHITE;
-                buttonBorderColor2       = xCOLOR_GRAY3; 
+                buttonBorderColor1       = COLOR_WHITE;  // left/top
+                buttonBorderColor2       = xCOLOR_GRAY3; // right/bottom
                 buttonBorderColor2_light = xCOLOR_GRAY5;
                 buttonBorder_outercolor  = COLOR_BLACK;
                 break;
@@ -1642,7 +1639,8 @@ void *xxxCreateWindow (
             // podermos chamar a rotina redraw para repintar 
             // as bordas do botao.
             // See: wm.c
-
+            // color1: left/top
+            // color2: right/bottom
             __draw_button_borders(
                 (struct gws_window_d *) window,
                 (unsigned int) buttonBorderColor1,

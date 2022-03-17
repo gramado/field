@@ -447,7 +447,8 @@ pid_t active_process;    // This is the process with the active thread.
 // ------
 
 // See: ps/thread.c
-extern int current_thread;    // Currently having the processing time.
+//extern int current_thread;    // Currently having the processing time.
+extern tid_t current_thread;    // Currently having the processing time.
 
 int foreground_thread;
 

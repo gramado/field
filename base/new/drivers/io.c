@@ -53,59 +53,6 @@ int ioInit(void)
 // Called by sys_ioctl() in sys.c
 // But this routine can be called by the routines inside the kernel.
 
-int 
-io_ioctl ( 
-    int fd, 
-    unsigned long request, 
-    unsigned long arg )
-{
-
-    struct process_d *p;
-    file *f;
-
-    int ObjectType = -1;
-
-
-    debug_print ("io_ioctl: [TODO]\n");
-
-
-    pid_t current_process = (pid_t) get_current_process();
-
-// fd must to be on open file descriptor.
-
-    if ( fd<0 || fd>31 ){
-       debug_print("io_ioctl: [FAIL] Invalid fd\n");
-       return -1;  //EBADF
-    }
-
-// #bugbug
-// arg is the address for the arguments.
-// We are using argument not as an address sometimes.
-// it depends on the request number.
-
-    if (current_process<0 || 
-        current_process >= PROCESS_COUNT_MAX)
-    {
-        return -1;
-    }
-
-// #todo
-// Check the arg pointer validation
-// EFAULT
-// But we will not use this argument in all the cases.
-
-    p = (struct process_d *) processList[current_process];
-
-    if ( (void *) p == NULL ){
-        debug_print("io_ioctl: [FAIL] p fail\n");
-        return -1;
-    }
-
-    if ( p->used != TRUE || p->magic != 1234 ){
-        debug_print("io_ioctl: [FAIL] validation fail\n");
-        return -1;
-    }
-
 // pega o arquivo.
 // checa o tipo de objeto.
 // Isso deve ser usado principalmente com dispositivos 
@@ -120,9 +67,33 @@ io_ioctl (
 // Now we can use a swit to call different
 // functions, as tty_ioctl etc.
 
-    f = (file *) p->Objects[fd];
+int 
+io_ioctl ( 
+    int fd, 
+    unsigned long request, 
+    unsigned long arg )
+{
 
-    if ( (void *) f == NULL ){
+    file *f;
+
+    int ObjectType = -1;
+
+    debug_print ("io_ioctl: [TODO]\n");
+
+// fd must to be on open file descriptor.
+
+    if ( fd<0 || fd>31 )
+    {
+       debug_print("io_ioctl: [FAIL] Invalid fd\n");
+       return -1;  //EBADF
+    }
+
+// Get file pointer.
+
+    f = (file *) __get_file_from_fd(fd);
+
+    if ( (void *) f == NULL )
+    {
         debug_print("io_ioctl: [FAIL] f\n");
         return -1;
     }

@@ -4,7 +4,8 @@
 #include <kernel.h>
 
 
-int current_thread=0;
+//int current_thread=0;
+tid_t current_thread=0;
 
 // Thread stats
 unsigned long __GetThreadStats ( int tid, int index )
@@ -783,7 +784,7 @@ struct thread_d *create_thread (
     struct window_d   *window,
     unsigned long init_rip, 
     unsigned long init_stack, 
-    int pid, 
+    pid_t pid, 
     char *name,
     int iopl )
 {
