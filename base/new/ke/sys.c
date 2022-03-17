@@ -164,6 +164,7 @@ unsigned long sys_get_system_metrics ( int n )
 
 
 // Only ring3 for now.
+// OUT: ?
 void *sys_create_process ( 
     struct room_d     *room,
     struct desktop_d  *desktop,
@@ -174,8 +175,8 @@ void *sys_create_process (
     char *name,
     unsigned long iopl ) 
 {
-
     struct process_d *new;
+
     char NewName[32];
 
 //
@@ -263,6 +264,8 @@ void *sys_create_process (
     // Switch back
     x64_load_pml4_table( old_pml4 );
 
+// done:
+
     return (void*) new;
 
 // ==============
@@ -271,7 +274,7 @@ fail:
     printf("sys_create_process: fail\n");
     refresh_screen();
 
-    // Switch
+    // Switch back
     x64_load_pml4_table( old_pml4 );
 
     return NULL;

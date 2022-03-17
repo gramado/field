@@ -1019,6 +1019,7 @@ file *process_get_file ( int fd );
 
 int process_get_tty (int pid);
 
+// Create and initialize a process structure.
 struct process_d *__create_and_initialize_process_object(void);
 
 

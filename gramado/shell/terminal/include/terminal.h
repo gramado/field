@@ -5,9 +5,12 @@
 
 
 
-
 //#todo: fazer estrutura para gerenciar a sequencia.
+// #todo: essas coisas podem ir para main.c
 int __sequence_status = 0;
+
+
+// ===============================
 
 //
 // CSI support
@@ -15,12 +18,15 @@ int __sequence_status = 0;
 
 //#test
 //Control Sequence Introducer
+// #todo: essas coisas podem ir para main.c
 
 #define CSI_BUFFER_SIZE 128
 char CSI_BUFFER[ CSI_BUFFER_SIZE ];
 
 int __csi_buffer_tail = 0;
 int __csi_buffer_head = 0;
+
+// ===============================
 
 
 //
@@ -621,8 +627,9 @@ void cr (void);
 void ri (void);
 void del (void);
 
-//#test
-//void tputc (int fd,char *c, int len);
+
+void __test_escapesequence(int fd);
+void tputstring( int fd, char *s );
 void tputc (int fd, int window, int c, int len);
 
 

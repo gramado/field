@@ -1241,6 +1241,96 @@ void __smp_testing(void)
     refresh_screen();
 }
 
+void __dummy_thread(void)
+{
+    while(1){}
+}
+
+void __test_process(void)
+{
+    struct process_d *p;
+
+    // Wrapper
+    // Only ring3 for now.
+    // See: sys.c
+    p = (void*) sys_create_process ( 
+            NULL, NULL, NULL,       // room, desktop, window
+            0,                      // Reserved
+            PRIORITY_HIGH,          // priority
+            get_current_process(),  // ppid
+            "no-name",              // name
+            RING3 );                // iopl 
+
+    if( (void*)p==NULL ){
+        printf("p fail\n");
+        return;
+    }
+
+    //show_process_information();
+        
+// ok, it is working.
+// Create and initialize a process structure.
+
+    //__create_and_initialize_process_object();
+
+}
+
+
+void __test_thread(void)
+{
+    struct thread_d *t;
+    t = (struct thread_d *) create_thread ( 
+                                NULL, NULL, NULL,   //room desktop window 
+                                    __dummy_thread, //init_rip, 
+                                    PRIORITY_HIGH, 
+                                    get_current_process(), 
+                                    "no-name",
+                                    RING0 ); 
+
+    if( (void*)t==NULL ){
+        printf("fail\n");
+        return;
+    }
+
+    //show_slots();
+}
+
+
+void __test_path(void)
+{
+    int status = -1;
+
+    //unsigned long tmp_size = (512*4096);    // 512*4096 = 2MB
+    void *b; //= (void *) allocPages ( 512 );
+
+// ===================================
+// #test: Testando carregar usando path.
+    //char PathAddress[] = "/GRAMADO/TEST.BMP";
+    //char PathAddress[] = "/GRAMADO/TEST.TXT";
+    //char PathAddress[] = "/GRAMADO/FOLDER/TEST2.TXT";
+    char PathAddress[] = "/GRAMADO/FOLDER/FOLDER2/TEST3.TXT";
+// =========================================
+
+    b = (void *) allocPages(32);   //32 KB
+    if( (void*) b == NULL ){
+        printf("b fail\n");
+        return;
+    }
+
+    status = (int) fs_load_path ( 
+                       (const char*) PathAddress, 
+                       (unsigned long) b,
+                       (unsigned long) 32*4096 );  //32KB
+    if(status<0){
+        printf("fail\n");
+        return;
+    }
+
+    printf("Data:{%s}\n",b);
+}
+
+
+// =====================================
 
 // Compare the strings that were
 // typed into the kernel virtual console.
@@ -1248,19 +1338,9 @@ int consoleCompareStrings(void)
 {
     int status=0;
 
-    //unsigned long tmp_size = (512*4096);    // 512*4096 = 2MB
-    void *__buffer; //= (void *) allocPages ( 512 );
-
-// ===================================
-// #test: Testando carregar usando path.
-    //char __path[] = "/GRAMADO/TEST.BMP";
-    //char __path[] = "/GRAMADO/TEST.TXT";
-    //char __path[] = "/GRAMADO/FOLDER/TEST2.TXT";
-    char __path[] = "/GRAMADO/FOLDER/FOLDER2/TEST3.TXT";
-// =========================================
-
     debug_print("consoleCompareStrings: \n");
     printf("\n");
+
 
     if ( strncmp( prompt, "smp", 3 ) == 0 )
     {
@@ -1318,26 +1398,18 @@ int consoleCompareStrings(void)
 // 'path'
     if ( strncmp(prompt,"path",4) == 0 )
     {
-        __buffer = (void *) allocPages(32);   //32 KB
-        status = (int) fs_load_path ( 
-                           (const char*)   __path, 
-                           (unsigned long) __buffer,
-                           (unsigned long) 32*4096 );  //32KB
-        if(status<0){
-            printf("fail\n");
-        }
-        if(status>=0){
-            printf("Data:{%s}\n",__buffer);
-        }
+        __test_path();
         goto exit_cmp;
     }
 
 // ========
 // 'process'
-    if ( strncmp( prompt, "process", 7 ) == 0 ){
-        show_process_information();
+    if ( strncmp( prompt, "process", 7 ) == 0 )
+    {
+        __test_process();
         goto exit_cmp;
     }
+
 
 // ========
 // 'ps2'
@@ -1358,10 +1430,12 @@ int consoleCompareStrings(void)
         goto exit_cmp;
     }
 
+
 // ========
 // 'thread'
-    if ( strncmp( prompt, "thread", 6 ) == 0 ){
-        show_slots();
+    if ( strncmp( prompt, "thread", 6 ) == 0 )
+    {
+        __test_thread();
         goto exit_cmp;
     }
 
@@ -1672,20 +1746,17 @@ console_write (
         goto fail;
     }
 
+//
+// Write string
+//   
 
-    //
-    // Write string
-    //   
+// Isso eh o contador de estagios do escape sequence.
+// Vamos percorret todos os bytes da sequencia quando
+// encontrarmos o marcador.
+// #todo
+// Esse marcador de estagio deve ser especifico para
+// cada console. CONSOLE[i].esc_stage
 
-
-    // Isso eh o contador de estagios do escape sequence.
-    // Vamos percorret todos os bytes da sequencia quando
-    // encontrarmos o marcador.
-    
-    // #todo
-    // Esse marcador de estagio deve ser especifico para
-    // cada console. CONSOLE[i].esc_stage
-    
     __EscapeSequenceStage = 0; 
 
      StringSize = count;
