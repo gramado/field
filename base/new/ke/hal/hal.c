@@ -226,7 +226,6 @@ void hal_test_speaker (void){
 
 
 /*
- ********************************************************
  * init_hal:
  * Initialize kernel base hal.
  *     Archtecture independent inicialization ...

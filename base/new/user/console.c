@@ -1361,6 +1361,7 @@ int consoleCompareStrings(void)
     }
 
     // disk
+    // See: ata.c
     if ( strncmp( prompt, "disk", 4 ) == 0 ){
         printf("disk: Show ide info:\n");
         //show_ide_info();

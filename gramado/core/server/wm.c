@@ -1513,6 +1513,42 @@ void wm_remove_window_from_list_and_kill( struct gws_window_d *window)
 
 // ====================
 
+/*
+DEC	HEX	CHARACTER
+0	0	NULL
+1	1	START OF HEADING (SOH)
+2	2	START OF TEXT (STX)
+3	3	END OF TEXT (ETX)
+4	4	END OF TRANSMISSION (EOT)
+5	5	END OF QUERY (ENQ)
+6	6	ACKNOWLEDGE (ACK)
+7	7	BEEP (BEL)
+8	8	BACKSPACE (BS)
+9	9	HORIZONTAL TAB (HT)
+10	A	LINE FEED (LF)
+11	B	VERTICAL TAB (VT)
+12	C	FF (FORM FEED)
+13	D	CR (CARRIAGE RETURN)
+14	E	SO (SHIFT OUT)
+15	F	SI (SHIFT IN)
+16	10	DATA LINK ESCAPE (DLE)
+17	11	DEVICE CONTROL 1 (DC1)
+18	12	DEVICE CONTROL 2 (DC2)
+19	13	DEVICE CONTROL 3 (DC3)
+20	14	DEVICE CONTROL 4 (DC4)
+21	15	NEGATIVE ACKNOWLEDGEMENT (NAK)
+22	16	SYNCHRONIZE (SYN)
+23	17	END OF TRANSMISSION BLOCK (ETB)
+24	18	CANCEL (CAN)
+25	19	END OF MEDIUM (EM)
+26	1A	SUBSTITUTE (SUB)
+27	1B	ESCAPE (ESC)
+28	1C	FILE SEPARATOR (FS) RIGHT ARROW
+29	1D	GROUP SEPARATOR (GS) LEFT ARROW
+30	1E	RECORD SEPARATOR (RS) UP ARROW
+31	1F	UNIT SEPARATOR (US) DOWN ARROW
+*/
+
 // Local worker
 // The color is red.
 // We need to create a parameter for that.
@@ -1523,6 +1559,11 @@ __draw_char_into_the_window(
 {
 // draw char support.
     unsigned char _string[4];
+
+// Vamos checar se e' um controle ou outro tipo de char.
+    unsigned char ascii = (unsigned char) ch;
+
+    int is_control=FALSE;
 
 // Invalid window
     if( (void*)window == NULL)
@@ -1535,6 +1576,14 @@ __draw_char_into_the_window(
     if(ch<0)
         return;
 
+// It's a control.
+// We can't print a control char.
+// See:
+// https://en.wikipedia.org/wiki/Control_character
+    if ( ascii < '\x20' || ascii == 0177 )
+    {
+        is_control=TRUE;
+    }
 
 // Invalid char
 // UP, LEFT, RIGHT, DOWN
@@ -1557,7 +1606,9 @@ __draw_char_into_the_window(
         return;
     }
 
+
 // Backspace
+// (control=0x0E)
 // #todo: 
 // Isso tem que voltar apagando.
     if(ch==VK_BACK)
@@ -1571,6 +1622,8 @@ __draw_char_into_the_window(
     }
 
 // TAB
+// (control=0x0F)
+// O ALT esta pressionado?
     if(ch==VK_TAB)
     {
         window->ip_x += 8;
@@ -1612,8 +1665,13 @@ __draw_char_into_the_window(
 
 // #todo
 // Isso pode receber char se tiver em modo de edição.
+// Para editarmos a label.
     if( window->type == WT_ICON )
+    {
+        //#todo: edit label if in edition mode.
+        //#todo: open application if its a desktop icon.
         return;
+    }
 
 //
 // Editbox
@@ -1621,7 +1679,19 @@ __draw_char_into_the_window(
 
 // Print the char into an window 
 // of type Editbox.
+// Ascci printable chars: (0x20~0x7F)
+// Terry's font has more printable chars.
 
+//
+// Printable chars.
+//
+
+    // Not printable.
+    if (ascii < 0x20 || ascii > 0x7F )
+    {
+        return;
+    }
+    
     if( window->type == WT_EDITBOX ||
         window->type == WT_EDITBOX_MULTIPLE_LINES )
     {
@@ -2149,6 +2219,7 @@ wmProcedure(
             (int)msg,
             (unsigned long)long1,
             (unsigned long)long2);
+        
         return 0;
         break;
 

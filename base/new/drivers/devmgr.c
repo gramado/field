@@ -58,8 +58,8 @@ void devmgr_show_device_list(void)
     refresh_screen();
 }
 
+
 /*
- ********************************
  * init_device_manager:
  * 
  */

@@ -1,7 +1,5 @@
 /*
  * File: wm.h
- * 
- * 
  *     This header should be included by including "gws.h".
  */
 
@@ -9,14 +7,13 @@
 #ifndef  __LIBGWS_WM_H
 #define  __LIBGWS_WM_H    1
 
-
 // #todo:
 // Its a good choice using hexa instead of integer.
 // We need to change it in the whole system.
 
 
 // window messages.
-//**** 
+// 
 //window (1-19)  
 #define MSG_CREATE        1
 #define MSG_DESTROY       2
@@ -44,29 +41,31 @@
 #define GWS_GETFOCUS2     19
 
 
-
-//keyboard (20-29)
+// keyboard (20-29)
 #define MSG_KEYDOWN       20
 #define MSG_KEYUP         21
 #define MSG_SYSKEYDOWN    22
 #define MSG_SYSKEYUP      23
 
 
-
-//mouse (30 - 39)
-//tem uma lista de eventos de mouse em events.h
+// mouse (30 - 39)
+// Tem uma lista de eventos de mouse em events.h
 #define MSG_MOUSEKEYDOWN  30
 #define MSG_MOUSEKEYUP    31
-#define MSG_MOUSEBUTTONDOWN	30
-#define MSG_MOUSEBUTTONUP	31 
-#define MSG_MOUSEMOVE	    32
-#define MSG_MOUSEOVER	    33
-#define MSG_MOUSEWHEEL	    34
-#define MSG_MOUSEPRESSED	  35
-#define MSG_MOUSERELEASED	  36
-#define MSG_MOUSECLICKED	  37
-#define MSG_MOUSEENTERED	  38
-#define MSG_MOUSEEXITED	       39
+
+#define MSG_MOUSEBUTTONDOWN  30
+#define MSG_MOUSEBUTTONUP    31 
+
+#define MSG_MOUSEMOVE     32
+#define MSG_MOUSEOVER     33
+#define MSG_MOUSEWHEEL    34
+
+#define MSG_MOUSEPRESSED     35
+#define MSG_MOUSERELEASED    36
+
+#define MSG_MOUSECLICKED    37
+#define MSG_MOUSEENTERED    38
+#define MSG_MOUSEEXITED     39
 //#define MSG_MOUSEMOVEBYOFFSET
 //#define MSG_MOUSEMOVETOELEMENT
 
@@ -87,9 +86,9 @@
 #define MSG_RUN_PROCESS   47
 #define MSG_RUN_THREAD    48
 
-
-// Quando um comando é enviado para o console. ele será atendido pelo
-// módulo /sm no procedimento de janela do sistema.
+// ??
+// Quando um comando é enviado para o console 
+// ele será atendido pelo módulo /sm no procedimento de janela do sistema.
 // Todas as mensagens de console serão atencidas pelo procedimento de janela 
 // nessa mensagem.
 
@@ -97,9 +96,7 @@
 #define MSG_CONSOLE_SHUTDOWN 50
 #define MSG_CONSOLE_REBOOT   51
 
-
 #define MSG_DEVELOPER        52
-
 
 // Timer timeout.
 #define MSG_TIMER    53
@@ -113,7 +110,8 @@
 #define MSG_NETWORK_NOTIFY_PROCESS 56
 
 
-// mouse support: continuação ...
+// mouse support: 
+// continuação ...
 #define MSG_MOUSE_DOUBLECLICKED   60
 #define MSG_MOUSE_DRAG            61
 #define MSG_MOUSE_DROP            62
@@ -156,9 +154,20 @@
 #define MSG_GWS_CLIENTEVENT       2030
 #define MSG_GWS_NEXTEVENT         2031
 
+
 // The buffer has a protocol starting in the 5th long.
 // buffer[4] = ethernet header.
 #define MSG_GWS_PROTOCOL          3000   
+
+
+// Quit the process if it's possible.
+#define MSG_GWS_QUIT    4080
+
+
+// drain input 8080
+// switch focus 9090
+// refresh dirty rectangles 9091
+// update desktop 9092
 
 // ...
 

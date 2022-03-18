@@ -913,7 +913,6 @@ void *systemNull (void)
 
 
 /*
- *******************************
  * init_executive:
  *
  *     Initialize the kernel executive.
@@ -954,6 +953,11 @@ int init_executive (void)
 // #importante: 
 // Só depois de inicializarmos o ata 'e que podemos carregar 
 // alguma coisa.
+
+// #importante
+// Nessa hora ja temos as estruturas de disk e volume inicializadas.
+// entao as estruturas usadas pelo driver ata, pode
+// se registrar em disk ou volume.
 
     debug_print ("init_executive: ataDialog\n");
     ataDialog ( 1, FORCEPIO, FORCEPIO );

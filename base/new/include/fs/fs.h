@@ -7,8 +7,8 @@
 
 struct directory_facility_d
 {
-    unsigned long dir_address;
-    char          dir_name[9]; //8+1
+    unsigned long dir_address;  // va?
+    char          dir_name[9];  // 8+1
     int name_size;
     int initialized;
 };
@@ -75,7 +75,7 @@ struct cwd_d CWD;
 // -----------------
 
 #ifndef DIRECTORY_SEPARATOR
-# define DIRECTORY_SEPARATOR '/'
+# define DIRECTORY_SEPARATOR  '/'
 #endif
 
 #ifndef ISSLASH
@@ -112,8 +112,8 @@ struct cwd_d CWD;
 
 
 // FAT cache
-#define FAT_CACHE_LOADED        1
-#define FAT_CACHE_NOT_LOADED    0
+#define FAT_CACHE_LOADED       1
+#define FAT_CACHE_NOT_LOADED   0
 #define FAT_CACHE_SAVED        1
 #define FAT_CACHE_NOT_SAVED    0
 
@@ -235,16 +235,6 @@ struct softlink_d
 };
 
 
-struct fat_d
-{
-    unsigned long address;
-    int type;
-    //...
-};
-
-// See: fs_init_fat in fs.c
-
-struct fat_d  *fat;
 
 
  
@@ -259,10 +249,11 @@ struct dir_d
 {
     int used;
     int magic;
+
     int id;
 
-    struct inode_d *inode;
     file *_file;
+    struct inode_d *inode;
 
     pid_t pid;
     uid_t uid;
@@ -321,18 +312,47 @@ struct filesystem_d
 // Size of the entry in bytes.
     int entry_size; 
 
+
+// The whole filesystem size.
+// (tables + data)
+
+    unsigned long fs_first_lba;
+    unsigned long fs_last_lba;
+    unsigned long fs_size_in_sectors;
+
 // #bugbug
 // Thats specific for fat16.
 // fat16.
-    
-    unsigned long rootdir_address;   //endereço do rootdir
-    unsigned long rootdir_lba;       //lba
-    unsigned long fat_address;       //endereço da fat  
-    unsigned long fat_lba;           //lba
-    unsigned long dataarea_address;  //endereço do inicio da area de dados.
-    unsigned long dataarea_lba;      //lba
+
+// rootdir
+    unsigned long rootdir_address;      // endereço do rootdir
+    unsigned long rootdir_first_lba;    // first lba
+    unsigned long rootdir_last_lba;     // last lba
+    unsigned long rootdir_size_in_sectors;
+
+// fat 1
+    unsigned long fat_address;       // endereço da fat  
+    unsigned long fat_first_lba;     // first lba
+    unsigned long fat_last_lba;      // last lba
+    unsigned long fat_size_in_sectors;
+
+// fat2
+// ...
+
+// data area
+    unsigned long dataarea_address;      // endereço do inicio da area de dados.
+    unsigned long dataarea_first_lba;    // first lba
+    unsigned long dataarea_last_lba;     // last lba
+    unsigned long dataarea_size_in_sectors;
 
     //...
+
+// if this fs is a fat filesystem.
+    //struct fat_d *fat;
+
+// #todo
+    //struct volume_d *volume;
+    //struct disk_d *disk;
 
     // struct filesystem_d *next;
 };

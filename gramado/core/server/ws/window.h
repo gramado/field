@@ -156,11 +156,10 @@ struct gws_window_d *last_window;
 //...
 
 
-
+// #todo: Podemos colocar isso em outro lugar?
 // Contagem de janelas existentes.
 // precisa ser inicializada.
 unsigned long windows_count;
-
 
 int active_window;
 int window_with_focus;

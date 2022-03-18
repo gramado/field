@@ -1031,13 +1031,24 @@ int I_init (void)
        return FALSE;
     }
 
-// Storage:
-// disk, volume, vfs and fs.
+//
+// Storage
+//
 
+// Initialize the disk structure.
+// See: storage.c
     disk_init();
+
+// Initialize the disk structure.
+// It depends on the disk structures.
+// See: storage.c
     volume_init();
 
+
+//
 // fs
+//
+
     //vfsInit();
     fsInit();
     // ...

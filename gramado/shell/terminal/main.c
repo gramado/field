@@ -1003,6 +1003,43 @@ ESC [ 30;46 m         set black text (30) on cyan background (46)
 ESC [ 0 m             reset color and attributes
 */
 
+/*
+DEC	HEX	CHARACTER
+0	0	NULL
+1	1	START OF HEADING (SOH)
+2	2	START OF TEXT (STX)
+3	3	END OF TEXT (ETX)
+4	4	END OF TRANSMISSION (EOT)
+5	5	END OF QUERY (ENQ)
+6	6	ACKNOWLEDGE (ACK)
+7	7	BEEP (BEL)
+8	8	BACKSPACE (BS)
+9	9	HORIZONTAL TAB (HT)
+10	A	LINE FEED (LF)
+11	B	VERTICAL TAB (VT)
+12	C	FF (FORM FEED)
+13	D	CR (CARRIAGE RETURN)
+14	E	SO (SHIFT OUT)
+15	F	SI (SHIFT IN)
+16	10	DATA LINK ESCAPE (DLE)
+17	11	DEVICE CONTROL 1 (DC1)
+18	12	DEVICE CONTROL 2 (DC2)
+19	13	DEVICE CONTROL 3 (DC3)
+20	14	DEVICE CONTROL 4 (DC4)
+21	15	NEGATIVE ACKNOWLEDGEMENT (NAK)
+22	16	SYNCHRONIZE (SYN)
+23	17	END OF TRANSMISSION BLOCK (ETB)
+24	18	CANCEL (CAN)
+25	19	END OF MEDIUM (EM)
+26	1A	SUBSTITUTE (SUB)
+27	1B	ESCAPE (ESC)
+28	1C	FILE SEPARATOR (FS) RIGHT ARROW
+29	1D	GROUP SEPARATOR (GS) LEFT ARROW
+30	1E	RECORD SEPARATOR (RS) UP ARROW
+31	1F	UNIT SEPARATOR (US) DOWN ARROW
+*/
+
+
 // See: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 
 // void tputc (int fd, char *c, int len){
@@ -1776,75 +1813,77 @@ terminalProcedure (
 
 // ==================
 
-    switch(msg)
-    {
-        case MSG_KEYDOWN:
-            switch(long1)
-            {
-                case VK_RETURN:
-                    __on_return_key_pressed(fd);
-                    return 0;
-                    break;
+    switch(msg){
 
-                // draw the char using the window server
-                // Criar uma função 'terminal_draw_char()'
-                default:
-                    input(long1);
-                    // draw char
-                    gws_draw_char ( 
-                        fd, 
-                        window, 
-                        (cursor_x*8), 
-                        (cursor_y*8), 
-                        fg_color, 
-                        long1 );
+    //case MSG_QUIT:
+    //case 4080:
+        //exit(0);
+        //break;
+
+    case MSG_KEYDOWN:
+        switch(long1)
+        {
+            case VK_RETURN:
+                __on_return_key_pressed(fd);
+                return 0;
+                break;
+
+            // draw the char using the window server
+            // Criar uma função 'terminal_draw_char()'
+            default:
+                input(long1);
+                // draw char
+                gws_draw_char ( 
+                    fd, 
+                    window, 
+                    (cursor_x*8), 
+                    (cursor_y*8), 
+                    fg_color, 
+                    long1 );
                     
-                    gws_refresh_retangle(
-                        fd, 
-                        (cursor_x*8), (cursor_y*8), 8, 8 );
+                gws_refresh_retangle(
+                    fd, (cursor_x*8), (cursor_y*8), 8, 8 );
 
-                    // it works
-                    // refresh window
-                    // #bugbug: Is it too much.
-                    // We need to refresh only the dirty rectangles.
-                    // gws_refresh_window(fd,window);
+                // it works
+                // refresh window
+                // #bugbug: Is it too much.
+                // We need to refresh only the dirty rectangles.
+                // gws_refresh_window(fd,window);
+                // update cursor positions
+                // #todo: Create a helper for that this.
+                cursor_x++;
+                if( cursor_x >= Terminal.width_in_chars)
+                {
+                    cursor_x = Terminal.left;
+                    cursor_y++;
+                }
+                return 0;
+                break;
+        };
+        break;
 
-                    // update cursor positions
-                    // #todo: Create a helper for that this.
-                    cursor_x++;
-                    if( cursor_x >= Terminal.width_in_chars)
-                    {
-                        cursor_x = Terminal.left;
-                        cursor_y++;
-                    }
+    // #bugbug: Not working
+    // It's because the terminal is getting input
+    // from file, not from the control thread.
+    //case MSG_SYSKEYDOWN:
+    //    switch(long1){
+    //    case VK_F1: gws_clone_and_execute("browser.bin");  break;
+    //    case VK_F2: gws_clone_and_execute("editor.bin");   break;
+    //    case VK_F3: gws_clone_and_execute("fileman.bin");  break;
+    //    case VK_F4: gws_clone_and_execute("shutdown.bin"); break;
+    //    };
+    //    return 0;
+    //    break;
 
-                    return 0;
-
-                    break;
-            };
-            break;
-
-        // #bugbug: Not working
-        // It's because the terminal is getting input
-        // from file, not from the control thread.
-        //case MSG_SYSKEYDOWN:
-        //    switch(long1){
-        //    case VK_F1: gws_clone_and_execute("browser.bin");  break;
-        //    case VK_F2: gws_clone_and_execute("editor.bin");   break;
-        //    case VK_F3: gws_clone_and_execute("fileman.bin");  break;
-        //    case VK_F4: gws_clone_and_execute("shutdown.bin"); break;
-        //    };
-        //    return 0;
-        //    break;
-
-        default:
-            return 0;
-            break;
+    default:
+        return 0;
+        break;
     };
 
 // done
     return 0;
 }
+
 
 // local
 int __input_loop(int fd)

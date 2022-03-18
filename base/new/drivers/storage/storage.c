@@ -36,9 +36,9 @@ int disk_init (void)
     unsigned char BootDisk=0;
     int i=0;
 
-#ifdef KERNEL_VERBOSE
-    printf ("disk_init: Initializing..\n");
-#endif
+//#ifdef KERNEL_VERBOSE
+    //printf ("disk_init: Initializing..\n");
+//#endif
 
 
 //
@@ -71,7 +71,7 @@ int disk_init (void)
         panic ("disk_init: d\n");
     }
 
-    d->used  = (int) TRUE;
+    d->used = (int) TRUE;
     d->magic = (int) 1234;
 
 // This is the boot disk.
@@ -136,7 +136,8 @@ int diskShowDiskInfo ( int descriptor )
 
     printf ("\n\n");
 
-    if ( descriptor < 0 || descriptor > DISK_COUNT_MAX )
+    if ( descriptor < 0 || 
+         descriptor >= DISK_COUNT_MAX )
     {
         printf ("descriptor fail\n");
         goto fail;
@@ -148,30 +149,27 @@ int diskShowDiskInfo ( int descriptor )
     if ( (void *) d == NULL ){
         printf ("struct fail\n");
         goto fail;
-    } else {
+    }
 
-        if ( d->used != TRUE || d->magic != 1234 )
-        {
-            printf("flags fail\n");
-            goto fail;
-        }
+    if ( d->used != TRUE || d->magic != 1234 )
+    {
+        printf("flags fail\n");
+        goto fail;
+    }
 
-        printf ("disk %d - %s \n", d->id, d->name );
-        printf ("boot_disk={%d}\n",d->boot_disk_number);
-        printf ("diskType={%d}\n", d->diskType );
-        //printf ("name={%s}\n", d->name );
-        // ...
-        goto done;
-    };
+    printf ("disk %d - %s \n", d->id, d->name );
+    printf ("boot_disk = {%d}\n",d->boot_disk_number);
+    printf ("diskType  = {%d}\n", d->diskType );
+    //printf ("name={%s}\n", d->name );
+    // ...
 
-    goto done;
+//done:
+    printf ("done\n");
+    return 0;
 
 fail:
     printf("fail\n");
-    return (int) 1;
-done:
-    printf ("done\n");
-    return 0;
+    return (int) -1;
 }
 
 
@@ -190,77 +188,9 @@ void diskShowCurrentDiskInfo (void)
 // Called by service 251
 void disk_show_info (void)
 {
-    printf ("disk_show_info: #todo\n");
-    refresh_screen();
-
-/*
-    struct disk_d *disk;
     int i=0;
+    struct disk_d *disk;
 
-    // #test
-    int CurrentIDEChannel = -1;
-    int CurrentIDEdevice  = -1;
-    int BootTimeIDEChannel = -1;
-    int BootTimeIDEdevice  = -1;
-*/
-    
-/*
-    CurrentIDEChannel  = ata_get_current_ide_channel();
-    CurrentIDEdevice   = ata_get_current_ide_device();
-    BootTimeIDEChannel = ata_get_boottime_ide_channel();
-    BootTimeIDEdevice  = ata_get_boottime_ide_device();
-*/
-
-    //printf ("CurrentIDEChannel %d\n", CurrentIDEChannel);
-    //printf ("CurrentIDEdevice %d\n", CurrentIDEdevice);
-    //printf ("BootTimeIDEChannel %d\n", BootTimeIDEChannel);
-    //printf ("BootTimeIDEdevice %d\n", BootTimeIDEdevice);
-
-/*
-// ======================================================
-    printf("Current:  ");
-
-    if ( CurrentIDEChannel == ATA_PRIMARY )
-        printf("Primary ");
-    
-    if ( CurrentIDEChannel == ATA_SECONDARY )
-        printf("Secondary ");
-    
-
-    if ( CurrentIDEdevice == ATA_MASTER )
-        printf("Master ");
-    
-    if ( CurrentIDEdevice == ATA_SLAVE )
-        printf("Slave ");
-
-    printf("\n");
-// ======================================================
-*/
-
-/*
-// ======================================================
-    printf("Boottime:  ");
-
-    if ( BootTimeIDEChannel == ATA_PRIMARY )
-        printf("Primary ");
-    
-    if ( BootTimeIDEChannel == ATA_SECONDARY )
-        printf("Secondary ");
-    
-
-    if ( BootTimeIDEdevice == ATA_MASTER )
-        printf("Master ");
-    
-    if ( BootTimeIDEdevice == ATA_SLAVE )
-        printf("Slave ");
-
-    printf("\n");
-// ======================================================
-*/
-
-/*
-    // All disks in the list.
-    
     for (i=0; i<DISK_COUNT_MAX; i++)
     {
         disk = (struct disk_d *) diskList[i];
@@ -270,8 +200,6 @@ void disk_show_info (void)
             diskShowDiskInfo(i);
         }
     };
-*/
-
 }
 
 
@@ -293,179 +221,331 @@ void *disk_get_disk_handle ( int number )
 
 // ================================
 
+// local
+// Create vfs partition
+// Volume 0.
+int __create_vfs_partition(void)
+{
+    char name_buffer[32];
+
+
+// The main structure.
+
+    if ( (void *) storage == NULL ){
+        panic ("__create_vfs_partition: storage");
+    }
+
+
+//
+// Volume 0 - vfs
+//
+
+// Volume.
+
+    volume_vfs = (void *) kmalloc ( sizeof(struct volume_d) );
+
+    if ( (void *) volume_vfs == NULL ){
+        panic ("__create_vfs_partition: volume_vfs");
+
+    }
+
+    // #todo:
+    //volume_vfs->objectType = ?;
+    //volume_vfs->objectClass = ?;
+
+    volume_vfs->id = VFS_VOLUME_ID;
+
+// Sera usado pelo VFS.
+    volume_vfs->volumeType = VOLUME_TYPE_BUFFER;
+
+//
+// Disk
+//
+
+// The disk that the volume belongs to.
+    volume_vfs->disk = NULL;
+
+// The filesystem used by this volue.
+    volume_vfs->fs = NULL;
+
+
+// #todo
+// Volume limits.
+
+    volume_vfs->__first_lba=0;
+    volume_vfs->__first_lba=0;
+
+// These fields are not used in a vfs.
+    volume_vfs->VBR_lba=0;
+    volume_vfs->FAT1_lba=0;
+    volume_vfs->FAT2_lba=0;
+    volume_vfs->ROOT_lba=0;
+    volume_vfs->DATA_lba=0;
+
+// Name
+
+    //volume_vfs->name = "VOLUME 0"; 
+    sprintf ( (char *) name_buffer, "VOLUME-%d",volume_vfs->id);
+    volume_vfs->name = (char *) strdup ( (const char *) name_buffer);  
+
+// #todo
+// cmd
+
+    volume_vfs->cmd = "#TODO";
+
+// Finalizing
+
+    volume_vfs->used = (int) TRUE;
+    volume_vfs->magic = (int) 1234;
+
+    volumeList[VFS_VOLUME_ID] = (unsigned long) volume_vfs;
+
+    storage->vfs_volume = (struct volume_d *) volume_vfs; 
+
+// done:
+    return 0;
+}
+
+
+// local
+// Create boot partition.
+// Volume 1
+int __create_boot_partition(void)
+{
+    char name_buffer[32];
+
+
+    // The main structure.
+    if ( (void *) storage == NULL ){
+        panic ("__create_boot_partition: storage");
+    }
+
+// --------
+
+//
+// Volume 1 - Boot partition.
+//
+
+// Volume.
+
+    volume_bootpartition = (void *) kmalloc( sizeof(struct volume_d) );
+
+    if ( (void *) volume_bootpartition == NULL ){
+        panic ("__create_boot_partition: volume_bootpartition");
+    }
+
+// #todo:
+    //volume_bootpartition->objectType = ?;
+    //volume_bootpartition->objectClass = ?;
+
+// Sera usado pelo VFS.
+    volume_bootpartition->volumeType = VOLUME_TYPE_DISK_PARTITION;
+
+    volume_bootpartition->id = BOOTPARTITION_VOLUME_ID;
+
+//
+// Disk
+//
+
+// The disk that the volume belongs to.
+    volume_bootpartition->disk = NULL;
+
+    if( (void*) ____boot____disk != NULL ){
+        volume_bootpartition->disk = (void*) ____boot____disk;
+    }
+    
+// The filesystem used by this volue.
+    volume_bootpartition->fs = NULL;
+
+
+// #todo
+// Volume limits.
+
+    volume_bootpartition->__first_lba=0;
+    volume_bootpartition->__first_lba=0;
+
+
+    volume_bootpartition->VBR_lba  = VOLUME1_VBR_LBA;
+    volume_bootpartition->FAT1_lba = VOLUME1_FAT_LBA;
+    volume_bootpartition->FAT2_lba = 0;  //#bugbug
+    volume_bootpartition->ROOT_lba = VOLUME1_ROOTDIR_LBA;
+    volume_bootpartition->DATA_lba = VOLUME1_DATAAREA_LBA;
+
+// Name
+
+    //volume_bootpartition->name = "VOLUME 1 - BOOT";  
+    sprintf ( (char *) name_buffer, "VOLUME-%d",volume_bootpartition->id);
+    volume_bootpartition->name = (char *) strdup ( (const char *) name_buffer);  
+
+    //#todo
+    volume_bootpartition->cmd = "#TODO";
+
+//
+// Current volume
+//
+
+    current_volume = volume_bootpartition->id;
+
+// Finalizing
+
+    volume_bootpartition->used = (int) TRUE;
+    volume_bootpartition->magic = (int) 1234;
+
+    volumeList[BOOTPARTITION_VOLUME_ID] = (unsigned long) volume_bootpartition; 
+
+    storage->boot_volume = (struct volume_d *) volume_bootpartition; 
+
+// done:
+    return 0;
+}
+
+
+// local
+// Create system partition.
+// Volume 2
+int __create_system_partition(void)
+{
+    char name_buffer[32];
+
+
+    // The main structure.
+    if ( (void *) storage == NULL ){
+        panic ("__create_system_partition: storage");
+    }
+
+
+//
+// Volume 2 - System partition.
+//
+
+// #bugbug: Isso esta errado.
+// A partiçao do sistema precisa começar 
+// logo apos a partiçao de boot, e a partiçao
+// de boot tem 32MB.
+
+    // Volume.
+    volume_systempartition = (void *) kmalloc( sizeof(struct volume_d) );
+
+    if ( (void *) volume_systempartition == NULL ){
+        panic ("__create_system_partition: volume_systempartition");
+    }
+
+//#todo:
+    //volume_systempartition->objectType = ?;
+    //volume_systempartition->objectClass = ?;
+
+// Sera usado pelo VFS.
+    volume_systempartition->volumeType = VOLUME_TYPE_DISK_PARTITION;
+
+    volume_systempartition->id = SYSTEMPARTITION_VOLUME_ID;
+
+//
+// Disk
+//
+
+// The disk that the volume belongs to.
+    volume_systempartition->disk = NULL;
+
+// The filesystem used by this volue.
+    volume_systempartition->fs = NULL;
+
+
+// #todo
+// Volume limits.
+
+    volume_systempartition->__first_lba=0;
+    volume_systempartition->__first_lba=0;
+
+    volume_systempartition->VBR_lba  = VOLUME2_VBR_LBA;
+    volume_systempartition->FAT1_lba = VOLUME2_FAT_LBA;
+    volume_systempartition->FAT2_lba = 0;  //#bugbug
+    volume_systempartition->ROOT_lba = VOLUME2_ROOTDIR_LBA;
+    volume_systempartition->DATA_lba = VOLUME2_DATAAREA_LBA;
+
+// Name
+
+    //volume_systempartition->name = "VOLUME 2";  
+    sprintf ( (char *) name_buffer, "VOLUME-%d",volume_systempartition->id);
+    volume_systempartition->name = (char *) strdup ( (const char *) name_buffer);  
+
+    //#todo 
+    volume_systempartition->cmd = "#TODO";
+
+
+// Finalizing
+
+    volume_systempartition->used = (int) TRUE;
+    volume_systempartition->magic = (int) 1234;
+
+    volumeList[SYSTEMPARTITION_VOLUME_ID] = (unsigned long) volume_systempartition;
+
+    storage->system_volume = (struct volume_d *) volume_systempartition; 
+
+// done:
+    return 0;
+}
+
+
+
 /*
- ***************************************************
  * volume_init:
  *     Inicializa o volume manager.
  */
 
-int volume_init (void){
-
-    int i=0;
+int volume_init (void)
+{
+    int Status = -1;  //fail
+    register int i=0;
     char name_buffer[32];
 
-
-#ifdef KERNEL_VERBOSE
-    printf ("volume_init: Initializing..\n");
-#endif
 
     // The main structure.
     if ( (void *) storage == NULL ){
         panic ("volume_init: storage");
     }
 
-    // Clean the list
+    // Clear the list
     for ( i=0; i<VOLUME_COUNT_MAX; i++ ){
         volumeList[i] = 0;
     };
 
 
-//
-// == VFS =====================================================
-//
+// --------
 
 
-    // Volume.
-    volume_vfs = (void *) kmalloc ( sizeof(struct volume_d) );
+// Volume 0 - vfs
+    Status = (int) __create_vfs_partition();
+    if(Status<0){
+        panic("volume_init: __create_vfs_partition fail\n");
+    }
 
-    if ( (void *) volume_vfs == NULL )
-    {
-        panic ("volume_init: volume_vfs");
+// Volume 1 - Boot partition.
+    Status = (int) __create_boot_partition();
+    if(Status<0){
+        panic("volume_init: __create_boot_partition fail\n");
+    }
 
-    }else{
-        // #todo:
-        //volume_vfs->objectType = ?;
-        //volume_vfs->objectClass = ?;
+// Volume 2 - System partition.
+    Status = (int) __create_system_partition();
+    if(Status<0){
+        panic("volume_init: __create_system_partition fail\n");
+    }
 
-        volume_vfs->id = VFS_VOLUME_ID;
-        volume_vfs->used = (int) 1;
-        volume_vfs->magic = (int) 1234;
-
-        // Sera usado pelo VFS.
-        volume_vfs->volumeType = VOLUME_TYPE_BUFFER;
-        
-        // These fields are not used in a vfs.
-        volume_vfs->VBR_lba=0;
-        volume_vfs->FAT1_lba=0;
-        volume_vfs->FAT2_lba=0;
-        volume_vfs->ROOT_lba=0;
-        volume_vfs->DATA_lba=0;
-        
-
-        //volume_vfs->name = "VOLUME 0"; 
-        sprintf ( (char *) name_buffer, "VOLUME-%d",volume_vfs->id);
-        volume_vfs->name = (char *) strdup ( (const char *) name_buffer);  
-
-        //#todo
-        volume_vfs->cmd = "#TODO";
-
-        volumeList[VFS_VOLUME_ID] = (unsigned long) volume_vfs;
-        storage->vfs_volume = (struct volume_d *) volume_vfs; 
-    };
-
-    //
-    // == boot partition ==============================================
-    //
-
-
-    // Volume.
-    volume_bootpartition = (void *) kmalloc( sizeof(struct volume_d) );
-
-    if ( (void *) volume_bootpartition == NULL ){
-        panic ("volume_init: volume_bootpartition");
-
-    }else{
-
-		//@todo:
-		//volume_bootpartition->objectType = ?;
-        //volume_bootpartition->objectClass = ?;
-		
-		
-		// Ser� usado pelo VFS.
-		volume_bootpartition->volumeType = VOLUME_TYPE_DISK_PARTITION;
-
-        volume_bootpartition->id = BOOTPARTITION_VOLUME_ID;
-        volume_bootpartition->used = (int) 1;
-        volume_bootpartition->magic = (int) 1234;
-
-        volume_bootpartition->VBR_lba  = VOLUME1_VBR_LBA;
-        volume_bootpartition->FAT1_lba = VOLUME1_FAT_LBA;
-        volume_bootpartition->FAT2_lba = 0;  //#bugbug
-        volume_bootpartition->ROOT_lba = VOLUME1_ROOTDIR_LBA;
-        volume_bootpartition->DATA_lba = VOLUME1_DATAAREA_LBA;
-
-
-        //volume_bootpartition->name = "VOLUME 1 - BOOT";  
-        sprintf ( (char *) name_buffer, "VOLUME-%d",volume_bootpartition->id);
-        volume_bootpartition->name = (char *) strdup ( (const char *) name_buffer);  
-        
-        
-        //#todo
-		volume_bootpartition->cmd = "#TODO";
-
-		//Volume atual
-        current_volume = volume_bootpartition->id;
-
-        volumeList[BOOTPARTITION_VOLUME_ID] = (unsigned long) volume_bootpartition; 
-        storage->boot_volume = (struct volume_d *) volume_bootpartition; 
-    };
-
-
-    //
-    // == system partition ============================================
-    //
-
-	// Volume.
-    volume_systempartition = (void *) kmalloc( sizeof(struct volume_d) );
-
-    if ( (void *) volume_systempartition == NULL ){
-        panic ("volume_init: volume_systempartition");
-
-	}else{
-		
-		//@todo:
-		//volume_systempartition->objectType = ?;
-        //volume_systempartition->objectClass = ?;
-		
-		
-		// Ser� usado pelo VFS.
-		volume_systempartition->volumeType = VOLUME_TYPE_DISK_PARTITION;
-		
-	    volume_systempartition->id = SYSTEMPARTITION_VOLUME_ID;
-		volume_systempartition->used = (int) 1;
-	    volume_systempartition->magic = (int) 1234;
-
-        volume_systempartition->VBR_lba  = VOLUME2_VBR_LBA;
-        volume_systempartition->FAT1_lba = VOLUME2_FAT_LBA;
-        volume_systempartition->FAT2_lba = 0;  //#bugbug
-        volume_systempartition->ROOT_lba = VOLUME2_ROOTDIR_LBA;
-        volume_systempartition->DATA_lba = VOLUME2_DATAAREA_LBA;
-
-		//volume_systempartition->name = "VOLUME 2";  
-        sprintf ( (char *) name_buffer, "VOLUME-%d",volume_systempartition->id);
-        volume_systempartition->name = (char *) strdup ( (const char *) name_buffer);  
-
-
-        //#todo 
-		volume_systempartition->cmd = "#TODO";
-
-        volumeList[SYSTEMPARTITION_VOLUME_ID] = (unsigned long) volume_systempartition;
-        storage->system_volume = (struct volume_d *) volume_systempartition; 
-	};
-
-
+//done:
     return 0;
 }
 
 
-int volumeShowVolumeInfo ( int descriptor ){
-
+int volumeShowVolumeInfo ( int descriptor )
+{
     struct volume_d *v;
 
     //printf ("volumeShowVolumeInfo:\n");
-    printf ("\n\n");
+    printf ("\n");
 
-    if ( descriptor < 0 || descriptor > VOLUME_COUNT_MAX ){
+    if ( descriptor < 0 || 
+         descriptor >= VOLUME_COUNT_MAX )
+    {
         printf("descriptor fail\n");
         goto fail;
     }
@@ -476,24 +556,25 @@ int volumeShowVolumeInfo ( int descriptor ){
     if( (void *) v == NULL ){
         printf ("struct fail\n");
         goto fail;
+    }
 
-    }else{
-        if ( v->used != 1 || v->magic != 1234 ){
-            printf("flags fail\n");
-            goto fail;
-        }
+    if ( v->used != 1 || v->magic != 1234 )
+    {
+        printf("flags fail\n");
+        goto fail;
+    }
 
-        printf ("volume %d - %s \n", v->id, v->name );
-        printf ("volumeType={%d}\n", v->volumeType);
-        
-        printf ("VBR_lba  {%d}\n", v->VBR_lba  );
-        printf ("FAT2_lba {%d}\n", v->FAT1_lba );
-        printf ("FAT2_lba {%d}\n", v->FAT2_lba );
-        printf ("ROOT_lba {%d}\n", v->ROOT_lba );
-        printf ("DATA_lba {%d}\n", v->DATA_lba );
-        // ...
-    };
+    printf ("volume %d - %s \n", v->id, v->name );
+    printf ("volumeType = {%d}\n", v->volumeType);
 
+    printf ("VBR_lba  {%d}\n", v->VBR_lba  );
+    printf ("FAT2_lba {%d}\n", v->FAT1_lba );
+    printf ("FAT2_lba {%d}\n", v->FAT2_lba );
+    printf ("ROOT_lba {%d}\n", v->ROOT_lba );
+    printf ("DATA_lba {%d}\n", v->DATA_lba );
+    // ...
+
+//done
     return 0;
 
 fail:
@@ -502,12 +583,23 @@ fail:
 }
 
 
+void volumeShowCurrentVolumeInfo (void)
+{
+    if (current_volume<0)
+        return;
+
+    printf ("The current volume is %d\n", current_volume );
+
+    diskShowDiskInfo (current_volume);
+}
+
+
 // Show info for all volumes in the list.
 void volume_show_info (void)
 {
-    int i;
+    int i=0;
     struct volume_d *volume;
-    
+
     for (i=0; i<VOLUME_COUNT_MAX; i++)
     {
         volume = (struct volume_d *) volumeList[i];

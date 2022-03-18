@@ -73,6 +73,9 @@
 #define  KEYBOARD_RESET          0xFF    // Reset.
 
 
+// keyboard responses
+// 0xAA, 0xFC, 0xF0, 0x37, 0x54
+
 // keyboard responses.
 #define  KEYBOARD_COMPLETE_SUCCESS  0xAA
 #define  KEYBOARD_COMPLETE_FAILURE  0xFC
@@ -126,6 +129,7 @@ struct keyboardMessage
 };
 
 
+// ps2 keyboard info.
 // this is gonna be used by PS2 structure in ps2.h
 struct ps2_keyboard_d
 {
@@ -134,13 +138,17 @@ struct ps2_keyboard_d
     
     keyboard_type_t type;
 
-    int dummy;
+    int initialized;
+
 
     // #todo
     // int control_fd;
     // int input_fd;
     // pid_t pid;
 };
+
+//#todo
+//struct ps2_keyboard_d  PS2Keyboard;
 
 
 //

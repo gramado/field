@@ -584,6 +584,11 @@ void fs_init_structures (void)
 
     debug_print ("fs_init_structures: [TODO]\n");
 
+
+//
+// root
+//
+
 // struct
 // Create the 'root' filesystem structure.
 // Initialize the 'root' filesystem structure.
@@ -632,6 +637,9 @@ void fs_init_structures (void)
 
     debug_print ("fs_init_structures: Type\n");
 
+
+    // #bugbug
+    // Why do we have this information?
     Type = (int) get_filesystem_type();
 
     Type = ( Type & 0xFFFF );
@@ -650,17 +658,41 @@ void fs_init_structures (void)
         // spc - Sectors per cluster.
         root->spc = (int) VOLUME1_SPC;
         //root->spc = (int) get_spc(); 
-            
 
         // Rootdir, Fat and data area.
         // #bugbug: Specific for fat16.
-        root->rootdir_address = VOLUME1_ROOTDIR_ADDRESS;
-        root->rootdir_lba     = VOLUME1_ROOTDIR_LBA;
+        
+        // root dir
+        root->rootdir_address   = VOLUME1_ROOTDIR_ADDRESS;
+        root->rootdir_first_lba = VOLUME1_ROOTDIR_LBA;
+        //root->rootdir_last_lba = 0;  //#todo 
+        root->rootdir_size_in_sectors = 0;  //#todo
+        
+        // fat1
         root->fat_address     = VOLUME1_FAT_ADDRESS;
-        root->fat_lba         = VOLUME1_FAT_LBA;
-        root->dataarea_lba    = VOLUME1_DATAAREA_LBA;
+        root->fat_first_lba   = VOLUME1_FAT_LBA;
+        //root->fat_last_lba = 0;  //#todo
+        root->fat_size_in_sectors = 0;  //#todo
+        
+        // fat2
+        // ...
+        
+        // dataarea
         //filesystem->dataarea_address = ??;
+        root->dataarea_first_lba    = VOLUME1_DATAAREA_LBA; 
+        //root->dataarea_last_lba = 0;  //#todo
+        //root->dataarea_size_in_sectors = 0;  //#todo
  
+
+        //root->fs_first_lba = 0;  //#todo
+        
+        //#todo (dataarea + dataarea size)?
+        //root->fs_last_lba = 0;   
+
+        //(mbrsize + reserved + rootdirsize + fat1size + fat2size +dataareasize)
+        //root->fs_size_in_sectors = 0;
+
+
         // Root dir.
             
         // Number of entries in the root dir.
@@ -697,43 +729,66 @@ void fs_init_fat (void)
         panic ("fs_init_fat: root\n");
     }
 
+// ==================================
 
 // fat
 // Let's create the 'fat' structure.
+// See:
 
-    fat = (void *) kmalloc ( sizeof(struct fat_d) );
-    if ( (void *) fat == NULL ){
-        panic ("fs_init_fat: fat\n");
+    bootvolume_fat = (void *) kmalloc ( sizeof(struct fat_d) );
+
+    if ( (void *) bootvolume_fat == NULL ){
+        panic ("fs_init_fat: bootvolume_fat\n");
     }
 
 // Populate it with some values found in the root structure.
-    fat->address = root->fat_address; 
-    fat->type    = root->type;
+
+    bootvolume_fat->initialized = FALSE;
+
+// ??
+// The same type of the root filesystem?
+    bootvolume_fat->type = (int) root->type;
+
+    bootvolume_fat->fat_address = (unsigned long) root->fat_address; 
+
+    bootvolume_fat->fat_first_lba = (unsigned long) root->fat_first_lba;
+    bootvolume_fat->fat_last_lba  = (unsigned long) root->fat_last_lba;
+
+    //bootvolume_fat->fat_size_in_sectors = (unsigned long) root->fat_size_in_sectors;
+    //bootvolume_fat->size_in_bytes = 0;  // (bootvolume_fat->fat_size_in_sectors / 2), se sector=512.
+    //bootvolume_fat->size_in_kb = 0;     // bootvolume_fat->size_in_bytes/1024
+    
 
 // #todo
 // Check this values.
-
-// Continua ...
 
 // #todo
 // What is this address?
 // Is this the virtual address of the
 // start of the fat table?
 
-    if ( fat->address == 0 ){
-        panic ("fs_init_fat: fat->address\n");
+    if ( bootvolume_fat->fat_address == 0 ){
+        panic ("fs_init_fat: bootvolume_fat->fat_address\n");
     }
 
 // #bugbug: 
 // Is it int ?
-    if ( fat->type <= 0 ){
+    if ( bootvolume_fat->type <= 0 ){
         panic ("fs_init_fat: fat->type\n");
     }
 
-// Continua a inicialização da fat.
+
+    bootvolume_fat->volume = NULL;
+
+    // ...
+
+    bootvolume_fat->initialized = TRUE;
+    bootvolume_fat->used = TRUE;
+    bootvolume_fat->magic = 1234;
 
 // #bugbug
 // Tem que passar esse ponteiro para algum lugar.
+    //return;
 }
 
 
@@ -811,7 +866,6 @@ int fsCheckELFFile ( unsigned long address )
 
 
 /*
- ****************************************
  * fsFAT16ListFiles:
  *     Mostra os nomes dos arquivos de um diret�rio.
  *     Sistema de arquivos fat16.

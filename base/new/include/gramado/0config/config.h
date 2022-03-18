@@ -48,7 +48,8 @@
 #define __CHANNEL3  __BAR3
 
 
-// See: ata_initialize in ata.c
+// See: 
+// ata_initialize in ata.c
 
 #define __IDE_PORT    __CHANNEL0
 

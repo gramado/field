@@ -226,6 +226,8 @@ struct mbr_d *mbr;
  *     Deve ser simples e com poucos elementos.
  */
 
+// disk info
+
 struct disk_d
 { 
 // Object header.
@@ -271,7 +273,17 @@ struct disk_d
 
     uint8_t channel;
     uint8_t dev_num;
-    
+
+//
+// Storage device structure.
+//
+
+// hadware info.
+// See:
+// ata.h
+
+    struct storage_device_d *storage_device;
+
 //#todo
 //volume list.
 
@@ -296,16 +308,15 @@ unsigned long diskList[DISK_COUNT_MAX];
 //
 
 int disk_init (void);
+void *disk_get_disk_handle ( int number );
+
+//
+// Show info
+//
+
 int diskShowDiskInfo ( int descriptor );
 void diskShowCurrentDiskInfo (void);
 void disk_show_info (void);
-void *disk_get_disk_handle ( int number );
-
-int volume_init (void);
-int volumeShowVolumeInfo ( int descriptor );
-void volume_show_info (void);
-void *volume_get_volume_handle( int number );
-void *volume_get_current_volume_info (void);
 
 #endif    
 

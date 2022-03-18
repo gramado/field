@@ -312,6 +312,10 @@ struct storage_device_d
 {
     unsigned long dev_id;
 
+// Is it the boottime device?
+// TRUE or FALSE.
+    int boottime_device;
+
     unsigned char  dev_nport;
     unsigned char  dev_type;            // ATA or ATAPI
     unsigned char  dev_num;
@@ -338,10 +342,25 @@ struct storage_device_d
 // #test
     unsigned long _MaxLBA;
     unsigned long _MaxLBAExt;
-    
-    //struct st_dev *next;
+
+//
+// disk info structure.
+//
+
+// See:
+// disk.h
+
+    struct disk_d *disk;
+
     struct storage_device_d *next;
 };
+
+// Current storage device.
+struct storage_device_d *current_sd;
+
+// List for storage devices.
+struct storage_device_d *ready_queue_dev;
+
 
 //======================================================
 
@@ -558,12 +577,13 @@ int disk_ata_wait_irq (void);
 
 int ide_identify_device ( uint8_t nport );
 int ide_dev_init (char port);
-void ide_mass_storage_initialize (void);
+
 
 static inline void dev_switch (void);
 static inline int getnport_dev (void);
-static inline int getpid_dev (void);
-int nport_ajuste ( char nport );
+
+int nport_ajust ( char nport );
+
 void show_ide_info (void);
 
 #endif    

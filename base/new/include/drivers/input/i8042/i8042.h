@@ -47,22 +47,24 @@
 //...
 
 // i8042 responses.
-#define I8042_ACKNOWLEDGE         0xFA        
-#define I8042_RESEND              0xFE
+// 0xFA, 0xFE, 0xFC
+#define I8042_ACKNOWLEDGE    0xFA        
+#define I8042_RESEND         0xFE
+//#define I8042_TEST_FAILED    0xFC 
 
-#define I8042_TESTCONTROLLER  0xAA	       // Test PS/2 Controller
+#define I8042_TESTCONTROLLER         0xAA  // Test PS/2 Controller
 #define I8042_TESTCONTROLLER_PASSED  0x55  // test passed
 #define I8042_TESTCONTROLLER_FAILED  0xFC  // test failed
 
- 
-//TESTING FIRST PORT.
+
+// Testing first port.
 #define I8042_TEST_FIRST_PORT_PASSED      0x00  //test passed
 #define I8042_TEST_FIRST_PORT_CLOCK_LOW   0x01  //clock line stuck low
 #define I8042_TEST_FIRST_PORT_CLOCK_HIGH  0x02  //clock line stuck high
 #define I8042_TEST_FIRST_PORT_DATA_LOW    0x03  //data line stuck low
 #define I8042_TEST_FIRST_PORT_DATA_HIGH   0x04  //data line stuck high
 
-//TESTING SECOND PORT.
+// Testing second port.
 #define I8042_TEST_SECOND_PORT_PASSED      0x00  //test passed
 #define I8042_TEST_SECOND_PORT_CLOCK_LOW   0x01  //clock line stuck low
 #define I8042_TEST_SECOND_PORT_CLOCK_HIGH  0x02  //clock line stuck high

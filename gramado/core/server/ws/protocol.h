@@ -207,26 +207,29 @@ typedef struct _gRep gRep;
 #define GWS_Disconnect            2010
 #define GWS_RefreshScreen         2020
 #define GWS_RefreshRectangle      2021
+
+
+
 //#define GWS_GetSendEvent          2030  // send event #
 #define GWS_GetNextEvent          2031
 #define GWS_GrPlot0               2040
 #define GWS_GrCubeZ               2041
 #define GWS_GrRectangle           2042
-#define GWS_AsyncCommand          2222
 
+
+#define GWS_AsyncCommand          2222
 // Put a message into the client's queue.
 #define GWS_PutClientMessage    2223
 // Get a message from the client's queue.
 #define GWS_GetClientMessage    2224
 
+// Quit the process if it's possible.
+#define GWS_Quit    4080
 
-#define GWS_DrainInput            8080
+#define GWS_DrainInput    8080
 // ...
 
-//
 // #test
-//
-
 #define GWS_SwitchFocus    9090
 
 // Called by the kernel x times per second.

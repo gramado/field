@@ -4,6 +4,9 @@
 #ifndef ____PS2MOUSE_H
 #define ____PS2MOUSE_H    1
 
+
+#define PS2MOUSE_RESULUTION    3
+
 // #bugbug
 // We have these same definitions on ps2mouse.c ??
 
@@ -33,6 +36,7 @@
 #define MOUSE_RESEND                   0xFE
 #define MOUSE_RESET                    0xFF
 
+
 // 8042 mouse responses.
 #define MOUSE_ID_BYTE       0x00
 #define WHEELMOUSE_ID_BYTE  0x03 
@@ -40,39 +44,48 @@
 //...
 
 // Generic PS/2 Mouse Packet Bits
+
 #define  MOUSE_LEFT_BUTTON    0x01
 #define  MOUSE_RIGHT_BUTTON   0x02
 #define  MOUSE_MIDDLE_BUTTON  0x04
+//#define BUTTON_4           0x10
+//#define BUTTON_5           0x20
+
 #define  MOUSE_X_DATA_SIGN    0x10
 #define  MOUSE_Y_DATA_SIGN    0x20
 #define  MOUSE_X_OVERFLOW     0x40
 #define  MOUSE_Y_OVERFLOW     0x80
-
-//=======================================================
-//++ Usadas pelo mouse.
-// hardwarelib.inc
-
-#define MOUSE_X_SIGN    0x10
-#define MOUSE_Y_SIGN    0x20
 
 //
 // =====================================================
 //
 
 
-// this is gonna be used by PS2 structure in ps2.h
+// mouse info.
+// This is gonna be used by PS2 structure in ps2.h
 struct ps2_mouse_d
 {
     object_type_t  objectType;
     object_class_t objectClass;
 
-    int dummy;
+    int initialized;
+    
+    unsigned int resolution;
 
     // #todo
     // int control_fd;
     // int input_fd;
     // pid_t pid;
+
+// Device id
+// If the mouse has been initalized so 
+// that its mouseID is 3 or 4, it will send a 4th byte in each packet.
+
+    int device_id;
 };
+
+//#todo
+//struct ps2_mouse_d  PS2Mouse;
 
 
 //

@@ -3,6 +3,9 @@
 
 #include <kernel.h>  
 
+// #todo
+// Were was defined the 'PS2' confugyration structure?
+// See: input/i8042/ps2.h
 
 /*
  // #todo: Get these info with HAL.
@@ -36,7 +39,6 @@ void I8042Controller_do_drain(void)
 
 
 /*
- *********************
  * kbdc_wait:
  *     Espera por flag de autorização para ler ou escrever.
  */

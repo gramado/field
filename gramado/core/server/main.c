@@ -961,6 +961,14 @@ gwsProcedure (
 
     switch (msg){
 
+    // If we received the message GWS_Quit and
+    // there is no more windows, so quit the application.
+    case GWS_Quit:
+        if( windows_count == 0 ){
+            IsTimeToQuit=TRUE;
+        }
+        break;
+
     //case GWS_KeyDown:
     //case GWS_KeyUp:
     //case GWS_SysKeyDown:

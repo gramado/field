@@ -1,5 +1,6 @@
 /*
- * File: blkdev/super.h
+ * File: super.h
+ *     superblock support.
  */
 
 

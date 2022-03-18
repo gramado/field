@@ -16,6 +16,14 @@
  *     Rotina de diálogo com o driver ATA. 
  */
 
+// Called by init_executive() in system.c
+
+// #importante
+// Nessa hora ja temos as estruturas de disk e volume inicializadas.
+// entao as estruturas usadas pelo driver ata, pode
+// se registrar em disk ou volume.
+
+
 int 
 ataDialog ( 
     int msg, 

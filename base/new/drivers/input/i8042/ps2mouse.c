@@ -17,6 +17,8 @@
 
 #include <kernel.h>
 
+
+
 // Screen width and height
 extern unsigned long SavedX; 
 extern unsigned long SavedY;
@@ -446,8 +448,7 @@ void ps2mouse_initialize_device (void)
 
     zzz_mouse_write(__PS2MOUSE_SET_RESOLUTION);
     mouse_expect_ack(); // ACK
-    zzz_mouse_write(3);   // #todo: Create a global variable.
-    //zzz_mouse_write(1);
+    zzz_mouse_write(PS2MOUSE_RESULUTION);  //3
     mouse_expect_ack(); // ACK
 
 
@@ -473,7 +474,11 @@ void ps2mouse_initialize_device (void)
 
     ps2_mouse_has_wheel = FALSE;
 
+
+
+
 /*
+//=============
 //__enable_wheel:    
   
     // #obs:
@@ -516,7 +521,9 @@ void ps2mouse_initialize_device (void)
     } else {
         kprintf ("ps2mouse_initialize_device: No mouse wheel detected!\n");
     };
+//=============
 */
+
 
 
 /*

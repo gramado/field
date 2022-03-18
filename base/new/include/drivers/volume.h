@@ -1,10 +1,11 @@
 
+// volume.h
 
 #ifndef  __VOLUME_H
 #define  __VOLUME_H    1
 
-#define VOLUME_COUNT_MAX 1024
 
+#define VOLUME_COUNT_MAX 1024
 
 #define VFS_VOLUME_ID              0
 #define BOOTPARTITION_VOLUME_ID    1
@@ -23,6 +24,7 @@
 
 //================================
 // boot partition
+// size=32MB.
 #define VOLUME1_VBR_LBA       63
 #define VOLUME1_FAT_LBA       67 
 //#define VOLUME1_FAT2_LBA    ??
@@ -32,15 +34,17 @@
 
 //=======================================
 // system partition
-#define VOLUME2_VBR_LBA       32000
-#define VOLUME2_FAT_LBA       33000  
+// #bugbug: Isso esta errado.
+// A partiçao do sistema precisa começar 
+// logo apos a partiçao de boot, e a partiçao
+// de boot tem 32MB.
+#define VOLUME2_VBR_LBA       32000  //#bugbug
+#define VOLUME2_FAT_LBA       33000  //#bugbug
 //#define VOLUME2_FAT2_LBA    ?? 
-#define VOLUME2_ROOTDIR_LBA   34000
-#define VOLUME2_DATAAREA_LBA  35000
+#define VOLUME2_ROOTDIR_LBA   34000  //#bugbug
+#define VOLUME2_DATAAREA_LBA  35000  //#bugbug
 #define VOLUME2_SPC  1 // sectors per cluster.
-
 // ==================================================================
-
 
 
 char *current_volume_string;
@@ -111,7 +115,6 @@ struct vbr_d *vbr;
  
 
 /*
- **************************************************
  * volume_d:
  *     Estrutura para acesso rápido a volumes.
  *     Deve ser simples e com poucos elementos.
@@ -130,7 +133,6 @@ struct volume_d
 
     int id;
     
-
     //label
     char *name;
 
@@ -171,12 +173,13 @@ struct volume_d
     unsigned long buffer_size_in_sectors;
     unsigned long sector_size;
 
-    // Primeira lba se o tipo permitir.
+
+//
+// First and last lba.
+//
+
     unsigned long __first_lba;
-    
-    // Last lba se o tipo permitir.
     unsigned long __last_lba;
-    
 
     //filesystem_type_t filesystemType;
 
@@ -202,10 +205,11 @@ struct volume_d
     // strings
     //
 
-    // Se o volume tiver um sistema de arquivos.
-    // See: fs.h
+
+// The volume's file system.
     struct filesystem_d *fs;
 
+// The disk that the volume belongs to.
     struct disk_d *disk;
 
     struct volume_d *next;
@@ -230,7 +234,17 @@ unsigned long volumeList[VOLUME_COUNT_MAX];
 // == prototypes ==========================================
 //
 
+int volume_init (void);
+void *volume_get_volume_handle( int number );
+void *volume_get_current_volume_info (void);
 
+//
+// Show info
+//
+
+int volumeShowVolumeInfo ( int descriptor );
+void volumeShowCurrentVolumeInfo (void);
+void volume_show_info (void);
 
 #endif    
 

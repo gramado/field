@@ -31,6 +31,8 @@
 #define VOLUME2_ROOTDIR_ADDRESS_VA  0x00070000 
 
 
+// #
+// There is no default address for the data area.
 
 
 //

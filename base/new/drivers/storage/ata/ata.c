@@ -13,11 +13,8 @@
  */
 
 
-
-struct storage_device_d *current_dev;       // A unidade atualmente selecionada.
-struct storage_device_d *ready_queue_dev;   // O início da lista.
-
-uint32_t  dev_next_pid = 0;  // O próximo ID de unidade disponível. 
+// O próximo ID de unidade disponível.
+uint32_t __next_sd_id = 0; 
 
 
 // == prototypes ==================================
@@ -360,10 +357,10 @@ int ata_initialize ( int ataflag )
 
 // See: config.h
 
-    unsigned int bootime_ideport_index = __IDE_PORT;
+    unsigned int boottime_ideport_index = __IDE_PORT;
     unsigned int current_ideport_index = __IDE_PORT;
 
-    ata_set_boottime_ide_port_index(bootime_ideport_index);
+    ata_set_boottime_ide_port_index(boottime_ideport_index);
     ata_set_current_ide_port_index(current_ideport_index);
 
 //
@@ -493,8 +490,7 @@ int ata_initialize ( int ataflag )
 // Se for IDE.
 
     // Type
-    if ( ata.chip_control_type == ATA_IDE_CONTROLLER )
-    {
+    if ( ata.chip_control_type == ATA_IDE_CONTROLLER ){
 
         //Soft Reset, defina IRQ
         out8(
@@ -518,21 +514,22 @@ int ata_initialize ( int ataflag )
         ata_record_channel = 0xff;
 
 //#ifdef KERNEL_VERBOSE
-        printf ("Initializing IDE Mass Storage device ...\n");
+        //printf ("Initializing IDE Mass Storage device ...\n");
         //refresh_screen ();
 //#endif    
 
         //
         // As estruturas de disco serão colocadas em uma lista encadeada.
-        //
-
+        
+        
+        //#deprecated
         //ide_mass_storage_initialize();
 
-
         //
+        // ready_queue_dev
+        //
+
         // Vamos trabalhar na lista de dispositivos.
-        //
-
         // Iniciando a lista.
         // storage_device_d structure.
 
@@ -545,19 +542,24 @@ int ata_initialize ( int ataflag )
             goto fail;
         }
 
-        current_dev = ( struct storage_device_d * ) ready_queue_dev;
+        //
+        // current_sd
+        //
 
-        current_dev->dev_id   = dev_next_pid++;
-        current_dev->dev_type = -1;
-        
+        // Initialize the head of the list.
+        // Not used.
+        // There is a loop to reinitialize the
+        // structure of each of all ports.
+
+        current_sd = ( struct storage_device_d * ) ready_queue_dev;
+        current_sd->dev_id   = __next_sd_id++;
+        current_sd->dev_type = -1;
         // Channel and device.
         // ex: primary/master.
-
-        current_dev->dev_channel = -1;
-        current_dev->dev_num     = -1;
-
-        current_dev->dev_nport   = -1;
-        current_dev->next = NULL;
+        current_sd->dev_channel = -1;
+        current_sd->dev_num     = -1;
+        current_sd->dev_nport   = -1;
+        current_sd->next = NULL;
 
         // #bugbug
         // Is this a buffer ? For what ?
@@ -577,7 +579,10 @@ int ata_initialize ( int ataflag )
 
         // #todo
         // Create a constant for 'max'. 
-
+        
+        // We're gonna create the structure for each 
+        // of the devices.
+        
         for ( 
             iPortNumber=0; 
             iPortNumber < 4; 
@@ -1218,30 +1223,77 @@ fail:
 
 int ide_dev_init (char port)
 {
-    int data=0;
-
-// 4 ports only    
-    if (port<0 || port >= 4){
-        printf ("ide_dev_init: port\n");
-        goto fail;
-    }
-
-// See: ata.h
-
     struct storage_device_d  *new_dev;
 
-    new_dev = ( struct storage_device_d * ) kmalloc( sizeof( struct storage_device_d) );
-    if ( (void *) new_dev ==  NULL )
-    {
-        printf ("ide_dev_init: new_dev\n");
-        goto fail;
-    }
+    int isBootTimeIDEPort=FALSE;
 
+    int data=0;
 
     unsigned long value1=0;
     unsigned long value2=0;
     unsigned long value3=0;
     unsigned long value4=0;
+
+
+// Limits
+// 4 ports only    
+
+    if ( port < 0 || 
+         port >= 4)
+    {
+        printf ("ide_dev_init: port\n");
+        goto fail;
+    }
+
+
+// storage
+// We need this structure.
+    if ( (void*) storage == NULL ){
+        panic("ide_dev_init: storage");
+    }
+
+// boot disk
+// We need this structure.
+    if ( (void*) ____boot____disk == NULL ){
+        panic("ide_dev_init: ____boot____disk");
+    }
+    if ( ____boot____disk->magic != 1234 ){
+        panic("ide_dev_init: ____boot____disk->magic");
+    }
+
+// boot partition
+// We need this structure.
+    if ( (void*) volume_bootpartition == NULL ){
+        panic("ide_dev_init: volume_bootpartition");
+    }
+    if ( volume_bootpartition->magic != 1234 ){
+        panic("ide_dev_init: volume_bootpartition->magic");
+    }
+
+// Is it the boottime ide port?
+
+    int boottime_ideport = ata_get_boottime_ide_port_index();
+    
+    // YES!
+    if( port == boottime_ideport)
+    {
+        isBootTimeIDEPort = TRUE;
+    }
+
+
+//
+// new_dev
+//
+
+// See: ata.h
+
+    new_dev = ( struct storage_device_d * ) kmalloc( sizeof( struct storage_device_d) );
+
+    if ( (void *) new_dev ==  NULL )
+    {
+        printf ("ide_dev_init: new_dev\n");
+        goto fail;
+    }
 
 // ??
 // #todo: Explain it.
@@ -1266,8 +1318,7 @@ int ide_dev_init (char port)
 // ================
 // Unidades ATA.
 // 0    = PATA ou SATA
-    if ( data == 0 )
-    {
+    if ( data == 0 ){
 
         // Is it an ata device?
         new_dev->dev_type = (ata_identify_dev_buf[0] & 0x8000) ? 0xffff : ATA_DEVICE_TYPE;
@@ -1287,8 +1338,6 @@ int ide_dev_init (char port)
         }else{
             new_dev->dev_modo_transfere = ( ata_identify_dev_buf[49] & 0x0100 ) ? ATA_DMA_MODO : ATA_PIO_MODO;
         };
-
-
 
         //old
         //new_dev->dev_total_num_sector  = ata_identify_dev_buf[60];
@@ -1488,7 +1537,7 @@ int ide_dev_init (char port)
 // Dados em comum.
 //
 
-    new_dev->dev_id = dev_next_pid++;
+    new_dev->dev_id = __next_sd_id++;
 
 // Salvando na estrutura de dispositivo as
 // informações sobre a porta ide.
@@ -1502,6 +1551,34 @@ int ide_dev_init (char port)
     new_dev->dev_num     = ata.dev_num;
 
     new_dev->dev_nport = port;
+
+
+//
+// bootitme device?
+//
+
+// This is the boottime ide port.
+// So we're gonna save the pointer
+// into the boot disk structure.
+
+    new_dev->boottime_device = FALSE;  // Not a boottime device.
+
+    if (isBootTimeIDEPort == TRUE )
+    {
+        if( (void*) ____boot____disk != NULL ){
+            if( ____boot____disk->magic == 1234 )
+            {
+                ____boot____disk->storage_device = 
+                    (struct storage_device_d *) new_dev;
+                
+                new_dev->disk = (struct disk_d *) ____boot____disk;
+                
+                // YES, it's a boottime device.
+                new_dev->boottime_device = TRUE;
+            }
+        }
+    }
+
 
 //
 // == port ====================================
@@ -1583,77 +1660,32 @@ void ata_show_device_list_info(void)
 // The head of the list
     sd = (struct storage_device_d *) ready_queue_dev;
     
-    while ( (void *) sd != NULL )
-    {
-        printf("PORT %d: lba28{%d} lba48{%d}\n",
-            sd->dev_nport, 
-            sd->dev_total_num_sector,
-            sd->dev_total_num_sector_lba48 );
+    while ( (void *) sd != NULL ){
 
-        printf("PORT %d: LBA28 v1{%d} v2{%d} \n",
-            sd->dev_nport, 
-            sd->lba28_value1,
-            sd->lba28_value2 );
-        
-        printf("PORT %d: LBA48 v1{%d} v2{%d} v3{%d} v4{%d}\n",
-            sd->dev_nport, 
-            sd->lba48_value1,
-            sd->lba48_value2,
-            sd->lba48_value3,
-            sd->lba48_value4 );
-            
-        sd = (struct storage_device_d *) sd->next;
-    };
-}
-
-
-/*
- * ide_mass_storage_initialize:
- *     Rotina de inicialização de dispositivo de armazenamento de dados.
- */
-
-void ide_mass_storage_initialize (void)
-{
-    int port=0;
-
-// Vamos trabalhar na lista de dispositivos.
-// Iniciando a lista.
-
-    ready_queue_dev = ( struct storage_device_d * ) kmalloc ( sizeof( struct storage_device_d) );
-
-    if ( (void *) ready_queue_dev == NULL ){
-        panic ("ide_mass_storage_initialize: ready_queue_dev\n");
+    if(sd->boottime_device == TRUE){
+        printf("\n");
+        printf("The boot device is the port %d\n",sd->dev_nport);
     }
 
-    current_dev = ( struct storage_device_d * ) ready_queue_dev;
+    printf("PORT %d: lba28{%d} lba48{%d}\n",
+        sd->dev_nport, 
+        sd->dev_total_num_sector,
+        sd->dev_total_num_sector_lba48 );
 
-    current_dev->dev_id = dev_next_pid++;
+    printf("PORT %d: LBA28 v1{%d} v2{%d} \n",
+        sd->dev_nport, 
+        sd->lba28_value1,
+        sd->lba28_value2 );
 
-    current_dev->dev_type    = -1;
-    current_dev->dev_num     = -1;
-    current_dev->dev_channel = -1;
-    current_dev->dev_nport   = -1;
+    printf("PORT %d: LBA48 v1{%d} v2{%d} v3{%d} v4{%d}\n",
+        sd->dev_nport, 
+        sd->lba48_value1,
+        sd->lba48_value2,
+        sd->lba48_value3,
+        sd->lba48_value4 );
 
-    current_dev->next = NULL;
+    sd = (struct storage_device_d *) sd->next;
 
-    // ??
-
-    ata_identify_dev_buf = ( unsigned short * ) kmalloc (4096);
-
-    if ( (void *) ata_identify_dev_buf == NULL )
-    {
-        panic("ide_mass_storage_initialize: ata_identify_dev_buf \n");
-    }
-
-//
-// Sondando dispositivos e imprimindo na tela.
-//
-
-// As primeiras quatro portas do controlador IDE.
-
-    for ( port=0; port < 4; port++ )
-    {
-        ide_dev_init (port);
     };
 }
 
@@ -1669,7 +1701,7 @@ static inline void dev_switch (void)
 // ??
 // Pula, se ainda não tiver nenhuma unidade.
 
-    if ( !current_dev )
+    if ( !current_sd )
     {
         return;
     }
@@ -1678,38 +1710,29 @@ static inline void dev_switch (void)
 // Se caímos no final da lista vinculada, 
 // comece novamente do início.
 
-    current_dev = current_dev->next;    
+    current_sd = current_sd->next;    
     
-    if ( !current_dev )
+    if ( !current_sd )
     {
-        current_dev = ready_queue_dev;
+        current_sd = ready_queue_dev;
     }
 }
 
 
 static inline int getnport_dev (void)
 {
-    if ( (void *) current_dev == NULL ){
+    if ( (void *) current_sd == NULL )
+    {
         return -1;
     }
 
-    return (int) current_dev->dev_nport;
-}
-
-
-static inline int getpid_dev (void)
-{
-    if ( (void *) current_dev == NULL ){
-        return -1;
-    }
-
-    return (int) current_dev->dev_id;
+    return (int) current_sd->dev_nport;
 }
 
 
 // #todo
-// Change name.
-int nport_ajuste ( char nport )
+// Explain it better.
+int nport_ajust ( char nport )
 {
     char i = 0;
 

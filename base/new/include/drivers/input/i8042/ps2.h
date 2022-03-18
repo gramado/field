@@ -1,7 +1,9 @@
 
+// ps2.h
 
 #ifndef ____PS2_H
 #define ____PS2_H    1
+
 
 /*
  Wikipedia
@@ -32,6 +34,7 @@ linha de relógio. Quando o hospedeiro puxa o relógio para baixo, a comunicaç�
 
 // ================================
 
+// The main ps/2 configuration structure.
 struct ps2_d
 {
     int used;
@@ -88,19 +91,14 @@ int PS2_early_initialization(void);
 // It fails in the real machine.
 int PS2_initialization(void);
 
-
-
-
 void ps2(void);
 int PS2_initialize(void);
-
-
 
 void ps2kbd_initialize_device (void);
 void ps2mouse_initialize_device (void);
 
-
 int ps2_ioctl ( int fd, unsigned long request, unsigned long arg );
+
 
 #endif    
 

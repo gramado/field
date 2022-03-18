@@ -1,4 +1,5 @@
 
+// fat.h
 
 #ifndef  __FAT_H
 #define  __FAT_H    1
@@ -13,15 +14,15 @@
 // See:
 // https://en.wikipedia.org/wiki/Design_of_the_FAT_file_system
 
-#define FAT_FILE_FLAG_READ              0x01
-#define FAT_FILE_FLAG_HIDDEN            0x02
-#define FAT_FILE_FLAG_SYSTEM            0x04   //HARDWARE.
-#define FAT_FILE_FLAG_VOLUME_LABEL      0x08
+#define FAT_FILE_FLAG_READ            0x01
+#define FAT_FILE_FLAG_HIDDEN          0x02
+#define FAT_FILE_FLAG_SYSTEM          0x04   //HARDWARE.
+#define FAT_FILE_FLAG_VOLUME_LABEL    0x08
 
-#define FAT_FILE_FLAG_DIRECTORY         0x10
-#define FAT_FILE_FLAG_FILE              0x20
-#define FAT_FILE_FLAG_DEVICE            0x40   
-#define FAT_FILE_FLAG_RESERVED          0x80
+#define FAT_FILE_FLAG_DIRECTORY       0x10
+#define FAT_FILE_FLAG_FILE            0x20
+#define FAT_FILE_FLAG_DEVICE          0x40   
+#define FAT_FILE_FLAG_RESERVED        0x80
 
 //
 // FAT definitions.
@@ -136,6 +137,44 @@ struct fat16_directory_entry_d
 
     unsigned int   FileSize; 
 };  
+
+
+
+// fat16 structure.
+struct fat_d
+{
+    int used;
+    int magic;
+
+    int initialized;
+
+    int type;
+
+
+    unsigned long fat_address;      // endereço da fat  
+
+    unsigned long fat_first_lba;    // first lba
+    unsigned long fat_last_lba;     // last lba
+
+// size in sectors.
+    unsigned long fat_size_in_sectors;
+// Tamanho da tabela dado em bytes.
+    unsigned long size_in_bytes;
+// Tamanho da tabela dado em kbytes.
+    unsigned long size_in_kb;
+
+    //...
+    
+    struct volume_d *volume;
+};
+
+
+// See: 
+// fs_init_fat in fs.c
+
+// A FAT usada no boot volume.
+struct fat_d  *bootvolume_fat;
+
 
 // 
 // == prototypes ==========================================
