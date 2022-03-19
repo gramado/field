@@ -1,28 +1,22 @@
-/*
- * stdlib.c
- *     libc for bl.
- */
 
+// stdlib.c
 
 
 #include <bootloader.h>
 
 
 
-
 /* 
- *****************************************
  * malloc:
  *     Standard malloc function. 
  */
 
-void *malloc (size_t size){
-
+void *malloc (size_t size)
+{
     void *h;
     unsigned long s = ( unsigned long) size;
 
-
-	//s = (s ? s : 1);	/* if s == 0, s = 1 */
+    //s = (s ? s : 1);	/* if s == 0, s = 1 */
 
     if ( s < 0 ){
         //#todo: Message
@@ -33,50 +27,46 @@ void *malloc (size_t size){
     if ( s == 0 ){ s=1; };
 
 
-	//Alocar memória no heap do kernel.
+//Alocar memória no heap do kernel.
 
-	h = (void *) heapAllocateMemory (s);
-	
-	if ( (void *) h == NULL )
-	{
-	    //#todo: message
-		return NULL;
-	}
+    h = (void *) heapAllocateMemory(s);
 
+    if ( (void *) h == NULL )
+    {
+        //#todo: message
+        return NULL;
+    }
 
     return (void *) h; 
 }
 
 
-
 /*
- ************************************
  * free:
- *
  * >> #importante:
  * >> Tradicionalmente essa função só libera o que foi alocado pela última 
  * chamada de malloc. Mas estamos tentando algo diferente.
- *
  * The free() function frees the memory space pointed to by ptr, 
  * which must have been returned by a previous call 
  * to malloc(), calloc() or realloc(). 
  * Otherwise, or if free(ptr) has already been called before, 
  * undefined behavior occurs. 
  * >> If ptr is NULL, no operation is performed.
- *
  * Importante:
  *     uma estratégia seria apenas sinalizarmos na estrutura que 
  * desejamos que o GC libere os recurso. Em seguida devemos sinalizar 
  * no mmblock que libere o bloco para outras alocações. 
  */
 
-void free (void *ptr){
+void free (void *ptr)
+{
 
-    //#todo: message
+//#todo: message
     if ( (void *) ptr == NULL )
         return;
 
-	//memory.c
+// See: 
+// memory.c
     FreeHeap (ptr);
 }
 

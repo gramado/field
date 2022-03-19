@@ -13,17 +13,11 @@
 #include <bootloader.h>
 
 
-unsigned long timerTicks;
+unsigned long timerTicks=0;
 
 
-/*
- * timer:
- *     Timer handler for Boot Loader.
- *     #bugbug: Nem sei se devemos habilitar o timer durante o boot loader.
- */
-
-// Incrementa o contador.
-// De tempos em tempos, faz alguma coisa.
+// irq handler.
+// Increment jiffies.
 
 void timer()
 {

@@ -33,20 +33,20 @@
 00:01:59.902760 /Devices/IDE0/ATA0/Unit0/ReadBytes      869376 bytes  ***
 00:01:59.902766 /Devices/IDE0/ATA0/Unit0/WrittenBytes        0 bytes
  */ 
- 
- 
+
+
 #include <bootloader.h>
 
+
 /*
- * Externs.
+ * Externs
  */
  
 extern void os_read_sector();
 extern void os_write_sector();
 extern void reset_ide0();
 
-
-//Usadas por read e write.
+// Usadas por read e write.
 extern unsigned long hd_buffer;
 extern unsigned long hd_lba;
 
@@ -116,39 +116,35 @@ int hdd_ata_wait_not_busy (int p)
 }
 
 
-void hdd_ata_cmd_write ( int port, int cmd_val ){
+void hdd_ata_cmd_write ( int port, int cmd_val )
+{
 
-    // no_busy 
-	hdd_ata_wait_not_busy(port);
-	
+// no_busy 
+    hdd_ata_wait_not_busy(port);
+
 	//outb(ata.cmd_block_base_address + ATA_REG_CMD,cmd_val);
-	
-	out8 ( (int) ide_ports[port].base_port + 7 , (int) cmd_val );
-	
-	// Esperamos 400ns
-	ata_wait (400);  
+
+    out8 ( (int) ide_ports[port].base_port + 7 , (int) cmd_val );
+    ata_wait (400);  
 }
 
 
-int hdd_ata_wait_no_drq (int p){
-
+int hdd_ata_wait_no_drq (int p)
+{
     while( hdd_ata_status_read(p) &ATA_SR_DRQ)
-    if(hdd_ata_status_read(p) &ATA_SR_ERR)
-        return 1;
+        if(hdd_ata_status_read(p) &ATA_SR_ERR)
+            return 1;
 
     return 0;
 }
 
 
 /*
- *****************************
  * pio_rw_sector
- * 
  * IN:
- *   buffer - Buffer address
- *   lba - LBA number 
- *   rw - Flag read or write.
- *
+ *     buffer - Buffer address
+ *     lba    - LBA number 
+ *     rw     - Flag read or write.
  *   //inline unsigned char inportb (int port)
  *   //out8 ( int port, int data )
  *   (IDE PIO)
@@ -162,12 +158,11 @@ pio_rw_sector (
     int port,
     int slave )
 {
-
     unsigned long tmplba = (unsigned long) lba;
 
-	// #bugbug
-	// só funcionaram as portas 0 e 2.
-	// para primary e secondary.
+// #bugbug
+// só funcionaram as portas 0 e 2.
+// para primary e secondary.
 
     if ( port < 0 || port >= 4 )
     {
@@ -186,24 +181,24 @@ pio_rw_sector (
 
 	//0x01F6 ; Port to send drive and bit 24 - 27 of LBA
 
-    tmplba = tmplba >> 24;
+    tmplba = (unsigned long) (tmplba >> 24);
 
+// no bit 4.
+// 0 = master | 1 = slave
 
-	// no bit 4.
-	// 0 = master 
-	// 1 = slave
-	
-	//master. bit 4 = 0
-    if (slave == 0)
-    {
-        tmplba = tmplba | 0x000000E0;    //1110 0000b;
+// master. bit 4 = 0
+    if (slave == 0){
+        tmplba = (unsigned long)(tmplba | 0x000000E0);    //1110 0000b;
     }
 
-	//slave. bit 4 = 1
-    if (slave == 1)
-    {
-        tmplba = tmplba | 0x000000F0;    //1111 0000b;
+//slave. bit 4 = 1
+    if (slave == 1){
+        tmplba = (unsigned long)(tmplba | 0x000000F0);    //1111 0000b;
     }
+
+
+// In 32bit machine
+// int and long has the same size.
 
     out8( 
         (int) ( ide_ports[port].base_port + 6 ), 
@@ -214,60 +209,64 @@ pio_rw_sector (
     //out8 ( (int) ide_ports[port].base_port + 6, (int) 0xE0 | (master << 4) | ((tmplba >> 24) & 0x0F));
     
  
-	//0x01F2 ; Port to send number of sectors
-    
+// 0x01F2
+// Port to send number of sectors.
+
     out8( 
         (int) ( ide_ports[port].base_port + 2 ), 
         (int) 1 );
 
 
-	//0x1F3  ; Port to send bit 0 - 7 of LBA
-	tmplba = lba;
-	tmplba = tmplba & 0x000000FF;	
-	out8  ( (int) ide_ports[port].base_port + 3 , (int) tmplba );
-	
-	
-	//0x1F4  ; Port to send bit 8 - 15 of LBA
-	tmplba = lba;
-	tmplba = tmplba >> 8;
-	tmplba = tmplba & 0x000000FF;
-	out8  ( (int) ide_ports[port].base_port + 4 , (int) tmplba );
-	
+// 0x1F3  
+// Port to send bit 0 - 7 of LBA.
 
-	//0x1F5  ; Port to send bit 16 - 23 of LBA
+    tmplba = lba;
+    tmplba = tmplba & 0x000000FF;	
+    out8  ( (int) ide_ports[port].base_port + 3 , (int) tmplba );
+
+
+// 0x1F4
+// Port to send bit 8 - 15 of LBA.
+
+    tmplba = lba;
+    tmplba = tmplba >> 8;
+    tmplba = tmplba & 0x000000FF;
+    out8  ( (int) ide_ports[port].base_port + 4 , (int) tmplba );
+
+
+// 0x1F5:  
+// Port to send bit 16 - 23 of LBA
+
 	tmplba = lba;
 	tmplba = tmplba >> 16;
 	tmplba = tmplba & 0x000000FF;
 	out8 ( (int) ide_ports[port].base_port + 5 , (int) tmplba );
 
-	
-	// 0x1F7       ; Command port
-	//rw
-	rw = rw & 0x000000FF;	
+// 0x1F7:
+// Command port
+// rw
+
+	rw = rw & 0x000000FF;
 	out8 ( (int) ide_ports[port].base_port + 7 , (int) rw );
 
 
-	
 	//PIO or DMA ??
 	//If the command is going to use DMA, set the Features Register to 1, otherwise 0 for PIO.
 	//outb (0x1F1, isDMA)
-	
-	
-	//
-	// timeout sim, não podemos esperar para sempre.
-	//
 
-	// #todo
-	// Colocar essas declarações no início da função.
 
-	unsigned char c; 
-	unsigned long timeout = (4444*512);
+// timeout sim, não podemos esperar para sempre.
+// #todo
+// Colocar essas declarações no início da função.
+
+    unsigned char c=0;
+    unsigned long timeout = (4444*512);
 
 again:
 
     c = (unsigned char) in8( (int) ide_ports[port].base_port + 7);
 
-    // Select a bit.
+// Select a bit.
 
     c = ( c & 8 );
 
@@ -286,9 +285,9 @@ again:
         goto again;
     }
 
-    //
-    // read or write.
-    //
+//
+// read or write.
+//
 
     switch (rw){
 
@@ -332,7 +331,6 @@ again:
 
 
 /*
- *****************************************
  * my_read_hd_sector:
  * eax - buffer
  * ebx - lba
@@ -349,15 +347,17 @@ my_read_hd_sector (
     unsigned long dx )
 {
 
-	//====================== ATENÇAO ==============================
-	// #IMPORTANTE:
-	// #todo
-	// Só falta conseguirmos as variaveis que indicam o canal e 
-	// se é master ou slave.
+//====================== ATENÇAO ==============================
+// #IMPORTANTE:
+// #todo
+// Só falta conseguirmos as variaveis que indicam o canal e 
+// se é master ou slave.
 
-	// (buffer, lba, rw flag, port number, master )
+// IN:
+// (buffer, lba, rw flag, port number, master )
 
-    pio_rw_sector ( (unsigned long) ax, 
+    pio_rw_sector ( 
+        (unsigned long) ax, 
         (unsigned long) bx, 
         (int) 0x20, 
         (int) g_current_ide_channel,     // 0
@@ -383,7 +383,6 @@ my_read_hd_sector (
 
 
 /*
- *************************************
  * my_write_hd_sector:
  * eax - buffer
  * ebx - lba
@@ -400,20 +399,21 @@ my_write_hd_sector (
     unsigned long dx )
 {
 
-	// =========================== ATENÇAO ==============================
-	// #IMPORTANTE:
-	// #todo
-	// Só falta conseguirmos as variaveis que indicam o canal e 
-	// se é master ou slave.
+// =========================== ATENÇAO ==============================
+// #IMPORTANTE:
+// #todo
+// Só falta conseguirmos as variaveis que indicam o canal e 
+// se é master ou slave.
 
-	//#bugbug:
-	// a rotina de salvar um arquivo invocada pelo shell 
-	//apresentou problemas. Estamos testando ...
+//#bugbug:
+// a rotina de salvar um arquivo invocada pelo shell 
+// apresentou problemas. Estamos testando ...
  
 	// read test (buffer, lba, rw flag, port number )
 	// pio_rw_sector ( (unsigned long) ax, (unsigned long) bx, (int) 0x30, (int) 0 );
 
-    pio_rw_sector ( (unsigned long) ax, 
+    pio_rw_sector ( 
+        (unsigned long) ax, 
         (unsigned long) bx, 
         (int) 0x30, 
         (int) g_current_ide_channel,   //0 

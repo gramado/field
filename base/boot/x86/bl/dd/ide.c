@@ -1,14 +1,11 @@
 /*
  * File: ide.c
- *
  * IDE/AHCI support.
- *
  * History:
  *     2017 - Ported from Sirius OS, BSD-2-Clause License.
  *     This driver was created by Nelson Cole for Sirius OS.
  *     2021 - Some new changes by Fred Nora.
  */
-
 
 // #todo:
 // Rever a tipagem.
@@ -22,14 +19,23 @@
 #include <bootloader.h>
 
 
-extern st_dev_t *current_dev;
-//extern st_dev_t *current_dev;
+// A unidade atualmente selecionada.
+st_dev_t *current_dev;
 
-extern st_dev_t *current_dev;
-extern uint8_t *dma_addr;
+// O início da lista.
+st_dev_t *ready_queue_dev;
 
-//extern st_dev_t *current_dev;
+// O próximo ID de unidade disponível. 
+uint32_t  dev_next_pid = 0;
+
+
 _u8 *dma_addr;
+
+const char *dev_type[] = {
+    "ATA",
+    "ATAPI"
+};
+
 
 
 #define PCI_PORT_ADDR  0xCF8
@@ -184,7 +190,6 @@ _u8 ata_wait_drq()
 _u8 ata_wait_irq (){
 
    _u8 Data=0;
-
    _u32 tmp = 0x10000;
 
     while (!ata_irq_invoked)
@@ -219,11 +224,9 @@ void ata_soft_reset()
     _u8 Data=0;
 
     Data = in8 (ata.ctrl_block_base_address + 2);
-
     out8( 
         ata.ctrl_block_base_address, 
         Data | 0x4 );
-    
     out8( 
         ata.ctrl_block_base_address, 
         Data & 0xfb ); 
@@ -247,7 +250,6 @@ void ata_cmd_write (_i32 cmd_val)
 {
     ata_wait_not_busy();
     out8 ( ata.cmd_block_base_address + ATA_REG_CMD, cmd_val );
-
     ata_wait(400);  
 }
 
@@ -504,24 +506,10 @@ void set_ata_addr (int channel)
 }
 
 
-/* 
- * #Obs: 
- * O que segue são rotinas de suporte ao controlador IDE.
- */
 
-
-const char *dev_type[] = {
-    "ATA",
-    "ATAPI"
-};
-
-st_dev_t *current_dev;       // A unidade atualmente selecionada.
-st_dev_t *ready_queue_dev;   // O início da lista.
-uint32_t  dev_next_pid = 0;  // O próximo ID de unidade disponível. 
 
 
 /*
- ********************************************************
  * ide_mass_storage_initialize:
  *     Rotina de inicialização de dispositivo de armazenamento de dados.
  */
@@ -622,10 +610,10 @@ int ide_dev_init (char port){
 		    //com esse pode funcionar em dma
 		    new_dev->dev_modo_transfere = (ata_identify_dev_buf[49]&0x0100)? ATA_DMA_MODO: ATA_PIO_MODO;
         };
-		
-		new_dev->dev_total_num_sector   = ata_identify_dev_buf[60];
+
+        new_dev->dev_total_num_sector   = ata_identify_dev_buf[60];
         new_dev->dev_total_num_sector  += ata_identify_dev_buf[61];
-		
+
         new_dev->dev_byte_per_sector = 512;
 		
         new_dev->dev_total_num_sector_lba48  = ata_identify_dev_buf[100];
@@ -749,20 +737,20 @@ int ide_dev_init (char port){
  *     ?? Porque esse tipo ??
  */
 
-static inline void dev_switch (void){
+static inline void dev_switch (void)
+{
 
-	// ??
-	// Pula, se ainda não tiver nenhuma unidade.
+// ??
+// Pula, se ainda não tiver nenhuma unidade.
 
     if ( !current_dev )
     {
         return;
     }
 
-
-    // Obter a próxima tarefa a ser executada.
-    // Se caímos no final da lista vinculada, 
-    // comece novamente do início.
+// Obter a próxima tarefa a ser executada.
+// Se caímos no final da lista vinculada, 
+// comece novamente do início.
 
     current_dev = current_dev->next;    
 
@@ -781,7 +769,6 @@ static inline void dev_switch (void){
 
 static inline int getpid_dev ()
 {
-
     if ( (void*) current_dev == NULL ){
         printf("getpid_dev: [FAIL] Invalid pointer\n");
         return -1;
@@ -795,8 +782,8 @@ static inline int getpid_dev ()
  * getnport_dev:
  */
 
-static inline int getnport_dev (){
-
+static inline int getnport_dev ()
+{
     if ( (void*) current_dev == NULL ){
         printf("getnport_dev: [FAIL] Invalid pointer\n");
         return -1;
@@ -813,11 +800,12 @@ static inline int getnport_dev (){
 // #todo
 // Change this name.
 
-int nport_ajuste ( char nport ){
-
+int nport_ajuste ( char nport )
+{
     _i8 i=0;
 
-    // #todo: Simplify.
+// #todo: 
+// Simplify.
 
     while ( nport != getnport_dev() )
     {
@@ -839,28 +827,22 @@ int nport_ajuste ( char nport ){
     return 0;
 }
 
+
 // ===============================================
 // Obs: 
 // O que segue são rotinas de suporte a ATA.
 
 
-
-
-
 // ata_set_device_and_sector:
-static inline void 
-ata_set_device_and_sector ( 
+static inline void ata_set_device_and_sector ( 
     _u32 count, 
     _u64 addr,
     _i32 access_type, 
     _i8 nport )
 {
-
     __ata_assert_dever(nport);
 
-	//
-	// Access type.
-	//
+// Access type.
 
     switch ( access_type ){
 
@@ -922,16 +904,13 @@ ata_set_device_and_sector (
     };
 }
 
-
-
-
 // ==========================
-// O que segue é um suporte ao controlador de DMA para uso nas rotinas de IDE.
+// O que segue é um suporte ao controlador de DMA 
+// para uso nas rotinas de IDE.
 
 //
 // DMA support
 //
-
 
 // ============
 // Legacy Bus Master Base Address
@@ -983,14 +962,12 @@ ide_dma_data (
     uint8_t flg,
     uint8_t nport )
 {
-
     _u8 data=0;
     uint32_t phy=0;
 
 
-	// @todo: 
-	// Check limits.
-
+// @todo: 
+// Check limits.
 
     ide_dma_prdt[nport].addr = (_u32) addr;  //@todo: (&~1)sera que e necessario?
     ide_dma_prdt[nport].len  = byte_count | 0x80000000;
@@ -1000,26 +977,24 @@ ide_dma_data (
     // prds physical.
     out32 ( ata.bus_master_base_address + ide_dma_reg_addr, phy );
  
-    // (bit 3 read/write)
-    // 0 = Memory reads.
-    // 1 = Memory writes.
-	
+// (bit 3 read/write)
+// 0 = Memory reads.
+// 1 = Memory writes.
+
     data = in8 ( ata.bus_master_base_address + ide_dma_reg_cmd ) &~8;
 
-	//
-	// TODO bit 8 Confilito no Oracle VirtualBox
-	// Obs: Isso foi enviado via argumento e agora foi alerado.
-	//
-	
+// TODO bit 8 Confilito no Oracle VirtualBox
+// Obs: Isso foi enviado via argumento e agora foi alerado.
+
     flg = 1; 
 
     out8 ( 
         ata.bus_master_base_address + ide_dma_reg_cmd, 
         data | flg << 3 );
 
-    // Limpar o bit de interrupção e 
-	// o bit de erro no registo de status.
-	
+// Limpar o bit de interrupção e 
+// o bit de erro no registo de status.
+
     data = in8 ( ata.bus_master_base_address + ide_dma_reg_status );
     
     out8 ( 
@@ -1044,7 +1019,6 @@ void ide_dma_start ()
     _u8 Data = 0; 
     
     Data = in8 ( ata.bus_master_base_address + ide_dma_reg_cmd );
-
     out8 ( 
         ata.bus_master_base_address + ide_dma_reg_cmd, 
         Data | 1);
@@ -1078,17 +1052,11 @@ done:
 }
 
 
-/*
- * ide_dma_read_status:
- *     DMA read status.
- */
-
+// DMA read status.
 int ide_dma_read_status ()
 {
     int Status=0;
-    
     Status = in8 ( ata.bus_master_base_address + ide_dma_reg_status );
-    
     return Status;
 }
 
@@ -1150,9 +1118,9 @@ diskReadPCIConfigAddr (
     int offset )
 {
 
-    // #bugbug
-    // Do not use macros.
-    // Expand this macro outside the function.
+// #bugbug
+// Do not use macros.
+// Expand this macro outside the function.
  
     out32 ( 
         PCI_PORT_ADDR, 
@@ -1175,23 +1143,20 @@ diskWritePCIConfigAddr (
     int offset, 
     int data )
 {
-    // #bugbug
-    // Do not use macros.
-    // Expand this macro outside the function.
+
+// #bugbug
+// Do not use macros.
+// Expand this macro outside the function.
 
     out32 ( 
         PCI_PORT_ADDR, 
         CONFIG_ADDR( bus, dev, fun, offset ) );
-
     out32 ( PCI_PORT_DATA, data );
 }
 
 
-
 /*
- ***********************************************
  * diskATAPCIConfigurationSpace:
- * 
  *     Espaço de configuraçao PCI Mass Storage
  *     Aqui vamos analisar o tipo de dispositivo.
  */
@@ -1202,9 +1167,7 @@ diskATAPCIConfigurationSpace (
     char dev, 
     char fun )
 {
-
     uint32_t data=0;
-
 
 //#ifdef KERNEL_VERBOSE	
     //printf ("diskATAPCIConfigurationSpace:\n");
@@ -1219,7 +1182,6 @@ diskATAPCIConfigurationSpace (
 
     ata_pci.vendor_id = data       & 0xffff;
     ata_pci.device_id = data >> 16 & 0xffff;
-
 
 
 //#ifdef KERNEL_VERBOSE
@@ -1259,8 +1221,8 @@ diskATAPCIConfigurationSpace (
 		//refresh_screen();
 		//refresh_screen();
 
-		ata.chip_control_type = ATA_IDE_CONTROLLER; 
-		
+        ata.chip_control_type = ATA_IDE_CONTROLLER; 
+
         // Compatibilidade e nativo, primary.
         data  = diskReadPCIConfigAddr( bus, dev, fun, 8 );
         if ( data & 0x200 )
@@ -1486,18 +1448,19 @@ done:
  *     ao barramento PCI de acordo a classe.
  */
 
-uint32_t diskPCIScanDevice ( int class )
+uint32_t diskPCIScanDevice (int class)
 {
     uint32_t data = -1;
-
     int bus=0; 
     int dev=0; 
     int fun=0;
 
-#ifdef KERNEL_VERBOSE
-    printf ("diskPCIScanDevice:\n");
-    refresh_screen ();
-#endif
+
+//#ifdef KERNEL_VERBOSE
+    //printf ("diskPCIScanDevice:\n");
+    //refresh_screen ();
+//#endif
+
 
 // =============
 // Probe
@@ -1518,7 +1481,6 @@ uint32_t diskPCIScanDevice ( int class )
                 
                 if ( ( data >> 24 & 0xff ) == class )
                 {
-
                     printf( "[ Detected PCI device: %s ]\n", 
                         pci_classes[class] );
 
@@ -1550,17 +1512,16 @@ uint32_t diskPCIScanDevice ( int class )
  * Credits: Nelson Cole.
  */
 
-int diskATAInitialize ( int ataflag )
+int diskATAInitialize (int ataflag)
 {
     int Status = 1;  //error
+    int port=0;
+    _u32 data=0;
 
     _u8 bus=0;
     _u8 dev=0;
     _u8 fun=0;
 
-    int port=0;
-
-    _u32 data=0;
 
 // ================================================
 
@@ -1670,8 +1631,8 @@ int diskATAInitialize ( int ataflag )
 
 // =========================
 // Type ATA
-    if ( ata.chip_control_type == ATA_IDE_CONTROLLER )
-    {
+    if ( ata.chip_control_type == ATA_IDE_CONTROLLER ){
+
         //Soft Reset, defina IRQ
         
         out8 ( ATA_BAR1, 0xff );
@@ -1738,8 +1699,8 @@ int diskATAInitialize ( int ataflag )
 // =========================
 // Type AHCI.
 
-    }else if( ata.chip_control_type == ATA_AHCI_CONTROLLER )
-        {
+    }else if( ata.chip_control_type == ATA_AHCI_CONTROLLER ){
+
             //
             // Nothing for now !!!
             //
@@ -1789,27 +1750,26 @@ diskATADialog (
     unsigned long long1, 
     unsigned long long2 )
 {
-
     int Status = 1;    //Error.
 
-    switch (msg)
-    {
-        //ATAMSG_INITIALIZE
-        //Initialize driver.
-        case 1:
-            diskATAInitialize ( (int) long1 );
-            Status = 0;
-            goto done;
-            break;
+    switch (msg){
 
-        //ATAMSG_REGISTER
-        //registra o driver. 
-        //case 2:
-        //    break;
+    //ATAMSG_INITIALIZE
+    //Initialize driver.
+    case 1:
+        diskATAInitialize ( (int) long1 );
+        Status = 0;
+        goto done;
+        break;
 
-       default:
-           goto fail;
-           break;
+    //ATAMSG_REGISTER
+    //registra o driver. 
+    //case 2:
+    //    break;
+
+    default:
+        goto fail;
+        break;
     };
 
 fail:
@@ -1832,7 +1792,6 @@ void diskATAIRQHandler1 ()
 
 
 /*
- ***********************************
  * diskATAIRQHandler2
  *     irq 15 handler
  */
@@ -1845,13 +1804,13 @@ void diskATAIRQHandler2 ()
 
 
 /*
- ******************************************************
  * show_ide_info:
- *     Mostrar as informações obtidas na inicializações do controlador.
+ *     Mostrar as informações obtidas na 
+ * inicializações do controlador.
  */
 
-void show_ide_info (){
-
+void show_ide_info ()
+{
     int i=0;
 
     printf ("show_ide_info:\n");
@@ -1912,14 +1871,13 @@ void show_ide_info (){
  *     0x80 = ok por tempo esperado.
  */
 
-int disk_ata_wait_irq (){
-
+int disk_ata_wait_irq ()
+{
    _u32 tmp = 0x10000;
    _u8 data=0;
 
-
-    // #bugbug
-    // Em nenhum momento a flag ata_irq_invoked vira TRUE.
+// #bugbug
+// Em nenhum momento a flag ata_irq_invoked vira TRUE.
 
     while (!ata_irq_invoked)
     {
@@ -1941,18 +1899,16 @@ int disk_ata_wait_irq (){
 		}else{
 			
             //ok por tempo esperado.
-			ata_irq_invoked = 0;
-			
-			return (int) 0x80;
+            ata_irq_invoked = 0;
+
+            return (int) 0x80;
         };
     };
  
-    //ok por status da interrupção.
-	ata_irq_invoked = 0;
+// ok por status da interrupção.
+    ata_irq_invoked = 0;
 
-
-	// ok 
-
+// ok 
     return 0;
 }
 

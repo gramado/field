@@ -24,19 +24,19 @@
 //
 
 //Status.
-unsigned long key_status;     //*Importante.
+unsigned long key_status=0;
 
 //Key status.
-unsigned long escape_status;
-unsigned long tab_status;  
-unsigned long winkey_status;
-unsigned long ctrl_status;
-unsigned long alt_status;
-unsigned long shift_status;
+unsigned long escape_status=0;
+unsigned long tab_status=0;
+unsigned long winkey_status=0;
+unsigned long ctrl_status=0;
+unsigned long alt_status=0;
+unsigned long shift_status=0;
 
 //Outros.
-unsigned long ambiente = 0;
-unsigned long prompt_pos;
+unsigned long ambiente=0;
+unsigned long prompt_pos=0;
 unsigned long destroy_window = 1; 
 unsigned long quit_message = 1;
 
@@ -227,75 +227,60 @@ CPS|L,     0,     0,     0,     0,     0,     0,     0,		/* scan 64-71 */
 
 
 
-/*
- *************************************************
- * keyboardHandler:
- * 
- *     Keyboard interrupt handler. 
- */
+// irq handler.
+void keyboardHandler(void)
+{
 
-void keyboardHandler(void){
+// Step 0: 
+// Declarações.
 
-
-    // Step 0: 
-    // Declarações.
-
-
-    // Variáveis para armazenar valores que pegaremos.
+// Variáveis para armazenar valores que pegaremos.
 
     unsigned char raw_byte=0;
     unsigned char scancode=0;
-
     unsigned long status=0;
 
-	//@todo: ?? Por que esses valores ??
-	
-    //Suporte ao envio de mensagens. 
+//@todo: ?? Por que esses valores ??
 
+// Suporte ao envio de mensagens. 
     unsigned char *msg = (unsigned char *) 0x00090500; 
     unsigned long mensagem=0; 
 
-	//Suporte ao envio de char.
-
+//Suporte ao envio de char.
     unsigned char *wParam  = ( unsigned char *) 0x00090120; 
     unsigned long ch=0;
 
+// @todo: 
+// Uma biblioteca de video satisfatória 
+// deve existir no Boot Loader.
 
-	// @todo: 
-	// Uma biblioteca de video satisfatória deve existir no Boot Loader.
-
-
-    // Text mode screen buffer.
-
+// Text mode screen buffer.
     unsigned char *screen = (unsigned char *) 0x000B8000; 
 
+// Step1: 
 
-    // Step1: 
-    
-    // Get the raw byte.
-    // This is not the scancode.
-    
+// Get the raw byte.
+// This is not the scancode.
 
     raw_byte = in8(0x60);
 
-    // #todo
-    // Temos que considerar o teclado extendido.
+// #todo
+// Temos que considerar o teclado extendido.
 
-    // Elimina o último bit.
+// Get the scancode.
+// Elimina o último bit.
     scancode = (raw_byte & 0x7F);
 
+// Step 2: 
+// Trata a mensagem.
 
-    //
-    // Step 2: 
-    // Trata a mensagem.
-    //    
-    
-    // Vamos checar o bit no raw byte que
-    // diz se a tecla foi liberada ou não.
-    
-    // Se a tecla foi liberada.
-    if (raw_byte & 0x80)
-    {
+// Vamos checar o bit no raw byte que
+// diz se a tecla foi liberada ou não.
+
+// ==========================
+// Se a tecla foi liberada.
+    if (raw_byte & 0x80){
+
         //Analiza a tecla.
         status = map[scancode]; 
 
@@ -341,9 +326,9 @@ void keyboardHandler(void){
 
         //Nothing.
 
-    // Se a tecla foi pressionada ---------------------
+// ==========================
+// Se a tecla foi pressionada.
     }else{  
-
 
         // Pegando status.   
         status = map[scancode]; 
@@ -388,26 +373,24 @@ void keyboardHandler(void){
     };
 
 
+// Step 3: 
+// Debug support.
 
-	// Step 3: 
-	// Debug support.
+// #debug: 
+// Envia um caractere pra tela.
 
+// Print it into the screen
+// in char mode.
 
-	// #debug: 
-	// Envia um caractere pra tela.
-
-    // Haha!
     screen[76] = (char) ch;
     screen[77] = (char) 9; 
 
+// Step 4: 
+// Send message to Boot Loader procedure.
 
-
-	// Step 4: 
-	// Send message to Boot Loader procedure.
-
-    //
-    // procedure
-    //
+//
+// procedure
+//
 
     bl_procedure ( 
         0, 
@@ -415,26 +398,24 @@ void keyboardHandler(void){
         (unsigned long) ch, 
         (unsigned long) status );
 
-   
-    // put into the queue.
+//
+// queue
+//
 
+// put into the queue.
     keyboard_queue[keyboard_queue_tail] = ch;
-    
     keyboard_queue_tail++;
     if( keyboard_queue_tail > 8 ){
         keyboard_queue_tail = 0;
     }
 
-    // Avisa que uma tecla foi digitada.
-
+// Avisa que uma tecla foi digitada.
     keyboard_flag = TRUE;
 
-	// Step 5: 
-	// EOI.
-
+// Step 5: 
+// EOI. Only the first PIC.
     out8(0x20,0x20);     
 }
-
 
 
 char keyboad_get_char(void)

@@ -1333,10 +1333,12 @@ int ide_dev_init (char port)
         // Com esse só funciona em pio
         if (ATAFlag == FORCEPIO){
             new_dev->dev_modo_transfere = 0;
-
         // Com esse pode funcionar em dma
         }else{
-            new_dev->dev_modo_transfere = ( ata_identify_dev_buf[49] & 0x0100 ) ? ATA_DMA_MODO : ATA_PIO_MODO;
+            new_dev->dev_modo_transfere = 
+                 ( ata_identify_dev_buf[49] & 0x0100 ) 
+                 ? ATA_DMA_MODO 
+                 : ATA_PIO_MODO;
         };
 
         //old

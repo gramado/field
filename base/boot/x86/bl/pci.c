@@ -1,15 +1,11 @@
 /*
  * File: pci.c
- *
  * Descrição:
  *     Rotinas de suporte à PCI.
  *     Isso será necessário para o driver de controlador de disco.
- *
  * #todo: Copiar rotinas do pci do kernel.
- *
  * History:
  *     2016 - Created by Fred Nora.
- *     2019 - Revision.
  */
 
 
@@ -20,16 +16,13 @@
  * pciConfigReadWord:
  *    Envia o comando para a porta 0xCF8, e 
  *    retorna o status na porta 0xCFC.
- * 
  * Argumentos:
  *    bus    = Número do BUS.           total 256.
  *    slot   = Número do slot. (device) total 32.
  *    func   = Número da função.        total 8. 
  *    offset = Offset.
- *
  *  Ex: 0x80000000 | bus << 16 | device << 11 | function <<  8 | offset.
  */
-
 
 unsigned short 
 pciConfigReadWord ( 
@@ -38,14 +31,12 @@ pciConfigReadWord (
     unsigned char func, 
     unsigned char offset )
 {
-
-    unsigned long address=0;
-    
     unsigned long lbus  = (unsigned long) bus;
     unsigned long lslot = (unsigned long) slot;
     unsigned long lfunc = (unsigned long) func;
 
-    unsigned short tmp = 0;
+    unsigned long address=0;
+    unsigned short tmp=0;
 
 
 // Create configuration address and
@@ -113,12 +104,11 @@ pciCheckVendor (
     unsigned char slot )
 {
 
-	//Offset 0.
-
+//Offset 0.
     unsigned short Vendor=0;    
 
-	//Pega o vendor.
-	//PCI_OFFSET_VENDORID
+//Pega o vendor.
+//PCI_OFFSET_VENDORID
 
     Vendor = pciConfigReadWord ( bus, slot, 0, 0 );    
 
@@ -135,13 +125,14 @@ pciGetClassCode (
     unsigned char bus, 
     unsigned char slot )
 {
-    unsigned char ClassCode;
+    unsigned char ClassCode=0;
 
-    ClassCode = (unsigned char) pciConfigReadWord ( bus, slot, 0, 
+    ClassCode = (unsigned char) pciConfigReadWord ( 
+                                    bus, slot, 0, 
                                     PCI_OFFSET_CLASSCODE );
 
-	// #todo: 
-	// Checar a validade do class code.
+// #todo: 
+// Checar a validade do class code.
 
     return (unsigned char) ClassCode;
 }
@@ -161,7 +152,6 @@ int pciInfo()
     unsigned short Vendor=0;
     unsigned short Device=0;
 
-
     printf ("PCI INFO: \n");
     printf ("========= \n");
 
@@ -169,11 +159,11 @@ int pciInfo()
 // each with up to 32 devices, 
 // each supporting 8 functions.
 
-	//Bus.
-	//Slots. (devices)
+//Bus.
+//Slots. (devices)
 
-    i=0;    
-    j=0;    
+    i=0;
+    j=0;
 
     // bus
     for ( i=0; i< 0xFF; i++ )    

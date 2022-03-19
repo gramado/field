@@ -4,7 +4,6 @@
  *     Rotinas de inicialização do Boot Loader.
  * History:
  *     2015 - Created by Fred Nora.
- *     2016 - Revision.
  */
 
 
@@ -26,13 +25,10 @@ extern unsigned long SavedBootBlock;
 //extern unsigned long SavedBPP;
 
 
-
-
-
 /*
- *****************************************
  * set_up_color:
- *     Configura cor padrão para o sistema. */
+ *     Configura cor padrão para o sistema.
+ */
 
 void set_up_color (unsigned long color)
 {   
@@ -41,7 +37,6 @@ void set_up_color (unsigned long color)
 
 
 /*
- ***************************************************************
  * set_up_text_color:
  *     Atribui o primeiro plano e o fundo.
  *
@@ -62,7 +57,6 @@ set_up_text_color (
 
 
 /*
- *****************************************
  * init_globals:
  *     Inicia variáveis globais.
  *     @Mudar para BlInitGlobals();
@@ -181,7 +175,7 @@ int init ()
     BootBlock.spt                = (unsigned long) base[8]; // 32 
     BootBlock.cylinders          = (unsigned long) base[9]; // 36
     BootBlock.boot_mode          = (unsigned long) base[10]; // 40
-    BootBlock.gramado_mode       = (unsigned long) base[11]; //  44
+    BootBlock.gramado_mode       = (unsigned long) base[11]; // 44
 
 // #debug
 // vamos mostrar as informaçoes do boot block
@@ -224,9 +218,8 @@ int init ()
 // Pega o valor herdado do Boot Manager.
     // LegacyCR3 = (unsigned long) GetCR3();
 
-//
-// Continua ?
-//
+// Continua?
+
     g_initialized = (int) TRUE;
     return 0;  
 }

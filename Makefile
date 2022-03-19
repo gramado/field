@@ -190,7 +190,8 @@ presentation-tier:
 #	-sudo cp gramado/bin/*.BIN    base/disk/PROGRAMS/
 
 # Install BMPs
-	sudo cp gramado/shell/themes/presence/*.BMP  base/disk/
+#	sudo cp gramado/shell/themes/presence/*.BMP  base/disk/
+	sudo cp gramado/shell/themes/field/*.BMP  base/disk/
 
 #===================================================
 #::2

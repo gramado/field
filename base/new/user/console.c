@@ -1109,7 +1109,6 @@ void xxxConsoleOutbyte (int c, int console_number)
 
 
 /*
- *********************************** 
  * console_putchar:
  *     Put a char into the screen of a virtual console.
  *     pinta no backbuffer e faz refresh apenas do retangulo do char..
@@ -1171,10 +1170,8 @@ void console_putchar ( int c, int console_number )
 int consoleInputChar( int c )
 {
     unsigned long ascii=0;
-    
     ascii = (unsigned long) (c & 0xFF);
-
-    return (int) input(ascii);
+    return (int) kinput(ascii);
 }
 
 

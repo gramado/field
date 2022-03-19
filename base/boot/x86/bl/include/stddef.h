@@ -1,9 +1,7 @@
 /*
  * File: stddef.h 
- *
  *     Lib C. - C99.
- *
- * 2015 - Created by Fred Nora.
+ *     2015 - Created by Fred Nora.
  */
 
 
@@ -25,16 +23,17 @@ Variables:
 /*
  * NULL HANDLE.
  */ 
-#define NULL ((void *)0)
+#define NULL  ((void *)0)
+
+
+// Signed integral type of the result of 
+// subtracting two pointers.
+
+typedef int  ptrdiff_t;
+
 
 /*
- * Signed integral type of the result of subtracting two pointers.
- */
-typedef int ptrdiff_t;
-  
-/*
  * wchar_t:
- *
  * Integral type whose range of values can represent distinct 
  * wide-character codes for all members of the largest character 
  * set specified among the locales supported by the compilation 
@@ -43,13 +42,17 @@ typedef int ptrdiff_t;
  * Portable Character Set has a code value equal to its value when 
  * used as the lone character in an integer character constant.
  */ 
-typedef int wchar_t;
+
+typedef int  wchar_t;
+
 
 /* 
  * size_t:
- * Which is the unsigned integer type of the result of the sizeof operator;   
+ * Which is the unsigned integer type of the result 
+ * of the sizeof operator;   
  */
-typedef unsigned int size_t;
+
+typedef unsigned int  size_t;
 
 
 /*

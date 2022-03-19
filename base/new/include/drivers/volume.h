@@ -173,10 +173,7 @@ struct volume_d
     unsigned long buffer_size_in_sectors;
     unsigned long sector_size;
 
-
-//
 // First and last lba.
-//
 
     unsigned long __first_lba;
     unsigned long __last_lba;
@@ -200,11 +197,6 @@ struct volume_d
 
     // #todo
     // contador de processos usando o volume
-     
-    //
-    // strings
-    //
-
 
 // The volume's file system.
     struct filesystem_d *fs;

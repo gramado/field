@@ -1,12 +1,14 @@
+
 // kstdio.h
 
 #ifndef __KSTDIO_H
 #define __KSTDIO_H    1
 
 // input() function support?
-#define INPUT_MODE_LINE                0
-#define INPUT_MODE_MULTIPLE_LINES      1
+#define INPUT_MODE_LINE              0
+#define INPUT_MODE_MULTIPLE_LINES    1
 int g_inputmode;
+
 
 #define REVERSE_ATTRIB  0x70
 #define PAD_RIGHT  1
@@ -14,7 +16,7 @@ int g_inputmode;
 
 
 /* the following should be enough for 32 bit int */
-#define PRINT_BUF_LEN 12
+#define PRINT_BUF_LEN  12
 
 //
 // bsd style.
@@ -55,8 +57,7 @@ int g_inputmode;
 
 // See:
 // gramado/limits.h
-#define EOF       GRAMADO_EOF
-
+#define EOF    GRAMADO_EOF
 
 //#define SEEK_SET   0
 //#define SEEK_CUR   1
@@ -241,7 +242,6 @@ struct __sbuf
 
 struct kstdio_sync_d
 {
-
     int used;
     int magic;
 
@@ -288,7 +288,7 @@ struct kstdio_sync_d
 };
 
 
-#define SYNC_COUNT_MAX 1024
+#define SYNC_COUNT_MAX  1024
 // Lista global de objetos do tipo sync.
 // os processos utilizarao um id para
 // a lista global.
@@ -493,20 +493,37 @@ struct file_d
     struct device_d  *device;
 };
 
-typedef struct file_d file; 
+// The file structure type.
+typedef struct file_d  file; 
 
+//-----------------------------------------------
+
+//
 // file table.
+//
 
-file *stdin;            // 0
-file *stdout;           // 1
-file *stderr;           // 2
-file *vfs;              // 3 - vfs root dir. 
-file *volume1_rootdir;  // 4 - boot volume root dir.
-file *volume2_rootdir;  // 5 - system volume root dir. 
+// file pointers.
 
+// Standard stream.
+// Initialized by kstdio_initialize() in kstdio.c
+file *stdin;
+file *stdout;
+file *stderr;
+
+// VFS
+// Not initialized yet.
+file *vfs_fp;
+
+// Rootdir for bootvolume and systemvolume.
+// Initialized by fsInit() in fs.c
+file *volume1_rootdir_fp;
+file *volume2_rootdir_fp;
+
+//...
  
 unsigned long file_table[NUMBER_OF_FILES]; 
 
+//-----------------------------------------------
 
 
 int kstdio_standard_streams_initialized;
@@ -618,8 +635,9 @@ int is_virtual_console (file *f);
 
 
 
+unsigned long kinput ( unsigned long ch );
 
-unsigned long input ( unsigned long ch );
+
 void printchar (char **str, int c);
 int putchar (int ch);
 

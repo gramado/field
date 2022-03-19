@@ -1,16 +1,14 @@
 /*
  * File: stdio.c 
- *  
  * Descrição:
  *     Rotinas de input/output.
  *     Biblioteca C do Boot Loader.
  *     Inclui rotinas gráficas no fim do arquivo.
  *     Inclui vsync.
- *
  * 2015 - Created by Fred Nora.
  */
 
- 
+
 #include <bootloader.h>
 
 
@@ -20,7 +18,6 @@ extern unsigned long SavedX;
 extern unsigned long SavedY;
 extern unsigned long SavedBPP; 
 
- 
 extern void my_buffer_load_bitmap_16x16();
 
 
@@ -54,25 +51,23 @@ void scroll (void)
     register unsigned short i=0;
     register unsigned short j=0;
 
-
-	//inicio da tela
+    // inicio da tela
     unsigned short *p1 = (unsigned short *) ScreenStart;
-
-	//inicio da segunda linha
+    // inicio da segunda linha
     unsigned short *p2 = (unsigned short *) (ScreenStart + 2 * SCREEN_WIDTH) ;
 
-
-	//24 vezes
+    
+    // 24 vezes
     for (i=0; i < ROWS - 1; i++)
     {
-        //80 vezes
+        // 80 vezes
         for (j=0; j < SCREEN_WIDTH; j++)
         {
             *p1++ = *p2++;
         };
     };
 
-	//80 vezes
+    // 80 vezes
     for (i=0; i < SCREEN_WIDTH; i++)
     {
         *p1++ = 0x07*256 + ' '; 
@@ -379,7 +374,6 @@ static int print (char **out, int *varg)
 
 
 /*
- *****************************************
  * printf:
  *     Função printf() da lib C.
  * Obs:
@@ -420,11 +414,12 @@ int sprintf (char *out, const char *format, ... )
 static void printchar (char **str, int c)
 {
 
-	//extern int putchar(int c);
+// extern int putchar(int c);
+
     if (str) {
 
-		**str = c;
-		++(*str);
+        **str = c;
+        ++(*str);
 
     } else { 
         putchar (c);
@@ -447,7 +442,6 @@ int putchar (int ch)
 
 
 /*
- ****************************
  * outbyte:
  *     Trata o caractere antes de por na memória de video.
  */
@@ -459,7 +453,7 @@ void outbyte (int c)
 
     static char prev = 0;
 
-    //Sendo menor que espaço, não pode ser 'tab,return,back...)    
+// Sendo menor que espaço, não pode ser 'tab,return,back...)    
 
     if ( Ch <  ' '  && 
          Ch != '\r' && 
@@ -470,10 +464,9 @@ void outbyte (int c)
         return;
     }
 
+// Sendo maior que 'espaço'. 
 
-    // Sendo maior que 'espaço'. 
-    
-	// Volta ao início da linha.
+// Volta ao início da linha.
     if ( Ch == '\r' )
     {
         g_cursor_x = 0; //volta ao inicio da linha
@@ -481,8 +474,7 @@ void outbyte (int c)
         return;    
     }
  
-   
-    // Vai pra próxima linha e volta ao inicio da linha.    
+// Vai pra próxima linha e volta ao inicio da linha.    
     if ( Ch == '\n' && prev != '\r' )
     {
         g_cursor_y++;      // proxima linha
@@ -490,7 +482,7 @@ void outbyte (int c)
         prev = Ch;
         return;
     };
-        
+
     if ( Ch == '\n' && prev == '\r' )
     {
         g_cursor_y++;    //proxima linha
@@ -498,23 +490,23 @@ void outbyte (int c)
         return; 
     }
 
-    //tab
+//tab
     if ( Ch == '\t' )
     {
         g_cursor_x += (4);    //criar a var -> 'g_tab_size'
         prev = Ch;
         return;         
     }
-        
-    //space 
+
+//space 
     if ( Ch == ' ' )
     {
         g_cursor_x++; 
         prev = Ch;
         return;         
     }
-        
-    //delete 
+
+//delete 
     if ( Ch == 8 )
     {
         g_cursor_x--; 
@@ -522,12 +514,11 @@ void outbyte (int c)
         return; 
     }
 
-        
-    /*
-     *  Filtra as dimensões da janela onde esta pintando.
-     */
-	
-    //limite horizontal	
+/*
+ *  Filtra as dimensões da janela onde esta pintando.
+ */
+
+// limite horizontal
     if ( g_cursor_x > 80)  // 80 = g_coluna_max 
     {
         g_cursor_x = 0;
@@ -536,32 +527,26 @@ void outbyte (int c)
     }else{
         g_cursor_x++;    //Incrementa coluna.                             
     };
-    
-    
-	// Limite vertical. (@todo: Testando limite maior, ja que estamos em modo grafico.)
-	if ( g_cursor_y > 74 ) //25 = g_linha_max (50*8 pixels) 
+
+// Limite vertical. 
+// (@todo: Testando limite maior, ja que estamos em modo grafico.)
+    if ( g_cursor_y > 74 ) //25 = g_linha_max (50*8 pixels) 
     { 
-	    scroll();
+        scroll();
         g_cursor_y = 74; //isso pode ir para dentro da função scroll().
     }
 
-	// #importante:
-	// Imprime os caracteres normais.
+// #importante:
+// Imprime os caracteres normais.
 
     _outbyte (Ch);
 
-
-    prev = Ch;    //Atualisa o prev.
-
-    //Nothing.
-
-//done: 
-    //return;
+// Atualisa o prev.
+    prev = Ch;
 }
 
 
 /*
- ***********************************************
  * _outbyte: 
  *     Coloca um char na tela. Com opções de modo de vídeo.
  */
@@ -570,24 +555,21 @@ void outbyte (int c)
 
 void _outbyte (int c)
 {
-
     unsigned long i=0;
-
     unsigned long x=0;
     unsigned long y=0;
+    char *vm = (char *) 0x000B8000;  
 
+// Char, attribute.
     char ch = (char) c;
     char ch_atributo = (char) g_char_attrib;
 
-    char *vm = (char *) 0x000B8000;  
 
-
-
-    // Caso estivermos em modo gráfico.
+// Caso estivermos em modo gráfico.
     if (VideoBlock.useGui == 1)
     {
-	    //vsync();
-		
+        //vsync();
+
         switch (VideoBlock.vesaMode)
         {
 		    //@todo: Listar aqui os modos VESA.
@@ -601,27 +583,20 @@ void _outbyte (int c)
 			    break;
         };
         return;
-        //goto done;
     }
 
-
-	// Caso estivermos em text mode.
+// Caso estivermos em text mode.
     if (VideoBlock.useGui == 0)
     {
-	    //calcula o valor do deslocamento para text mode 80x25.
-	    y = (unsigned long) (g_cursor_y *80 *2);
-        x = (unsigned long) (g_cursor_x *2);    
+        //calcula o valor do deslocamento para text mode 80x25.
+        y = (unsigned long) (g_cursor_y *80 *2);
+        x = (unsigned long) (g_cursor_x *2);
         i = (unsigned long) (y + x);
         
 		//envia o caractere.
         vm[i+0] = ch;             //char.
         vm[i+1] = ch_atributo;    //atributo (foreground,background).
     }
-
-	//Nothing.
-
-done:
-    return; 
 }
 
 
@@ -808,13 +783,13 @@ my_buffer_horizontal_line (
 
 /*
  * my_buffer_put_pixel: 
- *     Coloca um pixel o buffer 1.            
+ *     Coloca um pixel o buffer 1.
  * a = cor
  * b = x
  * c = y
  * d = null
  */
- 
+
 extern void gui_buffer_putpixel();
 
 void 
@@ -825,74 +800,64 @@ my_buffer_put_pixel (
     unsigned long dx )
 {
 
-	//asm volatile(" \n "
-	//	          : // no inputs
-	//	          : "a"(ax), "b"(bx), "c"(cx), "d"(dx) );
+    //asm volatile(" \n "
+    //    : // no inputs
+    //    : "a"(ax), "b"(bx), "c"(cx), "d"(dx) );
 
+//#Warning
+//suspenso, vamos tentar não usar o assembly
+    //gui_buffer_putpixel(); 
+    //return;
 
-	//#Warning
-	//suspenso, vamos tentar não usar o assembly
-	//gui_buffer_putpixel(); 
-	//return;
-	
-	//SOFTWARELIB_BACKBUFFER EQU (0x1000000 - 0x800000)
-	unsigned char *where = (unsigned char *) (0x1000000 - 0x800000); //0xC0800000;
-		
-	unsigned long color = (unsigned long) ax;
-	
-	char b, g, r, a;
-	
-	b = (color & 0xFF);
-	g = (color & 0xFF00)   >> 8;
-	r = (color & 0xFF0000) >> 16;
-	a = (color >> 24) + 1;
+    //SOFTWARELIB_BACKBUFFER EQU (0x1000000 - 0x800000)
+    unsigned char *where = (unsigned char *) (0x1000000 - 0x800000); //0xC0800000;
+    unsigned long color = (unsigned long) ax;
 
+    char b, g, r, a;
 
-	int x = (int) bx;
-	int y = (int) cx;
-	
-	
-	// = 3; 
-	//24bpp
-	int bytes_count=0;
-	
+// Color.
+    b = (color & 0xFF);
+    g = (color & 0xFF00)   >> 8;
+    r = (color & 0xFF0000) >> 16;
+    a = (color >> 24) + 1;
+
+// x and y.
+    int x = (int) bx;
+    int y = (int) cx;
+
+// = 3; 
+//24bpp
+    int bytes_count=0;
+
 
     switch (SavedBPP){
 
-    case 32:
-        bytes_count = 4;
-        break;
-
-    case 24:
-        bytes_count = 3;
-        break;
-
+    case 32:  bytes_count = 4;  break;
+    case 24:  bytes_count = 3;  break;
     // ...
-
-    //#bugbug
+    // #bugbug
     default:
         bytes_count = 3;
         break;
     };
 
 
+// #importante
+// Pegamos a largura do dispositivo.
 
-	// #importante
-	// Pegamos a largura do dispositivo.
-	
-	int width = (int) SavedX; 
-	
-	int offset = (int) ( (bytes_count*width*y) + (bytes_count*x) );
-	
-	where[offset]    = b;
-	where[offset +1] = g;
-	where[offset +2] = r;
+    int width = (int) SavedX; 
 
-	//teste
-	if ( SavedBPP == 32 )
-	{
-	    where[offset +3] = a;
-	}
+// Offset.
+    int offset = (int) ( (bytes_count*width*y) + (bytes_count*x) );
+
+//
+// Plot the pixel.
+//
+
+    where[offset]    = b;
+    where[offset +1] = g;
+    where[offset +2] = r;
+    if ( SavedBPP == 32 ){ where[offset +3] = a; }
 }
 
 
@@ -908,7 +873,6 @@ my_buffer_char_blt (
     unsigned long color, 
     unsigned long c )
 { 
-
     int x2=0; 
     int y2=0;
     unsigned char bit_mask = 0x80;
@@ -930,10 +894,10 @@ my_buffer_char_blt (
             } 
             bit_mask = ( bit_mask >> 1 );
         };
-                       
-		y++;            //Próxima linha.
-		work_char++;    //Incrementa 8 bits.
-	};
+
+        y++;          //Próxima linha.
+        work_char++;  //Incrementa 8 bits.
+    };
 }
 
 
@@ -969,10 +933,10 @@ char gui_inb (int port)
 
     value = in8 (port);
 
-	asm (" nop \n");
-	asm (" nop \n");
-	asm (" nop \n");
-	asm (" nop \n"); 
+    asm (" nop \n");
+    asm (" nop \n");
+    asm (" nop \n");
+    asm (" nop \n"); 
 
     return value;
 }

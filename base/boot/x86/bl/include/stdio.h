@@ -1,6 +1,5 @@
 /*
  * File: stdio.h
- *
  * Descrição:
  *     Parte da lib C, C99.
  */

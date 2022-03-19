@@ -427,13 +427,10 @@ void fs_relood_dir (unsigned long id)
 
 
 /*
- *******************************************************
  * fsLoadFile:
- * 
  *     Carrega um arquivo na memória. (#fat16)
  *     O Boot Loader utiliza essa rotina para carregar os arquivos 
  * do sistema.
- *
  * @todo:
  *     +A libC chama essa função atravez de open(...).
  *     +Mudar o tipo de retorno para 'int'.
@@ -735,26 +732,22 @@ unsigned long path_count (unsigned char *path)
 
 
 /*
- ********************************** 
  * load_path:
  *     Carrega nesse endereço o arquivo que está nesse path.
  */
-
 // IN:
 // path de dois níveis, endereço onde carregar.
-
 // IN:
 // pathname, virtual address.
-
 //   0 ---> ok.
 // !=0 ---> fail
 
 int load_path ( unsigned char *path, unsigned long address )
 {
 
-    // #test
-    // Removing all the abort(),
-    // We are giving a chance to the rescur shell.
+// #test
+// Removing all the abort(),
+// We are giving a chance to the rescur shell.
 
     int Ret = -1;    // fail. Usado na função que carrega o arquivo.
     
@@ -1155,18 +1148,15 @@ unsigned long fsSearchFileName ( unsigned char *name )
 
 
 /*
- *************************************************
  * fs_load_rootdirEx:    
  *    Carrega o diretório raiz na memória.
- *
  * Obs:
  *    Carregando 32 setores do rootdir.
  *    Size = 32 setores. 
  *    512 entradas de 32 bytes cada.
  */
-
-    // size = 32 sectors.
-    // #todo: Pegar de estrutura.
+// size = 32 sectors.
+// #todo: Pegar de estrutura.
  
 void fs_load_rootdirEx()
 {
@@ -1178,12 +1168,11 @@ void fs_load_rootdirEx()
     // Address offset support.
     unsigned long n=0;
 
-
 	// debug
 	// printf("Loading root dir ...\n");
 
-    // Carregar 32 setores na memória.
-    // Carrega um e incrementa o buffer.
+// Carregar 32 setores na memória.
+// Carrega um e incrementa o buffer.
 
     for ( i=0; i < RootSize; i++ )
     {
@@ -1220,13 +1209,12 @@ void fs_load_fatEx()
     // Address offset support.
     unsigned long n=0;
 
-    
 	// debug
 	// printf("Loading Cluster Table.\n");//fat
 
-    // Carregar FAT na memória.
-    // Carregar 32 setores na memória.
-    // Carrega um e incrementa o buffer.
+// Carregar FAT na memória.
+// Carregar 32 setores na memória.
+// Carrega um e incrementa o buffer.
 
     for ( i=0; i < FatSize; i++ )
     {
@@ -1277,20 +1265,19 @@ void fs_put_list_on_fat (){
  * fs_find_n_empty_entries: 
  */
  
-unsigned long fs_find_n_empty_entries (unsigned long n){
-
+unsigned long fs_find_n_empty_entries (unsigned long n)
+{
     unsigned long i=0;
     unsigned long l=0;
     unsigned short empty=0;
     unsigned short lista_size = 1024;
 
+// #todo: 
+// Pegar de estrutura.
+// Número max de entradas na FAT.
 
-    // #todo: 
-    // Pegar de estrutura.
-    // Número max de entradas na FAT.
-
-    // #bugbug
-    // What is this?
+// #bugbug
+// What is this?
     
     unsigned short fat_max = (64*512/2); 
 
@@ -1321,11 +1308,7 @@ unsigned long fs_find_n_empty_entries (unsigned long n){
 
     file_cluster_list[l] = 0xFFFF; 
 
-//
 // Done.
-//
-
-
 // Retorna o primeiro da lista.
 done:
     return file_cluster_list[0];
@@ -1345,14 +1328,11 @@ void fs_load_rootdir()
 }
 
 
-
 /*
- ***************************************************
  * read_lba: 
  *     Lê uma lba no hd. (um setor)
  *     Operação de hardware. 
  */
-
 // #todo
 // Move this function to a file for low level routines.
 
@@ -1365,11 +1345,9 @@ void read_lba ( unsigned long address, unsigned long lba )
 
 
 /*
- *********************************************
  * write_lba: 
  *     Grava uma lba no HD. (um setor). 
  */
-
 // #todo
 // Move this function to a file for low level routines.
 
@@ -1384,7 +1362,8 @@ void write_lba ( unsigned long address, unsigned long lba )
 /*
  * fsSaveFile:
  * Salvando um arquivo.
- * @todo: Manter a estrutura dessa função mas mudar as rotinas chamadas.
+ * @todo: 
+ * Manter a estrutura dessa função mas mudar as rotinas chamadas.
  *           A lib C chama essa função.
  * #todo: A rotina do kernel funciona bem.
  */
@@ -1396,15 +1375,10 @@ fsSaveFile (
     unsigned long file_address )  
 {
 
-	//#suspensa.
+//#suspensa.
+    return 0;
 
-	return 0;
-
-
-
-
-	/*
-	
+/*
     unsigned long i;  //Deslocamento. Procurando espaço livre.
     unsigned long j;  //Deslocamento. Salvando cluster number.
     unsigned long c;
@@ -1541,10 +1515,8 @@ done:
     write_lba(FAT16_FAT_ADDRESS + 0x200, FAT16_FAT_LBA + 1);
     
 	return (unsigned long) 0;
-	*/
-};
-
-
+*/
+}
 
 
 /* 
@@ -1738,5 +1710,4 @@ int fsInit()
 //
 // End.
 //
-
 

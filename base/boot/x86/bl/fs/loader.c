@@ -1,17 +1,9 @@
 /*
  * File: fs/loader.c
- *
- * Descri��o:
  *     Rotinas para carregar o Kernel, os programas do sistema e os 
- * arquivos de inicializa��o.
- *
- * Obs: Por enquanto o m�dulo loader somente carrega imagens do tipo PE. (M$)
- * @todo: Incluir suporte a imgens do tipo ELF.
- * 
+ * arquivos de inicializaçao.
  * In this file:
  *     + elfLoadKernelImage: Carrega o KERNEL.BIN.
- *     + load_files: 
- *
  * History:
  *     2015 - Created by Fred Nora.
  */
@@ -44,11 +36,9 @@ void updateProgressBar();
 */
 
 
-
 /* 
- ******************************************** 
  * elfLoadKernelImage: 
- *     Carrega o KERNEL.BIN na mem�ria. 
+ *     Carrega o KERNEL.BIN na memoria. 
  */
 
 // Address.
@@ -88,29 +78,28 @@ int elfLoadKernelImage (const char *file_name)
 #endif
 
 
-    //
-    // Load kernel image
-    //
+//
+// Load kernel image
+//
 
-
-    // The name given by function parameter.
+// Building a pathname.
+// The name given by function parameter.
     strcpy (Path, "/GRAMADO");
     strcat (Path, "/");
     strcat (Path, kernel_name );
 
-    // Default
+// Default pathname.
     strcpy (DefaultPath, "/GRAMADO/KERNEL.BIN");
 
-
-    // Load KERNEL.BIN on a physical address.
-    // Search the file in the /LANDOS/ and /BOOT/ subdirectories
-    // of the boot partition.
-    // See: fs.c
+// Load KERNEL.BIN on a physical address.
+// Search the file in the /LANDOS/ and /BOOT/ subdirectories
+// of the boot partition.
+// See: fs.c
 
     Status = (int) load_path( Path, (unsigned long) kernel_pa );
 
-    // Fail
-    // Try default name.
+// Fail
+// Try default pathname.
 
     if ( Status != 0 ){
         // Try again
@@ -123,13 +112,9 @@ int elfLoadKernelImage (const char *file_name)
         goto fail;    
     }
 
-
-    //
-    // Check signature.
-    //
-
-    // Check for .ELF file signature. 
-    // 0x7f 0x45 0x4c 0x46 (.ELF)
+// Check signature.
+// Check for .ELF file signature. 
+// 0x7f 0x45 0x4c 0x46 (.ELF)
 
     if ( kernel[0] != 0x7F || 
          kernel[1] != 'E' || kernel[2] != 'L' || kernel[3] != 'F' )
@@ -139,44 +124,36 @@ int elfLoadKernelImage (const char *file_name)
         goto fail;
     }
 
+//WORD Machine.
+//WORD NumberOfSections.
 
-	//WORD Machine.
-	//WORD NumberOfSections.
-	
-	
-	// #importante:
-	// Checando se o kernel base cont�m o header 
-	// do multiboot.
-	// Obs: Para o Gramado Boot isso significa apenas
-	// mais um �tem de seguran�a, pois o Gramado Boot
-	// far� a inicializa��o do mesmo modo de sempre e enviar� 
-	// os mesmos argumentos de sempre.
-	// Por�m se um multiboot carregar o kernel, certamente 
-	// n�o passar� os mesmos argumentos que o Gramado Boot,
-	// ent�o o kernel inicializar� de forma diferente,
-	// provavelmente apenas em modo texto.
-
-	
-    // Multiboot magic signature.
-    // O header est� em 0xC0001000.
-    // 0x1BADB002
-    // tem um jmp antes do header.
+// #importante:
+// Checando se o kernel base cont�m o header do multiboot.
+// Obs: Para o Gramado Boot isso significa apenas
+// mais um �tem de seguran�a, pois o Gramado Boot
+// far� a inicializa��o do mesmo modo de sempre e enviar� 
+// os mesmos argumentos de sempre.
+// Por�m se um multiboot carregar o kernel, certamente 
+// n�o passar� os mesmos argumentos que o Gramado Boot,
+// ent�o o kernel inicializar� de forma diferente,
+// provavelmente apenas em modo texto.
+// Multiboot magic signature.
+// O header est� em 0xC0001000.
+// 0x1BADB002
+// tem um jmp antes do header.
 
     if ( kernel[0x1008] != 0x02 ||
          kernel[0x1009] != 0xB0 ||
          kernel[0x100A] != 0xAD || 
          kernel[0x100B] != 0x1B )
     {
-
 		//#debug
 		printf ("elfLoadKernelImage: [FAIL] 0x1BADB002 found!\n");
 		//refresh_screen();
 		//while(1){}
-
     }
 
-
-	//Continua ...
+// Continua ...
 
 //Done.
 //Kernel carregado.
@@ -190,29 +167,19 @@ int elfLoadKernelImage (const char *file_name)
 
     return 0; 
 
-
     // =================================
 
 // Fail 
 // O Kernel n�o p�de ser carregado.
 
 fail:
-
     printf ("elfLoadKernelImage: Fail\n");
     refresh_screen();
-
-    // #test
-    // Vamos retornar para dar a chace ao rescue shell.
+// #test
+// Vamos retornar para dar a chace ao rescue shell.
     // abort();
-    
     return (int) (-1);
 }
-
-
-
- 
-
-
 
 
 
@@ -283,3 +250,4 @@ void updateProgressBar(){
 //
 // End.
 //
+

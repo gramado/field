@@ -339,12 +339,13 @@ int fsInit (void)
 // == fileList =========================
 //
 
-// Agora inicialzamos as stream 4 e 5.
-// As anteriores foram inicializadas em stdio,
-// pois s�o o fluxo padr�o.
+// Initializing the file pointers
+// volume1_rootdir_fp and volume2_rootdir_fp.
+// See: kstdio.h
+
 
 //
-// == volume1_rootdir =========================================== 
+// == volume1_rootdir ================================
 //
 
     // pega slot em file_table[] para
@@ -352,22 +353,22 @@ int fsInit (void)
     if (slot<0 || slot >= NUMBER_OF_FILES){
         panic("fsInit: slot");
     }
-    volume1_rootdir = (file *) file_table[slot];
-    volume1_rootdir->filetable_index = slot;
+    volume1_rootdir_fp = (file *) file_table[slot];
+    volume1_rootdir_fp->filetable_index = slot;
 
-    if ( (void *) volume1_rootdir == NULL ){
-        panic ("fsInit: volume1_rootdir \n");
+    if ( (void *) volume1_rootdir_fp == NULL ){
+        panic ("fsInit: volume1_rootdir_fp \n");
     } else {
-        volume1_rootdir->used  = TRUE;
-        volume1_rootdir->magic = 1234;
-        volume1_rootdir->____object = ObjectTypeVolume;
+        volume1_rootdir_fp->used  = TRUE;
+        volume1_rootdir_fp->magic = 1234;
+        volume1_rootdir_fp->____object = ObjectTypeVolume;
 
-        volume1_rootdir->_base = (unsigned char *) VOLUME1_ROOTDIR_ADDRESS;
-        volume1_rootdir->_p    = (unsigned char *) VOLUME1_ROOTDIR_ADDRESS;
-        volume1_rootdir->_cnt = (32 * 512);
-        volume1_rootdir->_file = 0;
-        volume1_rootdir->_tmpfname = "VOLUME1 VOL";
-        volume1_rootdir->fd_counter = 1;
+        volume1_rootdir_fp->_base = (unsigned char *) VOLUME1_ROOTDIR_ADDRESS;
+        volume1_rootdir_fp->_p    = (unsigned char *) VOLUME1_ROOTDIR_ADDRESS;
+        volume1_rootdir_fp->_cnt = (32 * 512);
+        volume1_rootdir_fp->_file = 0;
+        volume1_rootdir_fp->_tmpfname = "VOLUME1 VOL";
+        volume1_rootdir_fp->fd_counter = 1;
 
         // #bugbug: 
         // Validade da estrutura.
@@ -377,24 +378,24 @@ int fsInit (void)
         // pega slot em inode_table[] 
         slot = get_free_slots_in_the_inode_table();
         if (slot<0 || slot >=32){
-            panic("fsInit: volume1_rootdir inode slot");
+            panic("fsInit: volume1_rootdir_fp inode slot");
         }
-        volume1_rootdir->inode = (struct inode_d *) inode_table[slot];
-        volume1_rootdir->inodetable_index = slot;
-        if ( (void*) volume1_rootdir->inode == NULL ){
-            panic("fsInit: volume1_rootdir inode struct");
+        volume1_rootdir_fp->inode = (struct inode_d *) inode_table[slot];
+        volume1_rootdir_fp->inodetable_index = slot;
+        if ( (void*) volume1_rootdir_fp->inode == NULL ){
+            panic("fsInit: volume1_rootdir_fp inode struct");
         }
-        volume1_rootdir->inode->filestruct_counter = 1;  //inicialize
+        volume1_rootdir_fp->inode->filestruct_counter = 1;  //inicialize
         memcpy ( 
-            (void*) volume1_rootdir->inode->path, 
-            (const void*) volume1_rootdir->_tmpfname, 
-            sizeof( volume1_rootdir->inode->path ) );
+            (void*)       volume1_rootdir_fp->inode->path, 
+            (const void*) volume1_rootdir_fp->_tmpfname, 
+                  sizeof( volume1_rootdir_fp->inode->path ) );
         // ... 
 
-        // File that represents the system volume.
-        storage->__file = volume1_rootdir; 
+        // File that represents a volume
+        //#todo: Change to 'storage->__bootvolume_fp'.
+        storage->__file = volume1_rootdir_fp; 
     };
-
 
 
 //
@@ -405,22 +406,22 @@ int fsInit (void)
     if (slot<0 || slot >= NUMBER_OF_FILES){
         panic("fsInit: slot");
     }
-    volume2_rootdir = (file *) file_table[slot];
-    volume2_rootdir->filetable_index = slot;
+    volume2_rootdir_fp = (file *) file_table[slot];
+    volume2_rootdir_fp->filetable_index = slot;
 
-    if ( (void *) volume2_rootdir == NULL ){
-        panic ("fsInit: volume2_rootdir\n");
+    if ( (void *) volume2_rootdir_fp == NULL ){
+        panic ("fsInit: volume2_rootdir_fp\n");
     }else{
-        volume2_rootdir->used  = TRUE;
-        volume2_rootdir->magic = 1234;
-        volume2_rootdir->____object = ObjectTypeVolume;
+        volume2_rootdir_fp->used  = TRUE;
+        volume2_rootdir_fp->magic = 1234;
+        volume2_rootdir_fp->____object = ObjectTypeVolume;
  
-        volume2_rootdir->_base = (unsigned char *) VOLUME2_ROOTDIR_ADDRESS;
-        volume2_rootdir->_p    = (unsigned char *) VOLUME2_ROOTDIR_ADDRESS;
-        volume2_rootdir->_cnt = (32 * 512);  // #bugbug: Check this size.
-        volume2_rootdir->_file = 0;          // ?
-        volume2_rootdir->_tmpfname = "VOLUME2 VOL";
-        volume2_rootdir->fd_counter = 1;
+        volume2_rootdir_fp->_base = (unsigned char *) VOLUME2_ROOTDIR_ADDRESS;
+        volume2_rootdir_fp->_p    = (unsigned char *) VOLUME2_ROOTDIR_ADDRESS;
+        volume2_rootdir_fp->_cnt = (32 * 512);  // #bugbug: Check this size.
+        volume2_rootdir_fp->_file = 0;          // ?
+        volume2_rootdir_fp->_tmpfname = "VOLUME2 VOL";
+        volume2_rootdir_fp->fd_counter = 1;
 
         // ...
         // inode support.
@@ -429,16 +430,16 @@ int fsInit (void)
         if (slot<0 || slot >= 32){
             panic("fsInit: volume2_rootdir inode slot");
         }
-        volume2_rootdir->inode = (struct inode_d *) inode_table[slot];
-        volume2_rootdir->inodetable_index = slot;
-        if ( (void*) volume2_rootdir->inode == NULL ){
-            panic("fsInit: volume2_rootdir inode struct");
+        volume2_rootdir_fp->inode = (struct inode_d *) inode_table[slot];
+        volume2_rootdir_fp->inodetable_index = slot;
+        if ( (void*) volume2_rootdir_fp->inode == NULL ){
+            panic("fsInit: volume2_rootdir_fp inode struct");
         }
-        volume2_rootdir->inode->filestruct_counter = 1;  //inicialize
+        volume2_rootdir_fp->inode->filestruct_counter = 1;  //inicialize
         memcpy ( 
-            (void*)       volume2_rootdir->inode->path, 
-            (const void*) volume2_rootdir->_tmpfname, 
-            sizeof(       volume2_rootdir->inode->path ) );
+            (void*)       volume2_rootdir_fp->inode->path, 
+            (const void*) volume2_rootdir_fp->_tmpfname, 
+                  sizeof( volume2_rootdir_fp->inode->path ) );
         // ... 
     };
 
@@ -452,7 +453,9 @@ int fsInit (void)
 	//
 
 	//gramado core init execve 
-	
+
+    //#todo: mudar para pipe_gramadocore_init_execve_fp
+
 	//aloca memoria para a estrutura.
     pipe_gramadocore_init_execve = (file *) kmalloc ( sizeof(file) );
 

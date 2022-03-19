@@ -1,9 +1,7 @@
 /*
- * File: shell/shell.c 
- *
+ * File:  shell.c 
  * Descrição:
  *     Mini-shell do Boot Loader.
- *
  * Objetivo:
  *    Oferecer comandos básicos que ajudem na inicialização do sistema.
  *    Importante: No Boot Loader, o interpretador de comandos se revela
@@ -14,14 +12,11 @@
  * escrito em linguagem de alto-nivel de 32bit é a manipulação de sistema de 
  * arquivos e de gerenciamento dos arquivos que serão carregados. Esse deve ser
  * o foco do boot loader e do interpretador de comando do shell.
- *
  * Histórico:
- *     Versão: 1.0, 2015 - Created.
- *     Versão: 1.0, 2016 - Revision.
- *     ...
+ *     2015 - Created by Fred Nora.
  */
 
- 
+
 #include <bootloader.h>
 
 
@@ -32,12 +27,12 @@ extern void asm_shut_down();
 
 // Variáveis internas.
 
-unsigned long deslocamento;
-int ret_string;
-int ShellInitialized;
-int shell_status;
-//int shellStatus;
-//int shellError;
+unsigned long deslocamento=0;
+int ret_string=0;
+int ShellInitialized=0;
+int shell_status=0;
+//int shellStatus=0;
+//int shellError=0;
 //...
 
 
@@ -45,28 +40,29 @@ int shell_status;
 // Diminuir o tamanho do buffer.
 // ?? Usar static
 
-unsigned char *shell_string_buffer[256];    
+unsigned char *shell_string_buffer[256];
 
 // String para mensagem de ajuda.
 // #todo: 
-// ?? Usar static.		 
+// ?? Usar static.
 
-char help_string[] = "\n help, format, install, makeboot, reboot \n";
-
+//char help_string[] = "\n help, format, install, makeboot, reboot \n";
+char help_string[] = "\n help, reboot \n";
 
 // Protótipos de funções internas.
 
 // Protótipo do procedimento de janela do shell do Boot Loader.
 
 int 
-shellProcedure ( unsigned long window, 
-                 unsigned long msg, 
-			     unsigned long long1, 
-			     unsigned long long2 );
-				 
-void testa_mbr ();
-void testa_root ();
-void debug ();
+shellProcedure ( 
+    unsigned long window, 
+    unsigned long msg, 
+    unsigned long long1, 
+    unsigned long long2 );
+ 
+void testa_mbr();
+void testa_root();
+void debug();
 
 
 /*
@@ -104,13 +100,13 @@ int blShellMain ( int argc, char *argv[] )
 
 //Loop
 sh_loop:
-    
-	//status.
-	if(shell_status != 1){ 
-	    goto exit_shell; 
-	};
-	
-	//prompt.
+
+//status.
+    if(shell_status != 1){ 
+        goto exit_shell; 
+    }
+
+//prompt.
 	shellInitializePrompt();
 	
 	//comparar.
@@ -125,10 +121,10 @@ sh_loop:
 	};
 
 fail_shell:
-  	printf("shell_main: Fail\n"); 
+	printf("shell_main: Fail\n"); 
 	return (int) 1;
-	
-exit_shell:	    
+
+exit_shell:
 	return (int) 0;     
 }
 
@@ -160,7 +156,7 @@ shellProcedure (
                               
                //texto - envia o caractere
                default:			       
-			       input_ret = input(long1);				   
+			       input_ret = input(long1);
 				   if(input_ret == KEY_RETURN)
 				   {
 				        g_cmd_status = 1;    //Último caractere.
@@ -176,7 +172,7 @@ shellProcedure (
 		default:
 		    //@todo: Bug Bug, isso pode ser problema.
 			bl_procedure ( window, msg, long1, long2 );
-		    break;	         
+		    break;
     };
 //done:
     return 0;
@@ -189,9 +185,9 @@ shellProcedure (
  *     Limpa o buffer de string.
  */ 
  
-int shellInitializePrompt (){
-	
-    int i;
+int shellInitializePrompt ()
+{
+    int i=0;
     
 	//@todo: Usar 128.
 
@@ -203,7 +199,7 @@ int shellInitializePrompt (){
     
 	prompt[0] = (char) '\0';
 	prompt_pos = 0;
-	
+
     g_cmd_status = 0;
 
 	g_cursor_y++;
@@ -225,17 +221,18 @@ int shellInitializePrompt (){
  * Isso pode travar o Boot Loader?!
  */
  
-void shellWaitCmd (){
-	
+void shellWaitCmd()
+{
+
 wcLoop:  
-    
-	if (g_cmd_status == 1)
-	{
+
+    if (g_cmd_status == 1)
+    {
        g_cmd_status = 0;
        return;
     }
-	
-	goto wcLoop;
+
+    goto wcLoop;
 }
 
 
@@ -245,14 +242,12 @@ wcLoop:
  *     Obs: O mini-shell do Boot Loader NÃO deve oferece muitos comandos.
  */
  
-unsigned long shellCompare (){
-	
-    unsigned long ret_value;
-	
-	
-	// Espera o comando terminar.
-	
-	shellWaitCmd();	
+unsigned long shellCompare ()
+{
+    unsigned long ret_value=0;
+
+// Espera o comando terminar.
+    shellWaitCmd();
 
 palavra_reservada:
 
@@ -261,29 +256,29 @@ palavra_reservada:
 	{ 
 	    bl_clear(0);    
         goto exit_cmp;
-	};
-	
+	}
+
 	//Help.
     if( strncmp( prompt, "help", 4 ) == 0 ){
 		//printf(help_string);
 		shellHelp();
 		goto exit_cmp;
-    };
+    }
 
 	//Format.
 	if( strncmp( prompt, "format", 6 ) == 0 ){
 	    printf("~format\n");
 		fs_format(); 
         goto exit_cmp;
-    };
+    }
 
 	//Dir.
 	if( strncmp( prompt, "dir", 3 ) == 0 ){
 	    printf("~dir\n");
 		fs_show_dir(0); 
         goto exit_cmp;
-    };	
-	
+    }
+
 	//cria arquivos e diretorios principais..
 	if( strncmp( prompt, "makeboot", 8 ) == 0 )
 	{
@@ -294,54 +289,54 @@ palavra_reservada:
 		    printf("shell: makeboot fail");
 		};
         goto exit_cmp;
-    };
-		
+    }
+
 	if( strncmp( prompt, "debug", 5 ) == 0 ){
 	    printf("~debug\n");
 		debug();
         goto exit_cmp;
-    };
-	
+    }
+
 	// newfile
 	if( strncmp( prompt, "newfile", 7 ) == 0 ){
 	    printf("~newfile - create empty file\n");
 		fsCreateFile( "novo    txt", 0);
         goto exit_cmp;
-    };
-	
+    }
+
 	// newdir
 	if( strncmp( prompt, "newdir", 7 ) == 0 ){
 	    printf("~newdir - create empty folder\n");
 		fsCreateDir( "novo    dir", 0);
         goto exit_cmp;
-    };
-	
+    }
+
     //testa mbr
     if( strncmp( prompt, "mbr", 3 ) == 0 ){
 	    printf("~mbr\n");
 		testa_mbr();
 		goto exit_cmp;
-    }; 
-	
+    }
+
     //testa /root
     if( strncmp( prompt, "root", 4 ) == 0 ){
 	    printf("~/root\n");
 		testa_root();
 		goto exit_cmp;
-    }; 
+    }
 
-	
+
     if( strncmp( prompt, "start", 5 ) == 0 ){
 	    printf("~start\n");
 		goto exit_cmp;
-    }; 
-	
+    }
+
     if( strncmp( prompt, "hd", 2 ) == 0 ){
 	    printf("~hd\n");
         goto exit_cmp;
-    };
-	
-	
+    }
+
+
 	if( strncmp( prompt, "save", 4 ) == 0 ){
 	    printf("~save root\n");
         goto exit_cmp;
@@ -353,61 +348,55 @@ palavra_reservada:
 	    printf("~install\n");
 		fs_install();
         goto exit_cmp;
-    };
-	
-	
+    }
+
 	//boot - inicia o sistema carregado
 	if( strncmp( prompt, "boot", 4 ) == 0 ){
 	    printf("~boot\n");
 		boot();
         goto exit_cmp;
-    };
-	
+    }
+
 	//Exit.
     if( strncmp( prompt, "exit", 4 ) == 0 ){
         printf("~exit\n");
 		shell_status = 0;
 		goto exit_cmp;
-    };
+    }
 
 	//Reboot.
     if( strncmp( prompt, "reboot", 6 ) == 0 ){
 	    printf("~reboot\n");
 		reboot();
         goto exit_cmp;
-    };
+    }
 
-	
-	//
-	// Continua...
-	//
-	
-	
+//
+// Continua...
+//
+
 palavra_nao_reservada:
 	return 1;
-	
 exit_cmp: 
     return 0;
-};
+}
 
 
-void shellHelp (){
-	
-	printf("\n help, format, install, makeboot, reboot\n");
-    //return;
-};
+void shellHelp ()
+{
+    printf("\n help, format, install, makeboot, reboot\n");
+}
 
 
 /* boot: Realiza o boot do sistema. */
 
-void boot (){
-    
-    /*
-	 * @todo: Chama a re-inicialização do bootloader.
-	 */ 
+void boot ()
+{
+// #todo: 
+// Chama a re-inicialização do bootloader.
 }
 
-			 
+
 /*
  * debug: 
  *    Uma rotina de debug do bootloader.
@@ -419,29 +408,27 @@ void boot (){
  *    de arquivos, a falha pode ser reportada ou corrigida.
  */
  
-void debug (){
-	
-    //procura arquivos corrompidos
-	
-	fs_check_cluster(0);
-    
-	fsCheckFat();
-	
-	//fs_test_fat_vector();
-	
-	
-	//mostra os arquivos do diretorio raiz.
-    //fs_show_dir(0);	
+void debug ()
+{
 
-#ifdef BL_VERBOSE	
-	printf ("debug: Done \n");
-#endif
-	
+//procura arquivos corrompidos
+    fs_check_cluster(0);
+
+    fsCheckFat();
+
+    //fs_test_fat_vector();
+
+//mostra os arquivos do diretorio raiz.
+    //fs_show_dir(0);
+
+//#ifdef BL_VERBOSE
+    //printf ("debug: Done \n");
+//#endif
 }
 
 
-void testa_mbr (){
-	
+void testa_mbr ()
+{
     my_read_hd_sector ( MBR_ADDRESS, MBR_LBA, 0, 0 );
 	
     printf ("%s", MBR_ADDRESS );
@@ -457,14 +444,10 @@ void testa_root (){
 }
 
 
-/* reboot: 
-       Reboot. */
-
-void reboot (){
-	
-	// #bugbug
-	// Devemos chamar asm_reboot()
-	
+void reboot ()
+{
+// #bugbug
+// Devemos chamar asm_reboot()
     asm_shut_down();
 }
 

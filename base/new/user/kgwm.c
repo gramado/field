@@ -267,7 +267,7 @@ wmProcedure (
                 //}
                 if(ShellFlag==TRUE)
                 {
-                    input('\0');               // finalize
+                    kinput('\0');               // finalize
                     consoleCompareStrings();   // compare
                     //invalidate_screen();
                     refresh_screen();

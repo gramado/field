@@ -1,13 +1,10 @@
 /*
  * File: gdef.h
- * 
  * Global definitions for the boot loader.
  * Put this in the top of the includes.
- *
  * History:
  *     2016 - Created by Fred Nora.
  */
-
 
 
 //
@@ -52,11 +49,9 @@ int gdefShowProgressBar;
 //...
 
 
-
 // + Objects.
 // + Global structs.
 // ...
-
 
 
 // Essa flag será lida pela rotina de falta de página.
