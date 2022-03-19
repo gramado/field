@@ -10,15 +10,19 @@
 void ps2kbd_initialize_device (void)
 {
     debug_print ("ps2kbd_initialize_device:\n");
+    PS2Keyboard.initialized = FALSE;
+
 
 // globals
     keyboard_init_modifier_keys();
     keyboard_init_lock_keys();
 
- // enable keyboard port
+// enable keyboard port
     wait_then_write(I8042_STATUS, 0xae);
     keyboard_expect_ack();
 
+
+    PS2Keyboard.initialized = TRUE;
     debug_print ("ps2kbd_initialize_device: done\n");
 }  
 

@@ -159,18 +159,27 @@ int PS2_early_initialization(void)
 {
     debug_print ("PS2_early_initialization:\n");
 
+// =====
+// port 1
 // Keyboard
     ps2kbd_initialize_device();
     PS2.keyboard_initialized = TRUE;
 
+// =====
+// port 2
 // Mouse
+// We will not call the mouse initialization 
+// in the early ps2 initialization routine.
     PS2.mouse_initialized = FALSE;
+    PS2Mouse.initialized = FALSE;
 
-//
+// Use pooling?
+// Not interupt.
     PS2.pooling = FALSE;
 
 // done:
-    PS2.used  = TRUE;
+// The ps2 controller is initialized.
+    PS2.used = TRUE;
     PS2.magic = 1234;
     debug_print ("PS2_early_initialization: done\n");
     return 0;
@@ -184,10 +193,14 @@ int PS2_initialization(void)
 {
     debug_print ("PS2_initialization:\n");
 
+//==========
+// port 1
 // Keyboard
     ps2kbd_initialize_device();
     PS2.keyboard_initialized = TRUE;
 
+//==========
+// port 2
 // Mouse
     ps2mouse_initialize_device();
     PS2.mouse_initialized = TRUE;
@@ -196,7 +209,8 @@ int PS2_initialization(void)
     PS2.pooling = FALSE;
 
 //done:
-    PS2.used  = TRUE;
+// The ps2 controller is initialized.
+    PS2.used = TRUE;
     PS2.magic = 1234;
     debug_print ("PS2_initialization: done\n");
     return 0;
@@ -211,10 +225,8 @@ int ps2_ioctl ( int fd, unsigned long request, unsigned long arg )
 
 
 /*
- ***************
  * ps2:
  *     Inicializa o controlador ps2.
- * 
  *     Essa rotina de inicialização do controlador 
  * poderá ter seu próprio módulo.
  * 
@@ -224,7 +236,6 @@ int ps2_ioctl ( int fd, unsigned long request, unsigned long arg )
  *     As vezes os dois não funcionam ao mesmo tempo se a 
  *     inicialização não for feita desse jeito. 
  */
-
 
 // Essa é uma inicializaçao completa.
 // See:

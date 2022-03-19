@@ -1657,6 +1657,9 @@ void ata_show_device_list_info(void)
 {
     struct storage_device_d *sd;
 
+    unsigned long mb28=0;
+    unsigned long mb48=0;
+
 // The head of the list
     sd = (struct storage_device_d *) ready_queue_dev;
     
@@ -1672,17 +1675,25 @@ void ata_show_device_list_info(void)
         sd->dev_total_num_sector,
         sd->dev_total_num_sector_lba48 );
 
-    printf("PORT %d: LBA28 v1{%d} v2{%d} \n",
-        sd->dev_nport, 
-        sd->lba28_value1,
-        sd->lba28_value2 );
+    //#debug
+    //printf("PORT %d: LBA28 v1{%d} v2{%d} \n",
+        //sd->dev_nport, 
+        //sd->lba28_value1,
+        //sd->lba28_value2 );
 
-    printf("PORT %d: LBA48 v1{%d} v2{%d} v3{%d} v4{%d}\n",
-        sd->dev_nport, 
-        sd->lba48_value1,
-        sd->lba48_value2,
-        sd->lba48_value3,
-        sd->lba48_value4 );
+    //#debug
+    //printf("PORT %d: LBA48 v1{%d} v2{%d} v3{%d} v4{%d}\n",
+        //sd->dev_nport, 
+        //sd->lba48_value1,
+        //sd->lba48_value2,
+        //sd->lba48_value3,
+        //sd->lba48_value4 );
+
+    mb28 = (unsigned long) (((sd->dev_total_num_sector * 512)/1024)/1024);
+    mb48 = (unsigned long) (((sd->dev_total_num_sector_lba48 * 512)/1024)/1024);
+
+    printf("LBA28 {%d MB} LBA48{%d MB}\n",
+        mb28, mb48 );
 
     sd = (struct storage_device_d *) sd->next;
 

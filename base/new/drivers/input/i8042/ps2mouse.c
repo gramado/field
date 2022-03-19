@@ -30,7 +30,7 @@ static char mouse_packet_y = 0;              // delta y
 static char mouse_packet_scroll = 0;         // z
 
 // packet support
-static int count_mouse = 0;  // stages.
+static int mouse_stage = 0;  // stages.
 static char buffer_mouse[4];
 
 // mouse buttons support
@@ -43,7 +43,6 @@ static long saved_mouse_x=0;
 static long saved_mouse_y=0;
 
 static int ps2_mouse_moving=0;
-static int ps2_mouse_has_wheel=0;
 
 // Flags in the first byte.
 #define MOUSE_FLAGS_Y_OVERFLOW     0x80
@@ -335,12 +334,46 @@ void __ps2mouse_parse_data_packet (void)
 }
 
 
+// local
+//int __get_device_id(void);
+int __get_device_id(void)
+{
+    zzz_mouse_write (PS2MOUSE_GET_DEVICE_ID);
+    mouse_expect_ack();
+    
+    return (int) zzz_mouse_read(); 
+}
+
+
+// ps2mouse_initialize_device:
+//     Initialize the device.
+
+/*
+0xFF ResetMouse reset
+0xFE ResendFor serial communications errors
+0xF6 Set DefaultsSet default values
+0xF5 Disable (Data Reporting)In stream mode, 
+     should be sentbefore any other command
+0xF4 Enable (Data Reporting)In stream mode only
+0xF3 Set Sample RateSets state sampling rate
+0xF0 Set Remote modeSend data on request only
+0xEB Read DataSend data packet request
+0xEA Set Stream ModeSend data on events
+0xE9 Status RequestGet mouse configuration (3 bytes)
+0xE8 Set Resolution
+0xE7 Set Scaling 2:1Accelerationmode
+0xE6 Set Scaling 1:1Linear mode
+*/
+
 void ps2mouse_initialize_device (void)
 {
-    unsigned char status = 0;
+    unsigned char status=0;
     unsigned char device_id=0;
 
     debug_print ("ps2mouse_initialize_device:\n");
+
+
+    PS2Mouse.initialized = FALSE;
 
 // pointer.
 
@@ -350,7 +383,6 @@ void ps2mouse_initialize_device (void)
     mouse_y = (long) 8;
     saved_mouse_x = (long) mouse_x;
     saved_mouse_y = (long) mouse_y;
-
 
 
 //++
@@ -438,9 +470,9 @@ void ps2mouse_initialize_device (void)
 
     zzz_mouse_write(0xF3);
     mouse_expect_ack(); // ACK
-    zzz_mouse_write(200);   // #todo: Create a global variable.
-    //zzz_mouse_write(100);
+    zzz_mouse_write(PS2MOUSE_DEFAULT_SAMPLERATE);  //200
     mouse_expect_ack(); // ACK
+    PS2Mouse.sample_rate = PS2MOUSE_DEFAULT_SAMPLERATE;
 
 // ========================================
 // set resolution
@@ -450,7 +482,7 @@ void ps2mouse_initialize_device (void)
     mouse_expect_ack(); // ACK
     zzz_mouse_write(PS2MOUSE_RESULUTION);  //3
     mouse_expect_ack(); // ACK
-
+    PS2Mouse.resolution = PS2MOUSE_RESULUTION;
 
 // ========================================
 //set scaling 1:1
@@ -472,27 +504,60 @@ void ps2mouse_initialize_device (void)
 //++
 //=================================================
 
-    ps2_mouse_has_wheel = FALSE;
+// wheel.
+    PS2Mouse.has_wheel = FALSE;
+    PS2Mouse.has_five_buttons = FALSE;
+
+// device id.
+// Not initialzied,
+    PS2Mouse.device_id = -1;
 
 
-
-
-/*
 //=============
 //__enable_wheel:    
-  
-    // #obs:
-    // A rotina abaixo habilita a rodinha, se o dispositivo possui.
-    // Credits: Serenity OS.    
 
-    // Pega o device id e faz configurações de wheel.
-    zzz_mouse_write (PS2MOUSE_GET_DEVICE_ID);
-    mouse_expect_ack();
-    
-    device_id = zzz_mouse_read(); 
-    
-    if (device_id != PS2MOUSE_INTELLIMOUSE_ID){
+// #obs:
+// A rotina abaixo habilita a rodinha, se o dispositivo possui.
+// Credits: Serenity OS.   
 
+/*
+// osdev
+// https://wiki.osdev.org/%228042%22_PS/2_Controller#Detecting_PS.2F2_Device_Types 
+The full sequence is:
+Send the "disable scanning" command 0xF5 to the device
+Wait for the device to send "ACK" back (0xFA)
+Send the "identify" command 0xF2 to the device
+Wait for the device to send "ACK" back (0xFA)
+Wait for the device to send up to 2 bytes of reply, with a time-out to determine when it's finished (e.g. in case it only sends 1 byte)
+A partial list of responses includes:
+
+Byte/s	Device Type
+None	Ancient AT keyboard with translation enabled in the PS/Controller (not possible for the second PS/2 port)
+0x00	Standard PS/2 mouse
+0x03	Mouse with scroll wheel
+0x04	5-button mouse
+0xAB, 0x41 or 0xAB, 0xC1	MF2 keyboard with translation enabled in the PS/Controller (not possible for the second PS/2 port)
+0xAB, 0x83	MF2 keyboard
+*/
+
+// Pega o device id e faz configurações de wheel.
+
+
+// Get the device id for the first time.
+    device_id = (int) __get_device_id();
+    if( device_id == 0xFA ){ 
+        printf("ps2 mouse: device id fail\n");
+    }
+    PS2Mouse.device_id = device_id;
+    printf("ps2 mouse: [FIRST TIME] device id %d\n",PS2Mouse.device_id);
+
+// Se ele não é inteligente,
+// vamos fazer a inicialização e ver se vira inteligente.
+
+    // 0
+    if (device_id != PS2MOUSE_INTELLIMOUSE_ID || 
+        device_id != PS2MOUSE_INTELLIMOUSE_EXPLORER_ID )
+    {
         // Send magical wheel initiation sequence.
         zzz_mouse_write (PS2MOUSE_SET_SAMPLE_RATE);
         mouse_expect_ack();
@@ -507,45 +572,77 @@ void ps2mouse_initialize_device (void)
         zzz_mouse_write (80);
         mouse_expect_ack();
 
-        zzz_mouse_write (PS2MOUSE_GET_DEVICE_ID);
-        mouse_expect_ack();
-        
-        // Porque estamos lendo novamente?
-        device_id = zzz_mouse_read();
+        // Checando novamente pra ver se ficou inteligente.
+        device_id = (int) __get_device_id();
+        if( device_id != 0xFA ){ 
+            PS2Mouse.device_id = device_id;
+        }
+        printf("ps2 mouse: [SECOND TIME] device id %d\n",PS2Mouse.device_id);
     }
 
-    if (device_id == PS2MOUSE_INTELLIMOUSE_ID){
-        //m_has_wheel = true;
-        ps2_mouse_has_wheel = 1;
-        kprintf ("ps2mouse_initialize_device: Mouse wheel enabled!\n");
-    } else {
-        kprintf ("ps2mouse_initialize_device: No mouse wheel detected!\n");
-    };
+    // Vamos ver se ficou inteligente depois
+    // e possivelmente fazermos uma segunda inicialização.
+    
+    // YES, ele agora é inteligente
+    if (PS2Mouse.device_id == PS2MOUSE_INTELLIMOUSE_ID || 
+        PS2Mouse.device_id == PS2MOUSE_INTELLIMOUSE_EXPLORER_ID )
+    {
+        PS2Mouse.has_wheel = TRUE;
+        printf ("ps2mouse_initialize_device: Mouse wheel enabled!\n");
+    } 
+
+    // NO, ele ainda é burro.
+    // nao e' 3 nem 4.
+    if (PS2Mouse.device_id != PS2MOUSE_INTELLIMOUSE_ID &&  
+        PS2Mouse.device_id != PS2MOUSE_INTELLIMOUSE_EXPLORER_ID )
+    {
+        PS2Mouse.has_wheel = FALSE;
+        printf ("ps2mouse_initialize_device: No mouse wheel detected!\n");
+    }
 //=============
-*/
 
+// Sim ja temos um mouse de id '3'
+// Para habilitarmos o mouse com 5 botoes
+// temos que repetir a sequencia.
+// See:
+// https://wiki.osdev.org/PS/2_Mouse
 
+    // 3
+    if (PS2Mouse.device_id == PS2MOUSE_INTELLIMOUSE_ID)
+    {
+        // Enable five buttons
+        zzz_mouse_write (PS2MOUSE_SET_SAMPLE_RATE);
+        mouse_expect_ack();
+        zzz_mouse_write (200);
+        mouse_expect_ack();
+        zzz_mouse_write (PS2MOUSE_SET_SAMPLE_RATE);
+        mouse_expect_ack();
+        zzz_mouse_write (200);
+        mouse_expect_ack();
+        zzz_mouse_write (PS2MOUSE_SET_SAMPLE_RATE);
+        mouse_expect_ack();
+        zzz_mouse_write (80);
+        mouse_expect_ack();
+        // Pega novamente para sabermos se e' mouse de id 4
+        // e tem 5 botoes.
+        device_id = (int) __get_device_id();
+        if( device_id != 0xFA ){ 
+            PS2Mouse.device_id = device_id;
+        }
+        printf("ps2 mouse: [THIRD TIME] device id %d\n",PS2Mouse.device_id);
+    }
 
-/*
-0xFF ResetMouse reset
-0xFE ResendFor serial communications errors
-0xF6 Set DefaultsSet default values
-0xF5 Disable (Data Reporting)In stream mode, 
-     should be sentbefore any other command
-0xF4 Enable (Data Reporting)In stream mode only
-0xF3 Set Sample RateSets state sampling rate
-0xF0 Set Remote modeSend data on request only
-0xEB Read DataSend data packet request
-0xEA Set Stream ModeSend data on events
-0xE9 Status RequestGet mouse configuration (3 bytes)
-0xE8 Set Resolution
-0xE7 Set Scaling 2:1Accelerationmode
-0xE6 Set Scaling 1:1Linear mode
-*/
+    // 4
+    if (PS2Mouse.device_id == PS2MOUSE_INTELLIMOUSE_EXPLORER_ID)
+    {
+        PS2Mouse.has_five_buttons = TRUE;
+        printf ("ps2mouse_initialize_device: Mouse has five buttons\n");
+    }
 
 //=================================================
 //--
 
+    PS2Mouse.initialized = TRUE;
     debug_print ("ps2mouse_initialize_device: done\n");
 }
 
@@ -646,7 +743,7 @@ void DeviceInterface_PS2Mouse(void)
     // no modo streaming.
     if ( _byte == 0xFA ){
         //debug_print ("[0xFA]: ACK\n");
-        count_mouse = 0;
+        mouse_stage = 0;
         return;
     }
 */
@@ -658,84 +755,51 @@ void DeviceInterface_PS2Mouse(void)
         //debug_print ("[0xFE]: RESEND\n");
         printf ("DeviceInterface_PS2Mouse: resend\n");
         refresh_screen();
-        //count_mouse = 0;
+        //mouse_stage = 0;
         return;
     }
 */
 
 // first byte
-// Y overflow	X overflow	Y sign bit	X sign bit	Always 1	Middle Btn	Right Btn	Left Btn
+// Y overflow, X overflow, Y sign bit, X sign bit
+// Always 1, Middle Btn, Right Btn, Left Btn
 
-// Counter
-    switch (count_mouse){
+    // Save
+    buffer_mouse[mouse_stage] = (char) _byte;
+
+    switch (mouse_stage){
 
     case 0:
-        //debug_print ("[0]:\n");
-        buffer_mouse[0] = (char) _byte;
-        // Esse bit esta sempre setado no primeiro byte.
         if (!(_byte & MOUSE_FLAGS_ALWAYS_1))
         {
-            debug_print ("[0]: Stream out of sync.\n");
-            count_mouse=0;
+            mouse_stage=0;
             break;
         }
-        count_mouse++;
+        mouse_stage++;
         break;
-
-    //x
     case 1:
-        //debug_print ("[1]:\n");
-        buffer_mouse[1] = (char) _byte;
-        count_mouse++;
+        mouse_stage++;
         break;
-    //y
     case 2:
-        //debug_print ("[2]:\n");
-        buffer_mouse[2] = (char) _byte;
-        // Se tem wheel, então tem mais um bytes.
-        if( ps2_mouse_has_wheel == TRUE )
+        if( PS2Mouse.has_wheel == TRUE )
         {
-            count_mouse++;
+            mouse_stage++;
             break;
         }
-        count_mouse = 0;
-        //if( (_byte & 0x80) || (_byte & 0x40) == 0 ) 
-        //{
-            // LOCAL WORKER
-            // Action after mouse event.
-            __ps2mouse_parse_data_packet();
-        //}
-        //old_mouse_button_1 = mouse_button_1;
-        //old_mouse_button_2 = mouse_button_2;
-        //old_mouse_button_3 = mouse_button_3;
-        break;
-    //Se tiver 'wheel'.
-    case 3:
-        count_mouse = 0;
+        // Commit packet.
         __ps2mouse_parse_data_packet();
+        mouse_stage = 0;
         break;
-    
-    //error
+    case 3:
+        __ps2mouse_parse_data_packet();
+        mouse_stage = 0;
+        break;
+    // Error: drain and clean
     default:
-        //debug_print ("[default]:\n");
         in8(0x60);
-        count_mouse = 0;
-        //old_mouse_button_1 = 0;
-        //old_mouse_button_2 = 0;
-        //old_mouse_button_3 = 0;
-        //mouse_button_1 = 0;
-        //mouse_button_2 = 0;
-        //mouse_button_3 = 0;
+        mouse_stage = 0;
         break;
     };
-
-//#debug
-    //printf("$\n");
-    //refresh_screen();
-
-//#debug
-//#todo: deletar isso.
-    //debug_print ("DeviceInterface_PS2Mouse: Done\n");
 }
 
 

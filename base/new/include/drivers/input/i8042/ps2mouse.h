@@ -7,6 +7,12 @@
 
 #define PS2MOUSE_RESULUTION    3
 
+// Sampling Rate: 
+// Packets the mouse can send per second.
+//#define PS2MOUSE_DEFAULT_SAMPLERATE  100
+#define PS2MOUSE_DEFAULT_SAMPLERATE  200
+
+
 // #bugbug
 // We have these same definitions on ps2mouse.c ??
 
@@ -35,6 +41,15 @@
 #define MOUSE_SET_DEFAULTS             0xF6
 #define MOUSE_RESEND                   0xFE
 #define MOUSE_RESET                    0xFF
+
+
+
+#define PS2MOUSE_GET_DEVICE_ID      0xF2
+#define PS2MOUSE_SET_SAMPLE_RATE    0xF3
+
+//intelligente mouse
+#define PS2MOUSE_INTELLIMOUSE_ID 0x03
+#define PS2MOUSE_INTELLIMOUSE_EXPLORER_ID 0x04
 
 
 // 8042 mouse responses.
@@ -68,9 +83,12 @@ struct ps2_mouse_d
     object_type_t  objectType;
     object_class_t objectClass;
 
+    int device_id;
+
     int initialized;
-    
+
     unsigned int resolution;
+    unsigned int sample_rate;
 
     // #todo
     // int control_fd;
@@ -81,11 +99,13 @@ struct ps2_mouse_d
 // If the mouse has been initalized so 
 // that its mouseID is 3 or 4, it will send a 4th byte in each packet.
 
-    int device_id;
+    int has_wheel;
+    int has_five_buttons;
 };
 
 //#todo
-//struct ps2_mouse_d  PS2Mouse;
+// If we have only one mouse device.
+struct ps2_mouse_d  PS2Mouse;
 
 
 //

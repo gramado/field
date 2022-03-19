@@ -1,5 +1,5 @@
 
-
+// ps2kbd.h
 
 #ifndef ____PS2KBD_H
 #define ____PS2KBD_H    1
@@ -147,8 +147,9 @@ struct ps2_keyboard_d
     // pid_t pid;
 };
 
-//#todo
-//struct ps2_keyboard_d  PS2Keyboard;
+// #todo
+// If we have only one kbd device.
+struct ps2_keyboard_d  PS2Keyboard;
 
 
 //

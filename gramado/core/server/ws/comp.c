@@ -1,3 +1,4 @@
+
 // comp.c
 
 
@@ -21,6 +22,18 @@ static long __new_mouse_y=0;
 void __display_mouse_cursor(void)
 {
 
+    if( __old_mouse_x<0 )
+         __old_mouse_x=0;
+    if( __old_mouse_y<0 )
+        __old_mouse_y=0;
+
+
+    if( __new_mouse_x<0 )
+         __new_mouse_x=0;
+    if( __new_mouse_y<0 )
+        __new_mouse_y=0;
+
+
 //------
 //#dangerdanger
 //#todo: show the backbuffer
@@ -35,20 +48,20 @@ void __display_mouse_cursor(void)
     __old_mouse_x = __new_mouse_x;
     __old_mouse_y = __new_mouse_y;
 
+
 // #todo: 
 // print directly into the lfb.
 // DRAW
     frontbuffer_draw_rectangle( 
-        __new_mouse_x, 
-        __new_mouse_y, 
-        8, 
-        8, 
+        (unsigned long) __new_mouse_x, 
+        (unsigned long) __new_mouse_y, 
+        (unsigned long) 8, 
+        (unsigned long) 8, 
         COLOR_YELLOW, 
         0 );
-
-
 //------        
 }
+
 
 // Flush
 // The compositor.
@@ -103,8 +116,15 @@ void compose(void)
 
 void comp_set_mouse_position(long x, long y)
 {
-    __new_mouse_x=x;
-    __new_mouse_y=y;
+
+    if( x<0 )
+         x=0;
+
+    if( y<0 )
+        y=0;
+
+    __new_mouse_x = x;
+    __new_mouse_y = y;
 }
 
 
