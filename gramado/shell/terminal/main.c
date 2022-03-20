@@ -1920,7 +1920,7 @@ terminalProcedure (
 
 // local
 // Pegando o input de GRAMADO.TXT.
-int __input_loop(int fd)
+int __input_GRAMADOTXT(int fd)
 {
 // #importante:
 // Esse event loop pega dados de um arquivo.
@@ -1933,7 +1933,7 @@ int __input_loop(int fd)
     new_stdin = (FILE *) fopen("gramado.txt","a+");
 
     if( (void*) new_stdin == NULL ){
-        printf ("__input_loop: new_stdin\n");
+        printf ("__input_GRAMADOTXT: new_stdin\n");
         return -1;
     }
 
@@ -1975,7 +1975,7 @@ int __input_loop(int fd)
 // #bugbug
 // Isso esta falhando porque stdout não é um 'regular file'
 // ele é um console e só esta aceitando saída por enquanto.
-int __input_loop2(int fd)
+int __input_STDOUT(int fd)
 {
 // #importante:
 // Esse event loop pega dados de um arquivo.
@@ -1989,7 +1989,7 @@ int __input_loop2(int fd)
     new_stdin = stdout;
 
     if( (void*) new_stdin == NULL ){
-        printf ("__input_loop2: new_stdin\n");
+        printf ("__input_STDOUT: new_stdin\n");
         return -1;
     }
 
@@ -2009,7 +2009,13 @@ int __input_loop2(int fd)
     rtl_yield();
     
     while (1){
+
         C = fgetc(new_stdin);
+
+        if( C == EOF || C == VK_RETURN ){
+            rewind(new_stdin);
+        }
+        
         if (C > 0)
         {
             terminalProcedure( 
@@ -2029,7 +2035,7 @@ int __input_loop2(int fd)
 // local
 // Pegando o input de 'stderr'.
 // It's working
-int __input_loop3(int fd)
+int __input_STDERR(int fd)
 {
 // #importante:
 // Esse event loop pega dados de um arquivo.
@@ -2044,21 +2050,9 @@ int __input_loop3(int fd)
     __terminal_input_fp = stderr;   //save global.
 
     if( (void*) new_stdin == NULL ){
-        printf ("__input_loop3: new_stdin\n");
+        printf ("__input_STDERR: new_stdin\n");
         return -1;
     }
-
-// O kernel seleciona qual será 
-// o arquivo para teclado ps2.
-
-    gramado_system_call(
-        8002,
-        fileno(new_stdin),
-        0,
-        0 );
-
-// Poisiona no início do arquivo.
-    rewind(new_stdin);
 
 // relax
     rtl_yield();
@@ -2070,6 +2064,11 @@ int __input_loop3(int fd)
         C = fgetc(new_stdin);
         if (C > 0)
         {
+
+            if(C == '9'){
+                //printf("TERMINAL: 9\n");  //console
+            }
+            
             terminalProcedure( 
                 client_fd,    // socket
                 window_id,    // window ID
@@ -2085,7 +2084,7 @@ int __input_loop3(int fd)
 
 // local
 // Pegando o input de 'stdin'.
-int __input_loop4(int fd)
+int __input_STDIN(int fd)
 {
 // #importante:
 // Esse event loop pega dados de um arquivo.
@@ -2099,7 +2098,7 @@ int __input_loop4(int fd)
     new_stdin = stdin;
 
     if( (void*) new_stdin == NULL ){
-        printf ("__input_loop4: new_stdin\n");
+        printf ("__input_STDIN: new_stdin\n");
         return -1;
     }
 
@@ -2119,6 +2118,10 @@ int __input_loop4(int fd)
     rtl_yield();
     
     while (1){
+        
+        if( isUsingEmbeddedShell == FALSE )
+            return 0;  //ok
+        
         C = fgetc(new_stdin);
         if (C > 0)
         {
@@ -2130,6 +2133,7 @@ int __input_loop4(int fd)
                 C );          // long2 (ascii)
         }
         rtl_yield(); // relax
+        
     };
     
     return 0;
@@ -2417,22 +2421,37 @@ int main ( int argc, char *argv[] )
 
 //from GRAMADO.TXT
 //ok, it is working.
-    //InputStatus = __input_loop(client_fd);
+    //InputStatus = __input_GRAMADOTXT(client_fd);
 
 //from stdout
 // #bugbug
 // Isso esta falhando porque stdout não é um 'regular file'
 // ele é um console e só esta aceitando saída por enquanto.
-    //InputStatus = __input_loop2(client_fd);
+    //InputStatus = __input_STDOUT(client_fd);
+
+
+// from stdin
+// stdin é um 'regular file'
+    InputStatus = __input_STDIN(client_fd);
+
+     // estavamos lendo em stdin, e vamos começar a ler em stderr
+     // sem mandarmos o kernel enviar o input para stderr
+
+    if( InputStatus == 0 )
+    {
+
+        //printf("TERMINAL: newloop\n");
 
 // from srderr
 // stderr é um 'regular file'
 // It's working.
-    InputStatus = __input_loop3(client_fd);
 
-// from srdin
-// stderr é um 'regular file'
-    //InputStatus = __input_loop4(client_fd);
+       // rebubina o arquivo de input.
+        rewind(stdin);
+
+        // agora vamos ler stderr
+        InputStatus = __input_STDERR(client_fd);
+    }
 
 //exit:
     debug_print ("terminal: bye\n"); 

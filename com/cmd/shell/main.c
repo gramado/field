@@ -528,6 +528,14 @@ int main ( int argc, char *argv[] )
 // SHELL.BIN receberá input de teclado via stdin.
 //
 
+
+// #bugbug: Isso nao funcionou, o kernel continua
+// colocando o input no arquivo determinado pelo terminal
+
+
+/*
+// input de teclado.
+// ---------------
 // O kernel seleciona qual será 
 // o arquivo para teclado ps2.
 
@@ -539,9 +547,11 @@ int main ( int argc, char *argv[] )
 
 // rebubina o arquivo de input.
     rewind(stdin);
+// -----------
+*/
 
 // relax
-    rtl_yield();
+    //rtl_yield();
 
 // #bugbug
 // Precisamos usar ess fflush.
@@ -551,21 +561,24 @@ int main ( int argc, char *argv[] )
 // Pois agora ele eh um arquivo regular, nao um tty console.
     //rewind(stdout);
 
-    //printf("SHELL.BIN: Hello terminal!");
+    printf("SHELL.BIN: Hello terminal!");
     //printf("%c",'$');
-    //fflush(stdout);
+    fflush(stdout);
 
     int C=0;
     
     // pegamos o char de stdin e enviaremos para o terminal
     // via stdout.
     while (1){
+
         C = fgetc(stdin);
         
         // Como estamos usando um arquivo regular,
         // entao o kernel concatena ate chegar no fim do arquivo.
-        if( C == EOF )
-            rewind(stdout);
+        if( C == EOF ){
+            //rewind(stdin);
+            //exit(0);
+        }
         
         if( C > 0){
              
@@ -580,8 +593,25 @@ int main ( int argc, char *argv[] )
              if (C >= 0x20 && C <= 0x7F)
              {
                  input(C);
+
+                 //#debug
+                 // o terminal vai imprimir errado.
+                 // ok funcionou.
+                 //printf("%c", (C+1) ); 
+                                  
                  printf("%c",C);
                  fflush(stdout);
+                 
+                 // + precisamos nos certificar que eh o shell
+                 // que esta enviando chars para o terminal
+                 // e nao o kernel
+                 // + precisamos nos certivicar que o shell esta lendo de um arquivo.
+                 // isso eh uma tentativa
+                 if (C == 'q'){
+                     //printf("%c",'9');
+                     //fflush(stdout);
+                 }
+                 
              }
         }
         //rtl_yield(); // relax

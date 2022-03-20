@@ -394,8 +394,9 @@ int fflush_all(void)
 
 int fflush (FILE *stream)
 {
-    if ( (void*) stream == NULL )
+    if ( (void*) stream == NULL ){
         return (int) fflush_all();
+    }
 
     return (int) __fflush(stream);
 }
@@ -475,8 +476,14 @@ int __fflush (FILE *stream)
 // que é um dispositivo do tipo console. O kernel escreverá no 
 // console 0.  
 
-    if ( Count > BUFSIZ )
+    if ( Count > BUFSIZ ){
         Count=BUFSIZ;
+    }
+
+
+//
+// Write
+//
 
 //#ifdef _POSIX_
     nwrite = write ( fileno(stream), stream->_base, Count );
@@ -5064,8 +5071,9 @@ void perror (const char *str)
 }
 
 
-// O ponto de leitura e escrita volta a ser a base.
-// Isso é válido apenas para a stream aqui em ring3.
+// Reiniciamos a estrutura na biblioteca e
+// chamamos lseek para o kernel modar o ponteiro
+// la na estrutura de arquivos no kernel.
 
 void rewind (FILE *stream)
 {
@@ -5113,17 +5121,17 @@ void rewind (FILE *stream)
         return;
     }
 
-    // do !
-    
+// do!
+
     stream->_p = stream->_base;
     stream->_w = 0;
     stream->_r = 0;
-    
-    // #bugbug
-    // No gramado essa variavel se refere a quantidade de bytes disponiveis
-    // entao deve ser o tamanho do buffer.
-    // O kernel ja esta fazendo isso.
-    // Vamos ajustar isso aqui tambem.
+
+// #bugbug
+// No gramado essa variavel se refere a quantidade de bytes disponiveis
+// entao deve ser o tamanho do buffer.
+// O kernel ja esta fazendo isso.
+// Vamos ajustar isso aqui tambem.
 
 // Não há bytes no buffer da libc
     stream->_cnt = 0;    

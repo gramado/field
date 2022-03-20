@@ -1845,9 +1845,9 @@ off_t lseek (int fd, off_t offset, int whence)
     //if (fd<0)
        //return 0; ??
 
-    // # isso muda o posicionamento dentro do arquivo lá no kernel.
-    // isso está certo, pois precisamos disso pra sabermos
-    // o tamanho do arquivo.
+// # isso muda o posicionamento dentro do arquivo lá no kernel.
+// isso está certo, pois precisamos disso pra sabermos
+// o tamanho do arquivo.
 
     return (off_t) gramado_system_call ( 
                        603, 
