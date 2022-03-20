@@ -6378,23 +6378,18 @@ char *ctermid (char *s)
 
 
 /*
- **************************************************
  * stdioInitialize:
  *     Inicializa stdio para usar o fluxo padrão.
  *     O retorno deve ser (int) e falhar caso dê algo errado.
  */
 
 // This routine ws called by crt0() in crt0.c
-
 // #bugbug
 // Essa estrutura lida com elementos de estrutura em ring3.
 // #atenção: Algumas rotinas importantes estão usando esses elementos.
-
-
 // #bugbug
 // Precisamos usar os arquivos herdados do processo pai.
 // Eles estão na estrutura de processo desse processo.
-
 // #bugbug
 // Talvez não seria o caso de apenas abrirmos os arquivos herdados.
 // E o heap ??
@@ -6407,13 +6402,12 @@ void stdioInitialize(void)
 {
     int status = 0;
     int i=0;
-    
-    
-    // #bugbug
-    // Isso deve estar errado.
-    // provavelmente deveríamos apenas abrir os
-    // três arquivos herdados do processo pai.
-    // ?? Não sei se o processo init também terá um fluxo herdado.
+
+// #bugbug
+// Isso deve estar errado.
+// provavelmente deveríamos apenas abrir os
+// três arquivos herdados do processo pai.
+// ?? Não sei se o processo init também terá um fluxo herdado.
 
 
     // Buffers para as estruturas.
@@ -6426,9 +6420,6 @@ void stdioInitialize(void)
     //unsigned char buffer1_data[BUFSIZ];
     //unsigned char buffer2_data[BUFSIZ];
 
-    // #debug
-    debug_print ("\n");
-    debug_print ("----------------\n");
     debug_print ("stdioInitialize:\n");
 
 //
@@ -6439,9 +6430,14 @@ void stdioInitialize(void)
     //stdout = (FILE *) &buffer1[0];
     //stderr = (FILE *) &buffer2[0];
 
-    // #bugbug
-    // Se essa inicializaçao falhar, nao temos como mostrar
-    // mensagens de erro.
+// #bugbug
+// Se essa inicializaçao falhar, nao temos como mostrar
+// mensagens de erro.
+
+
+// Os aplicativos precisam de uma estrutura clinet-side
+// para gerenciarem o fluxo de dados dos arquivos,
+// mesmo tendo os arquivos uma estrutura kernel-side.
 
 // ===============
 // stdin
@@ -6500,7 +6496,7 @@ void stdioInitialize(void)
         //printf ("stdioInitialize: stdin->_base fail\n");
         exit(1);
     }
-    stdin->_lbfsize  = BUFSIZ;
+    stdin->_lbfsize = BUFSIZ;
     stdin->_p  = stdin->_base;
     stdin->_cnt  = 0;  //BUFSIZ-1;
     stdin->_w  = 0;
@@ -6542,31 +6538,35 @@ void stdioInitialize(void)
 // # libc mode #
 //
 
-	// #bugbug:
-	// Vamos usar o modo draw até implementarmos o modo normal.
-	
-	//Os caracteres são colocados em stdout.
+// #bugbug:
+// Vamos usar o modo draw até implementarmos o modo normal.
+
+
+// Normal mode:
+// Os caracteres são colocados em stdout.
     //__libc_output_mode = LIBC_NORMAL_MODE;
 
-    // Os caracteres são pintados na tela.
+// Draw mode:
+// Os caracteres são pintados na tela em full screen.
+// usando um dos consoles virtuais do kernel.
     __libc_output_mode = LIBC_DRAW_MODE;
 
-      // #importante:
-      // Vamos conectar o processo filho ao processo pai
-      // atraves das ttys privadas dos processos.
-      // o processo pai é o terminal. (às vezes)
-      // #bugbug:
-      // Esse metodo não funcionara no caso
-      // do processo filho do shell
- 
-      // #bugbug
-      // Deveria ser o contrário.
-      // O pai ser master e o filho slave.
- 
-   // #fixme
-   // Something is not working.
-   // Suspended for now.
-   // I don't wanna see error messages everytime we launch a command.
+// #importante:
+// Vamos conectar o processo filho ao processo pai
+// atraves das ttys privadas dos processos.
+// o processo pai é o terminal. (às vezes)
+// #bugbug:
+// Esse metodo não funcionara no caso
+// do processo filho do shell
+
+// #bugbug
+// Deveria ser o contrário.
+// O pai ser master e o filho slave.
+
+// #fixme
+// Something is not working.
+// Suspended for now.
+// I don't wanna see error messages everytime we launch a command.
 
     /*
       gramado_system_call ( 
@@ -6576,18 +6576,20 @@ void stdioInitialize(void)
           0 );
     */
 
-    // ok
-    // This is the tty of this process.
-    
+//
+// tty
+//
+
+// ok
+// This is the tty of this process.
+
     __libc_tty_id = (int) gramado_system_call ( 266, getpid(), 0, 0 ); 
 
 
-    // Limpando o prompt[];
+// Clear prompt[] buffer.
     prompt_clean();
 
-    // #debug
-    debug_print ("stdioInitialize: done\n");  
-    debug_print ("--------------------------\n");
+    debug_print ("stdioInitialize: done\n");
 }
 
 

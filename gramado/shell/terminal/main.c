@@ -51,12 +51,19 @@
 #include <termios.h>
 
 
+FILE *__terminal_input_fp;
+
+
 static unsigned int bg_color = COLOR_BLACK;
 static unsigned int fg_color = COLOR_WHITE;
 
 int cursor_x = 0;
 int cursor_y = 0;
 unsigned int prompt_color;
+
+
+//We are using the embedded shell.
+int isUsingEmbeddedShell=TRUE;
 
 //
 // == ports ====================================
@@ -434,8 +441,14 @@ void compareStrings(int fd)
 // We need to work on that routine of passing
 // the arguments to the child process.
 // See: rtl.c
+// Stop using the embedded shell.
+
+// rebubina o arquivo de input.
+    //rewind(__terminal_input_fp);
 
     rtl_clone_and_execute(prompt);
+    isUsingEmbeddedShell = FALSE;
+    return;
 
     //printf("Command not found\n");
 
@@ -1824,14 +1837,34 @@ terminalProcedure (
         switch(long1)
         {
             case VK_RETURN:
-                __on_return_key_pressed(fd);
+                
+                // When using the embedded shell.
+                // Compare strings.
+                if( isUsingEmbeddedShell == TRUE ){
+                    __on_return_key_pressed(fd);
+                }
+
+                // When not using the embedded shell.
+                // Goto next line.
+                if( isUsingEmbeddedShell == FALSE ){
+                    cursor_x++;
+                    if( cursor_x >= Terminal.width_in_chars)
+                    {
+                        cursor_x = Terminal.left;
+                        cursor_y++;
+                    }
+                }
+
                 return 0;
                 break;
 
             // draw the char using the window server
             // Criar uma função 'terminal_draw_char()'
             default:
-                input(long1);
+            
+                if( isUsingEmbeddedShell == TRUE )
+                    input(long1);
+                
                 // draw char
                 gws_draw_char ( 
                     fd, 
@@ -1886,17 +1919,18 @@ terminalProcedure (
 
 
 // local
+// Pegando o input de GRAMADO.TXT.
 int __input_loop(int fd)
 {
 // #importante:
 // Esse event loop pega dados de um arquivo.
 
     int C=0;
-    FILE *new_stdin;
-    new_stdin = (FILE *) fopen("gramado.txt","a+");
-
     int client_fd = fd;
     int window_id = Terminal.client_window_id;
+
+    FILE *new_stdin;
+    new_stdin = (FILE *) fopen("gramado.txt","a+");
 
     if( (void*) new_stdin == NULL ){
         printf ("__input_loop: new_stdin\n");
@@ -1934,6 +1968,173 @@ int __input_loop(int fd)
     
     return 0;
 }
+
+
+// local
+// Pegando o input de 'stdout'.
+// #bugbug
+// Isso esta falhando porque stdout não é um 'regular file'
+// ele é um console e só esta aceitando saída por enquanto.
+int __input_loop2(int fd)
+{
+// #importante:
+// Esse event loop pega dados de um arquivo.
+
+    int C=0;
+    int client_fd = fd;
+    int window_id = Terminal.client_window_id;
+
+    FILE *new_stdin;
+    //new_stdin = (FILE *) fopen("gramado.txt","a+");
+    new_stdin = stdout;
+
+    if( (void*) new_stdin == NULL ){
+        printf ("__input_loop2: new_stdin\n");
+        return -1;
+    }
+
+// O kernel seleciona qual será 
+// o arquivo para teclado ps2.
+
+    gramado_system_call(
+        8002,
+        fileno(new_stdin),
+        0,
+        0 );
+
+// Poisiona no início do arquivo.
+    rewind(new_stdin);
+
+// relax
+    rtl_yield();
+    
+    while (1){
+        C = fgetc(new_stdin);
+        if (C > 0)
+        {
+            terminalProcedure( 
+                client_fd,    // socket
+                window_id,    // window ID
+                MSG_KEYDOWN,  // message code
+                C,            // long1 (ascii)
+                C );          // long2 (ascii)
+        }
+        rtl_yield(); // relax
+    };
+    
+    return 0;
+}
+
+
+// local
+// Pegando o input de 'stderr'.
+// It's working
+int __input_loop3(int fd)
+{
+// #importante:
+// Esse event loop pega dados de um arquivo.
+
+    int C=0;
+    int client_fd = fd;
+    int window_id = Terminal.client_window_id;
+
+    FILE *new_stdin;
+    //new_stdin = (FILE *) fopen("gramado.txt","a+");
+    new_stdin = stderr;
+    __terminal_input_fp = stderr;   //save global.
+
+    if( (void*) new_stdin == NULL ){
+        printf ("__input_loop3: new_stdin\n");
+        return -1;
+    }
+
+// O kernel seleciona qual será 
+// o arquivo para teclado ps2.
+
+    gramado_system_call(
+        8002,
+        fileno(new_stdin),
+        0,
+        0 );
+
+// Poisiona no início do arquivo.
+    rewind(new_stdin);
+
+// relax
+    rtl_yield();
+    rtl_yield();
+    rtl_yield();
+    rtl_yield();
+    
+    while (1){
+        C = fgetc(new_stdin);
+        if (C > 0)
+        {
+            terminalProcedure( 
+                client_fd,    // socket
+                window_id,    // window ID
+                MSG_KEYDOWN,  // message code
+                C,            // long1 (ascii)
+                C );          // long2 (ascii)
+        }
+        rtl_yield(); // relax
+    };
+    
+    return 0;
+}
+
+// local
+// Pegando o input de 'stdin'.
+int __input_loop4(int fd)
+{
+// #importante:
+// Esse event loop pega dados de um arquivo.
+
+    int C=0;
+    int client_fd = fd;
+    int window_id = Terminal.client_window_id;
+
+    FILE *new_stdin;
+    //new_stdin = (FILE *) fopen("gramado.txt","a+");
+    new_stdin = stdin;
+
+    if( (void*) new_stdin == NULL ){
+        printf ("__input_loop4: new_stdin\n");
+        return -1;
+    }
+
+// O kernel seleciona qual será 
+// o arquivo para teclado ps2.
+
+    gramado_system_call(
+        8002,
+        fileno(new_stdin),
+        0,
+        0 );
+
+// Poisiona no início do arquivo.
+    rewind(new_stdin);
+
+// relax
+    rtl_yield();
+    
+    while (1){
+        C = fgetc(new_stdin);
+        if (C > 0)
+        {
+            terminalProcedure( 
+                client_fd,    // socket
+                window_id,    // window ID
+                MSG_KEYDOWN,  // message code
+                C,            // long1 (ascii)
+                C );          // long2 (ascii)
+        }
+        rtl_yield(); // relax
+    };
+    
+    return 0;
+}
+
 
 
 //
@@ -2212,7 +2413,26 @@ int main ( int argc, char *argv[] )
 // local routine.
 
     int InputStatus=-1;
-    InputStatus = __input_loop(client_fd);
+
+
+//from GRAMADO.TXT
+//ok, it is working.
+    //InputStatus = __input_loop(client_fd);
+
+//from stdout
+// #bugbug
+// Isso esta falhando porque stdout não é um 'regular file'
+// ele é um console e só esta aceitando saída por enquanto.
+    //InputStatus = __input_loop2(client_fd);
+
+// from srderr
+// stderr é um 'regular file'
+// It's working.
+    InputStatus = __input_loop3(client_fd);
+
+// from srdin
+// stderr é um 'regular file'
+    //InputStatus = __input_loop4(client_fd);
 
 //exit:
     debug_print ("terminal: bye\n"); 

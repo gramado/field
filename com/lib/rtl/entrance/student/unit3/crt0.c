@@ -202,30 +202,34 @@ int crt0 (unsigned long rdi)
 // Initialize the library.
 //
 
-    int rt_status = -1;
 
-
-// See: stdlib/stdlib.c
-
+    // Stage 1
     // #debug: put char
     //gramado_system_call(65,'1',0,0); 
 
-    rt_status = libcInitRT();
 
-    if (rt_status != 0)
-    {
+// Initialize heap support.
+// See: 
+// stdlib/stdlib.c
+
+    int rt_status = -1;  //fail
+
+    rt_status = (int) libcInitRT();
+    if (rt_status != 0){
         // #debug: put char
         gramado_system_call(65,'e',0,0);
     }
 
-
-// return void
-// See: stdio/stdio.c
-
+    // Stage 2
     // #debug: put char
     //gramado_system_call(65,'2',0,0);
 
+// return void.
+// See: 
+// stdio/stdio.c
+
     stdioInitialize();
+
 
 // #todo
 // Chamar esse ao invés de chamar os dois acima.

@@ -1963,9 +1963,11 @@ void *sci2 (
     if ( number == 900 )
     {
         debug_print("sci2: [900] clone and execute\n");
+        
         // #debug
-        printf("sci2: copy_process called by pid{%d}\n",current_process);
-        refresh_screen();
+        //printf("sci2: copy_process called by pid{%d}\n",current_process);
+        //refresh_screen();
+        
         return (void *) copy_process( 
                             (const char *) arg2, 
                             (pid_t) current_process, 

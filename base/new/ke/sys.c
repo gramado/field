@@ -1471,17 +1471,19 @@ fail:
  *     dada string.
  */
 // Escreve no arquivo uma certa quantidade de caracteres de uma dada string 
-
 // It's called by sys_write.
 
-int file_write_buffer ( file *f, char *string, int len )
+int 
+file_write_buffer ( 
+    file *f, 
+    char *string, 
+    int len )
 {
-
     char *p;
 
     p = string;
 
-   debug_print ("file_write_buffer:\n");
+    debug_print ("file_write_buffer:\n");
 
     if ( (void *) f == NULL ){
         printf ("file_write_buffer: file\n");
@@ -1493,6 +1495,7 @@ int file_write_buffer ( file *f, char *string, int len )
         goto fail;
     }
 
+// Tentando escrever mais do que cabe no arquivo.
     if ( len >= BUFSIZ ){
         printf ("file_write_buffer: len > BUFSIZ\n");
         goto fail;
@@ -1529,12 +1532,10 @@ int file_write_buffer ( file *f, char *string, int len )
 // Nesse caso o aplicative deveria usar rewind() antes
 // para ter um ponteiro de escrita adequado.
 
-// #todo: 
-// Normal file object
 
-    if ( f->____object == ObjectTypeFile ||
-         f->____object == ObjectTypeTTY  ||
-         f->____object == ObjectTypeIoBuffer)
+    if ( f->____object == ObjectTypeFile ||     // regular file
+         f->____object == ObjectTypeTTY  ||     // tty
+         f->____object == ObjectTypeIoBuffer )  // ??
     {
         // #bugbug
         // Temos que ter um limite aqui ... !!!

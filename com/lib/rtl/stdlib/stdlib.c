@@ -54,7 +54,7 @@ unsigned long mm_prev_pointer=0;    //Endereço da úntima estrutura alocada.
 // == Internal =====================================
 //
 
-int stdlibInitMM (void);
+int __init_mm(void);
 int stdlib_strncmp ( char *s1, char *s2, int len );
 char *__findenv ( const char *name, int *offset );
 
@@ -499,13 +499,12 @@ unsigned long FreeHeap ( unsigned long size )
 
 
 /*
- ****************************************
- * heapInit:
+ * __init_heap:
  *     Iniciar a gerência de Heap na libC. 
- *     Essa é uma função interna.
+ *     See: heap.h
  */
 
-int heapInit(void)
+int __init_heap(void)
 {
     int i=0;
 
@@ -540,7 +539,7 @@ int heapInit(void)
     int thisprocess_id = (int) gramado_system_call ( 85, 0, 0, 0); 
     //if (thisprocess_id <= 0 ){
     if (thisprocess_id < 0 ){
-        debug_print ("heapInit: [FAIL] thisprocess_id        ~~>    :) \n");
+        debug_print ("__init_heap: [FAIL] thisprocess_id  ~~>  :) \n");
         goto fail;
     }
 
@@ -554,33 +553,47 @@ int heapInit(void)
 
     unsigned char *heaptest = (unsigned char *) gramado_system_call ( 184, thisprocess_id, 0, 0 );
     if ( (void*) heaptest == NULL ){
-        debug_print ("heapInit: [FAIL] heaptest \n");
+        debug_print ("__init_heap: [FAIL] heaptest \n");
         goto fail;
     }
 
-    // #bugbug
-    // #todo
-    // Temos que usar uma chamada que pegue o tamanho do heap do processo.
-    // Pois somente o processo init tem 2mb de heap, usando o extra heap 1.
-    // Os outros processo possuem apenas 128 KB de heap.
+// #bugbug
+// #todo
+// Temos que usar uma chamada que pegue o tamanho do heap do processo.
+// Pois somente o processo init tem 2mb de heap, usando o extra heap 1.
+// Os outros processo possuem apenas 128 KB de heap.
 
-    // Precisamos de uma chamada que pega o 'heap size'
-    // e o heap size deve estar na estrutura do processo.
+// Precisamos de uma chamada que pega o 'heap size'
+// e o heap size deve estar na estrutura do processo.
 
-    // See: #define G_DEFAULT_PROCESSHEAP_SIZE (1024*128)
+// See: 
+// #define G_DEFAULT_PROCESSHEAP_SIZE (1024*128)
 
-    HEAP_START = (unsigned long) &heaptest[0];  //0x0000000030A00000 para init process
-    HEAP_END   = (unsigned long) (HEAP_START + (1024*128) );  //(1024*1024*2) ); //(HEAP_START + (1024*128) );  //128KB 
-    HEAP_SIZE  = (unsigned long) (HEAP_END - HEAP_START); 
+//0x0000000030A00000 para init process
+    HEAP_START = 
+        (unsigned long) &heaptest[0];
 
+//(1024*1024*2) ); //(HEAP_START + (1024*128) );  //128KB
+    HEAP_END = 
+        (unsigned long) (HEAP_START + (1024*128) ); 
+
+    HEAP_SIZE = 
+        (unsigned long) (HEAP_END - HEAP_START); 
+
+//------
 
     heap_start  = (unsigned long) HEAP_START;
     heap_end    = (unsigned long) HEAP_END;
 
-    g_heap_pointer   = (unsigned long) heap_start;    //Heap Pointer.	
-    g_available_heap = (unsigned long) (heap_end - heap_start);    	// Available heap.
-    
-    heapCount = 0;      // Contador. ?? 1 ??
+// Heap Pointer.
+    g_heap_pointer = 
+        (unsigned long) heap_start;
+// Available heap.
+    g_available_heap = 
+        (unsigned long) (heap_end - heap_start);
+
+// Counter. '1'?
+    heapCount = 0;
 
 // ================================
 
@@ -588,11 +601,11 @@ int heapInit(void)
 // #bugbug: No permission
 //
     //#testing heaps permission
-    debug_print ("heapInit: testing heaps permission \n");    
+    debug_print ("__init_heap: Testing heaps permission \n");    
     
     //Endereço valido somente para processo init
     //if ( heap_start != 0x0000000030A00000 ){
-    //    debug_print ("heapInit: [ERROR] wrong address  \n");
+    //    debug_print ("__init_heap: [ERROR] wrong address  \n");
     //    while(1){}
     //}
 
@@ -601,78 +614,75 @@ int heapInit(void)
 
 	//Test. (Cria e inicializa uma estrutura)
 	//heapSetLibcHeap(HEAP_START,HEAP_SIZE);
-	
-	
-	//Último heap pointer válido. (*IMPORTANTE)
+
+
+// #important:
+// Último heap pointer válido.
+
     last_valid = (unsigned long) g_heap_pointer;
     last_size = 0;
 
-
-	//Check Heap Pointer.
+// Check Heap Pointer.
     if ( g_heap_pointer == 0 ){
-        printf ("heapInit fail: Heap pointer!\n");
+        printf ("__init_heap fail: Heap pointer!\n");
         goto fail;
     }
 
-	//Check Heap Pointer overflow.
+// Check Heap Pointer overflow.
     if ( g_heap_pointer > heap_end ){
-        printf("heapInit fail: Heap Pointer Overflow!\n");
+        printf("__init_heap fail: Heap Pointer Overflow!\n");
         goto fail;
     }
 
-    // Heap Start.
+// Heap Start.
     if ( heap_start == 0 ){
-        printf ("heapInit fail: HeapStart={%x}\n" ,heap_start);
+        printf ("__init_heap fail: HeapStart={%x}\n",heap_start);
         goto fail;
     }
 
-	//Heap End.
+// Heap End.
     if ( heap_end == 0 ){
-        printf ("heapInit fail: HeapEnd={%x}\n" ,heap_end);
+        printf ("__init_heap fail: HeapEnd={%x}\n",heap_end);
         goto fail;
     }
 
-	//Check available heap.
+// Check available heap.
     if ( g_available_heap == 0 )
     {
-	    //@todo: Tentar crescer o heap.
-		
-		printf("heapInit fail: Available heap!\n");
-		goto fail;
+        //@todo: Tentar crescer o heap.
+        printf("__init_heap fail: Available heap\n");
+        goto fail;
     }
 
-	// Heap list ~ Inicializa a lista de heaps.
+// Heap list ~ Inicializa a lista de heaps.
     while ( i < HEAP_COUNT_MAX ){
         heapList[i] = (unsigned long) 0;
         i++;
     };
 
-	
-	//KernelHeap = (void*) x??;
-	
-	//More?!
 
+    //KernelHeap = (void*) x??;
 
-// Done.
+// More?
+
 done:
-    //printf("Done.\n");	
+    //printf("Done.\n");
     return 0;
-
-
-
-// Fail. Falha ao iniciar o heap do kernel.
+// Fail. 
+// Falha ao iniciar o heap do kernel.
 fail:
-    printf("heapInit: Fail\n");
-	
-	/*
-	printf("* Debug: %x %x %x %x \n", kernel_heap_start, 
-	                                  kernel_heap_end,
-									  kernel_stack_start,
-									  kernel_stack_end);	
-	refresh_screen();	 
-    while(1){}		
-	*/
-    
+    printf("__init_heap: Fail\n");
+
+/*
+    printf("Debug: %x %x %x %x \n", 
+        kernel_heap_start, 
+        kernel_heap_end,
+        kernel_stack_start,
+        kernel_stack_end);
+
+    refresh_screen(); 
+    while(1){}
+*/
 
     return (int) 1;
 }
@@ -680,22 +690,19 @@ fail:
 
 
 /*
- ********************************
- * stdlibInitMM:
- * 
+ * __init_mm:
  *   Inicializa o memory manager.
- *   
  * Obs: 
  * Essa é uma função local.
  */
 
-int stdlibInitMM (void){
+int __init_mm (void){
 
     int Status = 0;
     int i=0;
 
     //#debug
-    debug_print ("stdlibInitMM:\n");
+    debug_print ("__init_mm:\n");
 
 
 	// @todo: 
@@ -706,18 +713,22 @@ int stdlibInitMM (void){
 	// Clear BSS.
 	// Criar mmClearBSS()
 
-	// Heap.
-    Status = (int) heapInit();
+
+// Heap
+
+    Status = (int) __init_heap();
 
     if ( Status != 0 ){
-        debug_print ("stdlibInitMM: [FAIL] heapInit\n");
-        //printf      ("stdlibInitMM: [FAIL] heapInit\n");
+        debug_print ("__init_mm: [FAIL] __init_heap\n");
+        //printf      ("__init_mm: [FAIL] __init_heap\n");
         return (int) 1;
     }
 
 
-	// Lista de blocos de memória dentro do heap.
-	i=0;
+// Lista de blocos de memória dentro do heap.
+
+    i=0;
+
     while ( i < MMBLOCK_COUNT_MAX )
     {
         mmblockList[i] = (unsigned long) 0;
@@ -725,7 +736,8 @@ int stdlibInitMM (void){
     };
 
 
-	//Primeiro Bloco.
+//Primeiro Bloco.
+
     //current_mmblock = (void *) NULL;
 	
 	//#importante:
@@ -740,8 +752,8 @@ int stdlibInitMM (void){
 	//
 
     //#debug
-    debug_print ("stdlibInitMM: done\n");
-    //printf      ("stdlibInitMM: done\n");
+    debug_print ("__init_mm: done\n");
+    //printf      ("__init_mm: done\n");
 
     return (int) Status;
 }
@@ -749,17 +761,13 @@ int stdlibInitMM (void){
 
 
 /*
- ***************************************************************
  * libcInitRT:
- * 
  *     Inicializa o gerenciamento em user mode de memória virtual
  * para a biblioteca libC99.
- * 
  * Obs: 
  * *IMPORTANTE: Essa rotina deve ser chamada entes que a biblioteca
  * C seja usada. 
  */
-
 // This routine ws called by crt0() in crt0.c
 
 int libcInitRT (void)
@@ -767,26 +775,23 @@ int libcInitRT (void)
     int Status = -1;
 
     // #debug
-    debug_print ("\n");
-    debug_print ("--------------------------\n");
     debug_print ("libcInitRT:\n");
 
-    Status = (int) stdlibInitMM();
+    Status = (int) __init_mm();
 
     if ( Status != 0 ){
-        debug_print ("libcInitRT: [FAIL] stdlibInitMM\n");
+        debug_print ("libcInitRT: [FAIL] __init_mm\n");
         return (int) 1; 
     }
 
-	//...
+    //...
 
     //#debug
     debug_print ("libcInitRT: done\n");
-    debug_print ("--------------------------\n");
 
-    // ok.
     return 0;
 }
+
 
 //
 // -----------------

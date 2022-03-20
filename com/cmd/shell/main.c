@@ -431,7 +431,8 @@ void shell_clear_screen(void)
 }
 
 
-int main ( int argc, char *argv[] )
+//backup
+int main_backup ( int argc, char *argv[] )
 {
 
     //argc=0;
@@ -513,5 +514,83 @@ int main ( int argc, char *argv[] )
     
     return 0;
 }
+
+//
+int main ( int argc, char *argv[] )
+{
+
+    // New stdout
+    // Terminal application is reading from stderr.
+    stdout = stderr;
+    //printf("SHELL.BIN: Hello terminal!\n");
+
+//
+// SHELL.BIN receberá input de teclado via stdin.
+//
+
+// O kernel seleciona qual será 
+// o arquivo para teclado ps2.
+
+    gramado_system_call(
+        8002,
+        fileno(stdin),
+        0,
+        0 );
+
+// rebubina o arquivo de input.
+    rewind(stdin);
+
+// relax
+    rtl_yield();
+
+// #bugbug
+// Precisamos usar ess fflush.
+// Não sei porque.
+
+// rebubina o arquivo de output.
+// Pois agora ele eh um arquivo regular, nao um tty console.
+    //rewind(stdout);
+
+    //printf("SHELL.BIN: Hello terminal!");
+    //printf("%c",'$');
+    //fflush(stdout);
+
+    int C=0;
+    
+    // pegamos o char de stdin e enviaremos para o terminal
+    // via stdout.
+    while (1){
+        C = fgetc(stdin);
+        
+        // Como estamos usando um arquivo regular,
+        // entao o kernel concatena ate chegar no fim do arquivo.
+        if( C == EOF )
+            rewind(stdout);
+        
+        if( C > 0){
+             
+             // Enter
+             if( C == VK_RETURN )
+             {
+                 //printf("%c",'$');
+                 //fflush(stdout);
+             }
+        
+             // Printable chars.
+             if (C >= 0x20 && C <= 0x7F)
+             {
+                 input(C);
+                 printf("%c",C);
+                 fflush(stdout);
+             }
+        }
+        //rtl_yield(); // relax
+    };
+
+
+    while(1){}
+    return 0;
+}
+
 
 
