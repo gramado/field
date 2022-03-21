@@ -2106,7 +2106,7 @@ wmProcedure(
 
         //========
         //o ponteiro do mouse esta dentro do main menu?
-        if( (void*)MainMenu!=NULL)
+        if( (void*)MainMenu != NULL )
         {
             if(MainMenu->in_use == TRUE)
             {
@@ -2172,7 +2172,6 @@ wmProcedure(
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
             yellow_status("1");
-            //#fail rtl_clone_and_execute("editor.bin");
         }
 
         //tb_button[2]
@@ -2181,7 +2180,6 @@ wmProcedure(
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
             yellow_status("2");
-            //#fail rtl_clone_and_execute("fileman.bin");
         }
 
         //tb_button[3]
@@ -2190,7 +2188,6 @@ wmProcedure(
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
             yellow_status("3");
-            //#fail rtl_clone_and_execute("terminal.bin");
         }
 
         return 0;

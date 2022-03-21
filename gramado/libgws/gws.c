@@ -258,8 +258,7 @@ int gws_initialize_library (void)
 
 
 // == get next event ==========================
-int 
-__gws_get_next_event_request ( int fd )
+int __gws_get_next_event_request ( int fd )
 {
 
 // The buffer.
@@ -389,10 +388,10 @@ process_event:
 
     //printf ("libgws: $\n");
 
-    wid      = (int) message_buffer[0];             // window id
-    msg_code = (int) message_buffer[1];             // message code: (It is an EVENT)
-    sig1 = (unsigned long) message_buffer[2];   // Signature 1: 1234
-    sig2 = (unsigned long) message_buffer[3];   // Signature 2: 5678
+    wid      = (int)           message_buffer[0];  // window id
+    msg_code = (int)           message_buffer[1];  // message code: (It is an EVENT)
+    sig1     = (unsigned long) message_buffer[2];  // Signature 1: 1234
+    sig2     = (unsigned long) message_buffer[3];  // Signature 2: 5678
 
 //
 // Checks
@@ -3039,9 +3038,13 @@ gws_redraw_window (
 }
 
 
-// The server will return an event from the its client's event queue.
-struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
+// The server will return an event 
+// from the its client's event queue.
+struct gws_event_d *gws_get_next_event(
+    int fd, 
+    struct gws_event_d *event )
 {
+
     struct gws_event_d *e;
     unsigned long Value=0;
 
@@ -3055,7 +3058,7 @@ struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
 
 // Request
     int req_status = -1;
-    req_status = __gws_get_next_event_request (fd);
+    req_status = __gws_get_next_event_request(fd);
     if(req_status<=0)
         return -1;
     rtl_set_global_sync( __saved_global_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
@@ -3082,7 +3085,6 @@ struct gws_event_d *gws_get_next_event(int fd, struct gws_event_d *event)
 
 
 /*
- **************************************** 
  * gws_refresh_window:
  *     Refresh window.
  */

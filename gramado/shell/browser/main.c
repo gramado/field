@@ -46,16 +46,11 @@ struct sockaddr_in addr = {
 */
 
 
+int __client_window = -1;
 
 
-/*
- ********************************* 
- * main: 
- * 
- */
-
-int main ( int argc, char *argv[] ){
-
+int main ( int argc, char *argv[] )
+{
     int client_fd = -1;
 
     // Porta para o Window Server 'ws' em gramado_ports[]
@@ -207,14 +202,18 @@ int main ( int argc, char *argv[] ){
     if ( client_window < 0 )             
         debug_print("browser: client_window fail\n"); 
 
-    if ( client_window > 0 ){
-     gws_draw_text (
-        (int) client_fd,        // fd,
-        (int) client_window,    // window id,
-        (unsigned long) 40,     // left,
-        (unsigned long) 40,     // top,
-        (unsigned long) COLOR_BLACK,
-        "Hello there !!");
+    if ( client_window > 0 )
+    {
+        // Save globaly.
+        __client_window = client_window;
+        
+        gws_draw_text (
+            (int) client_fd,        // fd,
+            (int) client_window,    // window id,
+            (unsigned long) 40,     // left,
+            (unsigned long) 40,     // top,
+            (unsigned long) COLOR_BLACK,
+            "Hello there!");
     }
 
 //
@@ -239,6 +238,11 @@ int main ( int argc, char *argv[] ){
 // Loop
 //
 
+
+//HANG:
+    while(1){}
+
+
 // #test
 // pegando um evento com o ws.
 // See: libgws/
@@ -252,17 +256,33 @@ int main ( int argc, char *argv[] ){
 
     struct gws_event_d *e;
 
+
+// #todo
+// This service is not implemented yet at server side.
+
 // loop
     while(1){
+
         e = (struct gws_event_d *) gws_get_next_event(client_fd, (struct gws_event_d *) &lEvent);
 
-        if( e->msg == MSG_KEYDOWN )
+        // Evento valido.
+        if( (void*) e != NULL )
         {
-           //printf ("event: >>[%c]\n",lEvent.long1);
-           //if(lEvent.long1 == 'q')
-               //exit(0);
+            // validation
+            if( e->used == TRUE )
+            {
+                if( e->magic == 1234 )
+                {
+                    //#test
+                    //the message code.
+                    if(e->msg == 1000)
+                        printf("BROWSER: [1000] We got an valid event\n");
+                }
+            }
         }
     };
+
+
 
 //HANG:
     while(1){}

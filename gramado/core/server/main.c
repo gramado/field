@@ -1185,7 +1185,7 @@ gwsProcedure (
 // The server will return an event from the its client's event queue.
     case GWS_GetNextEvent:
         gwssrv_debug_print ("gwssrv: [2031] serviceNextEvent\n");
-        serviceNextEvent(client_fd);
+        serviceNextEvent();
         NoReply = FALSE; // Yes. We need a reply.
         break;
 
@@ -1947,10 +1947,10 @@ void gwssrv_message_all_clients(void)
 // ??? mas o cliente envia as coisas via request, ???
 int serviceClientEvent(void)
 {
-    //O buffer é uma global nesse documento.
+    // The buffer is a global variable.
     //unsigned long *message_address = (unsigned long *) &__buffer[0];
 
-
+    //return 0;  //ok
     return -1;
 }
 
@@ -1958,19 +1958,45 @@ int serviceClientEvent(void)
 // When a client get the next event from it's own queue.
 // The parameters 
 // :::: Retira em head.
-int serviceNextEvent (int client_fd)
-{
-    // #deprecated ...
-    // Enviaremos mensagens para a fila na thread
-    // associada a essa janela.
+// Uma opção é enviaremos mensagens para 
+// a fila na thread associada a essa janela.
 
-    debug_print("serviceNextEvent: Deprecated\n");
+int serviceNextEvent (void)
+{
+    //debug_print("serviceNextEvent: suspended\n");
+
+    //#debug
+    //printf("serviceNextEvent\n");
+
+// #test
+// fake event for testing purpose.
+
+    NextSingleEvent.wid = 0;
+    NextSingleEvent.msg = 1000;     //test event.
+    NextSingleEvent.long1 = 1;  // signature
+    NextSingleEvent.long2 = 2;  // signature
+
+// Building the next response.
+// It will be sent in the socket loop.
+
+    //header
+    next_response[0] = 0;  //
+    next_response[1] = SERVER_PACKET_TYPE_EVENT;  //msg type
+    next_response[2] = 1234;  //signature
+    next_response[3] = 5678;  //signature
+
+    // the message packet.
+    next_response[4] = NextSingleEvent.wid;  // window
+    next_response[5] = NextSingleEvent.msg;  // msg code
+    next_response[6] = NextSingleEvent.long1;
+    next_response[7] = NextSingleEvent.long2;
+    
 
 // pra gerar resposta de erro
-    return -1;
+    //return -1;
+
+    return 0;
 }
-
-
 
 
 // #todo

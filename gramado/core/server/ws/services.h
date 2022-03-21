@@ -25,12 +25,12 @@ int serviceRefreshWindow(void);
 int serviceDrawButton (void); 
 
 
-
 // When a client send us an event
 int serviceClientEvent(void);
 
-// When a client get the next event from it's own queue.
-int serviceNextEvent(int client_fd);
+// When a client get the next event 
+// from it's own queue.
+int serviceNextEvent(void);
 
 int serviceAsyncCommand (void);
 
