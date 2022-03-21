@@ -24,6 +24,9 @@ all:
 	make -C shell/fileman
 	make -C shell/terminal  
 
+# Gramado userland
+    #make -C userland
+
 
 # Clean libraries
 	-rm -rf libgws/obj/*.o

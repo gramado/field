@@ -7,7 +7,7 @@ EDITION_NAME  = Field
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 3
-VERSION_BUILD = 277
+VERSION_BUILD = 278
 
 KERNELVERSION = $(VERSION_MAJOR)$(if $(VERSION_MINOR),.$(VERSION_MINOR)$(if $(VERSION_BUILD),.$(VERSION_BUILD)))
 
@@ -142,18 +142,6 @@ communication-tier:
 	$(Q) $(MAKE) -C com/lib/rtl/
 	$(Q) $(MAKE) -C com/lib/
 
-	@echo "Build: Building cmd applications ..."
-
-	$(Q) $(MAKE) -C com/cmd/
-	-sudo cp com/cmd/bin/SHELL.BIN      base/disk/
-	-sudo cp com/cmd/bin/CAT.BIN        base/disk/
-#	-sudo cp com/cmd/bin/FALSE.BIN      base/disk/
-	-sudo cp com/cmd/bin/REBOOT.BIN     base/disk/
-	-sudo cp com/cmd/bin/SHUTDOWN.BIN   base/disk/
-#	-sudo cp com/cmd/bin/TRUE.BIN       base/disk/
-#	-sudo cp com/cmd/bin/SHOWFUN.BIN    base/disk/
-#	-sudo cp com/cmd/bin/UNAME.BIN      base/disk/
-
 	@echo "Build: Building Network Server ..."
 
 	$(Q) $(MAKE) -C com/gns/ 
@@ -168,15 +156,13 @@ communication-tier:
 presentation-tier:
 	@echo "Build: Building Window Server ..."
 
+# core ...
 	$(Q) $(MAKE) -C gramado/
-
 # command line client application.
 	-sudo cp gramado/bin/CMDLINE.BIN    base/disk/
-
 # Server and main client.
 	-sudo cp gramado/bin/GWSSRV.BIN    base/disk/
 	-sudo cp gramado/bin/GWS.BIN       base/disk/ 
-
 # Clients
 	-sudo cp gramado/bin/GWM.BIN       base/disk/
 	-sudo cp gramado/bin/LOGON.BIN     base/disk/
@@ -184,6 +170,17 @@ presentation-tier:
 	-sudo cp gramado/bin/TERMINAL.BIN  base/disk/
 	-sudo cp gramado/bin/FILEMAN.BIN   base/disk/
 	-sudo cp gramado/bin/BROWSER.BIN   base/disk/
+
+
+# userland (w)
+	@echo "Build: Building userland cmd applications ..."
+
+	$(Q) $(MAKE) -C gramado/userland/
+	-sudo cp gramado/userland/bin/SHUTDOWN.BIN  base/disk/
+	-sudo cp gramado/userland/bin/REBOOT.BIN    base/disk/
+	-sudo cp gramado/userland/bin/SHELL.BIN     base/disk/
+	-sudo cp gramado/userland/bin/CAT.BIN       base/disk/
+#...
 
 # Suspended
 # Copy the clients in another folder.
@@ -307,10 +304,12 @@ clean2:
 # We need clean up all the object files
 # for the applications.
 clean3:
-	-rm gramado/bin/*.BIN
 
 # Clear system folder
 	-rm -rf gramado/bin/*.BIN
+
+	-rm gramado/bin/*.BIN
+	-rm gramado/userland/bin/*.BIN
 
 usage:
 	@echo "Building everything:"
