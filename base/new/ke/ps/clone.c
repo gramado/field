@@ -265,10 +265,11 @@ do_clone:
     //refresh_screen();
     //return -1;
 
+// Worker
 // See: 
 // process.c
 
-    child_process = (struct process_d *) __create_and_initialize_process_object();
+    child_process = (struct process_d *) create_and_initialize_process_object();
     if ( (void *) child_process == NULL )
     {
         debug_print ("copy_process: [FAIL] child_process\n");
@@ -408,7 +409,7 @@ do_clone:
     debug_print ("copy_process: [1] Copying process image and stack.\n");
     //printf      ("copy_process: [1] Copying process image and stack.\n");
 
-    Status = __alloc_memory_for_image_and_stack( parent_process );
+    Status = (int) alloc_memory_for_image_and_stack( parent_process );
     if ( Status != 0 )
     {
         panic ("copy_process: [FAIL] __alloc_memory_for_image_and_stack\n");
@@ -557,7 +558,7 @@ do_clone:
 // IN: 
 // name, image va.
 
-    Status = (int) __load_image(
+    Status = (int) fs_load_image(
                        filename, 
                        (unsigned long) child_process->Image );
  

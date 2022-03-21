@@ -110,8 +110,8 @@ all-c:
 	$(CC)  -c  ws/grprim.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o grprim.o
 	$(CC)  -c  ws/sprite.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o sprite.o
 	$(CC)  -c  ws/demos.c     $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o demos.o
-	$(CC)  -c  ws/font.c     $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o font.o
-	$(CC)  -c  ws/gws.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o gws.o
+	$(CC)  -c  ws/font.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o font.o
+	$(CC)  -c  ws/gws.c       $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o gws.o
 
 	$(CC)  -c  wm.c   $(user_ccflags) -I $(LIBC) -I include/ -I .  -o wm.o
 

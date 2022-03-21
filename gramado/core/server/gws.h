@@ -265,7 +265,7 @@ int gwssrv_init_globals(void);
 void gwssrv_wait_message(void);
 void gwssrv_yield(void);
 void gwssrv_quit(void);
-void serviceExitGWS(void);
+
 
 // Worker
 // There is a vetor with values for the next response.

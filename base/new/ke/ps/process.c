@@ -10,9 +10,7 @@
 
 static pid_t __current_pid = (pid_t) (-1);  //fail
 
-
-int caller_process_id;
-//int processNewPID;
+static pid_t caller_process_id=0;
 
 
 void set_current_process( pid_t pid )
@@ -56,13 +54,14 @@ struct process_d *GetCurrentProcess(void)
 }
 
 
-unsigned long __GetProcessStats ( int pid, int index ){
-
+// helper
+unsigned long GetProcessStats ( int pid, int index )
+{
     struct process_d *p;
 
 
     if (pid<0){
-        panic ("__GetProcessStats: pid \n");
+        panic ("GetProcessStats: pid \n");
     }
 
     // Process
@@ -70,7 +69,7 @@ unsigned long __GetProcessStats ( int pid, int index ){
     p = (void *) processList[pid];
 
     if ( (void *) p == NULL ){
-        printf ("__GetProcessStats: struct \n");
+        printf ("GetProcessStats: struct \n");
         return 0; 
 
     } else {
@@ -818,24 +817,20 @@ void CloseAllProcesses (void)
 
 // Worker for create_process.
 // Do not check parameters validation.
-void
-__ps_initialize_process_common_elements(
-    struct process_d *p )
+void ps_initialize_process_common_elements( struct process_d *p )
 {
     register int i=0;
 
+    //if( (void*) p == NULL )
+        //return;
+
     p->objectType  = ObjectTypeProcess;
     p->objectClass = ObjectClassKernelObjects;
-
-    // Signal
     p->signal = 0;
     p->umask = 0;
-
     p->uid  = (int) GetCurrentUserId(); 
     p->gid  = (int) GetCurrentGroupId(); 
-
     p->syscalls_counter = 0;
-
 
 //
 // Threads
@@ -875,21 +870,21 @@ __ps_initialize_process_common_elements(
 // #todo: Melhorar esse nome.
 
     if (kstdio_standard_streams_initialized != TRUE ){
-        panic ("__ps_initialize_process_common_elements: [ERROR] Standard stream is not initialized\n");
+        panic ("ps_initialize_process_common_elements: [ERROR] Standard stream is not initialized\n");
     }
 
     for ( i=0; i<NUMBER_OF_FILES; ++i ){ p->Objects[i] = (unsigned long) 0; }
 
     if ( (void *) stdin == NULL ){
-        panic ("__ps_initialize_process_common_elements: [TEST] stdin");
+        panic ("ps_initialize_process_common_elements: [TEST] stdin");
     }
 
     if ( (void *) stdout == NULL ){
-        panic ("__ps_initialize_process_common_elements: [TEST] stdout");
+        panic ("ps_initialize_process_common_elements: [TEST] stdout");
     }
 
     if ( (void *) stderr == NULL ){
-        panic ("__ps_initialize_process_common_elements: [TEST] stderr");
+        panic ("ps_initialize_process_common_elements: [TEST] stderr");
     }
 
     p->Objects[0] = (unsigned long) stdin;
@@ -1076,7 +1071,7 @@ struct process_d *create_process (
 // Initializing the elements common for 
 // all types of processes.
 
-    __ps_initialize_process_common_elements( (struct process_d *) Process );
+    ps_initialize_process_common_elements( (struct process_d *) Process );
 
     //Process->objectType  = ObjectTypeProcess;
     //Process->objectClass = ObjectClassKernelObjects;
@@ -1613,14 +1608,14 @@ int init_process_manager (void)
 // Na verdade não estamos mais copiando e 
 // sim criando um endereçamento novo.
 
-int __alloc_memory_for_image_and_stack( struct process_d *process )
+int alloc_memory_for_image_and_stack( struct process_d *process )
 {
     unsigned long __new_base=0;    // base
     unsigned long __new_stack=0;   // stack
 
     if ( (void *) process == NULL )
     {
-        printf ("processCopyMemory: [FAIL] process \n");
+        printf ("alloc_memory_for_image_and_stack: [FAIL] process \n");
         refresh_screen();
         return (int) (-1);
     }
@@ -1667,7 +1662,7 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
         //printf ("processCopyMemory: __new_base fail\n");
         //refresh_screen();
         
-        panic("processCopyMemory: __new_base fail\n");
+        panic("alloc_memory_for_image_and_stack: __new_base fail\n");
         
         return (int) (-1);
     }
@@ -1695,7 +1690,7 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
         //printf ("processCopyMemory: __new_stack fail\n");
         //refresh_screen();
         
-        panic ("processCopyMemory: __new_stack fail\n");
+        panic ("alloc_memory_for_image_and_stack: __new_stack fail\n");
         
         return (int) (-1);
     }
@@ -1750,7 +1745,7 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
         //printf("processCopyMemory: new_base_PA\n");
         //refresh_screen();
 
-        panic("processCopyMemory: new_base_PA\n");
+        panic("alloc_memory_for_image_and_stack: new_base_PA\n");
         
         return -1;
     }
@@ -1760,8 +1755,7 @@ int __alloc_memory_for_image_and_stack( struct process_d *process )
         //printf("processCopyMemory: new_stack_PA\n");
         //refresh_screen();
 
-        printf("processCopyMemory: new_stack_PA\n");
-        
+        printf("alloc_memory_for_image_and_stack: new_stack_PA\n");
         return -1;
     }
 
@@ -1985,7 +1979,7 @@ int process_get_tty (int pid)
 
 
 // OUT: process struture pointer.
-struct process_d *__create_and_initialize_process_object(void)
+struct process_d *create_and_initialize_process_object(void)
 {
 
     pid_t NewPID = (pid_t) (-1);  //fail
@@ -1999,8 +1993,8 @@ struct process_d *__create_and_initialize_process_object(void)
     new_process = (struct process_d *) processObject();
     if ( (void *) new_process == NULL )
     {
-        debug_print ("__create_and_initialize_process_object: [FAIL] new_process\n");
-        printf      ("__create_and_initialize_process_object: [FAIL] new_process\n");
+        debug_print ("create_and_initialize_process_object: [FAIL] new_process\n");
+        printf      ("create_and_initialize_process_object: [FAIL] new_process\n");
         goto fail;
     }
 
@@ -2021,8 +2015,8 @@ struct process_d *__create_and_initialize_process_object(void)
     if ( NewPID < GRAMADO_PID_BASE || 
          NewPID >= PROCESS_COUNT_MAX )
     {
-        debug_print ("__create_and_initialize_process_object: [FAIL] NewPID\n");
-        printf      ("__create_and_initialize_process_object: [FAIL] NewPID={%d}\n", 
+        debug_print ("create_and_initialize_process_object: [FAIL] NewPID\n");
+        printf      ("create_and_initialize_process_object: [FAIL] NewPID={%d}\n", 
             NewPID );
         goto fail;
     }
@@ -2048,13 +2042,13 @@ struct process_d *__create_and_initialize_process_object(void)
 // Vamos tentar usar isso na rotina de clonagem.
 
     if (g_heappool_va == 0){
-        panic("clone_and_execute_process: g_heappool_va\n");
+        panic("create_and_initialize_process_object: g_heappool_va\n");
     }
     if (g_heap_count == 0){
-        panic("clone_and_execute_process: g_heap_count\n");
+        panic("create_and_initialize_process_object: g_heap_count\n");
     }
     if (g_heap_size == 0){
-        panic("clone_and_execute_process: g_heap_size\n");
+        panic("create_and_initialize_process_object: g_heap_size\n");
     }
 
 // #bugbug
@@ -2132,7 +2126,6 @@ struct process_d *__create_and_initialize_process_object(void)
 // OUT:
 // Pointer for a structure of a new process.
     return (struct process_d *) new_process;
-
 fail:
     return NULL;
 }

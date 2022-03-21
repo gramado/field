@@ -7,7 +7,6 @@
 extern unsigned long InitializationPhase;
 int InitialProcessInitialized = FALSE;
 
-
 // Task switching support.
 extern void turn_task_switch_on (void);
 
@@ -23,7 +22,23 @@ extern void x64_clear_nt_flag (void);
 #define INIT_BIN_PATH   "/BIN"
 //...
 
+// =========================================
 
+
+//
+// == Prototypes ========
+//
+
+static int I_init (void);
+static int I_x64CreateKernelProcess(void);
+static int I_x64CreateInitialProcess (void);
+
+static int I_x64CreateWSThread(void);
+
+
+
+
+// =========================================
 
 
 
@@ -46,7 +61,7 @@ void x64init_load_pml4_table(unsigned long phy_addr)
 // Não passa o comando para o processo.
 // See: gramado/core/client
 
-int I_x64CreateInitialProcess (void)
+static int I_x64CreateInitialProcess (void)
 {
     int fileret = -1;
 
@@ -280,10 +295,10 @@ int I_x64CreateInitialProcess (void)
 }
 
 
+
 // Passa o comando para o primeiro processo em user mode.
 // Esse processo ja foi previamente configurado.
 // Called by kernel_main() in init.c
-
 void I_x64ExecuteInitialProcess (void)
 {
     struct thread_d  *Thread;
@@ -528,7 +543,7 @@ void I_x64ExecuteInitialProcess (void)
 // KERNEL.BIN and GWSSRV.BIN.
 // See: gramado/core/server.
 
-int I_x64CreateKernelProcess(void)
+static int I_x64CreateKernelProcess(void)
 {
     int Status=FALSE;
     unsigned long fileret=1;
@@ -706,7 +721,7 @@ int I_x64CreateKernelProcess(void)
 
 // Create a ring0 thread for the window server image.
 // It belongs to the kernel process.
-int I_x64CreateWSThread(void)
+static int I_x64CreateWSThread(void)
 {
     //debug_print ("I_x64CreateWSThread:\n");
 
@@ -958,7 +973,7 @@ void init_globals (void)
 // Called by x64main in x64init.c
 // OUT: TRUE if it is ok.
 
-int I_init (void)
+static int I_init (void)
 {
     int Status = FALSE;
     unsigned char ProcessorType=0;
@@ -1359,22 +1374,17 @@ fail0:
 }
 
 
-
 /*
- ******************************************
  * I_x64main: 
- *
  * Function history:
  *     2015 - Created by Fred Nora.
  */
-
 // Initialization phases:
 // 0 - I_x64main()
 // 1 - See: I_init()
 // 2 - See: I_init()
 // 3 - See: I_x64main()
 // 4 - See: I_x64main()
-
 // Called by kernel_main in init/init.c
 
 int I_x64main (void)

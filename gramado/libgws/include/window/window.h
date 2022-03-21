@@ -25,13 +25,43 @@
 
 struct gws_window_info_d
 {
-    //int window;
+
+    int used;
+    int magic;
+
+    int wid;   // The window id.
+    int pwid;  // The wid of the parent.
+
     int type;
+
+// Relative to the parent.
+    unsigned long left;
+    unsigned long top;
     unsigned long width;
     unsigned long height;
+
+// Relative to the parent.
+    unsigned long right;
+    unsigned long bottom;
+
+// Client rectangle.
+// Se a janela tem um client rect, 
+// so we can save the values here.
+// This when querying the window's info
+// we also get all the client area info.
+    unsigned long cr_left;
+    unsigned long cr_top;
+    unsigned long cr_width;
+    unsigned long cr_height;
+
     unsigned long border_width;
+
     // ...
 };
+
+
+//struct gws_window_info_d  RootWindowInfo;
+// ...
 
 
 

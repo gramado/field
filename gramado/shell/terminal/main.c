@@ -240,6 +240,25 @@ void compareStrings(int fd)
     }
 
 
+    //#test
+    //getting window info
+    // not a pointer.
+    struct gws_window_info_d wi;
+    if ( strncmp(prompt,"w-info",6) == 0 )
+    {
+        //IN: fd, wid, window info structure.
+        gws_get_window_info(
+            fd, 
+            Terminal.client_window_id,
+            (struct gws_window_info_d *) &wi );
+
+        goto exit_cmp;
+    }
+
+
+
+
+
     if ( strncmp(prompt,"tputstring",10) == 0 )
     {
         __test_escapesequence(fd);

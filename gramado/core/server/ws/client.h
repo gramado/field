@@ -85,8 +85,6 @@ unsigned long connections[CLIENT_COUNT_MAX];
 // == prototypes =============================
 //
 
-int servicePutClientMessage(void);
-int serviceGetClientMessage(void);
 
 #endif    
 

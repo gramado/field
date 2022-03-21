@@ -1,3 +1,4 @@
+
 // thread.h
 
 #ifndef __THREAD_H
@@ -953,7 +954,10 @@ void *create_tid3(void);   // first ring3 client. gws.bin
 
 
 // From thread.c
-unsigned long __GetThreadStats ( int tid, int index );
+
+// helper
+unsigned long GetThreadStats ( int tid, int index );
+
 int getthreadname ( int tid, char *buffer );
 void *FindReadyThread (void);
 int GetThreadState (struct thread_d *thread);
@@ -998,16 +1002,14 @@ int thread_profiler( int service );
 
 // worker for create_thread.
 void 
-__ps_setup_x64_context ( 
+ps_setup_x64_context ( 
     struct thread_d *t, 
     int iopl,
     unsigned long init_stack,
     unsigned long init_rip );
 
 // worker for create_thread.
-void
-__ps_initialize_thread_common_elements(
-    struct thread_d *t );
+void ps_initialize_thread_common_elements( struct thread_d *t );
 
 
 struct thread_d *copy_thread_struct ( struct thread_d *thread );

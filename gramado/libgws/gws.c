@@ -59,6 +59,14 @@ char __gws_message_buffer[512];
 // == prototyes (internals) =========================
 //
 
+// == Get window info ==========================
+int __gws_get_window_info_request ( int fd, int wid );
+struct gws_window_info_d *__gws_get_window_info_response(
+    int fd,
+    struct gws_window_info_d *window_info );
+
+
+
 
 
 // == Get next event ==========================
@@ -255,6 +263,196 @@ int gws_initialize_library (void)
 // == Helper functions ============================
 //
 
+
+
+// ==============================================================
+
+// == get window info request ==========================
+// Let's get some information about the given window.
+int __gws_get_window_info_request ( int fd, int wid )
+{
+
+// The buffer.
+// Isso permite ler a mensagem na forma de longs.
+    unsigned long *message_buffer = (unsigned long *) &__gws_message_buffer[0]; 
+
+// For sending requests.
+    int n_writes = 0; 
+
+// Send request
+// Setup the parameters and
+// write the data into the file.
+
+    gws_debug_print ("__gws_get_window_info_request: Writing ...\n");
+
+    message_buffer[0] = wid; 
+    message_buffer[1] = GWS_GetWindowInfo;  // Message code.
+    message_buffer[2] = 1234;  // libgws signature
+    message_buffer[3] = 5678;  // libgws signature
+    //...
+
+//#todo
+    //if(fd<0)
+        //return -1;
+
+    //while (1){
+        n_writes = send ( 
+                       fd, 
+                       __gws_message_buffer, 
+                       sizeof(__gws_message_buffer), 
+                       0 );
+        //if(n_writes>0){break;}
+    //}
+
+    if(n_writes <= 0){
+        return -1;
+    }
+
+    return (int) n_writes; 
+}
+
+
+// get window info response ===================
+struct gws_window_info_d *__gws_get_window_info_response(
+    int fd,
+    struct gws_window_info_d *window_info )
+{
+
+// The buffer.
+    unsigned long *message_buffer = (unsigned long *) &__gws_message_buffer[0];   
+
+// #importante
+// As informações devem ficar aqui até que o cliente pegue.
+// Um ponteiro será devolvido para ele.
+
+    int n_reads = 0;    // For receiving responses.
+
+
+    int wid=0;
+    int msg_code=0;
+    int sig1=0;
+    int sig2=0;
+
+    if ( (void*) window_info == NULL )
+        return NULL;
+
+    // fail
+    window_info->used = NULL;
+    window_info->magic = 0;
+
+
+// read
+
+    n_reads = recv ( 
+                  fd, 
+                  __gws_message_buffer, 
+                  sizeof(__gws_message_buffer), 
+                  0 );
+
+// fail
+    if (n_reads <= 0)
+    { 
+        //
+        return (struct gws_window_info_d *) window_info;
+    }
+
+
+//
+// The msg packet
+//
+
+    int msg = (int)  message_buffer[1];
+    msg = (msg & 0xFFFF);
+
+    switch (msg){
+
+    // ok, that is what we need.
+    case GWS_SERVER_PACKET_TYPE_REPLY:
+        goto process_response;
+        break;
+
+    // fail
+    case GWS_SERVER_PACKET_TYPE_EVENT:
+    case GWS_SERVER_PACKET_TYPE_REQUEST:
+    case GWS_SERVER_PACKET_TYPE_ERROR:
+    default:
+        goto fail;
+        break; 
+    };
+
+// Put the message info into the structure.
+process_response:
+
+// the header
+    wid      = (int)           message_buffer[0];  // window id
+    msg_code = (int)           message_buffer[1];  // message code: (It is an EVENT)
+    sig1     = (unsigned long) message_buffer[2];  // Signature 1: 1234
+    sig2     = (unsigned long) message_buffer[3];  // Signature 2: 5678
+
+    if ( sig1 != 1234 ){
+        //debug_print ("__gws_get_window_info_response: sig1 fail\n");
+        goto fail;
+    }
+
+    if ( sig2 != 5678 ){
+        //debug_print ("__gws_get_window_info_response: sig2 fail\n");
+        goto fail;
+    }
+
+// data field
+
+// OK
+// The data field
+    if ( msg_code == GWS_SERVER_PACKET_TYPE_REPLY )
+    {
+        //printf("__gws_get_next_event_response: WE GOT THE DATA\n");
+    
+        window_info->wid   = (int)           message_buffer[4];  // wid
+        window_info->pwid  = (int)           message_buffer[5];  // parent wid
+        window_info->type  = (int)           message_buffer[6];  // window type
+
+        // window
+        window_info->left   = (unsigned long) message_buffer[7];   // left 
+        window_info->top    = (unsigned long) message_buffer[8];   // top
+        window_info->width  = (unsigned long) message_buffer[9];   // width
+        window_info->height = (unsigned long) message_buffer[10];  // height
+
+        // limits
+        window_info->right  = (unsigned long) message_buffer[11];  // right
+        window_info->bottom = (unsigned long) message_buffer[12];  // bottom
+
+        // client area rectangle
+        window_info->cr_left   = (unsigned long) message_buffer[13];  // cr left 
+        window_info->cr_top    = (unsigned long) message_buffer[14];  // cr top
+        window_info->cr_width  = (unsigned long) message_buffer[15];  // cr width
+        window_info->cr_height = (unsigned long) message_buffer[16];  // cr height
+
+        // border
+        window_info->border_width = (unsigned long) message_buffer[17];  // border width
+
+        // The app will need this thing.
+        window_info->used = TRUE;
+        window_info->magic = 1234;
+
+        // #debug
+        //printf ("::: wid=%d msg=%d l1=%d l2=%d \n",
+            //window_info->wid, window_info->msg, window_info->long1, window_info->long2 );
+
+        // ok, we got it.
+        return (struct gws_window_info_d *) window_info;
+    }
+
+// fall to fail field
+
+fail:
+    return NULL;
+}
+
+
+
+
+
+// ==============================================================
 
 
 // == get next event ==========================
@@ -3082,6 +3280,61 @@ struct gws_event_d *gws_get_next_event(
 
     return (struct gws_event_d *) e;
 }
+
+
+// The server will return the info about one given window.
+struct gws_window_info_d *gws_get_window_info(
+    int fd,
+    int wid,
+    struct gws_window_info_d *window_info ) 
+{
+
+    struct gws_window_info_d *wi;
+
+    unsigned long Value=0;
+
+
+    int __saved_global_sync_id = sc82 (10005,0,0,0);
+
+    if (fd<0){
+        debug_print("gws_get_window_info: fd\n");
+        return NULL;
+    }
+
+// Request
+    int req_status = -1;
+    req_status = __gws_get_window_info_request(fd,wid);
+    if(req_status<=0)
+        return NULL;
+    rtl_set_global_sync( __saved_global_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
+
+// Response
+// Waiting to read the response.
+    while (TRUE){
+        Value = (unsigned long) rtl_get_global_sync( __saved_global_sync_id, SYNC_REQUEST_GET_ACTION );
+        if (Value == ACTION_REQUEST){ rtl_yield(); }
+        if (Value == ACTION_REPLY ) { break; }
+        if (Value == ACTION_ERROR )
+        {
+            return NULL; 
+        }
+    };
+
+    wi = (struct gws_window_info_d *) __gws_get_next_event_response( 
+                                          fd, 
+                                          window_info );
+
+    if ( (void*) wi == NULL ){
+        debug_print("gws_get_window_info: fail\n");
+    }
+
+    return (struct gws_window_info_d *) wi;
+}
+
+
+
+
+
 
 
 /*

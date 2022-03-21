@@ -625,7 +625,7 @@ void *get_global_open_file (int Index);
 void sys_cd_command ( const char *string );
 
 
-int __load_image( const char *filename, unsigned long image_va );
+int fs_load_image( const char *filename, unsigned long image_va );
 
 
 #endif    

@@ -90,7 +90,7 @@ io_ioctl (
 
 // Get file pointer.
 
-    f = (file *) __get_file_from_fd(fd);
+    f = (file *) get_file_from_fd(fd);
 
     if ( (void *) f == NULL )
     {

@@ -27,7 +27,13 @@ unsigned short fat16ClustersToSave[CLUSTERS_TO_SAVE_MAX];
 
 // ========================================
 
+//
+// == Prototypes ============================
+//
 
+static int __check_address_validation( unsigned long address );
+
+//=============================
 
 
 //get free slots in the file_table[]
@@ -1661,11 +1667,9 @@ found:
 // OUT: 
 // TRUE = OK | FALSE = FAIL
 
-int __check_address_validation( unsigned long address )
+static int __check_address_validation( unsigned long address )
 {
-
-// OK.
-    int Status=TRUE;
+    int Status=TRUE;  //ok
 
 // fat, rootdir, base kernel, lfb, backbuffer ...
 
@@ -1685,10 +1689,8 @@ int __check_address_validation( unsigned long address )
 
 
 /*
- **************
  * fsLoadFile:
  *    It loads a file into the memory.
- * 
  * IN:
  *     fat_address  = FAT address.
  *     dir_addresss = Directory address.
@@ -1696,7 +1698,6 @@ int __check_address_validation( unsigned long address )
  *     file_name    = File name.
  *     buffer = Where to load the file. The buffer.
  *     buffer_size_in_bytes = Maximum buffer size.
- * 
  * OUT: 
  *    1=fail 
  *    0=ok.
@@ -4525,7 +4526,7 @@ void sys_cd_command ( const char *string )
 // helper.
 // Loading a image given the filename and its virtual address.
 int 
-__load_image( 
+fs_load_image( 
     const char *filename, 
     unsigned long image_va )
 {
@@ -4559,17 +4560,17 @@ __load_image(
 //
 
     if ( (void*) filename == NULL ){
-        panic ("__load_image: [ERROR] filename\n");
+        panic ("fs_load_image: [ERROR] filename\n");
     }
     if ( *filename == 0 ){
-        panic ("__load_image: [ERROR] *filename\n");
+        panic ("fs_load_image: [ERROR] *filename\n");
     }
     path = filename;
     name = filename;
     if (path[0] == '.' && path[1] == '/')
     {
-        debug_print ("__load_image: [FIXME] Can't execute from cwd \n");
-        printf      ("__load_image: [FIXME] Can't execute from cwd \n");
+        debug_print ("fs_load_image: [FIXME] Can't execute from cwd \n");
+        printf      ("fs_load_image: [FIXME] Can't execute from cwd \n");
         goto fail;
     }
 
@@ -4592,8 +4593,8 @@ __search:
     if (Status == 1){ 
         goto __found; 
     }
-    debug_print ("__load_image: [FAIL] File not found!\n");
-    printf      ("__load_image: [FAIL] File not found!\n");
+    debug_print ("fs_load_image: [FAIL] File not found!\n");
+    printf      ("fs_load_image: [FAIL] File not found!\n");
     goto fail;
 
 // The file was found into the directory.
@@ -4604,8 +4605,8 @@ __found:
 // [3]
 // #debug.
 
-    debug_print ("__load_image: [3] Loading the image.\n");
-         //printf ("__load_image: [3] Loading the image.\n");
+    debug_print ("fs_load_image: [3] Loading the image.\n");
+         //printf ("fs_load_image: [3] Loading the image.\n");
 
 // Loading from rootdir?
 // >> Load file:
@@ -4631,11 +4632,11 @@ __found:
 
 
     if ( dir_va == 0 ){
-        panic("__load_image: dir_va\n");
+        panic("fs_load_image: dir_va\n");
     }
 
     if ( (void *) image_va == NULL ){
-        panic("__load_image: image_va\n");
+        panic("fs_load_image: image_va\n");
     }
 
     Status = (int) fsLoadFile ( 
@@ -4648,9 +4649,8 @@ __found:
 
 // ok?
     return (int) Status;
-
 fail:
-    panic("__load_image: fail\n");
+    panic("fs_load_image: fail\n");
     return -1;
 }
 

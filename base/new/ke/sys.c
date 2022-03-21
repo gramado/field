@@ -4,14 +4,14 @@
 #include <kernel.h> 
 
 
-
+// helper
 // dado o fd, pegamos o ponteiro 
 // para estrutura de arquivo na lista de
 // objetos abertos no processo atual.
 // ## Talvez essa rotina ja foi implementada
 // em algum outro lugar.
 // Prototype in rtl/sci/sys.h
-file *__get_file_from_fd(int fd)
+file *get_file_from_fd(int fd)
 {
     struct process_d *p;  // current process
     file *f;              // object
@@ -29,8 +29,8 @@ file *__get_file_from_fd(int fd)
 
     if( (void*) p == NULL )
     {
-        debug_print ("__get_file_from_fd: p\n");
-        panic       ("__get_file_from_fd: p\n");
+        debug_print ("get_file_from_fd: p\n");
+        panic       ("get_file_from_fd: p\n");
         //return NULL;
     }
     
@@ -69,6 +69,7 @@ file *__get_file_from_fd(int fd)
 
     return (file *) f;
 }
+
 
 // See:
 // unistd.h
@@ -452,7 +453,7 @@ sys_read (
 
 // Get the object pointer.
 
-    __file = (file *) __get_file_from_fd(fd);
+    __file = (file *) get_file_from_fd(fd);
 
     if ( (void *) __file == NULL )
     {
@@ -886,7 +887,7 @@ int sys_write (unsigned int fd, char *ubuf, int count)
 // Get the object pointer from the list
 // in the process structure.
 
-    __file = (file *) __get_file_from_fd(fd);
+    __file = (file *) get_file_from_fd(fd);
     
     if ( (void *) __file == NULL )
     {

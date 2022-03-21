@@ -239,6 +239,7 @@ typedef struct _gRep gRep;
 // Redraw all the windows. Back to front.
 #define GWS_UpdateDesktop  9092
 
+#define GWS_GetWindowInfo   9093
 
 // =====================================================
 //--

@@ -3,12 +3,15 @@
 
 #include <kernel.h>
 
+//
+// The current thread global variable.
+//
 
-//int current_thread=0;
 tid_t current_thread=0;
 
+// helper
 // Thread stats
-unsigned long __GetThreadStats ( int tid, int index )
+unsigned long GetThreadStats ( int tid, int index )
 {
     struct thread_d  *t;
 
@@ -26,7 +29,7 @@ unsigned long __GetThreadStats ( int tid, int index )
 
     if ( (void *) t == NULL ){
         // ?? refresh
-        printf ("__GetThreadStats: struct \n");
+        printf ("GetThreadStats: struct \n");
         return 0; 
 
     } else {
@@ -552,7 +555,7 @@ int thread_profiler( int service ){
 // do not check parameters validation
 
 void 
-__ps_setup_x64_context ( 
+ps_setup_x64_context ( 
     struct thread_d *t, 
     int iopl,
     unsigned long init_stack,
@@ -561,7 +564,7 @@ __ps_setup_x64_context (
 
     // Checking only this one.
     if (iopl != RING0 && iopl != RING3 ){
-        panic ("__ps_setup_x64_context: [ERROR] Invalid iopl\n");
+        panic ("ps_setup_x64_context: [ERROR] Invalid iopl\n");
     }
 
     t->iopl = iopl;
@@ -655,9 +658,8 @@ __ps_setup_x64_context (
 }
 
 
-void
-__ps_initialize_thread_common_elements(
-    struct thread_d *t )
+// worker
+void ps_initialize_thread_common_elements( struct thread_d *t )
 {
     register int i=0;
 
@@ -721,7 +723,7 @@ __ps_initialize_thread_common_elements(
     {
         tmp = (struct msg_d *) kmalloc( sizeof( struct msg_d ) );
         if( (void*) tmp == NULL )
-            panic("create_thread: tmp");
+            panic("ps_initialize_thread_common_elements: tmp");
     
         tmp->window = NULL;
         tmp->msg = 0;
@@ -980,10 +982,9 @@ struct thread_d *create_thread (
     }
 // =====================
 
+// worker
 // Initializing the common basic elements.
-
-    __ps_initialize_thread_common_elements( (struct thread_d *) Thread );
-
+    ps_initialize_thread_common_elements( (struct thread_d *) Thread );
 
 //
 // Input model
@@ -1133,7 +1134,7 @@ try_next_slot:
 // The contexts needs its own structure.
 
     if (iopl == RING0){
-    __ps_setup_x64_context( 
+    ps_setup_x64_context( 
         (struct thread_d *) Thread,
         RING0,
         (unsigned long) init_stack,
@@ -1141,7 +1142,7 @@ try_next_slot:
     }
 
     if (iopl == RING3){
-    __ps_setup_x64_context( 
+    ps_setup_x64_context( 
         (struct thread_d *) Thread,
         RING3,
         (unsigned long) init_stack,

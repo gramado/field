@@ -39,7 +39,7 @@
             + __GNUC_PATCHLEVEL__ )
 
 
-unsigned long InitializationPhase;
+unsigned long InitializationPhase=0;
 
 #define RELEASE_TYPE_NULL  0
 #define RELEASE_TYPE_RC    1
@@ -104,8 +104,25 @@ struct x_boot_block_d
 struct x_boot_block_d  xBootBlock;
 
 
+// ================================
+
+
+//
+// == Prototypes ========
+//
+
+static void preinit_Globals(int arch_type);
+static void preinit_OutputSupport(void);
+static void preinit_Serial(void);
+
+
+// ================================
+
+
+
+
 // #todo
-void preinit_Globals(int arch_type)
+static void preinit_Globals(int arch_type)
 {
     asm ("cli");
 
@@ -136,14 +153,14 @@ void preinit_Globals(int arch_type)
 }
 
 
-void preinit_Serial(void)
+static void preinit_Serial(void)
 {
     serial_init();
     debug_print("preinit_Serial: Initialized\n");
 }
 
 
-void preinit_OutputSupport(void)
+static void preinit_OutputSupport(void)
 {
 
 // Virtual Console.

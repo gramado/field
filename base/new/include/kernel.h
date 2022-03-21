@@ -715,22 +715,7 @@ int kernel_main (int arch_type);
 
 // x64init.c
 int I_x64main (void);
-
-// sysinit.c
-int I_init (void);
-
-// kernel process:
-// KERNEL.BIN and GWSSRV.BIN
-// x64init.c
-int I_x64CreateKernelProcess(void);
-int I_x64CreateWSThread(void);
-
-// initial process:
-// GWS.BIN
-// x64init.c
-int I_x64CreateInitialProcess (void);
 void I_x64ExecuteInitialProcess (void);
-
 
 
 // ================================================

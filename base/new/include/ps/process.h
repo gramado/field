@@ -950,8 +950,9 @@ void show_process_information (void);
 int GetCurrentPID (void);
 struct process_d *GetCurrentProcess(void);
 
+//helper
+unsigned long GetProcessStats ( int pid, int index );
 
-unsigned long __GetProcessStats ( int pid, int index );
 int getprocessname ( int pid, char *buffer );
 struct process_d *processObject (void);
 pid_t getNewPID (void);
@@ -963,9 +964,7 @@ void CloseAllProcesses (void);
 // ===
 
 // Worker for create_process.
-void
-__ps_initialize_process_common_elements(
-    struct process_d *p );
+void ps_initialize_process_common_elements( struct process_d *p );
     
 struct process_d *create_process ( 
     struct room_d    *room,
@@ -1004,7 +1003,7 @@ void set_caller_process_id (int pid);
 
 int init_process_manager (void);
 
-int __alloc_memory_for_image_and_stack ( struct process_d *process );
+int alloc_memory_for_image_and_stack ( struct process_d *process );
 
 
 // Critical section
@@ -1020,7 +1019,7 @@ file *process_get_file ( int fd );
 int process_get_tty (int pid);
 
 // Create and initialize a process structure.
-struct process_d *__create_and_initialize_process_object(void);
+struct process_d *create_and_initialize_process_object(void);
 
 
 #endif    

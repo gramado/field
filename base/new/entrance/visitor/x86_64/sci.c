@@ -7,19 +7,31 @@
 
 //#define SERVICE_NUMBER_MAX  255
 
+//
+// == Prototypes ========
+//
 
-// prototype
-void *gde_extra_services ( 
+static void *__extra_services ( 
     unsigned long number, 
     unsigned long arg2, 
     unsigned long arg3, 
     unsigned long arg4 );
 
+static void __service897(void);
+static void __servicePutChar( int c );
+static void __invalidate_surface_rectangle(void);
+static void __maximize_process_quantum(pid_t ws_pid);
+
+static void __setup_surface_rectangle(
+    unsigned long left,
+    unsigned long top,
+    unsigned long width,
+    unsigned long height );
+
 //==================================
 
 // local
-void __service897(void);
-void __service897(void)
+static void __service897(void)
 {
     struct thread_d *myThread; 
     struct rect_d r;
@@ -86,8 +98,7 @@ void __service897(void)
 }
 
 
-void
-__setup_surface_rectangle(
+static void __setup_surface_rectangle(
     unsigned long left,
     unsigned long top,
     unsigned long width,
@@ -129,8 +140,8 @@ __setup_surface_rectangle(
     r->dirty = FALSE;
 }
 
-void
-__invalidate_surface_rectangle(void)
+
+static void __invalidate_surface_rectangle(void)
 {
     struct thread_d *t;
     struct rect_d *r;
@@ -153,8 +164,7 @@ __invalidate_surface_rectangle(void)
 // #test
 // Changing the window server's quantum. 
 // The purpose here is boosting it when it is trying to register itself.
-void
-__maximize_process_quantum(pid_t ws_pid)
+static void __maximize_process_quantum(pid_t ws_pid)
 {
     struct process_d *p;
     struct thread_d *t;
@@ -180,7 +190,7 @@ __maximize_process_quantum(pid_t ws_pid)
 
 // Services abouve 256.
 // Helper function called by sci0().
-void *gde_extra_services ( 
+static void *__extra_services ( 
     unsigned long number, 
     unsigned long arg2, 
     unsigned long arg3, 
@@ -335,7 +345,7 @@ void *gde_extra_services (
 
     // 377 - todo: implement uname() libc support.
     if ( number == 377 ){
-        printf ("gde_extra_services: [377] uname. [todo] \n");
+        printf ("__extra_services: [377] uname. [todo] \n");
         sys_uname ( (struct utsname *) arg2 );        
         invalidate_screen();
         //refresh_screen();
@@ -348,7 +358,7 @@ void *gde_extra_services (
     // Clear the screen.
     if (number==390)
     {
-        debug_print ("gde_extra_services: [390] :)\n");
+        debug_print ("__extra_services: [390] :)\n");
         //Background_initialize();
         return NULL;
     }
@@ -358,7 +368,7 @@ void *gde_extra_services (
     // Falha se tentamos pintar a tela toda.
     if (number==391)
     {
-        debug_print("gde_extra_services: [391]\n");
+        debug_print("__extra_services: [391]\n");
         drawDataRectangle ( 
             (unsigned long) message_address[0],    //x 
             (unsigned long) message_address[1],    //y
@@ -377,7 +387,7 @@ void *gde_extra_services (
     // OUT: pid
     if ( number == SYS_GET_WS_PID )
     {
-        debug_print("gde_extra_services: SYS_GET_WS_PID\n");
+        debug_print("__extra_services: SYS_GET_WS_PID\n");
 
         __desktop = ( struct desktop_d *) arg2;
 
@@ -408,7 +418,7 @@ void *gde_extra_services (
 
     if ( number == SYS_SET_WS_PID )
     {
-        debug_print("gde_extra_services: SYS_SET_WS_PID\n");
+        debug_print("__extra_services: SYS_SET_WS_PID\n");
         
         __desktop = ( struct desktop_d *) arg2;
 
@@ -469,7 +479,7 @@ void *gde_extra_services (
     // IN: desktop
     if ( number == SYS_GET_WM_PID )
     {
-       debug_print("gde_extra_services: SYS_GET_WM_PID\n");
+       debug_print("__extra_services: SYS_GET_WM_PID\n");
         // pega o wm de um dado desktop.
         __desktop = ( struct desktop_d *) arg2;
         if ( (void *) __desktop != NULL )
@@ -490,7 +500,7 @@ void *gde_extra_services (
     // IN: desktop, pid
     if ( number == SYS_SET_WM_PID )
     {
-       debug_print("gde_extra_services: SYS_SET_WM_PID\n");
+       debug_print("__extra_services: SYS_SET_WM_PID\n");
         __desktop = ( struct desktop_d *) arg2;
         if ( (void *) __desktop != NULL )
         {
@@ -641,13 +651,13 @@ void *gde_extra_services (
     // Get process stats given pid
     // IN: pid, number
     if ( number == 880 ){
-       return (void *) __GetProcessStats ( (int) arg2, (int) arg3 );
+       return (void *) GetProcessStats ( (int) arg2, (int) arg3 );
     }
 
     // get thread stats given tid
     // IN: tid, number
     if ( number == 881 ){
-        return (void *) __GetThreadStats ( (int) arg2, (int) arg3 );
+        return (void *) GetThreadStats ( (int) arg2, (int) arg3 );
     }
 
 
@@ -669,7 +679,7 @@ void *gde_extra_services (
     }
 
     if ( number == 891 ){
-        debug_print("gde_extra_services: 891\n");
+        debug_print("__extra_services: 891\n");
         return (void *) newos_alloc_shared_ring3_pages ( (pid_t) current_process, (int) arg2 );
     }
 
@@ -981,6 +991,7 @@ void *sci0 (
     
     
     // #debug
+    // #todo: Explain it better.
     if (number == 4321){
         printf ("4321: arg2 %x | arg3 %x | arg4 %x \n",arg2,arg3,arg4);
         invalidate_screen();
@@ -1017,7 +1028,7 @@ void *sci0 (
 // extra services
 
     if ( number > 256 ){
-        return (void *) gde_extra_services(number,arg2,arg3,arg4);
+        return (void *) __extra_services(number,arg2,arg3,arg4);
         return NULL;
     }
 
@@ -2082,7 +2093,7 @@ void *sci2 (
 
 
 /*
- * servicesPutChar:
+ * __servicePutChar:
  *     Movendo para terminal/output.c 
  *     Coloca um char usando o 'terminal mode' de stdio selecionado 
  * em _outbyte.
@@ -2092,28 +2103,17 @@ void *sci2 (
 // #bugbug
 // Where is the prototype?
 
-void servicesPutChar ( int c )
+static void __servicePutChar ( int c )
 {
     if ( fg_console < 0 ){
         // #todo: Message
         return;
     }
-
     console_putchar ( (int) c, fg_console );
 }
 
-
-/*
-void nothing4(void){}
-void nothing5(void){}
-void nothing6(void){}
-void nothing7(void){}
-void nothing41(void){}
-void nothing51(void){}
-void nothing61(void){}
-void nothing71(void){}
-*/
-
-
+//
+// End
+//
 
 

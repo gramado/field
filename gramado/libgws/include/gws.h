@@ -43,7 +43,28 @@
 
 
 #define GWS_DrainInput            8080
+
+//#todo
+//#define GWS_SwitchFocus    9090
+
+//#todo
+// Called by the kernel x times per second.
+//#define GWS_Compositor     9091    
+//#define GWS_RefreshDirtyRectangles  9091
+
+//#todo
+// Redraw all the windows. Back to front.
+//#define GWS_UpdateDesktop  9092
+
+#define GWS_GetWindowInfo   9093
+
 // ...
+
+
+
+
+
+
 
 // internal
 // used only by the lib
@@ -244,6 +265,14 @@ gws_redraw_window (
     int fd, 
     int window, 
     unsigned long flags );
+
+
+
+// The server will return the info about one given window.
+struct gws_window_info_d *gws_get_window_info(
+    int fd,
+    int wid,
+    struct gws_window_info_d *window_info );
 
 
 // The server will return an event from the its client's event queue.
