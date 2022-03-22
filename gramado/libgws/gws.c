@@ -407,15 +407,22 @@ process_response:
     {
         //printf("__gws_get_next_event_response: WE GOT THE DATA\n");
     
-        window_info->wid   = (int)           message_buffer[4];  // wid
-        window_info->pwid  = (int)           message_buffer[5];  // parent wid
-        window_info->type  = (int)           message_buffer[6];  // window type
+        window_info->wid   = (int) message_buffer[4];  // wid
+        window_info->pwid  = (int) message_buffer[5];  // parent wid
+        window_info->type  = (int) message_buffer[6];  // window type
 
         // window
         window_info->left   = (unsigned long) message_buffer[7];   // left 
         window_info->top    = (unsigned long) message_buffer[8];   // top
         window_info->width  = (unsigned long) message_buffer[9];   // width
         window_info->height = (unsigned long) message_buffer[10];  // height
+
+        //#debug
+        //printf("libgws: l=%d t=%d w=%d h=%d\n",
+            //window_info->left, 
+            //window_info->top, 
+            //window_info->width, 
+            //window_info->height );
 
         // limits
         window_info->right  = (unsigned long) message_buffer[11];  // right
@@ -488,11 +495,11 @@ int __gws_get_next_event_request ( int fd )
         //if(n_writes>0){break;}
     //}
 
-    if(n_writes<=0)
+    if(n_writes<=0){
         return -1;
+    }
 
-    return n_writes; 
-    //return 0; 
+    return n_writes;
 }
 
 
@@ -515,8 +522,9 @@ struct gws_event_d *__gws_get_next_event_response (
 
 
 // crazy fail
-    if( (void*) event == NULL )
+    if( (void*) event == NULL ){
         return NULL;
+    }
 
 
 //
@@ -646,7 +654,6 @@ fail0:
     event->msg = 0;
     event->used = FALSE;
     event->magic = 0;
-
     return NULL;
 }
 
@@ -3257,8 +3264,9 @@ struct gws_event_d *gws_get_next_event(
 // Request
     int req_status = -1;
     req_status = __gws_get_next_event_request(fd);
-    if(req_status<=0)
-        return -1;
+    if(req_status<=0){
+        return NULL;
+    }
     rtl_set_global_sync( __saved_global_sync_id, SYNC_REQUEST_SET_ACTION, ACTION_REQUEST );
 
 // Response
@@ -3320,7 +3328,7 @@ struct gws_window_info_d *gws_get_window_info(
         }
     };
 
-    wi = (struct gws_window_info_d *) __gws_get_next_event_response( 
+    wi = (struct gws_window_info_d *) __gws_get_window_info_response( 
                                           fd, 
                                           window_info );
 

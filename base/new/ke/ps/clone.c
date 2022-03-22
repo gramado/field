@@ -490,14 +490,18 @@ do_clone:
     //refresh_screen();
     //return 0;
 
-    // rip and rsp
+// rip and rsp
 
-    child_thread->rip = (unsigned long) 0x201000;  //standard va entry point
-    // 32kb size
-    //#todo precisa ser do mesmo tamanho que o pai 
-    //no caso de fork()
+    // Standard va entry point.
+    child_thread->rip = (unsigned long) 0x201000;
+    
+    // 32KB size
+    // #todo 
+    // Precisa ser do mesmo tamanho que o pai 
+    // no caso de fork()
     child_thread->rsp = (unsigned long) (parent_process->childStack + (30*1024));   // original   
     //child_thread->rsp = (unsigned long) (parent_process->childStack + (120*1024));  // test
+
 
     // #debug
     // ok

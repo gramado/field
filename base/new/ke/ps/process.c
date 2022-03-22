@@ -1584,7 +1584,7 @@ int init_process_manager (void)
 
 
 /*
- * processCopyMemory:
+ * alloc_memory_for_image_and_stack:
  *     Copia a imagem de um processo.
  *     Isso é usado na implementação de fork() e
  * na implementação da rotina de clonagem.
@@ -1610,15 +1610,15 @@ int init_process_manager (void)
 
 int alloc_memory_for_image_and_stack( struct process_d *process )
 {
-    unsigned long __new_base=0;    // base
-    unsigned long __new_stack=0;   // stack
+    unsigned long __new_base=0;   // base
+    unsigned long __new_stack=0;  // stack
 
-    if ( (void *) process == NULL )
-    {
-        printf ("alloc_memory_for_image_and_stack: [FAIL] process \n");
-        refresh_screen();
-        return (int) (-1);
+    if ( (void *) process == NULL ){
+        panic ("alloc_memory_for_image_and_stack: [FAIL] process \n");
     }
+
+
+// ==================================================
 
 //
 // Image base
@@ -1649,23 +1649,38 @@ int alloc_memory_for_image_and_stack( struct process_d *process )
 // Retorna um endereço virtual.
 // Mas usaremos apenas o endereço físico extraído desse endereço.
 
-    int number_of_pages = 0;
+/*
+     #bugbug
+     Os aplicativos estão ficando grandes e a falta de
+     memória pra a criação deles esta causando problemas.
+     Estamos usando 300KB de memória para a criação do processo
+     pois 200KB já não é o bastante e causa falha na inicialização
+     do processo.
+     Lembrando que precisamos de memória para a imagem do processo
+     e para sua pilha.
+     Os aplicativos estão com tamanhos que variam de 100KB à 200KB.
+*/
 
-// 200 kb
-// Quantas páginas temos em 200KB?
+// 300KB
+// Quantas páginas temos em 300KB?
 
-    number_of_pages = (int) (200*1024)/4096;
+    int number_of_pages=0;
+    //number_of_pages = (int) (200*1024)/4096;   // #bugbug: Not enough.
+    number_of_pages = (int) (300*1024)/4096;     // 
 
     __new_base = (unsigned long) allocPages(number_of_pages); 
+
     if ( __new_base == 0 )
     {
-        //printf ("processCopyMemory: __new_base fail\n");
-        //refresh_screen();
-        
-        panic("alloc_memory_for_image_and_stack: __new_base fail\n");
-        
-        return (int) (-1);
+        // #important
+        panic ("alloc_memory_for_image_and_stack: [FAIL] __new_base\n");
     }
+
+// ==================================================
+
+
+
+// ==================================================
 
 //
 // Image stack
@@ -1687,13 +1702,12 @@ int alloc_memory_for_image_and_stack( struct process_d *process )
 
     if ( __new_stack == 0 )
     {
-        //printf ("processCopyMemory: __new_stack fail\n");
-        //refresh_screen();
-        
-        panic ("alloc_memory_for_image_and_stack: __new_stack fail\n");
-        
-        return (int) (-1);
+        // #important
+        panic ("alloc_memory_for_image_and_stack: [FAIL] __new_stack\n");
     }
+
+// ==================================================
+
 
 //
 // == Copying memory ==========

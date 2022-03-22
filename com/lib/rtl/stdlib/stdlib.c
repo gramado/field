@@ -666,8 +666,10 @@ int __init_heap(void)
 // More?
 
 done:
+    debug_print("__init_heap: done\n");
     //printf("Done.\n");
     return 0;
+
 // Fail. 
 // Falha ao iniciar o heap do kernel.
 fail:
@@ -696,19 +698,18 @@ fail:
  * Essa é uma função local.
  */
 
-int __init_mm (void){
-
+int __init_mm (void)
+{
     int Status = 0;
     int i=0;
 
     //#debug
     debug_print ("__init_mm:\n");
 
+// @todo: 
+// Inicializar algumas variáveis globais.
+// Chamar os construtores para inicializar o básico.
 
-	// @todo: 
-	// Inicializar algumas variáveis globais.
-	// Chamar os construtores para inicializar o básico.
-	
 	// @todo: 
 	// Clear BSS.
 	// Criar mmClearBSS()
@@ -718,7 +719,8 @@ int __init_mm (void){
 
     Status = (int) __init_heap();
 
-    if ( Status != 0 ){
+    if ( Status != 0 )
+    {
         debug_print ("__init_mm: [FAIL] __init_heap\n");
         //printf      ("__init_mm: [FAIL] __init_heap\n");
         return (int) 1;

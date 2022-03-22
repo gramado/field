@@ -202,7 +202,7 @@ int kernel_main(int arch_type)
     //enable_serial_debug();
     disable_serial_debug();
 
-    
+
     Initialization.phase1 = FALSE;
     Initialization.phase2 = FALSE;
     Initialization.phase3 = FALSE;

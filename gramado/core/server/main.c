@@ -481,11 +481,17 @@ int __send_response(int fd, int type)
     char *m = (char *) (&__buffer[0] + 16);
     sprintf( m, "~ Response from gwssrv \n");
 
-    // Primeiros longs do buffer.
-    message_buffer[0] = next_response[0];         // Window ID.
+//
+// Primeiros longs do buffer.
+//
+
+// 0:
+// wid
+    message_buffer[0] = (unsigned long) next_response[0];  //wid
 
 
-// Type of reply
+// 1:
+// Type of reply.
 
     switch(type){
     case 1:  // normal reply
@@ -502,18 +508,42 @@ int __send_response(int fd, int type)
         break;
     };
 
+// 2 and 3:
+// Signature in some cases.
+// Can we deliver values here?
+    message_buffer[2] = (unsigned long) next_response[2];  // long1
+    message_buffer[3] = (unsigned long) next_response[3];  // long2
 
-    message_buffer[2] = next_response[2];         // Return value (long1)
-    message_buffer[3] = next_response[3];         // Return value (long2)
 
-// The event it self.
-    if(type == 2)
-    {
-        message_buffer[4] = next_response[4];
-        message_buffer[5] = next_response[5];
-        message_buffer[6] = next_response[6];
-        message_buffer[7] = next_response[7];
-    }
+// 4,5,6,7  \./
+// Data.
+    message_buffer[4] = (unsigned long) next_response[4];
+    message_buffer[5] = (unsigned long) next_response[5];
+    message_buffer[6] = (unsigned long) next_response[6];
+    message_buffer[7] = (unsigned long) next_response[7];
+
+// 8,9,10,11  \o/
+// Data.
+    message_buffer[8]  = (unsigned long) next_response[8];
+    message_buffer[9]  = (unsigned long) next_response[9];
+    message_buffer[10] = (unsigned long) next_response[10];
+    message_buffer[11] = (unsigned long) next_response[11];
+
+// 12,13,14,15  \O/
+// Data.
+    message_buffer[12] = (unsigned long) next_response[12];
+    message_buffer[13] = (unsigned long) next_response[13];
+    message_buffer[14] = (unsigned long) next_response[14];
+    message_buffer[15] = (unsigned long) next_response[15];
+
+
+// more
+    message_buffer[16] = (unsigned long) next_response[16];
+    message_buffer[17] = (unsigned long) next_response[17];
+    message_buffer[18] = (unsigned long) next_response[18];
+    message_buffer[19] = (unsigned long) next_response[19];
+
+    // ...
 
 //__again:
 
@@ -2080,14 +2110,52 @@ int serviceNextEvent (void)
 
 static int serviceGetWindowInfo(void)
 {
+
+    //#todo
+    // Vamos pegar informações sobre
+    // uma janela indicada no request.
+    
+    struct gws_window_d *w;
+
+// ##
+// Using the root window for testing purpose.
+
+    //root window
+    //int wid = __root_window->id;
+    //w = (struct gws_window_d *) __root_window;
+
+    //taskbar window
+    int wid = __taskbar_window->id;
+    w = (struct gws_window_d *) __taskbar_window;
+
+
     printf("serviceGetWindowInfo: :)\n");
 
-    //header
-    next_response[0] = 0;  //
+// Header
+    next_response[0] = wid;  //
     next_response[1] = SERVER_PACKET_TYPE_REPLY;  //msg type
     next_response[2] = 1234;  //signature
     next_response[3] = 5678;  //signature
-    
+
+// Window
+    next_response[7]  = (unsigned long) w->left;
+    next_response[8]  = (unsigned long) w->top; 
+    next_response[9]  = (unsigned long) w->width;
+    next_response[10] = (unsigned long) w->height;
+
+// Client rectangle.
+    next_response[13] = (unsigned long) w->rcClient.left;
+    next_response[14] = (unsigned long) w->rcClient.top; 
+    next_response[15] = (unsigned long) w->rcClient.width;
+    next_response[16] = (unsigned long) w->rcClient.height;
+
+// #debug
+    //printf("serviceGetWindowInfo: l=%d t=%d w=%d h=%d\n",
+        //__root_window->left, 
+        //__root_window->top, 
+        //__root_window->width, 
+        //__root_window->height );
+
     return 0;     //ok, send a reply response.
     //return -1;  //fail, send an error response.
 }

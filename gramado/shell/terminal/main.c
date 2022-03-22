@@ -50,53 +50,46 @@
 // Testing ioctl()
 #include <termios.h>
 
-
-FILE *__terminal_input_fp;
-
-
-static unsigned int bg_color = COLOR_BLACK;
-static unsigned int fg_color = COLOR_WHITE;
-
-int cursor_x = 0;
-int cursor_y = 0;
-unsigned int prompt_color;
-
-
-//We are using the embedded shell.
-int isUsingEmbeddedShell=TRUE;
-
-//
-// == ports ====================================
-//
-
+// network ports.
 #define PORTS_WS 4040
 #define PORTS_NS 4041
 #define PORTS_FS 4042
 // ...
 
-
-// #test
-// Tentando deixar o buffer aqui e aproveitar em mais funções.
-//char __buffer[512];
-
 #define IP(a, b, c, d) (a << 24 | b << 16 | c << 8 | d)
 
 
+FILE *__terminal_input_fp;
+
+// color
+static unsigned int bg_color = COLOR_BLACK;
+static unsigned int fg_color = COLOR_WHITE;
+static unsigned int prompt_color = COLOR_GREEN;
+
+// cursor
+static int cursor_x = 0;
+static int cursor_y = 0;
+
+// Embedded shell
+// We are using the embedded shell.
+static int isUsingEmbeddedShell=TRUE;
+
+
+//
 // prototypes
+//
 
-void __send_to_child (void);
+static void terminalTerminal (void);
+static void terminalInitWindowPosition(void);
+static void terminalInitWindowSizes(void);
+static void terminalInitWindowLimits (void);
+static void terminalInitSystemMetrics (void);
 
-//constructor.
-void terminalTerminal (void);
-void terminalInitWindowPosition(void);
-void terminalInitWindowSizes(void);
-void terminalInitWindowLimits (void);
-void terminalInitSystemMetrics (void);
+static void compareStrings(int fd);
+static void doPrompt(int fd);
 
-
-void clear_terminal_client_window(int fd);
-void compareStrings(int fd);
-void doPrompt(int fd);
+static void clear_terminal_client_window(int fd);
+static void __send_to_child (void);
 
 //====================================================
 
@@ -104,7 +97,7 @@ void doPrompt(int fd);
 // Clear
 // Redraw the client window.
 // Setup the cursor position.
-void clear_terminal_client_window(int fd)
+static void clear_terminal_client_window(int fd)
 {
     if (fd<0){return;}
 
@@ -231,9 +224,57 @@ void __test_gws(int fd)
     //gws_async_command(fd,11,0,0); //update desktop
 }
 
+static void __test_winfo(int fd, int wid);
+static void __test_winfo(int fd, int wid)
+{
+
+    struct gws_window_info_d *wi;
+    //unsigned long _l,_t,_w,_h;
+
+    if(fd<0)
+        return;
+    if(wid<0)
+        return;
+
+
+    wi = (void*) malloc( sizeof( struct gws_window_info_d ) );
+
+    if( (void*) wi == NULL )
+        return;
+
+
+    //IN: fd, wid, window info structure.
+    gws_get_window_info(
+        fd, 
+        wid,
+        (struct gws_window_info_d *) wi );
+
+    if(wi->used != TRUE)
+        return;
+
+    if(wi->magic!=1234)
+        return;
+
+
+//
+// Debug
+//
+
+// window: l,t,w,h
+    printf("terminal: (window) l=%d t=%d w=%d h=%d\n",
+        wi->left, wi->top, wi->width, wi->height );
+
+// client rectangle: l,t,w,h
+    printf("terminal: (client rectangle) l=%d t=%d w=%d h=%d\n",
+        wi->cr_left, wi->cr_top, wi->cr_width, wi->cr_height );
+
+    printf("terminal: done\n");
+}
+
+
 // Compare the string typed into the terminal.
 // Remember, we have an embedded command interpreter.
-void compareStrings(int fd)
+static void compareStrings(int fd)
 {
     if(fd<0){
         return;
@@ -242,15 +283,12 @@ void compareStrings(int fd)
 
     //#test
     //getting window info
-    // not a pointer.
-    struct gws_window_info_d wi;
     if ( strncmp(prompt,"w-info",6) == 0 )
     {
-        //IN: fd, wid, window info structure.
-        gws_get_window_info(
-            fd, 
-            Terminal.client_window_id,
-            (struct gws_window_info_d *) &wi );
+        // IN: fd, wid
+        __test_winfo( 
+            fd,
+            Terminal.client_window_id );
 
         goto exit_cmp;
     }
@@ -476,7 +514,7 @@ exit_cmp:
 }
 
 
-void doPrompt(int fd)
+static void doPrompt(int fd)
 {
     int i=0;
 
@@ -615,7 +653,7 @@ void test_tty_support(int fd)
 // Maybe the shell can change stdin for it's child.
 // For now, the shell will need a line.
 
-void __send_to_child (void)
+static void __send_to_child (void)
 {
     char *shared_flag   = (char *) (0xC0800000 -0x210);   // flag
     char *shared_memory = (char *) (0xC0800000 -0x200);   // input
@@ -2301,6 +2339,11 @@ int main ( int argc, char *argv[] )
 
     Terminal.main_window_id = main_window;
 
+    if(main_window<0){
+        printf("terminal: fail on main_window\n");
+        while(1){}
+    }
+
 
 // ===================================================
 
@@ -2308,7 +2351,8 @@ int main ( int argc, char *argv[] )
 // Client area window
 //
 
-    terminal_window = gws_create_window (client_fd,
+    terminal_window = gws_create_window (
+                          client_fd,
                           WT_SIMPLE, 1, 1, "ter-client",
                           wLeft, wTop, wWidth, wHeight,
                           main_window,0,wColor,wColor);
@@ -2317,9 +2361,11 @@ int main ( int argc, char *argv[] )
 
     Terminal.client_window_id = terminal_window;
 
-    if (Terminal.client_window_id<0){
-        gws_debug_print ("terminal: [FAIL] create main window return fail\n");
+    if(terminal_window<0){
+        printf("terminal: fail on terminal_window\n");
+        while(1){}
     }
+
 
 
     Terminal.left = 0;
@@ -2493,7 +2539,7 @@ int main ( int argc, char *argv[] )
 // então estão mais para terminal do que para shell.
 
 
-void terminalTerminal (void)
+static void terminalTerminal (void)
 {
     int i=0;
     int j=0;
@@ -2594,7 +2640,7 @@ void terminalTerminal (void)
 }
 
 
-void terminalInitSystemMetrics(void)
+static void terminalInitSystemMetrics(void)
 {
 
 // Screen width and height.
@@ -2630,7 +2676,7 @@ void terminalInitSystemMetrics(void)
 } 
 
 
-void terminalInitWindowLimits (void)
+static void terminalInitWindowLimits (void)
 {
 
 // #todo
@@ -2679,7 +2725,7 @@ void terminalInitWindowLimits (void)
 }
 
 
-void terminalInitWindowSizes(void)
+static void terminalInitWindowSizes(void)
 {
 
     if (Terminal.initialized != TRUE ){
@@ -2710,7 +2756,7 @@ void terminalInitWindowSizes(void)
 }
 
 
-void terminalInitWindowPosition(void)
+static void terminalInitWindowPosition(void)
 {
     if (Terminal.initialized != TRUE ){
         printf("terminalInitWindowPosition: Terminal.initialized\n");

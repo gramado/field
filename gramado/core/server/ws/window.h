@@ -1105,11 +1105,7 @@ struct gws_window_d
 
     //suspenso
     //  Process support. A que processo a janela pertence??
-    //struct process_d *process;	
-
-
-
-
+    //struct process_d *process;
 
     // ...
 
@@ -1123,7 +1119,6 @@ struct gws_window_d
 
 	//struct button_d *button;
 
-
 //
 // Actions
 //
@@ -1133,12 +1128,9 @@ struct gws_window_d
     int show;    //se precisa ou não mostrar a janela.
     // Continua ...
 
-
-
 	//
 	// Text Cursor support.
 	//
-
 
 	//fica para uma versão estendida da estrutura.
 	//Estrutura de cursor para a janela.
@@ -1151,7 +1143,6 @@ struct gws_window_d
     //struct button_d *buttonList;      //Lista encadeada de botões em uma janela.
 
 
-	
 	//
 	// Mouse cursor support ???
 	//
