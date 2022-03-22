@@ -561,9 +561,26 @@ int main ( int argc, char *argv[] )
 // Pois agora ele eh um arquivo regular, nao um tty console.
     //rewind(stdout);
 
-    printf("SHELL.BIN: Hello terminal!");
+    //ok
     //printf("%c",'$');
+    //fflush(stdout);
+
+    //ok
+    //printf("SHELL.BIN: Hello terminal!");
+    //fflush(stdout);
+
+    //#test  ok
+    //printf("SHELL.BIN: Hello \033[8Cm terminal!");
+    //fflush(stdout);
+
+    //#test  ok
+    //printf("SHELL.BIN: Cursor| \x1b[8Bm |down!");
+    //fflush(stdout);
+
+    // Simple string.
+    printf("SHELL.BIN: Shell is alive!");
     fflush(stdout);
+
 
     int C=0;
     

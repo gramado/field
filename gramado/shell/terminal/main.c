@@ -860,18 +860,20 @@ terminal_write_char (
     terminalInsertNextChar ( (char) c ); 
 
 // Circula
+// próxima linha.
+// começo da linha
     cursor_x++;
-    if (cursor_x > __wlMaxColumns)
+    
+    //if (cursor_x > __wlMaxColumns)
+    if(cursor_x >= Terminal.width_in_chars)
     {
-        cursor_y++;  //próxima linha.
-        cursor_x=0;  //começo da linha
+        cursor_y++;
+        cursor_x=0;
     }
 }
 
 
-
 /*
- ***************************************************
  * terminalInsertNextChar:
  *     Coloca um char na próxima posição do buffer.
  *     Memória de vídeo virtual, semelhante a vga.
@@ -971,8 +973,6 @@ void del (void)
 
 void __test_escapesequence(int fd)
 {
-    //'\033[s \033[12;30f \033[30;46m  Hello!  \033[0m\033[uhello'
-    
     tputstring(fd, "Testing scape sequence:\n");
     //tputstring(fd, "One: \033[m");          //uma sequencia.
     //tputstring(fd, "Two: \033[m \033[m");   //duas sequencias.
@@ -1928,42 +1928,21 @@ terminalProcedure (
                 return 0;
                 break;
 
-            // draw the char using the window server
-            // Criar uma função 'terminal_draw_char()'
+            // Draw the char using the window server.
+            // tputc() uses escape sequence.
             default:
-            
-                if( isUsingEmbeddedShell == TRUE )
-                    input(long1);
-                
-                // draw char
-                gws_draw_char ( 
-                    fd, 
-                    window, 
-                    (cursor_x*8), 
-                    (cursor_y*8), 
-                    fg_color, 
-                    long1 );
-                    
-                gws_refresh_retangle(
-                    fd, (cursor_x*8), (cursor_y*8), 8, 8 );
+                if( isUsingEmbeddedShell == TRUE ){  input(long1);  }
+                tputc(
+                    (int) fd, 
+                    (int) Terminal.client_window_id, 
+                    (int) long1, 
+                    (int) 1 );
 
-                // it works
-                // refresh window
-                // #bugbug: Is it too much.
-                // We need to refresh only the dirty rectangles.
-                // gws_refresh_window(fd,window);
-                // update cursor positions
-                // #todo: Create a helper for that this.
-                cursor_x++;
-                if( cursor_x >= Terminal.width_in_chars)
-                {
-                    cursor_x = Terminal.left;
-                    cursor_y++;
-                }
                 return 0;
                 break;
         };
         break;
+
 
     // #bugbug: Not working
     // It's because the terminal is getting input
@@ -2445,10 +2424,6 @@ int main ( int argc, char *argv[] )
                           WT_SIMPLE, 1, 1, "ter-client",
                           wLeft, wTop, wWidth, wHeight,
                           main_window,0,wColor,wColor);
-      
-// Saving the window id.
-
-    Terminal.client_window_id = terminal_window;
 
     if(terminal_window<0){
         printf("terminal: fail on terminal_window\n");
@@ -2456,9 +2431,16 @@ int main ( int argc, char *argv[] )
     }
 
 
+// Saving the window id.
+    Terminal.client_window_id = terminal_window;
 
+// #bugbug
+// Something is wrong here.
+// is it in pixel or in chars?
     Terminal.left = 0;
-    Terminal.top = 0;
+    Terminal.top  = 0;
+    //Terminal.left = wLeft;  //0;
+    //Terminal.top  = wTop;   //0;
 
 // Width and height
 
@@ -2466,7 +2448,7 @@ int main ( int argc, char *argv[] )
     Terminal.width = wWidth;
     Terminal.height = wHeight;
 
-    // In chars.
+// In chars.
     Terminal.width_in_chars  = (unsigned long)((wWidth/8)  & 0xFFFF);
     Terminal.height_in_chars = (unsigned long)((wHeight/8) & 0xFFFF);
 
