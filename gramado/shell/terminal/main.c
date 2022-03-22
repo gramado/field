@@ -74,6 +74,10 @@ static int cursor_y = 0;
 // We are using the embedded shell.
 static int isUsingEmbeddedShell=TRUE;
 
+// Windows:
+static int main_window=0;
+static int terminal_window=0;
+
 
 //
 // prototypes
@@ -90,6 +94,7 @@ static void doPrompt(int fd);
 
 static void clear_terminal_client_window(int fd);
 static void __send_to_child (void);
+static void __test_winfo(int fd, int wid);
 
 //====================================================
 
@@ -224,7 +229,7 @@ void __test_gws(int fd)
     //gws_async_command(fd,11,0,0); //update desktop
 }
 
-static void __test_winfo(int fd, int wid);
+
 static void __test_winfo(int fd, int wid)
 {
 
@@ -281,15 +286,23 @@ static void compareStrings(int fd)
     }
 
 
-    //#test
-    //getting window info
-    if ( strncmp(prompt,"w-info",6) == 0 )
+    // get window info: main window
+    if ( strncmp(prompt,"w-main",6) == 0 )
     {
         // IN: fd, wid
         __test_winfo( 
             fd,
-            Terminal.client_window_id );
+            main_window );  // app window
+        goto exit_cmp;
+    }
 
+    // get window info: terminal window
+    if ( strncmp(prompt,"w-terminal",10) == 0 )
+    {
+        // IN: fd, wid
+        __test_winfo( 
+            fd,
+            terminal_window );  // Terminal.client_window_id
         goto exit_cmp;
     }
 
@@ -2287,9 +2300,9 @@ int main ( int argc, char *argv[] )
         }else{ break; };
     };
 
-// Windows:
-    int main_window = 0;
-    int terminal_window = 0;
+// Windows: it's global now.
+    //int main_window = 0;
+    //int terminal_window = 0;
 
 //
 // main window
@@ -2305,6 +2318,8 @@ int main ( int argc, char *argv[] )
 //
 // Client area window
 //
+
+// Set default
     unsigned long wLeft   = 2;   // por causa da borda.
     unsigned long wTop    = 34;  // por causa da title bar
     unsigned long wWidth  =  mwWidth  -2 -2;
@@ -2350,6 +2365,80 @@ int main ( int argc, char *argv[] )
 //
 // Client area window
 //
+
+// Let's get some values.
+// Remember: Maybe the window server changed
+// the window size and position.
+// We need to get these new values.
+
+    struct gws_window_info_d *wi;
+
+    wi = (void*) malloc( sizeof( struct gws_window_info_d ) );
+
+    if( (void*) wi == NULL )
+    {
+        printf("terminal: wi\n");
+        while(1){}
+    }
+
+    //IN: fd, wid, window info structure.
+    gws_get_window_info(
+        client_fd, 
+        main_window,   // The app window.
+        (struct gws_window_info_d *) wi );
+
+    if(wi->used != TRUE)
+    {
+        printf("terminal: wi->used\n");
+        while(1){}
+    }
+
+    if(wi->magic!=1234)
+    {
+        printf("terminal: wi->magic\n");
+        while(1){}
+    }
+
+
+
+// Setting new values for the client window.
+
+
+    // nao pode ser maior que o dispositivo
+    if( wi->cr_left >= w)
+    {
+        printf("terminal: wi->cr_left\n");
+        while(1){}
+    }
+
+    // nao pode ser maior que o dispositivo
+    if(wi->cr_top >= h)
+    {
+        printf("terminal: wi->cr_top\n");
+        while(1){}
+    }
+
+    // nao pode ser maior que o dispositivo
+    if(wi->cr_width == 0 || wi->cr_width > w)
+    {
+        printf("terminal: wi->cr_width\n");
+        while(1){}
+    }
+
+    // nao pode ser maior que o dispositivo
+    if(wi->cr_height == 0 || wi->cr_height > h)
+    {
+        printf("terminal: wi->height\n");
+        while(1){}
+    }
+
+// #danger
+// Let's get the values for the client area.
+
+    wLeft   = wi->cr_left;
+    wTop    = wi->cr_top;
+    wWidth  = wi->cr_width;
+    wHeight = wi->cr_height;
 
     terminal_window = gws_create_window (
                           client_fd,

@@ -814,7 +814,7 @@ void dispacher (int fd)
     Status = gwsProcedure (
        (int) fd,
        (struct gws_window_d *) message_buffer[0], 
-       (int)                   message_buffer[1], 
+       (int)                   message_buffer[1],  // msg code
        (unsigned long)         message_buffer[2], 
        (unsigned long)         message_buffer[3] );
 
@@ -2111,6 +2111,8 @@ int serviceNextEvent (void)
 static int serviceGetWindowInfo(void)
 {
 
+    unsigned long *message_address = (unsigned long *) &__buffer[0];
+
     //#todo
     // Vamos pegar informações sobre
     // uma janela indicada no request.
@@ -2125,11 +2127,36 @@ static int serviceGetWindowInfo(void)
     //w = (struct gws_window_d *) __root_window;
 
     //taskbar window
-    int wid = __taskbar_window->id;
-    w = (struct gws_window_d *) __taskbar_window;
+    //int wid = __taskbar_window->id;
+    //w = (struct gws_window_d *) __taskbar_window;
 
 
     printf("serviceGetWindowInfo: :)\n");
+
+    int wid = -1;
+    int msg_code = -1;
+
+// Get wid and message code.
+
+    wid      = (int) message_address[0];  // window id 
+    msg_code = (int) message_address[1];  // message code
+
+    if(wid<0 || wid >= WINDOW_COUNT_MAX)
+        return -1;
+
+    if(msg_code != GWS_GetWindowInfo)
+        return -1;
+
+// Get window pointer.
+
+    w = (struct gws_window_d *) windowList[wid];
+
+    if( (void*) w == NULL )
+        return -1;
+    if(w->used!=TRUE)
+        return -1;
+    if(w->magic!=1234)
+        return -1;
 
 // Header
     next_response[0] = wid;  //
@@ -2605,17 +2632,18 @@ int serviceCreateWindow (int client_fd)
 //
 
 // See:
-// createw.c
+// window.c
 
-    Window = (struct gws_window_d *) CreateWindow ( 
-                                         type, 
-                                         my_style,  // style
-                                         1,         // status 
-                                         1,         // view
-                                         r.data,    // name
-                                         x, y, w, h, 
-                                         Parent, 0, 
-                                         COLOR_PINK, color ); 
+    Window = 
+        (struct gws_window_d *) CreateWindow ( 
+                                    type, 
+                                    my_style,  // style
+                                    1,         // status 
+                                    1,         // view
+                                    r.data,    // name
+                                    x, y, w, h, 
+                                    Parent, 0, 
+                                    COLOR_PINK, color ); 
 
     if ( (void *) Window == NULL )
     {

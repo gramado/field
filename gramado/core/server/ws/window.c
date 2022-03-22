@@ -851,11 +851,12 @@ void *xxxCreateWindow (
     window->rcWindow.width  = (unsigned long) WindowWidth;   // window width
     window->rcWindow.height = (unsigned long) WindowHeight;  // window height
 
-// cleint area rectangle.
-    window->rcClient.left   = (unsigned long) window->left;
-    window->rcClient.top    = (unsigned long) window->height;
-    window->rcClient.width  = (unsigned long) window->width;
-    window->rcClient.height = (unsigned long) window->height;
+// client area rectangle.
+// Initial configuration.
+    //window->rcClient.left   = (unsigned long) window->left;
+    //window->rcClient.top    = (unsigned long) window->height;
+    //window->rcClient.width  = (unsigned long) window->width;
+    //window->rcClient.height = (unsigned long) window->height;
 
 //
 // == Client area ==
@@ -871,11 +872,27 @@ void *xxxCreateWindow (
 // é o valor passado via argumentos? e o frame é extra?
 // Local
 
-    clientRect.left   = 0;
-    clientRect.top    = 0;
-    clientRect.width  = (unsigned long) window->width;
-    clientRect.height = (unsigned long) window->height;
+    //old
+    //clientRect.left   = 0;
+    //clientRect.top    = 0;
+    //clientRect.width  = (unsigned long) window->width;
+    //clientRect.height = (unsigned long) window->height;
 
+    //#test: considerando as bordas.
+    //#todo: usar os valores da largura das bordas.
+    clientRect.left   = (unsigned long) 2;  // + borda da esq
+    clientRect.top    = (unsigned long) 2;  // + borda superior 
+    
+    // menos bordas laterais
+    clientRect.width  = 
+        (unsigned long) window->width -4;
+    
+    // menos bordas superior e inferior
+    // menos a barra de tarefas.
+    clientRect.height = 
+        (unsigned long) window->height -40; 
+
+// Save
 // The original values. They are the same os the window.
     window->rcClient.left   = clientRect.left;    // window left
     window->rcClient.top    = clientRect.top;     // window top
