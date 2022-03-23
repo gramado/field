@@ -6,7 +6,6 @@
 //suporte ao gerenciamento de terminais.
 //http://man7.org/linux/man-pages/man3/termios.3.html
 //http://kirste.userpage.fu-berlin.de/chemnet/use/info/libc/libc_12.html
-
 //#obs:
 //coisas pra fazer com terminal:
 //turn off input echoing
@@ -136,8 +135,6 @@ struct termios
 };
 
 
-
-
 /* Values for termios c_iflag bit map.  POSIX Table 7-2. */
 #define BRKINT    0x0001  /* signal interrupt on break */
 #define ICRNL     0x0002  /* map CR to NL on input */
@@ -151,12 +148,8 @@ struct termios
 #define IXON      0x0200  /* enable start/stop output control */
 #define PARMRK    0x0400  /* mark parity errors in the input queue */
 
-
-
 /* Values for termios c_oflag bit map.  POSIX Sec. 7.1.2.3. */
 #define  OPOST  0x0001  /* perform output processing */
-
-
 
 /* Values for termios c_cflag bit map.  POSIX Table 7-3. */
 #define  CLOCAL  0x0001  /* ignore modem status lines */
@@ -171,7 +164,6 @@ struct termios
 #define  PARENB  0x0040  /* enable parity on output */
 #define  PARODD  0x0080  /* use odd parity if set, else even */
 
-
 // Local mode flags.
 /* Values for termios c_lflag bit map.  POSIX Table 7-4. */
 #define  ECHO      0x0001  /* enable echoing of input characters */
@@ -183,8 +175,6 @@ struct termios
 #define  ISIG      0x0040  /* enable signals */
 #define  NOFLSH    0x0080  /* disable flush after interrupt or quit */
 #define  TOSTOP    0x0100  /* send SIGTTOU (job control, not implemented*/
-
-
 
 /* Values for the baud rate settings.  POSIX Table 7-6. */
 #define  B0      0x0000  /* hang up the line */
@@ -204,7 +194,6 @@ struct termios
 #define  B19200  0xE000  /* 19200 baud */
 #define  B38400  0xF000  /* 38400 baud */
 
-
 /*
 #ifndef _POSIX_SOURCE
 #define B7200	7200
@@ -219,7 +208,6 @@ struct termios
 #endif  //!_POSIX_SOURCE 
 */
 
-
 /* 
  * Optional actions for tcsetattr().  
  * POSIX Sec. 7.2.1.2. 
@@ -228,7 +216,6 @@ struct termios
 #define  TCSANOW    1  /* changes take effect immediately */
 #define  TCSADRAIN  2  /* changes take effect after output is done */
 #define  TCSAFLUSH  3  /* wait for output to finish and flush input */
-
 
 
 /* 
@@ -267,9 +254,6 @@ int cfsetispeed (struct termios *termios_p, speed_t speed);
 int cfsetospeed (struct termios *termios_p, speed_t speed);
 int cfsetspeed (struct termios *termios_p, speed_t speed);
 
-
-
-
 int tcflush (int fd, int queue_selector);
 int tcflow (int fd, int action);
 int tcdrain (int fd);
@@ -281,7 +265,6 @@ tcsetattr (
     int fd, 
     int optional_actions,
     const struct termios *termios_p );
-
 
 
 #endif /* _TERMIOS_H */

@@ -1,10 +1,9 @@
 
-
-//inttypes.h
-
+// inttypes.h
 // Conversão precisa entre tipos inteiros.
 
 #include <types.h>
+
 
 /*
 #define PRId8 "d"
@@ -70,17 +69,18 @@
 #define SCNuMAX __PRI64_PREFIX "u"
 */
 
+// int
+typedef int  intmax_t;
+typedef unsigned int  uintmax_t;
 
-typedef unsigned long uintptr_t;
+// long
+typedef unsigned long  uintptr_t;
 
-typedef unsigned int uintmax_t;
-typedef int intmax_t;
+
+// prototypes
 
 intmax_t strtoimax (const char* str, char** endptr, int base);
 uintmax_t strtoumax (const char* str, char** endptr, int base);
-
-
-
 
 
 

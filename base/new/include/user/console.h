@@ -52,10 +52,7 @@ struct virtual_console_login_d
 //
 
 int VirtualConsole_initialize(void);
-
 void console_banner(unsigned long banner_flags);
-
-
 
 void 
 console_interrupt(
@@ -63,13 +60,14 @@ console_interrupt(
     int device_type, 
     int data );
 
-
 void console_init_virtual_console (int n);
-
 void console_set_current_virtual_console (int n);
 int console_get_current_virtual_console (void);
 void jobcontrol_switch_console(int n);
 
+//
+// cursor
+//
 
 void set_up_cursor ( unsigned long x, unsigned long y );
 unsigned long get_cursor_x (void);
@@ -84,10 +82,15 @@ void console_scroll (int console_number);
 void xxxConsoleOutbyte (int c, int console_number);
 void console_outbyte (int c, int console_number);
 void console_putchar ( int c, int console_number );
-
 int consoleInputChar( int c );
-int consoleCompareStrings(void);
+
+//
+// Prompt and compare.
+//
+
 void consolePrompt (void);
+int consoleCompareStrings(void);
+
 
 void csi_P (int nr, int console_number);
 void csi_at (int nr, int console_number);
@@ -104,7 +107,6 @@ __console_write (
 void __local_delete_char(int console_number);
 void __local_delete_line(int console_number);
 
-
 void 
 __local_gotoxy ( 
     int new_x, 
@@ -116,7 +118,6 @@ void __local_insert_line (int console_number);
 void __local_save_cur (int console_number);
 void __local_restore_cur (int console_number);
 void __respond (int console_number);
-
 
 
 ssize_t 
@@ -132,8 +133,6 @@ console_write (
     const void *buf, 
     size_t count );
 
-
-
 int 
 console_ioctl ( 
     int fd, 
@@ -143,8 +142,8 @@ console_ioctl (
 
 void REFRESH_STREAM ( file *f );
 
-int kclear (int color, int console_number);
-int kclearClientArea (int color);
+int clear_console (unsigned int color, int console_number);
+
 
 #endif    
 

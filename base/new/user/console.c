@@ -4,14 +4,9 @@
 #include <kernel.h>
 
 
-// Foreground console.
-int fg_console=0;
-//extern int fg_console;
-
 // 
 // Imports
 //
-
 
 
 // from swlib.asm
@@ -26,6 +21,9 @@ extern unsigned long wmWindowMananer_SendMessage(void);
 extern unsigned long SavedX;
 extern unsigned long SavedY;
 
+// Foreground console.
+int fg_console=0;
+
 // ================
 
 //0=apaga 1=acende 
@@ -35,7 +33,6 @@ int consoleTextCursorStatus;
 // Esse eh o marcador de estagio do escape sequence.
 // Usado para manipular csi
 static unsigned long __EscapeSequenceStage = 0;
-
 
 
 #define NPAR  16
@@ -100,8 +97,8 @@ __local_gotoxy (
 
 void __local_save_cur (int console_number)
 {
-    saved_x = CONSOLE_TTYS[console_number].cursor_x;
-    saved_y = CONSOLE_TTYS[console_number].cursor_y;
+    saved_x = (int) CONSOLE_TTYS[console_number].cursor_x;
+    saved_y = (int) CONSOLE_TTYS[console_number].cursor_y;
 }
 
 void __local_restore_cur (int console_number)
@@ -110,9 +107,8 @@ void __local_restore_cur (int console_number)
     if(console_number<0){
         return;
     }
-
-    CONSOLE_TTYS[console_number].cursor_x = saved_x;
-    CONSOLE_TTYS[console_number].cursor_y = saved_y;
+    CONSOLE_TTYS[console_number].cursor_x = (unsigned long) (saved_x & 0xFFFF);
+    CONSOLE_TTYS[console_number].cursor_y = (unsigned long) (saved_y & 0xFFFF);
 }
 
 
@@ -1378,7 +1374,8 @@ int consoleCompareStrings(void)
 // 'cls'
     if ( strncmp( prompt, "cls", 3 ) == 0 )
     {
-        backgroundDraw(COLOR_BLACK);
+        //backgroundDraw(COLOR_BLACK);
+        backgroundDraw(COLOR_EMBEDDED_SHELL_BG);
         set_up_cursor(1,1);
         goto exit_cmp;
     }
@@ -2084,7 +2081,6 @@ fail:
 }
 
 
-
 // #bugbug
 // Isso tá errado.
 
@@ -2467,32 +2463,20 @@ void REFRESH_STREAM ( file *f )
 //     Clear console.
 // #todo: change the name of the function.
 
-int kclear (int color, int console_number)
+int clear_console (unsigned int color, int console_number)
 {
-    if ( VideoBlock.useGui != TRUE ){
-        return -1;
-    }
-
-    backgroundDraw (color);
 
 // #todo: max limit.
     if (console_number<0){
         return -1;
     }
-
+    if ( VideoBlock.useGui != TRUE ){
+        return -1;
+    }
+    backgroundDraw (color);
     CONSOLE_TTYS[console_number].cursor_x = 0;
     CONSOLE_TTYS[console_number].cursor_y = 0;
-
     return 0;
 }
-
-
-int kclearClientArea (int color)
-{
-    debug_print("kclearClientArea: deprecated\n");
-
-    return (int) kclear (color, fg_console);
-}
-
 
 

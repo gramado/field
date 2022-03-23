@@ -9,10 +9,8 @@
 #define ROOM_COUNT_MAX          16
 #define DESKTOP_COUNT_MAX       16
 
-
 #define WINDOW_COUNT_MAX          1024 
 #define MAX_WINDOWS WINDOW_COUNT_MAX 
-
 
 
 // # video mode support #
@@ -44,6 +42,9 @@
 #define COLOR_ORANGE   0x00FFA500
 #define COLOR_YELLOW   0x00FFFF00
 // ...
+
+
+#define COLOR_EMBEDDED_SHELL_BG  COLOR_BLUE
 
 
 // My gray scale.
@@ -93,9 +94,7 @@
 //
 
 
-
 /*
- *****************************************************
  * ColorSchemeType:
  *     Enumerando os esquemas de cores. 
  *     Esses são esquemas default.
@@ -104,64 +103,65 @@
  *     Esses serão sempre os primeiros.    
  */
 typedef enum {
-	ColorSchemeNull,      // 0 - Null.
-	ColorSchemeHumility,  // 1 - Gray stuff.
-	ColorSchemePride,     // 2 - Colorful.
-	//...
+
+    ColorSchemeNull,      // 0 - Null.
+    ColorSchemeHumility,  // 1 - Gray stuff.
+    ColorSchemePride,     // 2 - Colorful.
+    // ...
+
 }ColorSchemeType;
 
 
-
 /*
- ******************************************************
  * ColorSchemeIndex:
  *     csi - color scheme index. 
  *     Enumerando os elementos gráficos
  *     O esquema de cores se aplica ao servidor 
  * de recursos gráficos. GWS.
  */
-typedef enum {
-	
-	csiNull,                    //0
-	csiDesktop,                 //1 área de trabalho.
 
-	//window
-	csiWindow,                  //2
-	csiWindowBackground,        //3
-	csiActiveWindowBorder,      //4
-	csiInactiveWindowBorder,    //5
-	                    
-	//bar
-	csiActiveWindowTitleBar,    //6	
-	csiInactiveWindowTitleBar,  //7
-	csiMenuBar,                 //8
-	csiScrollBar,               //9
-	csiStatusBar,               //10
-	
-	csiMessageBox,              //11
-	csiSystemFontColor,         //12 BLACK
-	csiTerminalFontColor,       //13 WHITE
-	//...
-	
-	//@todo: focus,
-	
-	//@todo: Window 'shadow' (black??)
+typedef enum {
+
+    csiNull,                    //0
+    csiDesktop,                 //1 área de trabalho.
+
+//window
+    csiWindow,                  //2
+    csiWindowBackground,        //3
+    csiActiveWindowBorder,      //4
+    csiInactiveWindowBorder,    //5
+
+//bar
+    csiActiveWindowTitleBar,    //6
+    csiInactiveWindowTitleBar,  //7
+    csiMenuBar,                 //8
+    csiScrollBar,               //9
+    csiStatusBar,               //10
+
+    csiMessageBox,              //11
+    csiSystemFontColor,         //12 BLACK
+    csiTerminalFontColor,       //13 WHITE
+    //...
+
+//@todo: focus,
+//@todo: Window 'shadow' (black??)
+
 }ColorSchemeIndex;  
  
  
 /*
- ***************************************************
  * color_scheme_d:
  *     Estrutura para esquema de cores. 
  *     O esquema de cores se aplica ao servidor de recursos gráficos. 
  * GWS.
- *
  */ 
+
 struct color_scheme_d
 {
-    // #todo: 
-    // É preciso ainda definir esse tipo de objeto.
-    // definir em gdef.h
+
+// #todo: 
+// É preciso ainda definir esse tipo de objeto.
+// definir em gdef.h
 
     //object_type_t  objectType;
     //object_class_t objectClass;
@@ -172,18 +172,18 @@ struct color_scheme_d
     int used;
     int magic;
 
-	//marcador de estilo de design para 
-	//o padrão de cores.
-	//cada estilo pode invocar por si um padrão de cores.
-	//ou o padrão de cores por si pode representar um estilo.
+//marcador de estilo de design para 
+//o padrão de cores.
+//cada estilo pode invocar por si um padrão de cores.
+//ou o padrão de cores por si pode representar um estilo.
 
     int style;
 
     char *name; 
 
-	//cada índice desse array representará um elemento gráfico,
-	//os valores no array são cores correspondentes aos elementos gráficos 
-	//representados por índices.
+//cada índice desse array representará um elemento gráfico,
+//os valores no array são cores correspondentes aos elementos gráficos 
+//representados por índices.
 
     unsigned long elements[32];
 
@@ -200,7 +200,6 @@ struct color_scheme_d *PrideColorScheme;    // Colorido.
 struct color_scheme_d *CurrentColorScheme;
 
 // ===============================================================
-
 
 
 //

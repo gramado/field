@@ -8,7 +8,8 @@
 
 #include <gws.h>
 
-
+//#define DEFAULT_ALIVIO  16
+//static unsigned long alivio=DEFAULT_ALIVIO;
 
 
 #define TB_HEIGHT  40
@@ -935,12 +936,21 @@ void gwssrv_show_backbuffer (void)
 // Called by the main routine for now.
 // Its gonne be called by the timer.
 // See: comp.c
-void wmCompose(void)
+void 
+wmCompose(
+    unsigned long jiffies, 
+    unsigned long clocks_per_second )
 {
-    // #todo: Working on this thing.
-    //__update_fps();
-    
-    compose();
+
+    if( clocks_per_second != 1000 ){
+        // Something is wrong!
+    }
+
+    if( (jiffies % 16) == 0 )
+    { 
+        compose(); 
+        return; 
+    }
 }
 
 
@@ -1152,6 +1162,8 @@ void __Tile(void)
 }
 
 
+// #todo
+// Explain it better.
 void wm_update_window_by_id(int wid)
 {
     struct gws_window_d *w;
@@ -1242,7 +1254,7 @@ void wm_update_desktop(void)
 
         if ( (void*) w != NULL )
         {
-            //only overlapped windows.
+            // Only overlapped windows.
             if (w->type == WT_OVERLAPPED)
             {
                 redraw_window(w,FALSE);
@@ -1291,6 +1303,26 @@ void set_focus(struct gws_window_d *window)
 }
 
 
+struct gws_window_d *get_focus(void)
+{
+    struct gws_window_d *w;
+
+    if( window_with_focus < 0 ||
+        window_with_focus >= WINDOW_COUNT_MAX )
+    {
+        return NULL;
+    }
+    
+    w = (struct gws_window_d *) windowList[window_with_focus];
+    if( (void*)w==NULL )
+        return NULL;
+    if(w->used!=TRUE)
+        return NULL;
+    if(w->magic!=1234)
+        return NULL;
+
+    return (struct gws_window_d *) w; 
+}
 
 
 void set_status_by_id( int wid, int status )
@@ -1929,7 +1961,9 @@ mainmenuDialog(
 }
 
 
-//local
+// local
+// Se o mouse esta passando sobre os botoes
+// da barra de tarefas.
 void __probe_tb_botton_hover(long long1, long long2)
 {
     int Status=0;
@@ -1971,6 +2005,46 @@ void __probe_tb_botton_hover(long long1, long long2)
 }
 
 
+/*
+// Se o mouse esta passando sobre a janela ativa.
+// que e' overlapped.
+void __probe_activewindow_hover(long long1, long long2)
+{
+    struct gws_window_d *aw;
+
+    int aw_wid = get_active_window();
+    if( aw_wid < 0 || aw_wid >= WINDOW_COUNT_MAX )
+        return;
+    aw = (struct gws_window_d *) windowList[aw_wid];
+    if( (void*) aw == NULL )
+        return;
+    if( aw->magic != 1234 )
+        return;
+
+    
+    int Status = -1;
+
+    // global
+    mousehover_window=0; 
+
+    Status = is_within(
+                 (struct gws_window_d *) aw,
+                 long1, 
+                 long2 );
+
+    if(Status==TRUE)
+    {
+        //yellow_status("oops");
+        //rtl_reboot();
+
+        // Register the hover window.
+        mousehover_window = 
+            (int) aw->id;
+    }
+}
+*/
+
+
 // Talvez precisaremos de mais parametros.
 // The keyboard input messages will affect
 // the window with focus.
@@ -1984,6 +2058,9 @@ wmProcedure(
 {
     int Status=FALSE;
     unsigned long r=0;
+
+    //active window.
+    int aw_wid = -1;
 
 // #debug
     //printf("wmProcedure: w=? m=%d l1=%d l2=%d\n", 
@@ -2101,8 +2178,13 @@ wmProcedure(
         //    long1, long2, 8, 8, COLOR_YELLOW, 0 );
         //------        
 
+        // Esta passando sobre a janela ativa.
+        //__probe_activewindow_hover(long1,long2);
+
         // Em qual botão o mouse esta passando por cima.
+        // lembrando: o botao esta dentro de outra janela.
         __probe_tb_botton_hover(long1,long2);
+
 
         //========
         //o ponteiro do mouse esta dentro do main menu?
@@ -2129,8 +2211,7 @@ wmProcedure(
         //if(long1==1){ yellow_status("P1"); }
         //if(long1==2){ yellow_status("P2"); }
 
-        // #test
-        // em qual botão.
+        // Em qual botão da taskbar?
         if(mousehover_window == tb_buttons[0] ||
            mousehover_window == tb_buttons[1] ||
            mousehover_window == tb_buttons[2] ||
@@ -2140,6 +2221,15 @@ wmProcedure(
             redraw_window_by_id(mousehover_window,TRUE);
             return 0;
         }
+        
+        // Clicamos e ponteiro esta sobre a janela ativa.
+        //aw_wid = (int) get_active_window();
+        //if( mousehover_window == aw_wid )
+        //{
+            //wm_update_window_by_id(aw_wid);
+            //redraw_window_by_id(mousehover_window,TRUE);
+            //return 0;
+        //}
         
         return 0;
         break;
@@ -2161,9 +2251,9 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            yellow_status("0");
             //create_main_menu(8,8);
             //wm_update_active_window();
+            yellow_status("0");
         }
 
         //tb_button[1]
@@ -2257,6 +2347,10 @@ wmProcedure(
 // Entry point
 // Called by the kernel.
 // Order: rdi, rsi, rdx, rcx, r8, r9.
+// IN: wid, msg_code, long1, long2
+// #todo: 
+// Para algumas chamadas o kernel pode passar 
+// o ponteiro para um bloco de informações.
 unsigned long 
 wmHandler(
     unsigned long arg1_rdi,
@@ -2306,7 +2400,11 @@ wmHandler(
     if ( msg == 9091 )
     {
         // debug_print ("wmHandler: 9091\n");
-        wmCompose();
+        // IN: jiffies, clocks per second
+        wmCompose( 
+            (unsigned long) arg3_rdx,
+            (unsigned long) arg4_rcx );
+        
         return 0;
     }
 
@@ -2368,7 +2466,7 @@ wmHandler(
                 (int) msg,
                 (unsigned long) long1,
                 (unsigned long) long2 ); 
-        return r;
+        return (unsigned long) r;
         break;
 
 // #important:
@@ -2379,7 +2477,19 @@ wmHandler(
     case GWS_KeyDown:
     case GWS_SysKeyDown:
     case GWS_SwitchFocus:
-        goto do_process_message;
+        // get_focus() will give us a valid pointer or null.
+        w = (struct gws_window_d *) get_focus();
+        if( (void*) w != NULL )
+        {
+            r = (unsigned long) wmProcedure(
+                (struct gws_window_d *) w,
+                (int) msg,
+                (unsigned long) long1,
+                (unsigned long) long2 ); 
+            return (unsigned long) r;
+            //goto done;
+        }
+        //goto do_process_message;
         break;
 
     //case 9091:
@@ -2394,45 +2504,9 @@ wmHandler(
         break;
     };
 
-do_process_message:
-
-// wid
-// window with focus
-
-    if( window_with_focus < 0 || window_with_focus >= WINDOW_COUNT_MAX )
-    { 
-        return 0; 
-    }
-
-// window structure
-
-    w = (struct gws_window_d *) windowList[window_with_focus];
-
-    if ( (void *) w == NULL ){
-        printf ("wmHandler: GWS_KeyDown w\n");
-        return 0;
-    }
-
-    if ( w->used != TRUE || w->magic != 1234 )
-    {
-        printf ("wmHandler: w validation\n");
-        return 0;
-    }
-
-// Procedure
-// IN: A valid window with focus.
-
-    r = (unsigned long) wmProcedure(
-                            (struct gws_window_d *) w,
-                            (int) msg,
-                            (unsigned long) long1,
-                            (unsigned long) long2 ); 
-
 done:
-
-// #debug
+    // #debug
     // debug_print ("wmHandler: done\n");
-    
     return (unsigned long) r;
 }
 

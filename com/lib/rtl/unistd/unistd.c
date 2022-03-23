@@ -1557,10 +1557,29 @@ int ttyto( int fd)
 // with an open terminal device, and 0 otherwise. 
 
 int isatty (int fd)
-{ 
-    struct termios t;
-    return ( tcgetattr(fd, &t) != -1 ); 
+{
+    int Ret=-1;
+    struct termios  t;
+    
+    Ret = (int) tcgetattr(fd,&t);
+
+    //#todo: Simplify this thing.
+    //return ( tcgetattr(fd, &t) != -1 ); 
     //return ( tcgetattr(fd, &t) == 0);
+
+// Redundant, but fun.
+
+    // YES
+    if( Ret == TRUE )
+        return TRUE;
+
+    // NO
+    if( Ret == FALSE )
+        return FALSE;
+
+// ooh
+// Crazy fail
+    return -1;
 }
 
 

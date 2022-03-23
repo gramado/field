@@ -1,17 +1,12 @@
 /*
  * File: stdio.c
- *
  *     I/O routines support.
  *     c99 - ISO/IEC 9899:1999
- *
  * Environment: ring3.
- *
  * Credits:
  *     printf: https://www.menie.org/georges/embedded/small_printf_source_code.html
  *     stdio_fntos: Luiz Felipe
  *     Serenity OS. (bsd)
- *
- * History:
  *     2015 - Created by Fred Nora.
  *     2020 - New functions.
  */
@@ -29,25 +24,10 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
-
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-
 #include <rtl/gramado.h> 
-
-// The main environment.
-// crt0.c will setup this.
-char **environ;
-
-
-// #importante: 
-// Tem que inicializar isso.
-
-static int __libc_output_mode = 0;
-static int terminal___PID;
 
 
 #define  SYSTEMCALL_READ_LBA    1
@@ -56,12 +36,22 @@ static int terminal___PID;
 #define  SYSTEMCALL_WRITE_FILE  4
 // ...
 
+// Why?
+#define VK_RETURN     0x1C 
+#define VK_BACKSPACE  0x0E 
+#define VK_BACK       0x0E 
+#define VK_TAB        0x0F 
 
-// Why ?
-#define  VK_RETURN      0x1C 
-#define  VK_BACKSPACE   0x0E 
-#define  VK_BACK        0x0E 
-#define  VK_TAB         0x0F 
+
+// The main environment.
+// crt0.c will setup this.
+char **environ;
+
+// #importante: 
+// Tem que inicializar isso.
+
+static int __libc_output_mode=0;
+static int terminal___PID=0;
 
 
 //
@@ -101,13 +91,13 @@ char *out_char(char *dst,char ch)
 // Talvez isso possa ir para o topo do 
 // arquivo para servir mais funções.
 
-int stdio_atoi (char *s){
-
+int stdio_atoi (char *s)
+{
     int rv=0; 
     char sign=0;
 
-    // Skip till we find either a digit or '+' or '-'.
-  
+// Skip till we find either a digit or '+' or '-'.
+
     while (*s){
         if (*s <= '9' && *s >= '0'){  break;  }
         if (*s == '-' || *s == '+'){  break;  }
@@ -123,7 +113,6 @@ int stdio_atoi (char *s){
     {
         s++;
     }
-
 
     while (*s && *s >= '0' && *s <= '9') 
     {
@@ -148,20 +137,19 @@ int stdio_atoi (char *s){
 // não tem protótipo ainda.
 // Credits: Luiz Felipe
 
-void stdio_fntos (char *name){
-
+void stdio_fntos (char *name)
+{
     int i=0;
     int ns=0;
     char ext[4];
+    //const char ext[4];
 
     ext[0] = 0; 
     ext[1] = 0; 
     ext[2] = 0; 
     ext[3] = 0;
 
-    //const char ext[4];
-
-    //Transforma em maiúscula enquanto não achar um ponto.
+// Transforma em maiúscula enquanto não achar um ponto.
 
     while ( *name && *name != '.' )
     {
@@ -169,14 +157,12 @@ void stdio_fntos (char *name){
         {
             *name -= 0x20;
         }
-
         name++;
         ns++;
     };
 
-
-    // Aqui name[0] é o ponto.
-    // Então constrói a extensão.
+// Aqui name[0] é o ponto.
+// Então constrói a extensão.
 
     for ( i=0; i < 3 && name[i+1]; i++ )
     {
@@ -198,9 +184,7 @@ void stdio_fntos (char *name){
         }
     };
 
-
-	// Acrescentamos ' ' até completarmos as oito letras do nome.
-
+// Acrescentamos ' ' até completarmos as oito letras do nome.
 
     while (ns < 8)
     {
@@ -208,7 +192,7 @@ void stdio_fntos (char *name){
         ns++;
     };
 
-	//Acrescentamos a extensão
+// Acrescentamos a extensão.
 
     for (i=0; i < 3; i++)
     {
@@ -269,18 +253,14 @@ FILE *__make_FILE (int fd)
 
 
 /*
- ************************************************
  * remove:
  *     It removes a file from the file system.
  */
-
 // It calls unlink(2) for files, and rmdir(2) for directories. 
-
 // But here in ring3 we do not know if the file is a diretory or a file.
 // Maybe we need to call a function to tell us if the file is a file
 // or a diretory ... or simply call the the remove() system call 
 // and the kernel will do all the job.
- 
 // #todo
 // https://linux.die.net/man/3/remove
 
@@ -289,7 +269,6 @@ int remove (const char *pathname)
     debug_print ("remove: [TODO] It removes a file from the file system\n");
     return (int) (-1);
 }
-
 
 
 // Adapted from unix v32.
@@ -394,10 +373,10 @@ int fflush_all(void)
 
 int fflush (FILE *stream)
 {
-    if ( (void*) stream == NULL ){
+    if ( (void*) stream == NULL )
+    {
         return (int) fflush_all();
     }
-
     return (int) __fflush(stream);
 }
 
@@ -415,7 +394,8 @@ int __fflush (FILE *stream)
     // FIXME: fflush(NULL) should flush all open output streams.
     //ASSERT(stream);
 
-    if ( (void *) stream == NULL ){
+    if ( (void *) stream == NULL )
+    {
         return (int) fflush_all();
     }
 
@@ -521,15 +501,12 @@ int __fflush (FILE *stream)
     }
 
 // Re-initialize
-
     stream->_p = stream->_base;
     stream->_w = 0;
-    
     //stream->error = 0;
     //stream->eof = 0;
     //stream->have_ungotten = false;
     //stream->ungotten = 0;
-    
     return 0;
 }
 
@@ -544,8 +521,8 @@ int __fflush (FILE *stream)
 // colocar no buffer em ring3 para o __getc pegar um byte.
 // OUT: nreads. (quantos bytes foram lidos.)
 
-int ____bfill (FILE *stream){
-
+int ____bfill (FILE *stream)
+{
     int n_read = 0;
 
 
@@ -615,7 +592,6 @@ int ____bfill (FILE *stream){
     stream->_w = 0;
     stream->_r = 0;
 
-
 //
 // Read
 //
@@ -682,19 +658,15 @@ int ____bfill (FILE *stream){
 
 
 /*
- *******************************
  * __getc:
  * 
  */
-
 // #todo:
 // #importante
 // Se tem alguma coisa no buffer em ring3 a gente pega,
 // se não tem, então precisamos usar o read() e copiar do arquivo
 // em ring0 para o buffer em ring3.
 // >>>> _fillbuf()
-
-
 // Cada processo pode ter uma 'vista' do arquivo em ring3.
 // Então:
 // + Se acabou nosso buffer em ring3, enchemos o buffer novamente.
@@ -707,8 +679,8 @@ int __getc ( FILE *stream )
     int ch = 0;
     int nreads = 0;
 
-    // What?
-    // Vamos ler do buffer da stream, em ring3.
+// What?
+// Vamos ler do buffer da stream, em ring3.
 
     if ( (void *) stream == NULL )
     {
@@ -737,7 +709,6 @@ int __getc ( FILE *stream )
     // Return the char.
     }
 
-
 // Se o ponteiro de leitura for inválido.
 // Não podemos acessar um ponteiro nulo ... 
 // no caso endereço.
@@ -758,11 +729,11 @@ int __getc ( FILE *stream )
     {
 
         ch = (int) *stream->_p;
-        
+
         stream->_p++;
         stream->_r++;
         stream->_cnt--;
-        
+
         return (int) ch;
     }
 
@@ -813,12 +784,11 @@ int __getc ( FILE *stream )
             
             // O ponteiro está na base. Vamos ler o primeiro byte.
             ch = (int) *stream->_p;
-            
+
             stream->_p++;    // incrementamos o ponteiro
             stream->_r++;    // incrementamos o offset de leitura.
             stream->_cnt--;
 
-            
             return (int) (ch & 0xFF);
         }
 
@@ -853,9 +823,7 @@ int __getc ( FILE *stream )
 }
 
 
-
 /*
- ******************* 
  * __putc:
  * 
  */
@@ -894,9 +862,9 @@ int __putc (int ch, FILE *stream)
     }
 
 // Coloca no buffer.
-    stream->_base[stream->_w] = ch;
-
 // Incrementa o offset de escrita.
+
+    stream->_base[stream->_w] = ch;
     stream->_w++;
 
 // Se chegamos ao fim do arquivo.
@@ -969,7 +937,6 @@ int getchar (void){
 int putchar (int ch){
     return (int) putc ( (int) ch, stdout );
 }
-
 
 
 //
@@ -1047,8 +1014,8 @@ char *fgets (char *s, int size, FILE *stream)
 
 
 //s iop
-int fputs ( const char *s, FILE *stream ){
-
+int fputs ( const char *s, FILE *stream )
+{
     register int c=0;
     register int r=0;
 
@@ -1067,9 +1034,8 @@ int fputs ( const char *s, FILE *stream ){
 // Root 5
 //
 
-
-int getw (FILE *stream){
-
+int getw (FILE *stream)
+{
     register int i=0;
 
     //#todo
@@ -1106,28 +1072,24 @@ int putw (int w, FILE *stream)
 }
 
 
-
 /*
- ****************************************
  * fclose:
  *     Close a file.
  *     If work, return 0. 
  */
-
 // #todo
 // fclose() takes a stream, flushes it, and closes it.
-
 // linux klibc style
 // See: unistd.c for close().
-
 // #todo
 // Any buffered output is written and any buffered input is discarded.
 
 int fclose (FILE *stream)
 {
-    // #bugbug
-    // Vamos simplificar pois esta falhando.
-    // Mas close ja funciona.
+
+// #bugbug
+// Vamos simplificar pois esta falhando.
+// Mas close ja funciona.
     
     debug_print ("fclose: [FIXME]\n");
 
@@ -1189,14 +1151,14 @@ int fclose (FILE *stream)
 
 FILE *fopen ( const char *filename, const char *mode )
 {
-    FILE *__stream;   // Return this pointer.
-    int fd=0;         // File descriptor.  
-    int flags=0;      // flags
-    
-    // mode #todo
-    // his argument must be supplied when
-    //          O_CREAT or O_TMPFILE is specified in flags;
-    
+    FILE *__stream;  // Return this pointer.
+    int fd=0;        // File descriptor.  
+    int flags=0;     // flags
+
+// mode #todo
+// his argument must be supplied when
+//          O_CREAT or O_TMPFILE is specified in flags;
+
     int oflags=0;     
 
 
@@ -1240,26 +1202,22 @@ FILE *fopen ( const char *filename, const char *mode )
 // fcntl.c
 
     fd = open (filename, flags, oflags);  
-
     if (fd < 0){
         printf ("fopen: open() fail\n");
         return NULL;
     }
 
-//
 // Stream
-//
-    __stream = (FILE *) malloc ( sizeof(FILE) );
 
+    __stream = (FILE *) malloc ( sizeof(FILE) );
     if ( (void *) __stream == NULL ){
         printf ("fopen: __stream fail\n");
         return NULL;
     }
-
-// #important
     memset( __stream, 0, sizeof(struct _iobuf) );
 
 // Descriptor
+
     __stream->_file = fd;
 
 
@@ -1287,6 +1245,7 @@ FILE *fopen ( const char *filename, const char *mode )
      }
 
 // Reset buffer pointer.
+
     __stream->_p = __stream->_base; 
 
     __stream->_lbfsize = BUFSIZ;
@@ -1303,51 +1262,37 @@ FILE *fopen ( const char *filename, const char *mode )
 // Saving the name in ring3.
     __stream->_tmpfname = (char *) strdup(filename);
 
-// Validation
+//done:
     __stream->used  = TRUE;
     __stream->magic = 1234;
-
-//done:
     return (FILE *) __stream;
 }
 
 
 /*
- ***************************************
  * fopen2:
  *     Open a file.
  *     @todo: Abrir onde? saída padrão?
  *     @retorna o que? o endereço do buffer?
  *     Obs: Tem função na api que carrega um arquivo em um buffer.
- *
  * #obs: Deveríamos checar o tamanho do arquivo antes de criar o buffer.
- *
  * #todo: E se o ponteiro para o nome do arquivo for inválido? tem que  
  * falhar e retornar null.
  */
 
-FILE *fopen2 ( const char *filename, const char *mode ){
-
+FILE *fopen2 ( const char *filename, const char *mode )
+{
     FILE *__stream;
     int fd = -1;
-    
-    
-    
+
     __stream = (FILE *) malloc( sizeof(FILE) );
     
     if ( (void *) __stream == NULL ){
         printf("fopen2: __stream\n");
         return NULL;
-        
-    }else{
+    }
 
-        //__stream->? 
-        
-        // ...
-    };
-        
-    
-    
+
     /*
     if(*mode == 'w')
         f = creat(filename, 0600);
@@ -1451,17 +1396,12 @@ FILE *fopen2 ( const char *filename, const char *mode ){
 }
 
 
-
-
-
 /*
- *****************************************
  * scroll:
  *     Scroll the screen in (text mode).
  *     @todo: Mudar para tmScroll(void);
  *     @todo: Criar gmScroll(void) talvez;
  *     @todo: Essa rotina precisa ser revisada e aprimorada.
- *
  *     #todo: Talvez deva levar em conta o modo de operação.
  *            Se estamos ou full screen ou não.
  */
@@ -1552,26 +1492,21 @@ void clearerr (FILE* stream)
 
 
 /*
- ************************
  * fread:
  *
  */
-
 // #importante
 // Ler uma certa quantidade de chars de uma stream e coloca-los no buffer.
 // Isso vai ser usado pelo terminal por exemplo.
 // Assim o terminal pode pegar uma string que esteja no arquivo.
-
 // See:
 // http://man7.org/linux/man-pages/man3/fread.3.html
 // https://www.tutorialspoint.com/c_standard_library/c_function_fread.htm 
-
 // #todo:
 // Check the sizes.
 
 size_t fread (void *ptr, size_t size, size_t n, FILE *fp)
 {
-
     void *data;
 
     int nreads = 0;
@@ -1652,22 +1587,24 @@ size_t fread (void *ptr, size_t size, size_t n, FILE *fp)
 
 
 /*
- ************************
  * fwrite:
  *     write in a file. (fp)
  */
-
 // IN:
 // ptr = pointer.
 // size = Tamanho do elemento dado em bytes.
 // n = quantidade de elementos.
 // fp = stream pointer.
-
 // See: 
 // https://linux.die.net/man/3/fwrite
 
-size_t fwrite (const void *ptr, size_t size, size_t n, FILE *fp){
-
+size_t 
+fwrite ( 
+    const void *ptr, 
+    size_t size, 
+    size_t n, 
+    FILE *fp )
+{
     int nwrite = 0;
     int number_of_bytes = -1;
 
@@ -1790,8 +1727,8 @@ int prompt_put_string ( char *string )
 
 int prompt_strcat (char *string)
 {
-	if ( (void *) string == NULL )
-	    return -1;
+    if ( (void *) string == NULL )
+        return -1;
 
     strcat(prompt,(const char *) string);
     return 0;
@@ -1819,8 +1756,8 @@ int prompt_flush ( int con_id )
 }
 
 
-void prompt_clean (void){
-
+void prompt_clean (void)
+{
     int i=0;
 
 // Linpando o buffer de entrada.
@@ -1835,7 +1772,6 @@ void prompt_clean (void){
     prompt_status = 0;
     prompt_max = PROMPT_MAX_DEFAULT;  
 }
-
 
 
 /*

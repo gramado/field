@@ -39,8 +39,16 @@ static unsigned long flush_fps=30;
 
 // ============================
 
+//
+// Prototypes
+//
+
+static void __launch_app_via_initprocess(int index);
+static void __enter_embedded_shell(void);
+static void __exit_embedded_shell(void);
 
 
+// ============================
 
 
 // Register callbacks sent by gwssrv.bin
@@ -132,7 +140,7 @@ unsigned long wmSendInputToWindowManager(
 // Just a small range of messages are accepted.
 // See: gramado/core/client
 // range: 4001~4009
-void __launch_app_via_initprocess(int index)
+static void __launch_app_via_initprocess(int index)
 {
 
     if( index < 4001)
@@ -153,38 +161,64 @@ void __launch_app_via_initprocess(int index)
         0 );
 }
 
+static void __enter_embedded_shell(void)
+{
+
+//log
+    //backgroundDraw(COLOR_BLACK);
+    backgroundDraw(COLOR_EMBEDDED_SHELL_BG);
+    printf("\n");
+    printf ("Prompt ON: Type something\n");
+    consolePrompt();
+    refresh_screen();
+
+// done
+    ShellFlag = TRUE;
+}
+
+
+static void __exit_embedded_shell(void)
+{
+
+// log
+    printf("\n");
+    printf ("Prompt OFF: Bye\n");
+    printf("\n");
+    refresh_screen();
+
+// update desktop
+    if ( gUseWMCallbacks == TRUE ){
+         wmSendInputToWindowManager(0,9092,0,0);
+    }
+
+// done
+    ShellFlag = FALSE;
+}
+
 
 /*
- ***************************************** 
  * wmProcedure:
- * 
  *       Some combinations with control + F1~F12
  */
-
 // Local function.
-
 // Called by kgws_event_dialog in kgws.c
 // Called by si_send_longmessage_to_ws and si_send_message_to_ws
 // in siws.c 
 // #bugbug: We don't wanna call the window server. Not now.
-
 // #important:
 // Isso garante que o usuário sempre podera alterar o foco
 // entre as janelas do kgws usando o teclado, pois essa rotina
 // é independente da thread que está em foreground.
-
 // #todo
 // Talvez a gente possa usar algo semelhando quando o window
 // server estiver ativo. Mas possivelmente precisaremos 
 // usar outra rotina e não essa. Pois lidaremos com uma estrutura
 // de janela diferente, que esta localizada em ring3.
-
 // From Windows:
 // Because the mouse, like the keyboard, 
 // must be shared among all the different threads, the OS 
 // must not allow a single thread to monopolize the mouse cursor 
 // by altering its shape or confining it to a small area of the screen.
-
 // #todo
 // This functions is the moment to check the current input model,
 // and take a decision. It will help us to compose the event message.
@@ -229,379 +263,373 @@ wmProcedure (
 
     switch (msg){
 
-        case MSG_MOUSEMOVE:
-            wmSendInputToWindowManager(0,msg,long1,long2);
-            return 0;
-            break;
+// ==============
+// msg:
+// Mouse stuff.
+    case MSG_MOUSEMOVE:
+    case MSG_MOUSEPRESSED:
+    case MSG_MOUSERELEASED:
+        wmSendInputToWindowManager(0,msg,long1,long2);
+        return 0;
+        break;
 
-        case MSG_MOUSEPRESSED:
-            wmSendInputToWindowManager(0,msg,long1,long2);
-            return 0;
-            break;
+// ==============
+// msg:
+// Keydown.
+    case MSG_KEYDOWN:
 
-        case MSG_MOUSERELEASED:
-            wmSendInputToWindowManager(0,msg,long1,long2);
-            return 0;
-            break;
-
-
-        case MSG_KEYDOWN:
-
-            // Para todas as teclas quando o console não está ativo.
-            // Serão exibidas pelo window server 
-            // na janela com foco de entrada,
-            // Se ela for do tipo editbox.
-            // O ws mandará mensagens para a thread associa
-            // à janela com foco de entrada.
+        // Para todas as teclas quando o console não está ativo.
+        // Serão exibidas pelo window server 
+        // na janela com foco de entrada,
+        // Se ela for do tipo editbox.
+        // O ws mandará mensagens para a thread associa
+        // à janela com foco de entrada.
             
-            if ( ShellFlag!=TRUE ){
-                wmSendInputToWindowManager(0,MSG_KEYDOWN,long1,long2);
-            }
+        if ( ShellFlag!=TRUE ){
+            wmSendInputToWindowManager(0,MSG_KEYDOWN,long1,long2);
+        }
 
-            switch (long1){
+        switch (long1){
 
-            case VK_RETURN:
-                //if(ShellFlag!=TRUE){
-                    //wmSendInputToWindowManager(0,MSG_KEYDOWN,long1,long2);
-                    //return 0;
-                //}
-                if(ShellFlag==TRUE)
-                {
-                    kinput('\0');               // finalize
-                    consoleCompareStrings();   // compare
-                    //invalidate_screen();
-                    refresh_screen();
-                    return 0;
-                }
-                break; 
-
-            //case VK_TAB: 
-                //printf("TAB\n"); 
+        case VK_RETURN:
+            //if(ShellFlag!=TRUE){
+                //wmSendInputToWindowManager(0,MSG_KEYDOWN,long1,long2);
+                //return 0;
+            //}
+            if(ShellFlag==TRUE)
+            {
+                kinput('\0');               // finalize
+                consoleCompareStrings();   // compare
                 //invalidate_screen();
-                //refresh_screen(); 
-                //break;
-
-            default:
-
-                // Not console.
-                // Pois não queremos que algum aplicativo imprima na tela
-                // enquanto o console virtual está imprimindo.
-                if ( ShellFlag!=TRUE )
-                {
-                    // Send it to the window server.
-                    //wmSendInputToWindowManager(0,MSG_KEYDOWN,long1,long2);
-
-                    // #test
-                    // Write into stdin
-                    if ( UseSTDIN == TRUE )
-                    {
-                        //debug_print ("wmProcedure: Writing into stdin ...\n");
-                        //stdin->sync.can_write = TRUE;
-                        //ch_buffer[0] = (char) (long1 & 0xFF);
-                        //sys_write(0,ch_buffer,1);
-                        return 0;
-                    }
-                }
-
-                // Console!
-                // O teclado vai colocar o char no prompt[]
-                // e exibir o char na tela somente se o prompt
-                // estiver acionado.
-                if (ShellFlag==TRUE)
-                {
-                    consoleInputChar(long1);
-                    console_putchar ( (int) long1, fg_console );
-                    return 0;
-                }
-
-                //debug_print ("wmProcedure: done\n");
+                refresh_screen();
                 return 0;
-                break;
-            };
+            }
             break;
 
+         //case 'd':
+         //case 'D':
+         //    if(ctrl_status==TRUE && alt_status==TRUE)
+         //    {
+         //        __enter_embedded_shell();
+         //        return 0;
+         //    }
+         //    break;
 
-        // Pressionadas: teclas de funçao
-        case MSG_SYSKEYDOWN:
-             
-            // Send it to the window server.
-            wmSendInputToWindowManager(0,MSG_SYSKEYDOWN,long1,long2); 
-
-            switch (long1){
-
-                // Exibir a surface do console.
-                case VK_F1:
-                    if (ctrl_status == TRUE){
-                        __launch_app_via_initprocess(4001);
-                        return 0;
-                    }
-                    if (alt_status == 1){
-                        printf ("wmProcedure: alt + f1\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == 1){
-                        jobcontrol_switch_console(0);
-                    }
-                    return 0;
-                    break;
-
-                case VK_F2:
-                    if (ctrl_status == TRUE){
-                         __launch_app_via_initprocess(4002);
-                         //powertrio_select_client(1);
-                         return 0;
-                    }
-                    if (alt_status == 1){
-                        printf ("wmProcedure: alt + f2\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == 1){
-                        jobcontrol_switch_console(1);
-                    }
-                    return 0;
-                    break;
-
-                case VK_F3:
-                    if (ctrl_status == TRUE){
-                        //powertrio_select_client(2);
-                        __launch_app_via_initprocess(4003);
-                        return 0;
-                    }
-                    if (alt_status == 1){
-                        printf ("wmProcedure: alt + f3\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == 1){
-                        jobcontrol_switch_console(2);
-                    }
-                    return 0;
-                    break;
-
-                case VK_F4:
-                    if (ctrl_status == TRUE){
-                        //powertrio_next();
-                        //__launch_app_via_initprocess(4004);
-                        return 0;
-                    }
-                    if (alt_status == 1){
-                        printf ("wmProcedure: alt + f4\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == 1){
-                        jobcontrol_switch_console(3);
-                    }
-                    return 0;
-                    break;
-
-
-                // Reboot
-                case VK_F5:
-                    if (ctrl_status == TRUE){
-                        //powertrio_select_client(0);
-                        //reboot();
-                        __launch_app_via_initprocess(4005);
-                        return 0;
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f5\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                        //kgwm_next();
-                    }
-                    return 0;
-                    break;
-
-                // Send a message to the Init process.
-                // 9216 - Launch the redpill application
-                case VK_F6:
-                    if (ctrl_status == TRUE){
-                        __launch_app_via_initprocess(4006);
-                        //powertrio_select_client(1);
-                        // #todo: 
-                        // shutdown. Only the ring3 applications
-                        // can shutdown via qemu for now. 
-                        //__kgwm_SendMessageToInitProcess(9216); 
-                        return 0; 
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f6\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                        //kgwm_next();
-                    }
-                    return 0;
-                    break;
-
-                // Test 1.
-                case VK_F7:
-                    if (ctrl_status == TRUE){
-                        __launch_app_via_initprocess(4007);
-                        //powertrio_select_client(2);
-                        // Send message to init process to launch gdeshell.
-                        //__kgwm_SendMessageToInitProcess(9217);
-                        return 0;
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f7\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                        //kgwm_next();
-                    }
-                    return 0;
-                    break;
-
-                // Test 2.
-                case VK_F8:
-                    if (ctrl_status == TRUE){
-
-                        // #test: IN: (wid,msg,long1,long2)
-                        //wmSendInputToWindowManager(0,1,0,0);
-                        //wmSendInputToWindowManager(0,2,0,0);
-                        //wmSendInputToWindowManager(0,3,0,0);
-                        //wmSendInputToWindowManager(0,4,0,0);
-                        //wmSendInputToWindowManager(0,5,0,0);
-                        //wmSendInputToWindowManager(0,6,0,0);
-                        //wmSendInputToWindowManager(0,7,0,0);  //close
-                        wmSendInputToWindowManager(0,MSG_PAINT,0,0);
-                        //wmSendInputToWindowManager(0,9,0,0);
-                        //wmSendInputToWindowManager(0,10,0,0);
-                        //wmSendInputToWindowManager(0,18,0,0);   //set focus
-                        //wmSendInputToWindowManager(0,19,0,0);   //get focus
-
-                        //#oldtest
-                        //powertrio_next();
-                        // Send message to init process to launch the launcher.
-                        //__kgwm_SendMessageToInitProcess(9216); 
-                        //__kgwm_SendMessageToInitProcess(9218);  // launch sysmon
-                        
-                        //__launch_app_via_initprocess(4008);
-                        return 0;
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f8\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                        //kgwm_next();
-                    }
-                    return 0;
-                    break;
-
-                case VK_F9:
-                // #todo:
-                // [Window Manager]: Switcher
-                    if (ctrl_status == TRUE){
-                        //__launch_app_via_initprocess(4009);
-                        backgroundDraw(COLOR_BLACK);
-                        printf("\n");
-                        printf ("Prompt ON: Type something\n");
-                        //printf("\n");
-                        consolePrompt();
-                        ShellFlag = TRUE;
-                        refresh_screen();
-                        return 0;
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f9\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                        // #goal
-                        // This is a emergency keycombination.
-                        // We can't call another process and 
-                        // we want to reboot the machine.
-                        sys_reboot();
-                        //__kgwm_SendMessageToInitProcess(9216);  //reboot
-                    }
-                    return 0;
-                    break;
-
-                case VK_F10:
-                // #todo:
-                // [Window Manager]: Minimize
-                    if (ctrl_status == TRUE){
-                        printf("\n");
-                        printf ("Prompt OFF: Bye\n");
-                        printf("\n");
-                        ShellFlag = FALSE;
-                        refresh_screen();
-                        
-                          // update desktop
-                        if ( gUseWMCallbacks == TRUE )
-                            wmSendInputToWindowManager(0,9092,0,0);
-
-                        return 0;
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f10\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                        Background_initialize();
-                        show_slots(); //See: tlib.c
-                        //pages_calc_mem();
-                        refresh_screen();
-                        //__kgwm_SendMessageToInitProcess(9217);  //gdeshell
-                    }
-                    return 0;
-                    break;
-
-                case VK_F11:
-                // #todo:
-                // [Window Manager]: Restore
-                    if (ctrl_status == TRUE)
-                    {
-                        show_slots();
-                        //tmp_value = get_update_screen_frequency();
-                        //tmp_value--;
-                        //set_update_screen_frequency(tmp_value);
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f11\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                       hal_reboot();
-                       // #bugbug: Something is wrong with this routine.
-                       //__kgwm_SendMessageToInitProcess(9218);  // redpill application
-                    }
-                    return 0;
-                    break;
-
-                case VK_F12:
-                // #todo:
-                // [Window Manager]: Close
-                    if (ctrl_status == TRUE)
-                    {
-                        show_process_information();
-                        //tmp_value = get_update_screen_frequency();
-                        //tmp_value++;
-                        //set_update_screen_frequency(tmp_value);
-                    }
-                    if (alt_status == TRUE){
-                        printf ("wmProcedure: alt + f12\n");
-                        refresh_screen();
-                    }
-                    if (shift_status == TRUE){
-                        // Switch focus
-                        wmSendInputToWindowManager(0,9090,0,0);
-                        //__kgwm_SendMessageToInitProcess(9219);  // sysmon
-                    }
-                    return 0;
-                    break;
-
-                default:
-                    // nothing
-                    return 0;
-            
-            }
+        //case VK_TAB: 
+            //printf("TAB\n"); 
+            //invalidate_screen();
+            //refresh_screen(); 
+            //break;
 
         default:
+
+            // Console!
+            // YES, we're using the embedded kernel console.
+            // O teclado vai colocar o char no prompt[]
+            // e exibir o char na tela somente se o prompt
+            // estiver acionado.
+            if (ShellFlag==TRUE)
+            {
+                consoleInputChar(long1);
+                console_putchar ( (int) long1, fg_console );
+                return 0;
+            }
+
+
+            // Not console.
+            // NO, we're not using the kernel console.
+            // Pois não queremos que algum aplicativo imprima na tela
+            // enquanto o console virtual está imprimindo.
+            if ( ShellFlag!=TRUE )
+            {
+                // Send it to the window server.
+                //wmSendInputToWindowManager(0,MSG_KEYDOWN,long1,long2);
+                // #test
+                // Write into stdin
+                if ( UseSTDIN == TRUE )
+                {
+                    //debug_print ("wmProcedure: Writing into stdin ...\n");
+                    //stdin->sync.can_write = TRUE;
+                    //ch_buffer[0] = (char) (long1 & 0xFF);
+                    //sys_write(0,ch_buffer,1);
+                    return 0;
+                }
+            }
+
+            //debug_print ("wmProcedure: done\n");
             return 0;
             break;
+        };
+        break;
+
+
+// ==============
+// msg:
+// Syskeydown.
+// Pressionadas: teclas de funçao
+    case MSG_SYSKEYDOWN:
+             
+        // Send it to the window server.
+        wmSendInputToWindowManager(0,MSG_SYSKEYDOWN,long1,long2); 
+
+        // Process a set of combinations.
+        switch (long1){
+
+            // Exibir a surface do console.
+            case VK_F1:
+                if (ctrl_status == TRUE){
+                    __launch_app_via_initprocess(4001);
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f1\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    jobcontrol_switch_console(0);
+                }
+                return 0;
+                break;
+
+            case VK_F2:
+                if (ctrl_status == TRUE){
+                     __launch_app_via_initprocess(4002);
+                     //powertrio_select_client(1);
+                     return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f2\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    jobcontrol_switch_console(1);
+                }
+                return 0;
+                break;
+
+            case VK_F3:
+                if (ctrl_status == TRUE){
+                    //powertrio_select_client(2);
+                    __launch_app_via_initprocess(4003);
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f3\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    jobcontrol_switch_console(2);
+                }
+                return 0;
+                break;
+
+            case VK_F4:
+                if (ctrl_status == TRUE){
+                    //powertrio_next();
+                    //__launch_app_via_initprocess(4004);
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f4\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    jobcontrol_switch_console(3);
+                }
+                return 0;
+                break;
+
+            // Reboot
+            case VK_F5:
+                if (ctrl_status == TRUE){
+                    //powertrio_select_client(0);
+                    //reboot();
+                    __launch_app_via_initprocess(4005);
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f5\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    //kgwm_next();
+                }
+                return 0;
+                break;
+
+            // Send a message to the Init process.
+            // 9216 - Launch the redpill application
+            case VK_F6:
+                if (ctrl_status == TRUE){
+                    __launch_app_via_initprocess(4006);
+                    //powertrio_select_client(1);
+                    // #todo: 
+                    // shutdown. Only the ring3 applications
+                    // can shutdown via qemu for now. 
+                    //__kgwm_SendMessageToInitProcess(9216); 
+                    return 0; 
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f6\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    //kgwm_next();
+                }
+                return 0;
+                break;
+
+            // Test 1.
+            case VK_F7:
+                if (ctrl_status == TRUE){
+                    __launch_app_via_initprocess(4007);
+                    //powertrio_select_client(2);
+                    // Send message to init process to launch gdeshell.
+                    //__kgwm_SendMessageToInitProcess(9217);
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f7\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    //kgwm_next();
+                }
+                return 0;
+                break;
+
+            // Test 2.
+            case VK_F8:
+                if (ctrl_status == TRUE){
+
+                    // #test: IN: (wid,msg,long1,long2)
+                    //wmSendInputToWindowManager(0,1,0,0);
+                    //wmSendInputToWindowManager(0,2,0,0);
+                    //wmSendInputToWindowManager(0,3,0,0);
+                    //wmSendInputToWindowManager(0,4,0,0);
+                    //wmSendInputToWindowManager(0,5,0,0);
+                    //wmSendInputToWindowManager(0,6,0,0);
+                    //wmSendInputToWindowManager(0,7,0,0);  //close
+                    wmSendInputToWindowManager(0,MSG_PAINT,0,0);
+                    //wmSendInputToWindowManager(0,9,0,0);
+                    //wmSendInputToWindowManager(0,10,0,0);
+                    //wmSendInputToWindowManager(0,18,0,0);   //set focus
+                    //wmSendInputToWindowManager(0,19,0,0);   //get focus
+
+                    //#oldtest
+                    //powertrio_next();
+                    // Send message to init process to launch the launcher.
+                    //__kgwm_SendMessageToInitProcess(9216); 
+                    //__kgwm_SendMessageToInitProcess(9218);  // launch sysmon
+                        
+                    //__launch_app_via_initprocess(4008);
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f8\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    //kgwm_next();
+                }
+                return 0;
+                break;
+
+            case VK_F9:
+                if (ctrl_status == TRUE){
+                    __enter_embedded_shell();
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f9\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    // #goal
+                    // This is a emergency keycombination.
+                    // We can't call another process and 
+                    // we want to reboot the machine.
+                    sys_reboot();
+                    //__kgwm_SendMessageToInitProcess(9216);  //reboot
+                }
+                return 0;
+                break;
+
+            case VK_F10:
+                if (ctrl_status == TRUE){
+                    __exit_embedded_shell();
+                    return 0;
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f10\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    Background_initialize();
+                    show_slots(); //See: tlib.c
+                    //pages_calc_mem();
+                    refresh_screen();
+                    //__kgwm_SendMessageToInitProcess(9217);  //gdeshell
+                }
+                return 0;
+                break;
+
+            case VK_F11:
+                // #todo:
+                // [Window Manager]: Restore
+                if (ctrl_status == TRUE)
+                {
+                    show_slots();
+                    //tmp_value = get_update_screen_frequency();
+                    //tmp_value--;
+                    //set_update_screen_frequency(tmp_value);
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f11\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                   hal_reboot();
+                   // #bugbug: Something is wrong with this routine.
+                   //__kgwm_SendMessageToInitProcess(9218);  // redpill application
+                }
+                return 0;
+                break;
+
+            case VK_F12:
+                // #todo:
+                // [Window Manager]: Close
+                if (ctrl_status == TRUE)
+                {
+                    show_process_information();
+                    //tmp_value = get_update_screen_frequency();
+                    //tmp_value++;
+                    //set_update_screen_frequency(tmp_value);
+                }
+                if (alt_status == TRUE){
+                    printf ("wmProcedure: alt + f12\n");
+                    refresh_screen();
+                }
+                if (shift_status == TRUE){
+                    // Switch focus
+                    wmSendInputToWindowManager(0,9090,0,0);
+                    //__kgwm_SendMessageToInitProcess(9219);  // sysmon
+                }
+                return 0;
+                break;
+
+            default:
+                // nothing
+                return 0;
+            
+            }
+
+// ==============
+// msg:
+// default
+    default:
+        return 0;
+        break;
     };
 
 //unexpected_fail:
@@ -616,7 +644,6 @@ fail:
 
 
 /*
- ***************
  * xxxKeyEvent:
  * 
  *     Envia uma mensagem de teclado para a janela com o 
@@ -905,7 +932,7 @@ xxxKeyEvent (
 // ================================================
 // key_pressed:
 
-    // Está ressionada.
+    // Está pressionada.
     if ( (Keyboard_RawByte & 0x80) == 0 ) 
     {
         // Break = FALSE;
@@ -1065,19 +1092,15 @@ xxxKeyEvent (
         
     } // FI
 
-
-
-
 //
 // == Dispatch ====
 //
-
 
 // Done.
 // Para finalizar, vamos enviar a mensagem para fila certa.
 // Fixing the rawbyte to fit in the message arg.
 // See: kgwm.c
-    
+
 done:
 
     Event_LongRawByte = (unsigned long) ( Keyboard_RawByte & 0x000000FF );

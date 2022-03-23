@@ -4,12 +4,9 @@
 // This file contains the kernel_main function,
 // called by START in 
 // entrance/warden/unit0/x86_64/head_64.asm.
-
-
 // This file and their folder will be the control panel
 // for the initialization routine.
 // Please put here data we need.
-
 // fake main.c
 // We need a fake KERNEL.BIN ELF file that will be used my the
 // boot loader.

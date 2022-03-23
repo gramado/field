@@ -1,4 +1,6 @@
 
+// window.h
+// ring0, kernel base.
 
 #ifndef  __WINDOW_H
 #define  __WINDOW_H    1

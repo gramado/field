@@ -1,19 +1,18 @@
 /*
  * File: stddef.h 
- *
  * About:
  *     Header for standard defines. C99.
  */
- 
- 
+
+
 /* 
 enum {
 	false	= 0,
 	true	= 1
 };
  */
- 
- 
+
+
 /* 
     @todo:
 Macros:
@@ -26,30 +25,20 @@ Variables:
     typedef size_t
 */
 
-
-
-
 // ??
 //typedef __PTRDIFF_TYPE__ ptrdiff_t;
 //typedef __SIZE_TYPE__ size_t;
 
 
-/*
- * NULL HANDLE. 
- *
- * Obs: 
- *     This define is also in types.h.
- */ 
-
+// This define is also in types.h.
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
 
-/*
- * Signed integral type of the result of subtracting two pointers.
- */
-typedef int ptrdiff_t;
+// Signed integral type of the result of 
+// subtracting two pointers.
+typedef int  ptrdiff_t;
 
   
 /*
@@ -60,14 +49,14 @@ typedef int ptrdiff_t;
  * Character Set has a code value equal to its value when used as the lone 
  * character in an integer character constant.
  */ 
-typedef int wchar_t;
+typedef int  wchar_t;
 
 
 /* 
  * which is the unsigned integer type of the result of the sizeof operator;   
  */
 //typedef unsigned int size_t;
-typedef int size_t;
+typedef int  size_t;
 
 
 /*

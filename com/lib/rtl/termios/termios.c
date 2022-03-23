@@ -21,6 +21,8 @@ int tcgetwinsize(int fd, struct winsize *ws)
 }
 */
 
+
+// Get attributes.
 // #maybe: TIOCGETA ?
 int tcgetattr (int fd, struct termios *termios_p)
 {
@@ -28,11 +30,11 @@ int tcgetattr (int fd, struct termios *termios_p)
         debug_print("tcgetattr: fd\n");
         return -1;
     }
-
     return (int) ioctl (fd, TCGETS, termios_p);
 }
 
 
+// Set attributes.
 int 
 tcsetattr ( 
     int fd, 
@@ -49,6 +51,7 @@ tcsetattr (
     case TCSANOW:    return (int) ioctl (fd, TCSETS , termios_p);
     case TCSADRAIN:  return (int) ioctl (fd, TCSETSW, termios_p);
     case TCSAFLUSH:  return (int) ioctl (fd, TCSETSF, termios_p);
+    // ... ?
     default:
         debug_print ("tcsetattr: [FAIL] default\n");
         break;
@@ -60,6 +63,7 @@ tcsetattr (
 }
 
 
+// Send break.
 int tcsendbreak (int fd, int duration)
 {
     debug_print ("tcsendbreak: [TODO]\n");
@@ -71,6 +75,7 @@ int tcsendbreak (int fd, int duration)
 }
 
 
+// Drain.
 int tcdrain (int fd)
 {
     if (fd<0)
@@ -80,15 +85,15 @@ int tcdrain (int fd)
 }
 
 
-int tcflush (int fd, int queue_selector){
-
+// Flush
+int tcflush (int fd, int queue_selector)
+{
     debug_print ("tcflush: [TODO]\n"); 
 
     if (fd<0)
         return -1;
 
     return -1;
-
 
 	/*
     int com;
@@ -114,6 +119,7 @@ int tcflush (int fd, int queue_selector){
 }
 
 
+// Flow
 int tcflow (int fd, int action)
 {
     debug_print ("tcflow: [TODO]\n");  
@@ -121,7 +127,7 @@ int tcflow (int fd, int action)
 }
 
 
-
+// Make raw
 void cfmakeraw (struct termios *termios_p)
 {
     if ( (void *) termios_p == NULL ){
@@ -143,6 +149,8 @@ void cfmakeraw (struct termios *termios_p)
     termios_p->c_cc[VTIME] = 0;
 }
 
+
+// Get i speed.
 speed_t cfgetispeed (const struct termios* tp)
 {
     if ( (void *) tp == NULL ){
@@ -153,7 +161,7 @@ speed_t cfgetispeed (const struct termios* tp)
     return tp->c_ispeed;
 }
 
-
+// Get o speed.
 speed_t cfgetospeed (const struct termios* tp)
 {
     if ( (void *) tp == NULL ){
@@ -165,7 +173,7 @@ speed_t cfgetospeed (const struct termios* tp)
 }
 
 
-
+// Set i speed.
 int cfsetispeed (struct termios *termios_p, speed_t speed)
 {
     if ( (void *) termios_p == NULL ){
@@ -177,6 +185,7 @@ int cfsetispeed (struct termios *termios_p, speed_t speed)
 }
 
 
+// Set o speed.
 int cfsetospeed (struct termios *termios_p, speed_t speed)
 {
     if ( (void *) termios_p == NULL ){
@@ -188,6 +197,7 @@ int cfsetospeed (struct termios *termios_p, speed_t speed)
 }
 
 
+// Set speed.
 int cfsetspeed(struct termios *termios_p, speed_t speed)
 {
     if ( (void *) termios_p == NULL ){

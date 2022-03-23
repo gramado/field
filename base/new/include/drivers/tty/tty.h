@@ -1,10 +1,11 @@
+
 // tty.h
 
 #ifndef ____TTY_H
 #define ____TTY_H  1
 
-#define TTYCHARS_COUNT_MAX 25    //80 
-#define TTYLINES_COUNT_MAX 25    //25 
+#define TTYCHARS_COUNT_MAX  25    //80 
+#define TTYLINES_COUNT_MAX  25    //25 
 
 //#define DEVELOPER_TTYCHARS_MAX 25    //80
 //#define DEVELOPER_TTYLINES_MAX 25    //25 
@@ -12,7 +13,7 @@
 
 /* tty magic number */
 //#define TTY_MAGIC		0x5401
-#define TTY_MAGIC		1234
+#define TTY_MAGIC    1234
 
 //TTY_DRIVER_TYPE_SYSTEM
 //TTY_DRIVER_TYPE_CONSOLE
@@ -31,6 +32,7 @@
 #define TTY_SUBTYPE_PTY_MASTER   100
 #define TTY_SUBTYPE_PTY_SLAVE    200
 // ...
+
 
 //These bits are used in the flags field of the tty structure.
 #define TTY_THROTTLED         0	/* Call unthrottle() at threshold min */
@@ -51,7 +53,6 @@
 #define TTY_HUPPED           18	/* Post driver->hangup() */
 #define TTY_FLUSHING         19	/* Flushing to ldisc in progress */
 #define TTY_FLUSHPENDING     20	/* Queued buffer flush pending */
-
 
 //
 // Chars
@@ -97,12 +98,7 @@
 #define O_LCUC(tty)   _O_FLAG((tty),OLCUC)
 
 
-
-
-
-
-
-
+#define TTY_BUF_SIZE 1024
 
 // Contador de linhas usados na hora da criação de linhas.
 int ttyLineCounter;
@@ -142,9 +138,6 @@ struct tty_line_d
     //Posição do cursor dentro da linha.
     int pos;
 };
-
-
-#define TTY_BUF_SIZE 1024
 
 
 struct tty_queue 

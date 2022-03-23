@@ -276,6 +276,29 @@ static void __test_winfo(int fd, int wid)
     printf("terminal: done\n");
 }
 
+/*
+static void __test_rand(void);
+static void __test_rand(void)
+{
+   int i, n;
+   time_t t;
+  
+   n = 5;
+   
+   //printf ("M=%d\n",rtl_get_system_metrics(118) ); //jiffies
+    
+   //Intializes random number generator
+   //srand((unsigned) time(&t));
+
+   //Print 5 random numbers from 0 to 49 
+   for( i = 0 ; i < n ; i++ ) {
+      printf("%d\n", rand() % 50);
+   }
+   
+   return(0);
+}
+*/
+
 
 // Compare the string typed into the terminal.
 // Remember, we have an embedded command interpreter.

@@ -1,4 +1,9 @@
 
+// math.c
+
+// #
+// The system has the support for double in ring3.
+
 // #todo
 // Remember: double is double precision float.
 
@@ -62,7 +67,6 @@ double sin (double __x)
 {
     return 0;
 }
-
 
 
 /*
@@ -141,10 +145,5 @@ double CosineN2(const double& x, const int& n, double* p_err )
 	return sum;
 }// end of CosineN2() 
  */
-
-
-
-
-
 
 

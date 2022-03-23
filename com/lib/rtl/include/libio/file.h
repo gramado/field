@@ -5,10 +5,8 @@
 // envolvendo arquivos. (FILE) streams. 
 // As funções devem começar com '__'  ou com '__file' 
 
-
 #ifndef __FILE_H__
-#define __FILE_H__
-
+#define __FILE_H__    1
 
 /*
  * #bsd-like
@@ -16,9 +14,9 @@
  * stdio can provide without attempting to allocate further resources
  * (which could fail).  Do not use this for anything.
  */
-				                 /* must be == _POSIX_STREAM_MAX <limits.h> */
-//#define	FOPEN_MAX	20	        /* must be <= OPEN_MAX <sys/syslimits.h> */
-//#define	FILENAME_MAX	1024	/* must be <= PATH_MAX <sys/syslimits.h> */
+                              /* must be == _POSIX_STREAM_MAX <limits.h> */
+//#define FOPEN_MAX     20    /* must be <= OPEN_MAX <sys/syslimits.h> */
+//#define FILENAME_MAX  1024  /* must be <= PATH_MAX <sys/syslimits.h> */
 
 
 #define FOPEN_MAX  (32)
@@ -84,27 +82,23 @@ struct _iobuf
     int used;
     int magic;
 
-    // Pointer to the base of the file. 
-    // Sometimes used as a buffer pointer.
+// Pointer to the base of the file. 
+// Sometimes used as a buffer pointer.
     unsigned char *_base;    
 
 // current position in (some) buffer
 // Current position of file pointer (absolute address).
-
     unsigned char *_p;
 
-
-	// read space left for getc()
+// read space left for getc()
     int _r;
 
-	// write space left for putc()
+// write space left for putc()
     int _w;
-
 
 // The size of the file. 
 // Tem que ser menor que o buffer.
 // BUFSIZ - _cnt.
-
     int _fsize;
 
 // Quantidade de bytes disponiveis no buffer.
@@ -112,77 +106,73 @@ struct _iobuf
 // Isso também representa o tamanho do arquivo,
 // pois quando incluimos bytes no arquivo, então
 // Essa quantidade diminue.
-
     int _cnt;
 
-
-	// flags, below; this FILE is free if 0 	
-	// Flags (see FileFlags). the state of the stream
+// flags, below; this FILE is free if 0 
+// Flags (see FileFlags). the state of the stream
     short _flags;
 
-	// fileno, if Unix descriptor, else -1
-	// UNIX System file descriptor
+// fileno, if Unix descriptor, else -1
+// UNIX System file descriptor
     short _file;
 
-
-	// the buffer (at least 1 byte, if !NULL)
+// the buffer (at least 1 byte, if !NULL)
     struct __sbuf _bf;
 
-	// 0 or -_bf._size, for inline putc 
+// 0 or -_bf._size, for inline putc 
     int _lbfsize;  
 
-
-	// operations - (bsd-like) 
-	// #todo: olhar __P em sys/cdefs.h
+// operations - (bsd-like) 
+// #todo: olhar __P em sys/cdefs.h
     void *_cookie;                 // cookie passed to io functions 
     int    (*_close) __P((void *));
     int    (*_read)  __P((void *, char *, int));
     fpos_t (*_seek)  __P((void *, fpos_t, int));
     int    (*_write) __P((void *, const char *, int));
 
-	//file extension 
+//file extension 
     struct __sbuf _ext;
 
-	// separate buffer for long sequences of ungetc() 
-	// saved _p when _p is doing ungetc data 
+// separate buffer for long sequences of ungetc() 
+// saved _p when _p is doing ungetc data 
     unsigned char *_up;
-	// saved _r when _r is counting ungetc data
+
+// saved _r when _r is counting ungetc data
     int _ur;
 
-	// tricks to meet minimum requirements even when malloc() fails 
+// tricks to meet minimum requirements even when malloc() fails 
     unsigned char _ubuf[3];    // guarantee an ungetc() buffer 
     unsigned char _nbuf[1];    // guarantee a getc() buffer 
 
-
-
-	//separate buffer for fgetln() when line crosses buffer boundary 
+// Separate buffer for fgetln() when 
+// line crosses buffer boundary.
     struct __sbuf _lb;    // buffer for fgetln() 
 
-
-	//Unix stdio files get aligned to block boundaries on fseek() 
+// Unix stdio files get aligned to block boundaries on fseek() 
     int _blksize;      // stat.st_blksize (may be != _bf._size) 
     fpos_t _offset;    // current lseek offset 
 
     int   _charbuf;   
     char *_tmpfname;
 
-
     int eof;
     int error;
     int have_ungotten;
     char ungotten;
-        
+
     char default_buffer[BUFSIZ];
-    
-    
-    // 1= is a device; 0= is a file.
-    // Se é um dispositivo ou não.
-    // Se for um dispositivo então o dispositivo terá
-    // na lista deviceList o mesmo offset da stream na list Streams.
+
+// 1= is a device; 0= is a file.
+// Se é um dispositivo ou não.
+// Se for um dispositivo então o dispositivo terá
+// na lista deviceList o mesmo offset da stream na list Streams.
+
     int isDevice;
-    int deviceId;  //índice na lista deviceList[] no kernel.
+    int deviceId;  // índice na lista deviceList[] no kernel.
 
     int iopl;
+
+    struct _iobuf *next;
 };
 
 
@@ -196,19 +186,18 @@ struct _iobuf
 
 //++
 #ifndef  __FILE_defined
-
-    // The opaque type of streams.
-    typedef struct _iobuf FILE; 
-    // typedef struct _iobuf GRAMADO_FILE; 
-
-    #define  __FILE_defined   1
-    // #define  __GRAMADO_FILE_defined   1
-
-#endif  //FILE not defined.  
+// The opaque type of streams.
+typedef struct _iobuf FILE; 
+// typedef struct _iobuf GRAMADO_FILE; 
+#define  __FILE_defined   1
+// #define  __GRAMADO_FILE_defined   1
+#endif
 //--
 
-
+//
 // Standard stream.
+//
+
 FILE *stdin;
 FILE *stdout;
 FILE *stderr;
@@ -226,8 +215,5 @@ FILE *stderr;
 unsigned long Streams[NUMBER_OF_FILES];
 
 #endif    //__FILE_H__
-
-
-
 
 

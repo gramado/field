@@ -133,19 +133,28 @@ void DeviceInterface_PIT(void)
 
 
 // #test 60fps com o pit a 1000.
-// 1000/16 = 62
+// 1000/16*1 = 62.5
+// 1000/16*2 = 31,25
+// 1000/16*3 = 20,83
+// 1000/16*4 = 15,625
 // Chamando o compositor dentro do window server.
 // Se os callbacks do window server ja foram configurados
 // anteriormente, então chamamos um deles.
 // 9091 = Compositor.
 // See: In window server, see wmHandler() in wm.c.
+// IN: wid, msg_code, long1, long2
+
+// Es o meu alivio!
 
     //if ( (jiffies % DEFAULT_PIT_FREQ) == 0 )
-    if ( (jiffies % 16) == 0 )
-    {
-        if ( gUseWMCallbacks == TRUE )
-            wmSendInputToWindowManager(0,9091,0,0);
-    }
+    //if ( (jiffies % 16) == 0 )
+    //{
+        if ( gUseWMCallbacks == TRUE ){
+            //wmSendInputToWindowManager(0,9091,0,0);
+            // IN: jiffies, clocks per second.
+            wmSendInputToWindowManager(0,9091,jiffies,sys_time_hz);
+        }
+    //}
 }
 
 
@@ -552,15 +561,14 @@ int timerInit (void)
     return 0;
 }
 
+
 /*
- ***********************************
  * early_timer_init:
  *     Inicialização prévia do módulo timer.
- *     Uma outra inicialização mais aourada poderá ser feita
+ *     Uma outra inicialização mais apurada poderá ser feita
  * posteriormente.
  *     Porém ainda existe uma inicialização feita em Assembly
  * quando o kernel é inicialazado.
- * 
  */
 
 int early_timer_init (void)

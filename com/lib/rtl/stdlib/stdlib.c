@@ -1,11 +1,9 @@
 /*
  * File: stdlib.c
- *
  *     Standard library.
- *
- * History:
  *     2016 - Created by Fred Nora.
  */
+
 
 #include <types.h> 
 #include <stddef.h>
@@ -19,11 +17,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
-
 #include <strings.h>
-
-
-
 #include <rtl/gramado.h> 
 
 
@@ -45,9 +39,6 @@ unsigned int randseed;
 unsigned long last_valid=0;         //Último heap pointer válido. 
 unsigned long last_size=0;          //Último tamanho alocado.
 unsigned long mm_prev_pointer=0;    //Endereço da úntima estrutura alocada.
-
-
-
 
 
 //
@@ -823,18 +814,14 @@ int rtl_rand_in_a_range(int lim_inf, int lim_sup)
 
 
 
-/*
- *******
- * rand:
- *     Gera um número randômico. 
- */
-
+// Generate a random number.
 int rand (void)
 {
     return (int) ( randseed = randseed * 1234 + 5 );
 }
 
 
+// Seed rand.
 void srand (unsigned int seed)
 {
     randseed = (unsigned int) seed;
@@ -864,17 +851,13 @@ void stdlib_die (char *str)
 }
 
 
-
 /*
- *****************
  * malloc:
- *     Aloca memória para um programa em user mode.        
- *     
+ *     Aloca memória para um programa em user mode. 
  * Explicação:
  *     O objetivo aqui é alocar memória para uma aplicação em user mode.
  * O Heap usado para isso é o Heap do processo ao qual aplicação pertence
  * ou o Heap do desktop ao qual a aplicação pertence.
- *
  *     Obs: Podemos chamar o kernel para que ele aloque memória em um Heap 
  * específico. 
  *     Obs: Podemos chamar um servidor gerente de memória virtual para
@@ -882,17 +865,15 @@ void stdlib_die (char *str)
  * do kernel).
  *     Obs: VÁRIOS SERVIÇOS DE ALOCAÇÃO DE MEMÓRIA PODEM CONVIVER TANTO EM
  * USER MODE QUANTO KERNEL MODE.
- *
  * @todo: O método usado nessa função ainda não foi definido.
  *        ** POR ENQUANTO, PARA TESTES, ESSA FUNÇÃO ALOCA MEMÓRIA NO HEAP DA 
  *         BIBLIOTECA, QUE É BEM PEQUENO, NA FORMA DE BUFFER (ARRAY)
- *
  * Histórico da função:
  *     Versão 1.0, 2015 - Created.
  *     Versão 1.0, 2016 - Implementada a função na biblioteca libC99.
  *     ... 
  */
- 
+
 void *malloc ( size_t size )
 {
 

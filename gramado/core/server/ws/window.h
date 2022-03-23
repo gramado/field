@@ -85,13 +85,6 @@ void __init_wm_structure(void);
 
 
 
-// z-order ?
-// But we can use multiple layers.
-// ex-wayland: background, bottom, top, overlay.
-struct gws_window_d *first_window;
-struct gws_window_d *last_window;
-
-
 #define IS_OPAQUE       1000
 #define IS_TRANSPARENT  2000
 #define IS_ICON         3000
@@ -1186,6 +1179,13 @@ struct gws_window_d  *cursor_window;  // Where cursor came from.
 struct gws_window_d  *button_window;  // Where button was pressed.
 // ...
 
+// z-order ?
+// But we can use multiple layers.
+// ex-wayland: background, bottom, top, overlay.
+struct gws_window_d *first_window;
+struct gws_window_d *last_window;
+
+
 //
 // Taskbar buttons
 //
@@ -1278,13 +1278,20 @@ struct gws_surface_d *rootSurface;
 // == prototypes ===========================
 //
 
-void __switch_focus(void);
-
 
 void set_status_by_id( int wid, int status );
 
-void set_focus_by_id( int wid );
+
+//
+// Focus
+//
+
 void set_focus(struct gws_window_d *window);
+struct gws_window_d *get_focus(void);
+
+void __switch_focus(void);
+void set_focus_by_id( int wid );
+
 
 // transparence
 void gws_enable_transparence(void);
@@ -1300,7 +1307,12 @@ struct gws_surface_d *xxxCreateSurface(
 void wm_flush_rectangle(struct gws_rect_d *rect);
 void wm_flush_window(struct gws_window_d *window);
 void wm_flush_screen(void);
-void wmCompose(void);
+
+void 
+wmCompose(
+    unsigned long jiffies, 
+    unsigned long clocks_per_second );
+
 void wmRefreshDirtyRectangles(void);
 void flush_frame(void);
 

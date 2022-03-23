@@ -1,8 +1,7 @@
 
 /*
  * File: mmap.c 
- * 
- *     mmap, munmap - map or unmap files or devices into memory
+ *     mmap, munmap - map or unmap files or devices into memory.
  *     Created by Fred Nora.
  */
 
@@ -13,7 +12,22 @@
 #include  <stdarg.h>
 #include  <sys/mman.h>
 
+
+/*
+PROT_EXEC
+    Pages may be executed.
+PROT_READ
+    Pages may be read.
+PROT_WRITE
+    Pages may be written.
+PROT_NONE
+    Pages may not be accessed.
+*/
+
 // #todo
+// Explain the input parameters.
+// See:
+// https://man7.org/linux/man-pages/man2/mmap.2.html
 void *mmap ( 
     void *addr, 
     size_t length, 

@@ -1,5 +1,6 @@
+
 #ifndef _GLOB_H_
-#define	_GLOB_H_
+#define _GLOB_H_
 
 
 /*
@@ -12,9 +13,6 @@
 
 //#todo: The glob_t struct.
 */
-
-
-
 
 
 #define	GLOB_APPEND	0x0001	/* Append to output from previous call. */

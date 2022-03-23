@@ -1,5 +1,6 @@
 /*
  * File: fcntl.c
+ * fcntl - manipulate file descriptor
  * 2020 - Created by Fred Nora.
  */
 
@@ -16,46 +17,57 @@
 #include <rtl/gramado.h>
 
 
+// fcntl - manipulate file descriptor.
+// Duplicating a file descriptor
+// File descriptor flags
+// File status flags
+// Advisory record locking
+// Open file description locks (non-POSIX)
+// Mandatory locking (Deprecated on linux?)
+// Lost locks
+// Managing signals
+// Leases (Concessões.)
+// File and directory change notification (dnotify)
+// Changing the capacity of a pipe
+// File Sealing (Vedação de arquivo?)
+// File seals limit the set of allowed operations on a given file.
+// File read/write hints
+// See:
+// https://man7.org/linux/man-pages/man2/fcntl.2.html
+
 int fcntl ( int fd, int cmd, ... )
 {
-    int __ret = -1;
+    int Ret = -1;
 
     if (fd<0) {
         debug_print("fcntl: fd\n");
         return -1;
     }
 
-    //++
+//++
     va_list ap;
     va_start(ap, cmd);
     unsigned arg = va_arg(ap,int);
 
-    //__ret = (int) gramado_system_call ( 8001,
-    //                  (unsigned long) fd,
-    //                  (unsigned long) cmd,
-    //                  (unsigned long) arg );
-
-    // # This way we're gonna have full access 
-    // to the ring 0 data structures.
-
-    __ret = (int) sc82 ( 
-                      8001,
-                      (unsigned long) fd,
-                      (unsigned long) cmd,
-                      (unsigned long) arg );
+    Ret = (int) sc82 ( 
+                    8001,
+                    (unsigned long) fd,
+                    (unsigned long) cmd,
+                    (unsigned long) arg );
 
     va_end(ap);
-    //--    
+//--    
 
     // #todo Error.
-    if (__ret < 0)
+    if (Ret < 0)
     {
-        //errno = -__ret;
+        //errno = (-Ret);
         return (-1);
     }
 
-    return (int) (__ret);
+    return (int) (Ret);
 }
+
 
 // openat - open a file relative to a directory file descriptor 
 // See: https://linux.die.net/man/2/openat
