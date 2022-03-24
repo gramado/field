@@ -63,8 +63,8 @@ gws_send_event (
         gws_debug_print ("gws_send_event: fail\n");
         return; 
     }else{
-        wid   = (int)           event->wid;
-        msg   = (int)           event->msg;
+        wid   = (int)           event->window;
+        msg   = (int)           event->type;
         long1 = (unsigned long) event->long1;
         long2 = (unsigned long) event->long2;
     };

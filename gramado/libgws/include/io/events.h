@@ -36,9 +36,14 @@ struct gws_event_d
     int used;
     int magic;
 
+// 'wid' is the window.
+// 'msg' is the event type.
+
     //standard msg block
-    int wid;    // window id.
-    int msg;    // msg. (event type).
+    //int wid;    // window id.   (The window associated with this event)
+    //int msg;    // msg. (event type).
+    int window;   //event->window
+    int type;     //event->type
     unsigned long long1;
     unsigned long long2;
 

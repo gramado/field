@@ -543,7 +543,7 @@ struct gws_event_d *__gws_get_next_event_response (
     if (n_reads <= 0)
     { 
         printf ("__gws_get_next_event_response: Read 0 bytes\n"); 
-        event->msg = 0;
+        event->type = 0;
         event->used = FALSE;
         event->magic = 0;
         return (struct gws_event_d *) event;
@@ -567,7 +567,7 @@ struct gws_event_d *__gws_get_next_event_response (
     case GWS_SERVER_PACKET_TYPE_ERROR:
     default:
         printf ("__gws_get_next_event_response: Invalid msg code\n"); 
-        event->msg = 0;
+        event->type = 0;
         event->used = FALSE;
         event->magic = 0;
         return (struct gws_event_d *) event;
@@ -576,7 +576,7 @@ struct gws_event_d *__gws_get_next_event_response (
 
 // crazy fail
     printf ("__gws_get_next_event_response: crazy fail\n"); 
-    event->msg = 0;
+    event->type = 0;
     event->used = FALSE;
     event->magic = 0;
 
@@ -632,13 +632,13 @@ process_event:
     {
         //printf("__gws_get_next_event_response: WE GOT AN EVENT\n");
     
-        event->wid   = (int) message_buffer[4];            // window id
-        event->msg   = (int) message_buffer[5];            // message code
-        event->long1 = (unsigned long) message_buffer[6];  // long1
-        event->long2 = (unsigned long) message_buffer[7];  // long2
+        event->window = (int) message_buffer[4];            // window id
+        event->type   = (int) message_buffer[5];            // message code
+        event->long1  = (unsigned long) message_buffer[6];  // long1
+        event->long2  = (unsigned long) message_buffer[7];  // long2
 
-        event->wid = (int) ( event->wid & 0xFFFF );
-        event->msg = (int) ( event->msg & 0xFFFF );
+        event->window = (int) ( event->window & 0xFFFF );
+        event->type   = (int) ( event->type & 0xFFFF );
 
         event->used = TRUE;
         event->magic = 1234;
@@ -651,7 +651,7 @@ process_event:
     }
 
 fail0:
-    event->msg = 0;
+    event->type = 0;
     event->used = FALSE;
     event->magic = 0;
     return NULL;
@@ -3245,8 +3245,9 @@ gws_redraw_window (
 
 // The server will return an event 
 // from the its client's event queue.
+
 struct gws_event_d *gws_get_next_event(
-    int fd, 
+    int fd,
     struct gws_event_d *event )
 {
 
@@ -3288,6 +3289,22 @@ struct gws_event_d *gws_get_next_event(
 
     return (struct gws_event_d *) e;
 }
+
+
+// The server will return the info about one given window.
+struct gws_window_info_d *gws_query_window(
+    int fd,
+    int wid,
+    struct gws_window_info_d *window_info )
+{
+    if(fd<0)
+        return NULL;
+    if(wid<0)
+        return NULL;
+    if( (void*) window_info == NULL )
+        return NULL;
+    return (struct gws_window_info_d *) gws_get_window_info(fd,wid,window_info);
+} 
 
 
 // The server will return the info about one given window.

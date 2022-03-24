@@ -267,6 +267,11 @@ gws_redraw_window (
     unsigned long flags );
 
 
+// The server will return the info about one given window.
+struct gws_window_info_d *gws_query_window(
+    int fd,
+    int wid,
+    struct gws_window_info_d *window_info );
 
 // The server will return the info about one given window.
 struct gws_window_info_d *gws_get_window_info(

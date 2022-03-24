@@ -242,6 +242,7 @@ int main ( int argc, char *argv[] )
 //HANG:
     while(1){}
 
+    // This event routine is working fine.
 
 // #test
 // pegando um evento com o ws.
@@ -250,7 +251,7 @@ int main ( int argc, char *argv[] )
     struct gws_event_d lEvent;
     lEvent.used = FALSE;
     lEvent.magic = 0;
-    lEvent.msg = 0;
+    lEvent.type = 0;
     lEvent.long1 = 0;
     lEvent.long2 = 0;
 
@@ -263,7 +264,9 @@ int main ( int argc, char *argv[] )
 // loop
     while(1){
 
-        e = (struct gws_event_d *) gws_get_next_event(client_fd, (struct gws_event_d *) &lEvent);
+        e = (struct gws_event_d *) gws_get_next_event(
+                                       client_fd, 
+                                       (struct gws_event_d *) &lEvent );
 
         // Evento valido.
         if( (void*) e != NULL )
@@ -275,7 +278,7 @@ int main ( int argc, char *argv[] )
                 {
                     //#test
                     //the message code.
-                    if(e->msg == 1000)
+                    if(e->type == 1000)
                         printf("BROWSER: [1000] We got an valid event\n");
                 }
             }
