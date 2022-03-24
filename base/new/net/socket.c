@@ -2743,36 +2743,39 @@ int sys_socket ( int family, int type, int protocol )
 
     case AF_GRAMADO:
         debug_print ("sys_socket: AF_GRAMADO\n");
+        __socket->connection_type = 1;  //local connection.
         __socket->addr = addr;  // Address type used by AF_GRAMADO.
         return (int) socket_gramado ( (struct socket_d *) __socket, 
                          AF_GRAMADO, type, protocol );
         break;
 
-           //case AF_LOCAL:
-           case AF_UNIX:
-               debug_print ("sys_socket: AF_UNIX\n");
-               __socket->addr = addr;  // Address type used by AF_UNIX.
-               return (int) socket_unix ( (struct socket_d *) __socket, 
-                                AF_UNIX, type, protocol );
-               break;
+    //case AF_LOCAL:
+    case AF_UNIX:
+        debug_print ("sys_socket: AF_UNIX\n");
+        __socket->connection_type = 1;  //local connection
+        __socket->addr = addr;  // Address type used by AF_UNIX.
+        return (int) socket_unix ( (struct socket_d *) __socket, 
+                         AF_UNIX, type, protocol );
+        break;
 
-           //#bugbug: 
-           //talvez precisamos rever sockaddr 
-           //para essa função, e usarmos outra estrutura.               
-           case AF_INET:
-               debug_print ("sys_socket: AF_INET\n");
-               __socket->addr_in = addr_in;  // Address type used by AF_INET.
-               return (int) socket_inet ( (struct socket_d *) __socket, 
-                                AF_INET, type, protocol );
-               break;
+    //#bugbug: 
+    //talvez precisamos rever sockaddr 
+    //para essa função, e usarmos outra estrutura.               
+    case AF_INET:
+        debug_print ("sys_socket: AF_INET\n");
+        //__socket->connection_type = ?;  //Is it really a remote connection?
+        __socket->addr_in = addr_in;  // Address type used by AF_INET.
+        return (int) socket_inet ( (struct socket_d *) __socket, 
+                         AF_INET, type, protocol );
+        break;
 
-           // ...
-           
-           default:
-               debug_print ("sys_socket: [FAIL] bad family\n");
-               debug_print ("sys_socket: Couldn't create the file\n");
-               goto fail;
-               break;
+    // ...
+
+    default:
+        debug_print ("sys_socket: [FAIL] bad family\n");
+        //debug_print ("sys_socket: Couldn't create the file\n");
+        goto fail;
+        break;
     };
 
     // ...

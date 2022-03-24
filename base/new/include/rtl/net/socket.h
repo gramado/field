@@ -1,3 +1,4 @@
+
 // socket.h
 // suporte a socket dentro do kernel.
 
@@ -525,6 +526,9 @@ struct socket_d
 //
 // == Connection ====================
 //
+
+// 1=LOCAL | 2=REMOTE
+    int connection_type;
 
 // ip and port.
     unsigned int ip;
