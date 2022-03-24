@@ -46,7 +46,63 @@ struct sockaddr_in addr = {
 */
 
 
-int __client_window = -1;
+static int __main_window = -1;
+static int __addressbar_window = -1;
+static int __button_window = -1;
+static int __client_window = -1;
+
+
+//prototype
+static int 
+browserProcedure(
+    int fd, 
+    int event_window, 
+    int event_type, 
+    unsigned long long1, 
+    unsigned long long2 );
+
+// local
+static int 
+browserProcedure(
+    int fd, 
+    int event_window, 
+    int event_type, 
+    unsigned long long1, 
+    unsigned long long2 )
+{
+    if(fd<0)
+        return -1;
+    if(event_window<0)
+        return -1;
+    if(event_type<0)
+        return -1;
+
+
+    switch(event_type){
+
+    // Evento de teste.
+    case 1000:
+        // If the event window is the main window, so
+        // redraw client window
+        if( event_window == __main_window ){
+            gws_redraw_window(fd,__client_window,TRUE);
+            return 0;
+        }
+        break;
+
+    //case ?:
+        //break;
+
+    //...
+    
+    default:
+        return -1;
+        break;
+    };
+
+    return -1;
+}
+
 
 
 int main ( int argc, char *argv[] )
@@ -155,6 +211,11 @@ int main ( int argc, char *argv[] )
         debug_print("browser: main_window fail\n"); 
         exit(1);
     }
+    
+    if ( main_window > 0 ){
+        // Save globally.
+        __main_window = main_window;
+    }
 
 // ===================
 // address bar
@@ -172,6 +233,7 @@ int main ( int argc, char *argv[] )
 // IN: 
 // fd, window id, left, top, color, string
     if( addressbar_window > 0 ){
+        __addressbar_window = addressbar_window;
         gws_draw_text (
             (int) client_fd,
             (int) addressbar_window,
@@ -190,6 +252,8 @@ int main ( int argc, char *argv[] )
     if ( button < 0 ) 
         debug_print("browser: button fail\n"); 
 
+    if(button>0)
+        __button_window=button;
 
 // ===================
 // client window (White)
@@ -204,7 +268,7 @@ int main ( int argc, char *argv[] )
 
     if ( client_window > 0 )
     {
-        // Save globaly.
+        // Save globally.
         __client_window = client_window;
         
         gws_draw_text (
@@ -240,7 +304,7 @@ int main ( int argc, char *argv[] )
 
 
 //HANG:
-    while(1){}
+    //while(1){}
 
     // This event routine is working fine.
 
@@ -257,34 +321,25 @@ int main ( int argc, char *argv[] )
 
     struct gws_event_d *e;
 
-
-// #todo
-// This service is not implemented yet at server side.
-
 // loop
-    while(1){
+// Call the local window procedure 
+// if a valid event was found.
 
+    while (1)
+    {
         e = (struct gws_event_d *) gws_get_next_event(
-                                       client_fd, 
-                                       (struct gws_event_d *) &lEvent );
-
-        // Evento valido.
-        if( (void*) e != NULL )
+                client_fd, 
+                (struct gws_event_d *) &lEvent );
+        
+        if( (void *) e != NULL )
         {
-            // validation
-            if( e->used == TRUE )
+            if( e->used == TRUE && e->magic == 1234 )
             {
-                if( e->magic == 1234 )
-                {
-                    //#test
-                    //the message code.
-                    if(e->type == 1000)
-                        printf("BROWSER: [1000] We got an valid event\n");
-                }
+                browserProcedure(
+                    client_fd, e->window, e->type, e->long1, e->long2 );
             }
         }
     };
-
 
 
 //HANG:

@@ -442,7 +442,6 @@ wmCreateWindowFrame (
     unsigned int ornament_color2,
     int style ) 
 {
-
     int useFrame       = FALSE;
     int useTitleBar    = FALSE;
     int useTitleString = FALSE;
@@ -653,7 +652,6 @@ wmCreateWindowFrame (
     }
     unsigned long offset = 
         ( ( (unsigned long) window->width - ( (unsigned long) tmp_size * (unsigned long) gcharWidth) ) / 2 );
-
 
 
     if ( Type == WT_OVERLAPPED )
@@ -1303,6 +1301,7 @@ void set_focus(struct gws_window_d *window)
 }
 
 
+// Pega o ponteiro da janela com foco de entrada.
 struct gws_window_d *get_focus(void)
 {
     struct gws_window_d *w;
@@ -2324,7 +2323,7 @@ wmProcedure(
         return 0;
         break;
 
-    //
+    // 9090 - ( Shift + F12 )
     case GWS_SwitchFocus:
         //printf("Switch "); fflush(stdout);
         __switch_focus();
@@ -2785,7 +2784,9 @@ redraw_window (
     if (window->used!=TRUE || window->magic!=1234)
         return -1;
 
-// Shadow
+
+// =======================
+// shadowUsed
 // A sombra pertence à janela e ao frame.
 // A sombra é maior que a própria janela.
 // ?? Se estivermos em full screen não tem sombra ??
@@ -2849,6 +2850,8 @@ redraw_window (
     } //fim do shadow
   
 
+// =======================
+// backgroundUsed
 // ## Background ##
 // Background para todo o espaço ocupado pela janela e pelo seu frame.
 // O posicionamento do background depende do tipo de janela.
@@ -2896,30 +2899,27 @@ redraw_window (
         // Draw background!
         //
 
-        //#bugbug
-        //Remember: The first window do not have a parent.
-        //if ( (void*) window->parent == NULL ){ 
-            //gwssrv_debug_print ("redraw_window: [Background] Parent\n"); 
-            //exit(1); 
             rectBackbufferDrawRectangle ( 
                 window->left, window->top, 
                 window->width, window->height, 
                 window->bg_color, 1, 0 );
-        //}  
-        
-        //if ( (void*) window->parent != NULL ){
-        //    rectBackbufferDrawRectangle ( 
-        //        window->left, window->top, 
-        //        window->width, window->height, 
-        //        window->bg_color, 1, 0 );
-        //}
-        //?? More ...
-    }  //fim do background
 
-    //
-    // botao
-    //
+        // all done for this type
+        if( window->type == WT_SIMPLE )
+            return 0;
     
+    }  //fim do background
+    
+    
+    
+//
+// botao ==========================================
+//
+
+
+// =======================
+// WT_BUTTON
+
     //Termina de desenhar o botão, mas não é frame
     //é só o botão...
     //caso o botão tenha algum frame, será alguma borda extra.
@@ -2927,6 +2927,7 @@ redraw_window (
     int Selected=0;
     unsigned int border1=0;
     unsigned int border2=0;
+
 
     //gwssrv_debug_print ("redraw_window: Type Button\n");
     if ( (unsigned long) window->type == WT_BUTTON )
@@ -3031,29 +3032,33 @@ redraw_window (
                     (window->top)  +8, 
                     COLOR_BLACK, window->name );
             }
-    }
-
-
-    //#todo:
-    if ( window->type == WT_EDITBOX || 
-         window->type == WT_EDITBOX_MULTIPLE_LINES )
-    {
-        gwssrv_debug_print ("redraw_window: [TODO] Type Editbox\n");
-        //...
-    }
     
-    // more types ?...
+        // ok, repintamos o botao que eh um caso especial
+        // nao precisamos das rotinas abaixo,
+        // elas serao par aos outros tipos de janela.
+        return 0;  
+    }
 
-draw_frame:
 
+
+
+// =======================================
+// redraw_frame:
+// only the boards
+// redraw the frame para alguns tipos menos para botao.
+// O bg ja fi feito logo acima.
+
+// Remember:
+// We can't recreate the windows, just redraw'em.
 // #todo
 // Precisamos de uma rotina que redesenhe o frame,
 // sem alocar criar objetos novos.
 
+
+    // only the boards
     if ( window->type == WT_OVERLAPPED || 
          window->type == WT_EDITBOX || 
-         window->type == WT_EDITBOX_MULTIPLE_LINES || 
-         window->type == WT_BUTTON )
+         window->type == WT_EDITBOX_MULTIPLE_LINES )
     {
         if ( (void*) window != NULL )
         {
@@ -3061,16 +3066,52 @@ draw_frame:
             {
                 if( window->parent->magic == 1234 )
                 {
-                    wmCreateWindowFrame ( 
-                        (struct gws_window_d *) window->parent,  //parent.
-                        (struct gws_window_d *) window,      //bg do botão em relação à sua parent. 
-                        METRICS_BORDER_SIZE,       //border size
-                        (unsigned int)COLOR_BLACK, //border color 1
-                        (unsigned int)COLOR_BLACK, //border color 2
-                        (unsigned int)COLOR_BLACK, //border color 3
-                        (unsigned int)COLOR_BLACK, //ornament color 1
-                        (unsigned int)COLOR_BLACK, //ornament color 2
-                        1 );  //style
+                    // #bugbug
+                    // Estamos na rotina de repintura,
+                    // nao devemos recriar janelas aqui,
+                    // apenas repintar as que foram criadas.
+
+                    //wmCreateWindowFrame ( 
+                    //    (struct gws_window_d *) window->parent,  //parent.
+                    //    (struct gws_window_d *) window,      //bg do botão em relação à sua parent. 
+                    //    METRICS_BORDER_SIZE,       //border size
+                    //    (unsigned int)COLOR_BLACK, //border color 1
+                    //    (unsigned int)COLOR_BLACK, //border color 2
+                    //    (unsigned int)COLOR_BLACK, //border color 3
+                    //    (unsigned int)COLOR_BLACK, //ornament color 1
+                    //    (unsigned int)COLOR_BLACK, //ornament color 2
+                    //    1 );  //style
+                    
+                    
+                    // let's repaint the borders for some types
+                    if( window->type == WT_OVERLAPPED ||
+                        window->type == WT_EDITBOX ||
+                        window->type == WT_EDITBOX_MULTIPLE_LINES )
+                    {
+                        __draw_window_border(window->parent,window);
+                    }
+
+                    // se a janela for overlapped
+                    // temos que repintar a janela de titulos.
+                    if( window->type == WT_OVERLAPPED )
+                    {
+                        if( (void*) window->titlebar != NULL )
+                        {
+                            if(window->titlebar->magic == 1234 ){
+                            rectBackbufferDrawRectangle ( 
+                            window->titlebar->left, 
+                            window->titlebar->top, 
+                            window->titlebar->width, 
+                            window->titlebar->height, 
+                            window->titlebar->bg_color, 
+                            1, 
+                            0 );
+                            }
+                        }
+                    }
+
+
+                
                 }
             }
         }

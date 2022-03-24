@@ -2069,42 +2069,43 @@ int serviceClientEvent(void)
 // :::: Retira em head.
 // Uma opção é enviaremos mensagens para 
 // a fila na thread associada a essa janela.
-static
-int serviceNextEvent (void)
-{
-    //debug_print("serviceNextEvent: suspended\n");
 
+static int serviceNextEvent (void)
+{
     //#debug
+    //debug_print("serviceNextEvent: suspended\n");
     //printf("serviceNextEvent\n");
 
-// #test
-// fake event for testing purpose.
+// Window with focus.
 
-    NextSingleEvent.wid = 0;
-    NextSingleEvent.msg = 1000;     //test event.
-    NextSingleEvent.long1 = 1;  // signature
-    NextSingleEvent.long2 = 2;  // signature
+    struct gws_window_d *w;
+    
+    w = (struct gws_window_d *) get_focus();
+    if( (void*) w==NULL )
+        return -1;
+
+    w->single_event.wid   = w->id;
+    w->single_event.msg   = 1000;  // >>>>>> EVENT TYPE <<<<<<<
+    w->single_event.long1 = 1;   // signature
+    w->single_event.long2 = 2;   // signature
 
 // Building the next response.
 // It will be sent in the socket loop.
 
-    //header
+//header
     next_response[0] = 0;  //
     next_response[1] = SERVER_PACKET_TYPE_EVENT;  //msg type
     next_response[2] = 1234;  //signature
     next_response[3] = 5678;  //signature
 
-    // the message packet.
-    next_response[4] = NextSingleEvent.wid;  // window
-    next_response[5] = NextSingleEvent.msg;  // msg code
-    next_response[6] = NextSingleEvent.long1;
-    next_response[7] = NextSingleEvent.long2;
-    
-
-// pra gerar resposta de erro
-    //return -1;
+// the message packet.
+    next_response[4] = w->single_event.wid;  // window
+    next_response[5] = w->single_event.msg;  // >>>>>> EVENT TYPE <<<<<<<
+    next_response[6] = w->single_event.long1;
+    next_response[7] = w->single_event.long2;
 
     return 0;
+    //return -1; // pra gerar resposta de erro
 }
 
 

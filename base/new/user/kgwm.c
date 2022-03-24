@@ -611,9 +611,9 @@ wmProcedure (
                     refresh_screen();
                 }
                 if (shift_status == TRUE){
-                    // Switch focus
-                    wmSendInputToWindowManager(0,9090,0,0);
+                    wmSendInputToWindowManager(0,9090,0,0);   // Switch focus
                     //__kgwm_SendMessageToInitProcess(9219);  // sysmon
+                    return 0;
                 }
                 return 0;
                 break;

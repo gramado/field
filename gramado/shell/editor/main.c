@@ -51,15 +51,14 @@
 // windows
 //
 
-// #todo: 
-// salvar em global por enquanto aqui
+// globally
+static int main_window = 0;
+static int addressbar_window = 0;
+static int client_window = 0;
+static int savebutton_window = 0;
 
-int main_window       = 0;
-int addressbar_window = 0;
-int client_window     = 0;
 
 
-int save_button = 0;
 
 // #todo
 // int button_list[8];
@@ -68,10 +67,12 @@ int save_button = 0;
 // cursor
 //
 
-int cursor_x = 0;
-int cursor_y = 0;
-int cursor_x_max = 0;
-int cursor_y_max = 0;
+static int cursor_x = 0;
+static int cursor_y = 0;
+static int cursor_x_max = 0;
+static int cursor_y_max = 0;
+
+static int blink_status=FALSE;
 
 
 //
@@ -208,85 +209,63 @@ editorSetCursor(
 }
 
 
+//prototype
+static int 
+editorProcedure(
+    int fd, 
+    int event_window, 
+    int event_type, 
+    unsigned long long1, 
+    unsigned long long2 );
+
 // local
-int 
-editorProcedure ( 
-    int fd,
-    void *window, // maybe: ignore. use long3.
-    int msg, 
+static int 
+editorProcedure(
+    int fd, 
+    int event_window, 
+    int event_type, 
     unsigned long long1, 
     unsigned long long2 )
 {
-
-    if (fd<0){
+    if(fd<0)
         return -1;
-    }
-
-    if (msg<0){
+    if(event_window<0)
         return -1;
-    }
+    if(event_type<0)
+        return -1;
 
-    switch (msg){
 
-        // 20 = MSG_KEYDOWN
-        case 20:
-            switch(long1){
-                
-                // keyboard arrows
-                case 0x48: 
-                    //printf ("UP   \n"); 
-                    cursor_y--;
-                    editorSetCursor(cursor_x,cursor_y);
-                    goto done; 
-                    break;
-                case 0x4B: 
-                    //printf ("LEFT \n"); 
-                    cursor_x--;
-                    editorSetCursor(cursor_x,cursor_y);
-                    goto done; 
-                    break;
-                case 0x4D: 
-                    //printf ("RIGHT\n"); 
-                    cursor_x++;
-                    editorSetCursor(cursor_x,cursor_y);
-                    goto done; 
-                    break;
-                case 0x50: 
-                    //printf ("DOWN \n"); 
-                    cursor_y++;
-                    editorSetCursor(cursor_x,cursor_y);
-                    goto done; 
-                    break;
-                
-                default:
-                    if(long1 > 0){
-                        editorDrawChar(fd,long1);
-                    }
-                    break;
-            };
-            break;
+    switch(event_type){
 
-        // 22 = MSG_SYSKEYDOWN
-        //case 22:
-            //printf ("MSG_SYSKEYDOWN\n");
-            //break;
+    // Evento de teste.
+    case 1000:
+        // If the event window is the main window, so
+        // redraw everyone.
+        if( event_window == main_window )
+        {
+            gws_redraw_window(fd, addressbar_window,TRUE);
+            gws_redraw_window(fd, savebutton_window,TRUE);
+            gws_redraw_window(fd, client_window,TRUE);
+            return 0;
+        }
 
-        //#bugbug: Not working
-        //case MSG_SYSKEYDOWN:
-        //switch(long1){
-        //case VK_F1:  gws_clone_and_execute("terminal.bin"); break;
-        // ...
-        //};
+        break;
+
+    //case ?:
         //break;
 
-
-        default:
-            return 0;
-            break;
+    //...
+    
+    default:
+        return -1;
+        break;
     };
-done:
-    return 0;
+
+    return -1;
 }
+
+
+
 
 
 int main ( int argc, char *argv[] )
@@ -440,15 +419,15 @@ int main ( int argc, char *argv[] )
 // The [Save] button.
 // inside the main window.
 
-    save_button = gws_create_window ( 
+    savebutton_window = gws_create_window ( 
                  client_fd,
                  WT_BUTTON,1,1,"Save",
                  (( w_width/8 )*6), 32 +4,
                  (( w_width/8 )*1), 32,
                  main_window, 0, COLOR_GRAY, COLOR_GRAY );
 
-    if ( save_button < 0 ){
-        debug_print("editor: save_button fail\n"); 
+    if ( savebutton_window < 0 ){
+        debug_print("editor: savebutton_window fail\n"); 
     }
 
 //
@@ -531,10 +510,45 @@ int main ( int argc, char *argv[] )
          client_window,
          client_window );
 
+
+//
+// Event loop
+//
+
+
+    struct gws_event_d lEvent;
+    lEvent.used = FALSE;
+    lEvent.magic = 0;
+    lEvent.type = 0;
+    lEvent.long1 = 0;
+    lEvent.long2 = 0;
+
+    struct gws_event_d *e;
+
+// loop
+// Call the local window procedure 
+// if a valid event was found.
+
     while (1)
     {
-        //
+        e = (struct gws_event_d *) gws_get_next_event(
+                client_fd, 
+                (struct gws_event_d *) &lEvent );
+        
+        if( (void *) e != NULL )
+        {
+            if( e->used == TRUE && e->magic == 1234 )
+            {
+                editorProcedure(
+                    client_fd, e->window, e->type, e->long1, e->long2 );
+            }
+        }
     };
+
+
+
+// HANG
+    while (1){};
 
 
 /*

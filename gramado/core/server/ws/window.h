@@ -9,6 +9,8 @@
 #define ____WINDOW_H    1
 
 
+#include "event.h"
+
 // The window manager global structure.
 struct gws_windowmanager_d
 {
@@ -481,13 +483,20 @@ struct frame_d
 
 struct gws_window_d 
 {
-
     int id;
     //int wid;
 
 // Structure validation
     int used;
     int magic;
+
+// Single event
+    struct gws_event_d  single_event;
+    //struct gws_event_d  *single_event;
+    
+// #todo
+// Event queue.
+     //struct gws_event_d *event_queue;
 
 // #todo
 // We need to review that list of flags.

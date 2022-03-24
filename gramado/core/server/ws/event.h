@@ -1,5 +1,6 @@
 
-
+#ifndef EVENT_H
+#define EVENT_H    1
 
 // #todo: 
 // no gramado as mensagens do systema
@@ -77,7 +78,6 @@ struct gws_keyboad_focus_d
 */
 
 
-
-
+#endif    
 
 
