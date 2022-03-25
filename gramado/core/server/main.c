@@ -58,6 +58,73 @@ See: https://wiki.osdev.org/Graphics_stack
 #include "gws.h"
 
 
+#define VERSION  "0.1"
+#define VERSION_MAJOR  0
+#define VERSION_MINOR  1
+
+// Gramado Network Protocol 
+
+// #standard
+#define GNP_WID        0
+#define GNP_MESSAGE    1
+#define GNP_LONG1      2
+#define GNP_LONG2      3
+// #extension
+#define GNP_LONG3      4
+#define GNP_LONG4      5
+#define GNP_LONG5      6
+#define GNP_LONG6      7
+// #body
+#define GNP_BODY_OFFSET    16
+// ...
+
+// #test
+#define MSG_OFFSET_SHORTSTRING  64
+#define SHORTSTRING_SIZE        64
+#define MSG_OFFSET_LONGSTRING  128
+#define LONGSTRING_SIZE        256
+// ...
+
+static int IsAcceptingConnections = FALSE;
+static int IsTimeToQuit = FALSE;
+static int NoReply = FALSE;
+static int Notify_PongClient=FALSE;
+static int ____saved_server_fd = -1;
+static int ____saved_wm_magic_pid = -1;  // ?? The wm sends us its pid
+static int __saved_sync_id = -1;
+static int connection_status = 0;
+static int running = FALSE;
+
+
+// =========================
+// h:d.s
+char *hostName;
+char *displayNum;
+char *screenNum;
+
+
+//
+// == Prototypes ============================================
+//
+
+static int on_execute(void);
+
+// Get client's request from socket.
+static void dispacher(int fd);
+
+static int
+gwsProcedure (
+    int client_fd,
+    struct gws_window_d *window,
+    int msg,
+    unsigned long long1,
+    unsigned long long2 );
+
+static int initGraphics(void);
+static void initBackground(void);
+static void initClientSupport(void);
+static void initClientStruct( struct gws_client_d *c );
+
 //====================
 // prototypes
 
@@ -128,85 +195,6 @@ static int serviceGetWindowInfo(void);
 //====================
 
 
-
-
-int __saved_sync_id = -1;
-
-
-#define VERSION  "0.1"
-#define VERSION_MAJOR  0
-#define VERSION_MINOR  1
-
-
-//
-// == Gramado Network Protocol ===============================
-//
-
-// #standard
-#define GNP_WID        0
-#define GNP_MESSAGE    1
-#define GNP_LONG1      2
-#define GNP_LONG2      3
-// #extension
-#define GNP_LONG3      4
-#define GNP_LONG4      5
-#define GNP_LONG5      6
-#define GNP_LONG6      7
-// #body
-#define GNP_BODY_OFFSET    16
-// ...
-
-// =========================
-// h:d.s
-char *hostName;
-char *displayNum;
-char *screenNum;
-
-int running = FALSE;
-
-int ____saved_server_fd = -1;
-
-// The wm sends us its pid
-int ____saved_wm_magic_pid = -1;
-
-
-int Notify_PongClient=FALSE;
-int NoReply = FALSE;
-
-// #test
-#define MSG_OFFSET_SHORTSTRING  64
-#define SHORTSTRING_SIZE        64
-#define MSG_OFFSET_LONGSTRING  128
-#define LONGSTRING_SIZE        256
-// ...
-
-static int connection_status = 0;
-static int IsTimeToQuit = FALSE;
-static int IsAcceptingConnections = FALSE;
-
-
-
-//
-// == Prototypes ============================================
-//
-
-static int on_execute(void);
-
-// Get client's request from socket.
-static void dispacher(int fd);
-
-static int
-gwsProcedure (
-    int client_fd,
-    struct gws_window_d *window,
-    int msg,
-    unsigned long long1,
-    unsigned long long2 );
-
-static int initGraphics(void);
-static void initBackground(void);
-static void initClientSupport(void);
-static void initClientStruct( struct gws_client_d *c );
 
 //
 // ==============================================================
@@ -1970,7 +1958,7 @@ fail:
 // This is an array of connections.
 // See: clients.h
 
-void initClientSupport (void)
+static void initClientSupport(void)
 {
     int i=0;
 
