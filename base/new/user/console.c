@@ -510,7 +510,7 @@ void console_init_virtual_console (int n)
 
 // Everyone has the same color.
 // White on black.
-    CONSOLE_TTYS[ConsoleIndex].bg_color = COLOR_BLACK;
+    CONSOLE_TTYS[ConsoleIndex].bg_color = COLOR_BLUE;
     CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_WHITE;
 
 // A different color for each console number.
@@ -518,13 +518,13 @@ void console_init_virtual_console (int n)
         CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_WHITE; 
     }
     if (ConsoleIndex == 1){
-        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_RED; 
+        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_YELLOW; 
     }
     if (ConsoleIndex == 2){
         CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_GREEN; 
     }
     if (ConsoleIndex == 3){
-        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_BLUE; 
+        CONSOLE_TTYS[ConsoleIndex].fg_color = COLOR_CYAN; 
     }
 
     //#todo

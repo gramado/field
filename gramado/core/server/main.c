@@ -190,6 +190,8 @@ static int IsAcceptingConnections = FALSE;
 // == Prototypes ============================================
 //
 
+static int on_execute(void);
+
 // Get client's request from socket.
 static void dispacher(int fd);
 
@@ -201,12 +203,10 @@ gwsProcedure (
     unsigned long long1,
     unsigned long long2 );
 
-int initGraphics(void);
-void create_background (void);
-
-
-void gwssrv_init_client_support (void);
-void init_client_struct ( struct gws_client_d *c );
+static int initGraphics(void);
+static void initBackground(void);
+static void initClientSupport(void);
+static void initClientStruct( struct gws_client_d *c );
 
 //
 // ==============================================================
@@ -1370,19 +1370,18 @@ gwsProcedure (
 }
 
 
-void create_background (void)
+static void initBackground(void)
 {
     unsigned long w = gws_get_device_width();
     unsigned long h = gws_get_device_height();
     int WindowId = -1;
 
-
-    gwssrv_debug_print ("gwssrv: create_background\n");
+    gwssrv_debug_print ("gwssrv: initBackground\n");
 
     if ( w==0 || h==0 )
     {
-        gwssrv_debug_print ("create_background: w h\n");
-        printf             ("create_background: w h\n");
+        gwssrv_debug_print ("initBackground: w h\n");
+        printf             ("initBackground: w h\n");
         exit(1);
     }
 
@@ -1408,24 +1407,24 @@ void create_background (void)
 
     if ( (void *) __root_window == NULL )
     {
-        gwssrv_debug_print ("create_background: __root_window\n"); 
-        printf             ("create_background: __root_window\n");
+        gwssrv_debug_print ("initBackground: __root_window\n"); 
+        printf             ("initBackground: __root_window\n");
         exit(1);
     }
 
     if ( __root_window->used != TRUE || 
          __root_window->magic != 1234 )
     {
-        gwssrv_debug_print ("create_background: __root_window validation\n"); 
-        printf             ("create_background: __root_window validation\n");
+        gwssrv_debug_print ("initBackground: __root_window validation\n"); 
+        printf             ("initBackground: __root_window validation\n");
         exit(1);
     }
 
 // Register the window.
     WindowId = RegisterWindow(__root_window);
     if (WindowId<0){
-        gwssrv_debug_print ("create_background: Couldn't register window\n");
-        printf             ("create_background: Couldn't register window\n");
+        gwssrv_debug_print ("initBackground: Couldn't register window\n");
+        printf             ("initBackground: Couldn't register window\n");
         exit(1);
     }
 
@@ -1448,11 +1447,11 @@ void create_background (void)
 
     if (current_mode == GRAMADO_JAIL)
     {
-        gwssrv_debug_print ("gwssrv: create_background: Calling refresh_screen\n");
+        gwssrv_debug_print ("gwssrv: initBackground: Calling refresh_screen\n");
         //refresh_screen();
     }
 
-    //gwssrv_debug_print ("gwssrv: create_background: done\n");
+    //gwssrv_debug_print ("gwssrv: initBackground: done\n");
 
 // #debug
     //refresh_screen();
@@ -1470,7 +1469,7 @@ void create_background (void)
 // The current display and the current screen.
 // Initialize the 3d support.
 
-int initGraphics (void)
+static int initGraphics(void)
 {
     int __init_status = -1;
 
@@ -1497,7 +1496,7 @@ int initGraphics (void)
 // Create root window.
 // Create and update the taskbar window.
 
-    create_background();
+    initBackground();
     create_taskbar();
     wm_Update_TaskBar("Welcome!");
 
@@ -1971,11 +1970,11 @@ fail:
 // This is an array of connections.
 // See: clients.h
 
-void gwssrv_init_client_support (void)
+void initClientSupport (void)
 {
     int i=0;
 
-    gwssrv_debug_print ("gwssrv_init_client_support:\n");
+    gwssrv_debug_print ("initClientSupport:\n");
 
     for (i=0; i<CLIENT_COUNT_MAX; i++)
     {
@@ -2000,8 +1999,8 @@ void gwssrv_init_client_support (void)
 
     serverClient = (struct gws_client_d *) malloc ( sizeof( struct gws_client_d ) );
     if ( (void *) serverClient == NULL ){
-        gwssrv_debug_print ("gwssrv_init_client_support: [FATAL] Couldn't create serverClient\n");
-        printf             ("gwssrv_init_client_support: [FATAL] Couldn't create serverClient\n");
+        gwssrv_debug_print ("initClientSupport: [FATAL] Couldn't create serverClient\n");
+        printf             ("initClientSupport: [FATAL] Couldn't create serverClient\n");
         exit(1);
     }
 
@@ -2019,12 +2018,12 @@ void gwssrv_init_client_support (void)
 }
 
 
-void init_client_struct ( struct gws_client_d *c )
+static void initClientStruct( struct gws_client_d *c )
 {
     register int i=0;
 
     if ( (void *) c == NULL ){
-        gwssrv_debug_print("init_client_struct: [FAIL] c\n");
+        gwssrv_debug_print("initClientStruct: [FAIL] c\n");
         return;
     }
 
@@ -3476,6 +3475,7 @@ void __init_ws_structure(void)
 }
 
 
+
 /*
  * on_execute: 
  *     + Initializes the gws infrastructure.
@@ -3493,7 +3493,7 @@ void __init_ws_structure(void)
  *       message found in the sockeck we readed.
  */
 
-int on_execute(void)
+static int on_execute(void)
 {
     int flagUseClient = FALSE;
     //int flagUseClient = TRUE;
@@ -3620,7 +3620,7 @@ int on_execute(void)
 // Init clients support.
 // Inicializa a lista de clientes.
 
-    gwssrv_init_client_support();
+    initClientSupport();
 
 // #bugbug
 // Essa estrutura nao esta sendo inicializada corretamente.

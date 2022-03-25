@@ -167,8 +167,8 @@ static void __enter_embedded_shell(void)
 //log
     //backgroundDraw(COLOR_BLACK);
     backgroundDraw(COLOR_EMBEDDED_SHELL_BG);
-    printf("\n");
-    printf ("Prompt ON: Type something\n");
+    printf("kernel console number %d\n",fg_console);
+    printf("Prompt ON: Type something\n");
     consolePrompt();
     refresh_screen();
 

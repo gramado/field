@@ -43,6 +43,7 @@
 #define COLOR_YELLOW   0x00FFFF00
 // ...
 
+#define COLOR_CYAN     0x00FFFF
 
 #define COLOR_EMBEDDED_SHELL_BG  COLOR_BLUE
 

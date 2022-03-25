@@ -197,8 +197,6 @@ unsigned long next_response[32];
 // prototypes
 //
 
-int on_execute(void);
-
 
 void invalidate(void);
 void validate(void);
