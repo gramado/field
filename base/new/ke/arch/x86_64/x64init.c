@@ -562,7 +562,7 @@ static int I_x64CreateKernelProcess(void)
                                   VOLUME1_ROOTDIR_ADDRESS, 
                                   FAT16_ROOT_ENTRIES,    //#bugbug: number of entries.
                                   "GWSSRV  BIN", 
-                                  (unsigned long) 0x30A00000,  //0x30E00000
+                                  (unsigned long) 0x30A00000,
                                   BUGBUG_IMAGE_SIZE_LIMIT ); 
 
     if ( fileret != 0 ){

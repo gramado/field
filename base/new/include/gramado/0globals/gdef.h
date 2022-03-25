@@ -264,13 +264,20 @@ unsigned long g_heap_size;
 
 #define  G_DEFAULT_EXTRAHEAP_SIZE  0x400000;  //4MB
 
+// extra heap 1
 unsigned long g_extraheap1_va;
 unsigned long g_extraheap1_size;
+int g_extraheap1_initialized;
+
+// extra heap 2
 unsigned long g_extraheap2_va;
 unsigned long g_extraheap2_size;
+int g_extraheap2_initialized;
+
+// extra heap 3
 unsigned long g_extraheap3_va;
 unsigned long g_extraheap3_size;
-
+int g_extraheap3_initialized;
 
 int gNextKeyboardMessage;
 

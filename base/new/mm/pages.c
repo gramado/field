@@ -1345,6 +1345,8 @@ void __initialize_extraheap1(void)
         (unsigned long) &pt_extraheap1[0],     // pt
         (unsigned long) SMALL_extraheap1_pa,   // region base
         (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
+
+    g_extraheap1_initialized = TRUE;
 }
 
 // local worker
@@ -1377,6 +1379,8 @@ void __initialize_extraheap2(void)
       (unsigned long) &pt_extraheap2[0],    // pt
       (unsigned long) SMALL_extraheap2_pa,  // region base
       (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
+
+    g_extraheap2_initialized = TRUE;
 }
 
 
@@ -1402,6 +1406,8 @@ void __initialize_extraheap3(void)
         (unsigned long) &pt_extraheap3[0],     // pt
         (unsigned long) SMALL_extraheap3_pa,   // region base
         (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
+
+    g_extraheap3_initialized = TRUE;
 }
 
 

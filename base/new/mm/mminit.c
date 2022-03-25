@@ -9,9 +9,29 @@
 // Heap support.
 // #todo: Precisamos melhorar esses nomes. nada neles indica que
 // estamos lidando com heap.
+// #todo: inicializar isso e usar static.
 unsigned long heap_pointer_last_valid;  // Último heap pointer válido. 
 unsigned long last_size;        // Último tamanho alocado.
 unsigned long mm_prev_pointer;  // Endereço da úntima estrutura alocada.
+
+
+
+
+unsigned long slab_2mb_extraheap2(void)
+{
+    if(g_extraheap2_initialized != TRUE)
+        panic("slab_2mb_extraheap2: not initialized\n");
+
+    return (unsigned long) g_extraheap2_va;
+}
+
+unsigned long slab_2mb_extraheap3(void)
+{
+    if(g_extraheap3_initialized != TRUE)
+        panic("slab_2mb_extraheap3: not initialized\n");
+
+    return (unsigned long) g_extraheap3_va;
+}
 
 
 /*

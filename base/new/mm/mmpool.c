@@ -241,8 +241,10 @@ void *mm_alloc_contig_pages (size_t size)
 
     debug_print("mm_alloc_contig_pages: [TODO] [FIXME]\n");
 
-    if (size<=0)
-       panic("mm_alloc_contig_pages: [FIXME] invalid size");
+    panic("mm_alloc_contig_pages: [TODO] its a work in progress\n");
+
+    //if (size<=0)
+       //panic("mm_alloc_contig_pages: [FIXME] invalid size");
       
     //#todo
     //return (void *) allocPages(size);

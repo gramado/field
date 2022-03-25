@@ -790,13 +790,13 @@ void CloseAllProcesses (void)
         P->state = PROCESS_BLOCKED;
         
         // Not kernel.
+        //#bugbug: review
         if (i != 100){
             processList[i] = (unsigned long) 0;
         }
     };
 
 // Check process 0.
-
     P = (void *) processList[0];
     if ( (void *) P == NULL ){
         panic ("CloseAllProcesses: P\n");
@@ -805,8 +805,9 @@ void CloseAllProcesses (void)
 // #todo: validation?
 
 // #bugbug
-// The kernel is process 100.
-
+// The kernel is process 100. #bugbug
+//#bugbug: review
+    
     P = (void *) processList[100];
 
     if ( (void *) P == NULL ){
@@ -1664,9 +1665,11 @@ int alloc_memory_for_image_and_stack( struct process_d *process )
 // 300KB
 // Quantas páginas temos em 300KB?
 
+    int imagesize_in_kb = 300;
+
     int number_of_pages=0;
     //number_of_pages = (int) (200*1024)/4096;   // #bugbug: Not enough.
-    number_of_pages = (int) (300*1024)/4096;     // 
+    number_of_pages = (int) (imagesize_in_kb*1024)/4096;     // 
 
     __new_base = (unsigned long) allocPages(number_of_pages); 
 
@@ -1723,12 +1726,18 @@ int alloc_memory_for_image_and_stack( struct process_d *process )
 // Copiando do processo atual para o buffer que alocamos
 // logo acima.
 
+// #bugbug: So precisamos copiar 
+// se tivermos fazendo uma rotina de fork()
+// que pessa pra copiar. A clonagem nao copia.
 // Copia a imagem do processo.
 // Copia do início da imagem. 200KB.
+    
+    //if( ... ){
     memcpy ( 
         (void *) __new_base,  
         (const void *) CONTROLTHREAD_ENTRYPOINT, 
-        (200*1024) );
+        (imagesize_in_kb*1024) );
+    //}
 
 // Copia a pilha do process.
 // Copia do fim da stack. 32KB.
