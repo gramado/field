@@ -29,7 +29,6 @@ int current_mode;
 
 #include "protocol.h"
 #include "globals.h"
-#include "r_render.h"
 #include "colors.h"
 #include "bitblt.h"
 #include "char.h"
