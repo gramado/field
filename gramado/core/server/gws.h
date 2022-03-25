@@ -272,9 +272,6 @@ void gwssrv_quit(void);
 // Called by dispatcher().
 int __send_response(int fd, int is_error);
 
-// Get client's request from socket.
-void dispacher (int fd);
-
 
 //
 // End.

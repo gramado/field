@@ -189,8 +189,10 @@ static int IsAcceptingConnections = FALSE;
 // == Prototypes ============================================
 //
 
+// Get client's request from socket.
+static void dispacher(int fd);
 
-int
+static int
 gwsProcedure (
     int client_fd,
     struct gws_window_d *window,
@@ -690,7 +692,7 @@ void Compositor_Thread(void)
 // No loop precisamos de accept() read() e write();
 // Get client's request from socket.
 
-void dispacher (int fd)
+static void dispacher(int fd)
 {
     // Isso permite ler a mensagem na forma de longs.
     unsigned long *message_buffer = (unsigned long *) &__buffer[0];
@@ -1040,7 +1042,7 @@ done:
 // OUT
 // <0 : error 
 
-int
+static int
 gwsProcedure ( 
     int client_fd,
     struct gws_window_d *window, 
