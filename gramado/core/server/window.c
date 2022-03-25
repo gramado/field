@@ -30,15 +30,13 @@
 
 
 
-#include <gws.h>
+#include "gws.h"
 
 
 #define OVERLAPPED_MIN_WIDTH    80
 #define OVERLAPPED_MIN_HEIGHT   80
-
 #define EDITBOX_MIN_WIDTH    8
 #define EDITBOX_MIN_HEIGHT   8
-
 #define BUTTON_MIN_WIDTH    8
 #define BUTTON_MIN_HEIGHT   8
 

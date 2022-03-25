@@ -80,38 +80,28 @@ all: main.o all-c gws-link finalize clean
 
 main.o:
 
-	$(CC)  -c  main.c $(user_ccflags) \
-	-I $(LIBC) \
-	-I $(API02) \
-	-I $(WS_INCLUDES) \
-	-I $(WS_INCLUDES_LOCAL) \
-	-o main.o
-	
-	
+	$(CC)  -c  main.c     $(user_ccflags) -I $(LIBC) -I . -o main.o
+
 all-c:
 
-#fb
-	$(CC)  -c  fb/bitblt.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -I fb/  -o bitblt.o
+	$(CC)  -c  bitblt.c   $(user_ccflags) -I $(LIBC) -I . -o bitblt.o
+	$(CC)  -c  connect.c  $(user_ccflags) -I $(LIBC) -I . -o connect.o
 
-#os
-	$(CC)  -c  os/connect.c  $(user_ccflags) -I $(LIBC) -I include/ -I . -I os/  -o connect.o
-
-#ws
-	$(CC)  -c  ws/r_render.c  $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o r_render.o
-	$(CC)  -c  ws/char.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o char.o
-	$(CC)  -c  ws/dtext.c     $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o dtext.o
-	$(CC)  -c  ws/line.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o line.o
-	$(CC)  -c  ws/rect.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o rect.o
-	$(CC)  -c  ws/xxxinput.c  $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o xxxinput.o
-	$(CC)  -c  ws/window.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o window.o
-	$(CC)  -c  ws/button.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o button.o
-	$(CC)  -c  ws/comp.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o comp.o
-	$(CC)  -c  ws/bmp.c       $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o bmp.o
-	$(CC)  -c  ws/grprim.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o grprim.o
-	$(CC)  -c  ws/sprite.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o sprite.o
-	$(CC)  -c  ws/demos.c     $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o demos.o
-	$(CC)  -c  ws/font.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o font.o
-	$(CC)  -c  ws/gws.c       $(user_ccflags) -I $(LIBC) -I include/ -I . -I ws/  -o gws.o
+	$(CC)  -c  r_render.c  $(user_ccflags) -I $(LIBC) -I include/ -I . -o r_render.o
+	$(CC)  -c  char.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -o char.o
+	$(CC)  -c  dtext.c     $(user_ccflags) -I $(LIBC) -I include/ -I . -o dtext.o
+	$(CC)  -c  line.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -o line.o
+	$(CC)  -c  rect.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -o rect.o
+	$(CC)  -c  xxxinput.c  $(user_ccflags) -I $(LIBC) -I include/ -I . -o xxxinput.o
+	$(CC)  -c  window.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -o window.o
+	$(CC)  -c  button.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -o button.o
+	$(CC)  -c  comp.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -o comp.o
+	$(CC)  -c  bmp.c       $(user_ccflags) -I $(LIBC) -I include/ -I . -o bmp.o
+	$(CC)  -c  grprim.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -o grprim.o
+	$(CC)  -c  sprite.c    $(user_ccflags) -I $(LIBC) -I include/ -I . -o sprite.o
+	$(CC)  -c  demos.c     $(user_ccflags) -I $(LIBC) -I include/ -I . -o demos.o
+	$(CC)  -c  font.c      $(user_ccflags) -I $(LIBC) -I include/ -I . -o font.o
+	$(CC)  -c  gws.c       $(user_ccflags) -I $(LIBC) -I include/ -I . -o gws.o
 
 	$(CC)  -c  wm.c   $(user_ccflags) -I $(LIBC) -I include/ -I .  -o wm.o
 

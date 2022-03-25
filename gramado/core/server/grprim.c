@@ -5,7 +5,8 @@
  *     2020 - Created by Fred Nora.
  */
 
-#include <gws.h>
+
+#include "gws.h"
 
 // See:
 // https://wiki.osdev.org/3D_Renderer_Basics

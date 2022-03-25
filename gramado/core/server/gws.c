@@ -7,7 +7,9 @@
 
 
 // Window server routines.
-#include <gws.h>
+#include "gws.h"
+
+
 
 int dirty=0;
 int background=0;

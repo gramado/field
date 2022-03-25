@@ -1,11 +1,9 @@
 
-
 // todo: 
 // the font support.
 
 
-#include <gws.h>
-
+#include "gws.h"
 
 
 static unsigned char TableBitReverse[] = {

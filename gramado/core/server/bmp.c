@@ -1,9 +1,7 @@
 /*
  * File: bmp.c
- *
  * Description:
  *     BMP support.
- *
  * Obs: 
  *     As rotinas de bmp precisam melhorar.
  *     Conferir os parametros do bmp em seu header.
@@ -12,14 +10,13 @@
  *            Temos a op��o de utilizarmos arquivos que foram carregados
  * na inicializa��o, como parte dos elementos da interface gr�fica.
  * Obs: Esse tipo de servi�os pode ser oferecido por servidor.
- * 
  * History: 
  *     2019 - Created by Fred Nora. 
  *            Ported from older versions in the system.
  */
 
 
-#include <gws.h>
+#include "gws.h"
 
 
 // 4bpp support.

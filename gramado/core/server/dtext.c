@@ -1,14 +1,10 @@
 /*
  * File: dtext.c 
- * 
  *     Draw text routines.
  */
 
 
-#include <gws.h>
-
-
-
+#include "gws.h"
 
 
 /* 

@@ -3,7 +3,7 @@
 
 
 // window server routines.
-#include <gws.h>
+#include "gws.h"
 
 // #todo
 // Create some configuration globals here

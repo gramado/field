@@ -12,7 +12,7 @@
 // São específicas para o gramado.
 // Começaremos com as rotinas de mouse.
 
-#include <gws.h>
+#include "gws.h"
 
 
 

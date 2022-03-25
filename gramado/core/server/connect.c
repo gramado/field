@@ -1,7 +1,8 @@
 // connect.c
 // Register the window server in the system.
 
-#include <gws.h>
+
+#include "gws.h"
 
 
 // Registered ?

@@ -1,15 +1,12 @@
 /*
  * File: char.c 
- * 
  *     gws - Char support.
- * 
  * History:
  *     2019 - Created by Fred Nora.
- *     2020 -
  */
 
 
-#include <gws.h>
+#include "gws.h"
 
 
 // IN: left, right, top, bottom.

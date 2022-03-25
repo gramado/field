@@ -1,18 +1,13 @@
 /*
  * File: button.c
- * 
  *     Create button.
  */
 
 
-//#include <api.h>
-
-#include <gws.h>
-
+#include "gws.h"
 
 
 /*
- *****************************************
  * gws_draw_button:
  *     Desenha um botão dado um tipo.
  *     

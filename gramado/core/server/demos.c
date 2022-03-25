@@ -2,7 +2,8 @@
 // demos.c
 // A place for demos.
 
-#include <gws.h>
+
+#include "gws.h"
 
 
 int gUseDemos = TRUE;
