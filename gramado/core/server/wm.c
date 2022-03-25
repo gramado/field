@@ -2776,15 +2776,21 @@ redraw_window (
     struct gws_window_d *window, 
     unsigned long flags )
 {
-    unsigned int __tmp_color=0;
+    unsigned int __tmp_color = COLOR_WINDOW;
 
     //gwssrv_debug_print ("redraw_window:\n");
 
-    if ( (void *) window == NULL ){ return -1; }
+    if ( (void *) window == NULL )
+    {
+        goto fail;
+        //return -1;
+    }
 
     if (window->used!=TRUE || window->magic!=1234)
-        return -1;
-
+    {
+        goto fail;
+        //return -1;
+    }
 
 // =======================
 // shadowUsed
@@ -2906,8 +2912,10 @@ redraw_window (
                 window->bg_color, 1, 0 );
 
         // all done for this type
-        if( window->type == WT_SIMPLE )
-            return 0;
+        if( window->type == WT_SIMPLE ){
+            goto done;
+            //return 0;
+        }
     
     }  //fim do background
     
@@ -3037,7 +3045,9 @@ redraw_window (
         // ok, repintamos o botao que eh um caso especial
         // nao precisamos das rotinas abaixo,
         // elas serao par aos outros tipos de janela.
-        return 0;  
+        
+        goto done;
+        //return 0;  
     }
 
 
@@ -3118,13 +3128,14 @@ redraw_window (
         }
     }
 
+done:
     if (flags == TRUE){
         gws_show_window_rect(window);
     }
-
     return 0;
+fail:
+    return -1;
 }
-
 
 
 int redraw_window_by_id(int wid, unsigned long flags)
