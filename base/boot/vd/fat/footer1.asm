@@ -85,6 +85,7 @@ vhd_footer:
 .savedState:
     db 0
 .reserved:
+    ; Padded to 512 bytes?
     times 427 db 0
     
     

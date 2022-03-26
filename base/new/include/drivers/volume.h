@@ -26,10 +26,10 @@
 // boot partition
 // size=32MB.
 #define VOLUME1_VBR_LBA       63
-#define VOLUME1_FAT_LBA       67 
-//#define VOLUME1_FAT2_LBA    ??
+#define VOLUME1_FAT_LBA       67    //67  (size=246)
+//#define VOLUME1_FAT2_LBA    ??    //313 (size=246)
 #define VOLUME1_ROOTDIR_LBA   559
-#define VOLUME1_DATAAREA_LBA  591 
+#define VOLUME1_DATAAREA_LBA  591   //( size=FFFF setores)
 #define VOLUME1_SPC  1 // sectors per cluster.
 
 //=======================================
@@ -38,6 +38,9 @@
 // A partiçao do sistema precisa começar 
 // logo apos a partiçao de boot, e a partiçao
 // de boot tem 32MB.
+// >>> Podemos colocar em qualquer lugar depois da
+// marca de 32MB.
+// Cada setor tem 1/2 KB, entao 32mb/1024/2
 #define VOLUME2_VBR_LBA       32000  //#bugbug
 #define VOLUME2_FAT_LBA       33000  //#bugbug
 //#define VOLUME2_FAT2_LBA    ?? 

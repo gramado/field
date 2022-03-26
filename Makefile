@@ -7,7 +7,7 @@ EDITION_NAME  = Field
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 3
-VERSION_BUILD = 279
+VERSION_BUILD = 280
 
 KERNELVERSION = $(VERSION_MAJOR)$(if $(VERSION_MINOR),.$(VERSION_MINOR)$(if $(VERSION_BUILD),.$(VERSION_BUILD)))
 
@@ -109,42 +109,45 @@ presentation-tier
 
 #1
 base-tier:
-	@echo "Build: Building bootloader ..."
+	@echo ":: Building VHD, bootloaders and kernel image."
 
-	$(Q) $(NASM) base/boot/vd/fat/main.asm \
-	-I base/boot/vd/fat/ \
-	-o GRAMADO.VHD 
-
-	$(Q) $(MAKE) -C base/boot/x86/bm/ 
-	$(Q) $(MAKE) -C base/boot/x86/bl/ 
-
-	# O mbr só consegue ler o root dir para pegar o BM.BIN
-	# See: stage1.asm
-	# O BM.BIN só consegue ler o root dir pra pegar o BL.BIN
-	# See: main.asm
-
-	sudo cp base/boot/x86/bin/BM.BIN  base/disk/
-	sudo cp base/boot/x86/bin/BL.BIN  base/disk/
-
+# options: 
+# main.asm and main2.asm
+# O mbr só consegue ler o root dir para pegar o BM.BIN
+# See: stage1.asm
+# O BM.BIN só consegue ler o root dir pra pegar o BL.BIN
+# See: main.asm
 # the kernel image
 # O BL.BIN procura o kernel no diretorio GRAMADO/
 # See: fs/loader.c
 
-	@echo "Build: Building Gramado kernel ..."
 
+# Create the VHD.
+	$(Q) $(NASM) base/boot/vd/fat/main.asm \
+	-I base/boot/vd/fat/ \
+	-o GRAMADO.VHD 
+# Build BM.BIN and BL.BIN.
+	$(Q) $(MAKE) -C base/boot/x86/bm/ 
+	$(Q) $(MAKE) -C base/boot/x86/bl/ 
+# Copy to the target folder.
+	sudo cp base/boot/x86/bin/BM.BIN  base/disk/
+	sudo cp base/boot/x86/bin/BL.BIN  base/disk/
+# Build kernel image.
 	$(Q) $(MAKE) -C base/new/
+# Copy to the target folder.
 	sudo cp base/new/KERNEL.BIN  base/disk/GRAMADO
 
 #2
 communication-tier:
+	@echo ":: Building libraries and network server."
 
-	@echo "Build: Building usermode libraries ..."
+# Build libraries.
+# Don't copy.
 	$(Q) $(MAKE) -C com/lib/rtl/
 	$(Q) $(MAKE) -C com/lib/
-
-	@echo "Build: Building Network Server ..."
-
+# Build network server.
 	$(Q) $(MAKE) -C com/gns/ 
+# Copy to the target folder.
 	-sudo cp com/gns/bin/GNSSRV.BIN  base/disk/
 	-sudo cp com/gns/bin/GNS.BIN     base/disk/
 
@@ -154,28 +157,23 @@ communication-tier:
 # The presentation tier.
 # Gramado Window System files.
 presentation-tier:
-	@echo "Build: Building Window Server ..."
+	@echo ":: Building Window server, clients and userland."
 
-# core ...
+# Building window server and clients.
 	$(Q) $(MAKE) -C gramado/
-# command line client application.
-	-sudo cp gramado/bin/CMDLINE.BIN    base/disk/
-# Server and main client.
+# Copy to the target folder.
 	-sudo cp gramado/bin/GWSSRV.BIN    base/disk/
 	-sudo cp gramado/bin/GWS.BIN       base/disk/ 
-# Clients
+	-sudo cp gramado/bin/CMDLINE.BIN   base/disk/
 	-sudo cp gramado/bin/GWM.BIN       base/disk/
 	-sudo cp gramado/bin/LOGON.BIN     base/disk/
 	-sudo cp gramado/bin/EDITOR.BIN    base/disk/
 	-sudo cp gramado/bin/TERMINAL.BIN  base/disk/
 	-sudo cp gramado/bin/FILEMAN.BIN   base/disk/
 	-sudo cp gramado/bin/BROWSER.BIN   base/disk/
-
-
-# userland (w)
-	@echo "Build: Building userland cmd applications ..."
-
+# Building userland commands.
 	$(Q) $(MAKE) -C gramado/userland/
+# Copy to the target folder.
 	-sudo cp gramado/userland/bin/SHUTDOWN.BIN  base/disk/
 	-sudo cp gramado/userland/bin/REBOOT.BIN    base/disk/
 	-sudo cp gramado/userland/bin/SHELL.BIN     base/disk/
@@ -189,6 +187,7 @@ presentation-tier:
 # Install BMPs
 #	sudo cp gramado/shell/themes/presence/*.BMP  base/disk/
 	sudo cp gramado/shell/themes/field/*.BMP  base/disk/
+#...
 
 #===================================================
 #::2

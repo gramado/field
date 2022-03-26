@@ -223,10 +223,39 @@ end_of_disk:
 ; ========
 ; VHD footer.
 ; M$
-; This is the last component,
-; maybe it helps on Windows machines.
 vhdfooter_start:
+
     %include "footer1.asm"
+ 
+;=====================================
+; For non-Windows machines we will have these extra bytes.
+; Padding with 4096 bytes and a signature,
+; marking the beggining of the system disk.
+
+    times ( 4096 - ($-vhdfooter_start) ) db 0
+
+; ========
+; Gramado footer.
+; This footer marks the real end of the boot disk
+; ========
+; label
+; signature
+; quote
+; padding to 4096.
+; ========
+
+gramado_header:
+.label:
+    db '$GRAMADO'
+.signature:
+    dd 0x12345678
+.quote:  
+    db 'Oh boy, there is no spoon!', 0  
+.padding:
+    times ( 4096 - ($-gramado_header) ) db 'G'
+
+systemvolume_start:
+
 ;
 ; End
 ;
