@@ -10,11 +10,20 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-
 #include <rtl/gramado.h>
 
 
-static char *argv[] = { 
+extern int main ( int argc, char *argv[] );
+
+
+#define LSH_TOK_DELIM  " \t\r\n\a" 
+#define SPACE  " "
+#define TOKENLIST_MAX_DEFAULT  80
+
+
+//static const unsigned int something=1234;
+
+const char *argv[] = { 
     "-flag1", 
     "-flag2", 
     "-flag3", 
@@ -35,7 +44,7 @@ static char *argv[] = {
 	$SHELL:     Gives location of current user's shell program.
 */
 
-static char *my_environ[] = { 
+const char *my_environ[] = { 
 
     "DISPLAY=kgws-or-gwssrv",  //#todo
     "EDITOR=gramcode",
@@ -58,26 +67,10 @@ static char *my_environ[] = {
 };
 
 
-// ??
-// See: sysdeps/x86/x86start.c
-// int x86start ( int argc, char *argv[], char *envp[] );
-
-
-extern int main ( int argc, char *argv[] );
-
-
-#define LSH_TOK_DELIM  " \t\r\n\a" 
-#define SPACE  " "
-#define TOKENLIST_MAX_DEFAULT  80
-
 // # importante
 // Esses aplicativos rodam no terminal.
 // Esses aplicativos escrevem em stdout.
 // O terminal precisa conhecer esse stdout para ler.
-
-//#todo
-//int crt0 ( int argc, char **argv, char **envp ){
-//    environ = envp;
 
 
 // #todo
@@ -85,8 +78,11 @@ extern int main ( int argc, char *argv[] );
 int crt0 (unsigned long rdi)
 {
 
-// Retorno de main().
-    int retval=0;
+    // #todo
+    // We can get the command line from 'stdin'.
+
+
+    int main_ret=0;
 
 // Token support.
     char *tokenList[TOKENLIST_MAX_DEFAULT];
@@ -245,12 +241,11 @@ int crt0 (unsigned long rdi)
 #endif
 */
 
-  
-// Calling main().
 
-    retval = (int) main ( token_count, tokenList );
 
-    switch (retval){
+    main_ret = (int) main(token_count,tokenList);
+
+    switch (main_ret){
     case 0:
         //printf ("crt0: main returned 0\n");
         exit(0);

@@ -38,6 +38,9 @@
 
 unsigned long InitializationPhase=0;
 
+//#test
+//static const unsigned int something=1234;
+
 #define RELEASE_TYPE_NULL  0
 #define RELEASE_TYPE_RC    1
 #define RELEASE_TYPE_BETA  2
@@ -198,6 +201,14 @@ int kernel_main(int arch_type)
 
     //enable_serial_debug();
     disable_serial_debug();
+
+
+// Open the kernel virtual console 
+// instead of first process.
+// We can receive thiflag via command line.
+
+    static int debug_mode=FALSE;
+    //static int debug_mode=TRUE;
 
 
     Initialization.phase1 = FALSE;
@@ -858,12 +869,32 @@ int kernel_main(int arch_type)
         //debug_print ("kernel_main: [CURRENT_ARCH_X86_64] calling x64main() ...\n");
         Background_initialize();
         Status = (int) I_x64main();
+        
         if (Status != TRUE){
             x_panic("Panic: Error 0x01");
         }
-        if (Status == TRUE){
-            //debug_print ("kernel_main: Calling I_x64ExecuteInitialProcess()\n");
+        
+        if (Status == TRUE)
+        {
+            // Clear the screen.
             Background_initialize();
+
+            // ::: Initialization on debug mode.
+            // Initialize the default kernel virtual console.
+            // It depends on the run_level.
+            // See: kgwm.c
+            if( debug_mode == TRUE )
+            {
+                printf("init.c: The kernel is in debug mode.\n");
+                refresh_screen();
+                kgwm_early_kernel_console();
+                printf("init.c: End of debug mode.\n");
+                refresh_screen();
+                asm("hlt");
+            }
+            // Initialize the first process.
+            // This is the default first client of the window server.
+            // GWS.BIN.
             I_x64ExecuteInitialProcess();
         }
         break;
@@ -991,108 +1022,35 @@ int kernel_main(int arch_type)
     printf("8 done\n");
     */
 
-// #debug
-// Show current process info.
+
+// =====================================
+
+// Final message.
 
     printf("\n");
-    printf("KernelProcess:\n");
-    
-    //current_process = KernelProcess->pid;
-    set_current_process(KernelProcess->pid);
-    
-    show_currentprocess_info();
-
-    // #fail
-    //printf("\n");
-    //printf("\n");
-    //current_process = InitProcess->pid;
-    //show_currentprocess_info();
-
-// #debug
-// Show the ws control thread.
-
-    printf("\n");
-    printf("ws_thread: \n");
-    current_thread = (int) ws_thread->tid;
-    show_thread_information();
-
-    // #fail
-    //printf("\n");
-    //printf("\n");
-    //current_thread = InitThread->tid;
-    //show_thread_information();
-
-
-    // #debug
-    //console_putchar('F',fg_console);
-    //refresh_screen();
-    //a_soft_place_to_fall();
-    //die();
-
-    printf("\n");
-    printf("kernel_main: breakpoint :)\n");
+    printf("init.c: Kernel initialization fail\n\n");
     refresh_screen();
 
-//=============================
+// Show process info if it's valid.
 
-//== Tests ===================================================
-//++
+    if( (void*) KernelProcess != NULL )
+    {
+        if(KernelProcess->magic==1234)
+        {
+            set_current_process(KernelProcess->pid);
+            show_currentprocess_info();
+            refresh_screen();
+        }
+    }
 
-//
-// int 3
-//
-
-    // vai funcionar se as rotinas de inicializações de vetores
-    // estiverem prontas e tivermos alguma forma de 
-    // imprimir a string na tela.
-
-    // #test
-    // Actually, the init process will use a syscall to
-    // enable the interrupts and start the taskswitching stuff.
-
-    //debug_print ("TEST: sti\n");
-    asm ("sti");
-
-    //debug_print ("TEST: int $3\n");
-    //asm ("int $3");
-
-    //debug_print ("TEST: 8/0\n");
-    //int zzz=8/0;
-
-    //debug_print ("TEST: int $128\n");
-    //asm ("int $128");
-
-//
-// panic
-//
-
-    //a_soft_place_to_fall();
-    //die();
-
-// Unexpected error.
-    x_panic("Error: 0x00");
+// hang.
 
     while (1){
-        asm ("sti");
+        asm ("cli");
         asm ("hlt");
     };
 
-    // Breakpoint for tests!
-    // x_panic("kernel_main: :)");
-
-//--
-//=====================================================
-
-//=======================================
-    // Something is wrong
-    PROGRESS("Kernel:0:7\n"); 
-    debug_print ("kernel_main: Something is wrong\n");
-
-//
-// Breakpoint
-//
-  // x_panic("kernel_main: :)");
-
+// ===========================================
 
 //
 // Fail

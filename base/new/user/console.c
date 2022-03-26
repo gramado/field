@@ -1336,6 +1336,18 @@ int consoleCompareStrings(void)
     printf("\n");
 
 
+// ========
+// exit
+// Exit the kernel console.
+    if ( strncmp(prompt,"exit",4) == 0 )
+    {
+        exit_kernel_console();
+        
+        goto exit_cmp;
+    }
+
+
+
     if ( strncmp(prompt,"fpu",3) == 0 )
     {
         printf("Initialize fpu support\n");
@@ -1527,7 +1539,8 @@ int consoleCompareStrings(void)
 // ========
 // 'app1'
 // msg:
-    if ( strncmp(prompt,"app1",4) == 0 ){
+    if ( strncmp(prompt,"app1",4) == 0 )
+    {
         if( (void*) InitThread == NULL ){goto exit_cmp;}
         post_message_to_tid(
             (int) InitThread->tid,
@@ -1543,7 +1556,8 @@ int consoleCompareStrings(void)
 // ========
 // 'app2'
 // msg:
-    if ( strncmp(prompt,"app2",4) == 0 ){
+    if ( strncmp(prompt,"app2",4) == 0 )
+    {
         if( (void*) InitThread == NULL ){goto exit_cmp;}
         post_message_to_tid(
             (int) InitThread->tid,
@@ -1559,7 +1573,8 @@ int consoleCompareStrings(void)
 // ========
 // 'app3'
 // msg:
-    if ( strncmp(prompt,"app3",4) == 0 ){
+    if ( strncmp(prompt,"app3",4) == 0 )
+    {
         if( (void*) InitThread == NULL ){goto exit_cmp;}
         post_message_to_tid(
             (int) InitThread->tid,

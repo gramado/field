@@ -2350,36 +2350,43 @@ int kinguio_printf(const char *fmt, ...)
     return (int) ret;
 }
 
+
 int printf(const char *fmt, ...)
 {
+    static char print_buffer[1024];
     int ret=0;
-
-    char buf[256];
-    memset(buf,0,256); 
 
     va_list ap;
     va_start (ap, fmt);
 
-    ret = kinguio_vsprintf(buf, fmt, ap);
+    memset(print_buffer, 0, 1024); 
+    ret = (int) kinguio_vsprintf(print_buffer, fmt, ap);
 
     va_end (ap);
 
-    // Print
-    kinguio_puts(buf);
-
+// Print and return.
+    kinguio_puts(print_buffer);
     return (int) ret;
 }
 
+
+
 void kinguio_puts(const char* str)
 {
-    int i=0;
+    register int i=0;
 
-    if (!str)
+    if (!str){
         return;
+    }
 
-    for (i=0; i <strlen(str); i++) 
-        putchar(str[i]);
+    size_t StringLen = (size_t) strlen(str);
+
+    for (i=0; i<StringLen; i++)
+    {
+        putchar( str[i] );
+    };
 }
+
 
 static char *_vsputs_r(char *dest, char *src)
 {

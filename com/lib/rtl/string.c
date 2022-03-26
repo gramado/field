@@ -691,13 +691,8 @@ int strncmp (const char *s1, const char *s2, size_t n){
 }
 
 
-/*
- * memset:
- *    #todo: rever tipos;
- */
-
-void *memset ( void *ptr, int value, int size ){
-
+void *memset ( void *ptr, int value, int size )
+{
     register int i=0;
 
     //if ( (void*) ptr == NULL )
@@ -751,15 +746,12 @@ void *memcpy (
     const void *v_src, 
     unsigned long c )
 {
-    const char *src = v_src;
-    char       *dst = v_dst;
+    register const char *src = (char *) v_src;
+                   char *dst = (char *) v_dst;
 
+    register unsigned long Copy=c;
 
-    //if ( (void*) v_dst == NULL )
-       //return NULL;
-
-
-    while (c--)
+    while (Copy--)
     {
         *dst++ = *src++; 
     };
@@ -770,13 +762,10 @@ void *memcpy (
 
 void *memcpy32 ( void *v_dst, const void *v_src, unsigned long n )
 {
-    int *src = (int *) v_src;
-    int *dst = (int *) v_dst;
+    register const int *src = (int *) v_src;
+                   int *dst = (int *) v_dst;
 
     register unsigned long Copy=n;
-    
-    /* Simple, byte oriented memcpy. */
-    //danger
     
     while (Copy--)
     {
@@ -785,17 +774,15 @@ void *memcpy32 ( void *v_dst, const void *v_src, unsigned long n )
 
     return v_dst;
 }
+
 
 void *memcpy64 ( void *v_dst, const void *v_src, unsigned long n )
 {
-    long *src = (long *) v_src;
-    long *dst = (long *) v_dst;
+    register const long *src = (long *) v_src;
+                   long *dst = (long *) v_dst;
 
     register unsigned long Copy=n;
-    
-    /* Simple, byte oriented memcpy. */
-    //danger
-    
+
     while (Copy--)
     {
         *dst++ = *src++;
@@ -805,15 +792,7 @@ void *memcpy64 ( void *v_dst, const void *v_src, unsigned long n )
 }
 
 
-
-
-
-
-/*
- * strcpy: 
- *     Copy a string. 
- */
-
+// Copy a string. 
 char *strcpy ( char *to, const char *from )
 {
     register int i=0;
@@ -821,7 +800,10 @@ char *strcpy ( char *to, const char *from )
     //if ( (void*) to == NULL )
        //return (char *) 0;
 
-    while ( to[i] = from[i] ){  i += 1;  };
+    while ( to[i] = from[i] )
+    {
+        i += 1;
+    };
 
     return (char *) to;
 }
@@ -841,16 +823,14 @@ char* strcpy(char* to, const char* from)
 */
 
 
-size_t strlcpy (char *dst, const char *src, size_t size){
+// 8 bits.
+size_t strlcpy (char *dst, const char *src, size_t size)
+{
+    register const char *p = (char *) src;
+                   char *q = (char *) dst;
 
-
-    char *q = dst;
-    const char *p = src;
-
-    //register char ch=0;
-    //register size_t bytes = 0;
+    register size_t bytes=0;
     char ch=0;
-    size_t bytes=0;
 
     while ( (ch = *p++) )
     {

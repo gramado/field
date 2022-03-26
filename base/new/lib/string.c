@@ -71,14 +71,11 @@ int str_cmp(unsigned char *str1, unsigned char *str2)
 
 void *memcpy ( void *v_dst, const void *v_src, unsigned long n )
 {
-    const char *src = v_src;
-    char *dst = v_dst;
+    register const char *src = (char *) v_src;
+                   char *dst = (char *) v_dst;
 
     register unsigned long Copy=n;
 
-    /* Simple, byte oriented memcpy. */
-    //#danger.
-    
     while (Copy--)
     {
         *dst++ = *src++;
@@ -90,13 +87,10 @@ void *memcpy ( void *v_dst, const void *v_src, unsigned long n )
 
 void *memcpy32 ( void *v_dst, const void *v_src, unsigned long n )
 {
-    int *src = (int *) v_src;
-    int *dst = (int *) v_dst;
+    register const int *src = (int *) v_src;
+                   int *dst = (int *) v_dst;
 
     register unsigned long Copy=n;
-    
-    /* Simple, byte oriented memcpy. */
-    //danger
     
     while (Copy--)
     {
@@ -106,16 +100,14 @@ void *memcpy32 ( void *v_dst, const void *v_src, unsigned long n )
     return v_dst;
 }
 
+
 void *memcpy64 ( void *v_dst, const void *v_src, unsigned long n )
 {
-    long *src = (long *) v_src;
-    long *dst = (long *) v_dst;
+    register const long *src = (long *) v_src;
+                   long *dst = (long *) v_dst;
 
     register unsigned long Copy=n;
-    
-    /* Simple, byte oriented memcpy. */
-    //danger
-    
+
     while (Copy--)
     {
         *dst++ = *src++;
@@ -436,10 +428,6 @@ int strcmp(const char *a, const char *b)
 */
 
 
-
-
-//#bugbug:
-//Isso ainda não foi testado.
 
 void *memset ( void *ptr, int value, int size )
 {

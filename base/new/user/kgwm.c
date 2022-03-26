@@ -44,7 +44,7 @@ static unsigned long flush_fps=30;
 //
 
 static void __launch_app_via_initprocess(int index);
-static void __enter_embedded_shell(void);
+static void __enter_embedded_shell(int kernel_in_debug_mode);
 static void __exit_embedded_shell(void);
 
 
@@ -161,12 +161,16 @@ static void __launch_app_via_initprocess(int index)
         0 );
 }
 
-static void __enter_embedded_shell(void)
+static void __enter_embedded_shell(int kernel_in_debug_mode)
 {
 
 //log
     //backgroundDraw(COLOR_BLACK);
     backgroundDraw(COLOR_EMBEDDED_SHELL_BG);
+
+    if(kernel_in_debug_mode)
+        printf("[[ KERNEL IN DEBUG MODE ]]\n");
+
     printf("kernel console number %d\n",fg_console);
     printf("Prompt ON: Type something\n");
     consolePrompt();
@@ -193,6 +197,59 @@ static void __exit_embedded_shell(void)
 
 // done
     ShellFlag = FALSE;
+}
+
+
+void exit_kernel_console(void)
+{
+    
+    // Se estavamos no ambiente de desktop completo
+    // e nao no modo debug.
+    // se temos callbacks e' porque o window server inicializou isso.
+    if ( gUseWMCallbacks == TRUE ){
+        __exit_embedded_shell();
+    }
+    
+    // suficiente para o modo debug.
+    ShellFlag = FALSE;
+}
+
+
+// kernel initialized on debug mode.
+// only on initialzation.
+// called by init.c
+void kgwm_early_kernel_console(void)
+{
+
+// fail
+// se ja estamos no ambiente de desktop
+// com toda a gui funcionando.
+    if ( gUseWMCallbacks == TRUE )
+    {
+        return;
+    }
+
+    //IN: kernel in in debug mode.
+    __enter_embedded_shell(TRUE);
+
+// Enable input
+    asm("sti");
+
+    while(1){
+        // exit loop
+        if( ShellFlag == FALSE )
+        {
+            // mandamos uma mensagem para o ws, para atualizar o desktop.
+            if(gUseWMCallbacks==TRUE){
+                __exit_embedded_shell();
+            }
+            break;
+        }
+    };
+
+// Disable input end return to init.c
+    asm("cli");
+    return;
 }
 
 
@@ -310,7 +367,7 @@ wmProcedure (
          //case 'D':
          //    if(ctrl_status==TRUE && alt_status==TRUE)
          //    {
-         //        __enter_embedded_shell();
+         //        __enter_embedded_shell(FALSE);
          //        return 0;
          //    }
          //    break;
@@ -537,7 +594,7 @@ wmProcedure (
 
             case VK_F9:
                 if (ctrl_status == TRUE){
-                    __enter_embedded_shell();
+                    __enter_embedded_shell(FALSE);
                     return 0;
                 }
                 if (alt_status == TRUE){

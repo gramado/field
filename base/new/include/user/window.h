@@ -1113,6 +1113,10 @@ unsigned long wmSendInputToWindowManager(
     unsigned long long1,
     unsigned long long2);
 
+
+void exit_kernel_console(void);
+void kgwm_early_kernel_console(void);
+
 // ==========
 
 // Pega um scancode, transforma em caractere e envia na forma de mensagem

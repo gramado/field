@@ -758,14 +758,17 @@ kinguio_vsprintf(
 
 void kinguio_puts(const char* str)
 {
-    int i=0;
+    register int i=0;
 
     if (!str){
         return;
     }
 
-    for (i=0; i <strlen(str); i++){
-        putchar(str[i]);
+    size_t StringLen = (size_t) strlen(str);
+
+    for (i=0; i<StringLen; i++)
+    {
+        putchar( str[i] );
     };
 }
 
@@ -775,8 +778,8 @@ void kinguio_puts(const char* str)
 
 int kinguio_printf(const char *fmt, ...)
 {
+    static char print_buffer[1024];
     int ret=0;
-    char buf[256];
 
 
 // If the virtual console isn't full initialized yet.
@@ -784,44 +787,31 @@ int kinguio_printf(const char *fmt, ...)
         return -1;
     }
 
-    memset(buf,0,256); 
-
 //----------
     va_list ap;
     va_start (ap, fmt);
-    ret = kinguio_vsprintf(buf, fmt, ap);
+
+    memset(print_buffer, 0, 1024); 
+    ret = kinguio_vsprintf(print_buffer, fmt, ap);
+
     va_end (ap);
 //-----------
 
-// Print
-
-    kinguio_puts(buf);
-
+// Print and return.
+    kinguio_puts(print_buffer);
     return (int) ret;
 }
 
 // ===================================
 
 
-
-/*
- * kputs: 
- *     provisório ...
- */
-
 int kputs ( const char *str )
 {
+    if ( (void *) str == NULL )
+        return -1;
 
-    // #todo
-    // Validation
-    
-    //if ( (void*) str == NULL )
-    //{
-        //
-    //}
-
-    //return (int) printf ("%s",str);
     return (int) printk ("%s",str);
+    //return (int) printf ("%s",str);
 }
 
 
