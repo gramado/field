@@ -48,6 +48,86 @@ static unsigned long ____old_time=0;
 static unsigned long ____new_time=0;
 
 
+
+
+void show_client( struct gws_client_d *c, int tag )
+{
+    if( (void*) c == NULL )
+        return;
+    if(c->magic!=1234)
+        return;
+
+    if(tag<0)
+        return;
+    if(tag >= 4)
+        return;
+
+// This client doesn't belong to this tag.
+    if( c->tags[tag] != TRUE )
+        return;
+
+
+    if(c->window < 0)
+        return;
+    if(c->window >= WINDOW_COUNT_MAX)
+        return;
+
+// Show
+    if(c->window == WT_OVERLAPPED)
+        redraw_window_by_id(c->window,TRUE);
+
+// Show next.
+    //show_client(c->next,tag);
+}
+
+
+ //#todo: notworking
+void show_client_list(int tag)
+{
+    struct gws_client_d *c;
+    
+    c = (struct gws_client_d *) first_client;
+    
+    while(1)
+    {
+        if( (void*) c == NULL )
+            break;
+            
+        if( (void*) c != NULL )
+            show_client(c,tag);
+        
+        c = (struct gws_client_d *) c->next;
+    };
+}
+
+
+ //#todo: not teste yet
+struct gws_client_d *wintoclient(int window)
+{
+    struct gws_client_d *c;
+    int i=0;
+
+    if(window<0)
+        return NULL;
+    if(window>=WINDOW_COUNT_MAX)
+        return NULL;
+    
+    c = (struct gws_client_d *) first_client;
+    while( (void*) c != NULL )
+    {
+        if(c->magic == 1234 )
+        {
+            if( c->window == window ){
+                return (struct gws_client_d *) c;
+            }
+        }
+        c = (struct gws_client_d *) c->next;
+    };
+    return NULL;
+}
+
+
+
 void __set_default_background_color( int color )
 {
     WindowManager.default_background_color = (unsigned int) color;
@@ -91,6 +171,9 @@ void __init_wm_structure(void)
 // Clear the structure.
     WindowManager.mode = 1;  //tiling
 
+    WindowManager.is_fullscreen = FALSE;
+    //WindowManager.is_fullscreen = TRUE;
+    
 //orientation
     WindowManager.vertical = TRUE;   //default
     //WindowManager.vertical = FALSE;
@@ -1168,15 +1251,15 @@ void wm_update_window_by_id(int wid)
     struct gws_window_d *w;
 
 // Redraw and show the root window.
-    redraw_window(__root_window,TRUE);
+    //redraw_window(__root_window,TRUE);
 
-    if(active_window<0)
+    if(wid<0)
         return;
 
-    if(active_window>=WINDOW_COUNT_MAX)
+    if(wid>=WINDOW_COUNT_MAX)
         return;  
 
-    w = (struct gws_window_d *) windowList[active_window];
+    w = (struct gws_window_d *) windowList[wid];
 
     if((void*)w==NULL){ return; }
 
@@ -1208,7 +1291,8 @@ void wm_update_window_by_id(int wid)
     invalidate_window(w);
     set_focus(w);
 
-    wm_Update_TaskBar("Active");
+//#todo: string
+    //wm_Update_TaskBar("Win");
 }
 
 
@@ -1218,7 +1302,88 @@ void wm_update_active_window(void)
 }
 
 
-// #danger: We are testing this funcion.
+// vamos gerenciar a janela de cliente
+// recentemente criada.
+// Precisamos associar essa estrutura de janela
+// com uma estrutura de cliente. 
+// Somente janelas overlapped serao consideradas clientes
+// por essa rotina.
+// Isso sera chamado de dentro do serviço 
+// que cria janelas.
+
+int wmManageWindow( struct gws_window_d *w )
+{
+    struct gws_client_d *c;
+    int i=0;
+
+    //yellow_status("wmMan:");
+    
+    if( (void*) w == NULL )
+        goto fail;
+    if(w->magic != 1234)
+        goto fail;
+    if(w->type != WT_OVERLAPPED)
+        goto fail;
+
+    if( (void*) first_client == NULL )
+        goto fail;
+
+    c = (void *) malloc( sizeof( struct gws_client_d ) );
+    if( (void*) c == NULL )
+        goto fail;
+
+    c->l = w->left;
+    c->t = w->top;
+    c->w = w->width;
+    c->h = w->height;
+
+    for(i=0; i<4; i++)
+        c->tags[i] = TRUE;
+
+    c->pid = w->client_pid;
+    c->tid = w->client_tid;
+
+    c->used = TRUE;
+    c->magic = 1234;
+
+// coloca na lista
+
+    struct gws_client_d *tmp;
+    
+    tmp = (struct gws_client_d *) first_client;
+    
+    if( (void*) tmp == NULL )
+        goto fail;
+    
+    if( tmp->magic != 1234 )
+        goto fail;
+    
+    while(1)
+    {
+        // found
+        if( (void*) tmp->next == NULL )
+            break;
+        
+        // next
+        tmp = (struct gws_client_d *) tmp->next; 
+    };
+
+    if( tmp->magic != 1234 )
+        goto fail;
+
+    tmp->next = (struct gws_client_d *) c;
+
+    //yellow_status("done");
+    return 0;
+
+fail:
+    yellow_status("wmManageWindow");
+    printf("wmManageWindow: fail\n");
+    return -1;
+    //while(1){}
+}
+
+
 // Repinta todas as janelas seguindo a ordem da lista
 // que está em last_window.
 // No teste isso é chamado pelo kernel através do handler.
@@ -2222,7 +2387,7 @@ wmProcedure(
             return 0;
         }
         
-        // Clicamos e ponteiro esta sobre a janela ativa.
+        // Clicamos e o ponteiro esta sobre a janela ativa.
         //aw_wid = (int) get_active_window();
         //if( mousehover_window == aw_wid )
         //{
@@ -2278,6 +2443,10 @@ wmProcedure(
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
             yellow_status("3");
+            
+            // mostra o cliente se ele faz parte da tag 3.
+            //show_client(first_client->next,3);
+            //show_client_list(3);  //#todo: notworking
         }
 
         return 0;
@@ -3108,21 +3277,30 @@ redraw_window (
                     {
                         if( (void*) window->titlebar != NULL )
                         {
-                            if(window->titlebar->magic == 1234 ){
-                            rectBackbufferDrawRectangle ( 
-                            window->titlebar->left, 
-                            window->titlebar->top, 
-                            window->titlebar->width, 
-                            window->titlebar->height, 
-                            window->titlebar->bg_color, 
-                            1, 
-                            0 );
+                            if (window->titlebar->magic == 1234 )
+                            {
+                                //bg
+                                rectBackbufferDrawRectangle ( 
+                                    window->titlebar->left, 
+                                    window->titlebar->top, 
+                                    window->titlebar->width, 
+                                    window->titlebar->height, 
+                                    window->titlebar->bg_color, 
+                                    TRUE, 
+                                    0 );
+                            
+                                // ornament
+                                rectBackbufferDrawRectangle ( 
+                                    window->titlebar->left, 
+                                    ( (window->titlebar->top) + (window->titlebar->height) - METRICS_TITLEBAR_ORNAMENT_SIZE ),  
+                                    window->titlebar->width, 
+                                    METRICS_TITLEBAR_ORNAMENT_SIZE, 
+                                    COLOR_BLACK, //OrnamentColor1, 
+                                    TRUE,
+                                    0 );  // rop_flags
                             }
                         }
                     }
-
-
-                
                 }
             }
         }
@@ -3526,9 +3704,13 @@ struct gws_window_d *gws_window_from_id (int id)
 
 
 // Taskbar
+// Cria a barra na parte de baixo da tela.
+// com 4 tags.
+// os aplicativos podem ser agrupados por tag.
+// quando uma tag eh acionada, o wm exibe 
+// todos os aplicativos que usam essa tag.
 void create_taskbar (void)
 {
-
     int WindowId = -1;  // bar
     int menu_wid;       // button
 
@@ -4502,6 +4684,10 @@ int get_window_tid( struct gws_window_d *window)
 // teremos mais argumentos
 void wm_Update_TaskBar( char *string )
 {
+
+    if( WindowManager.is_fullscreen == TRUE )
+        return;
+
 
     if( (void*) string == NULL )
         return;

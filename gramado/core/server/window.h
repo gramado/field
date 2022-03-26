@@ -16,6 +16,11 @@ struct gws_windowmanager_d
 {
     int initialized;
 
+// A are de cliente de uma janela sera mostrada
+// na tela toda e essa flag sera acionada.
+// Com essa flag acionada a barra de tarefas nao sera exibida.
+    int is_fullscreen;
+
 // The window manager mode:
 // 1: tiling.
 // 2: overlapped.
@@ -72,6 +77,8 @@ struct gws_windowmanager_d
     //struct gws_window_d *layer4_list;
 };
 
+// Global main structure.
+// Not a pointer.
 struct gws_windowmanager_d  WindowManager;
 
 // ======
@@ -304,25 +311,26 @@ struct gws_rect_d
 };
 
 
-	//
-	// Window Class support.
-	//
-	
- 
-//enumerando classe de janela 
+//
+// Window Class support.
+//
+
+// Enumerando classe de janela.
 typedef enum {
+    
     gws_WindowClassNull,
-	gws_WindowClassClient,  //1 cliente
-	gws_WindowClassKernel,  //2 kernel
-	gws_WindowClassServer,  //3 servidor
+    gws_WindowClassClient,  //1 cliente
+    gws_WindowClassKernel,  //2 kernel
+    gws_WindowClassServer,  //3 servidor
+
 }gws_wc_t;
 
-
-//classes de janelas controladas pelos aplicativos.
+// Classes de janelas controladas pelos aplicativos.
 typedef enum {
-    gws_WindowClassApplicationWindow,	
-	//...
+    gws_WindowClassApplicationWindow,
+    //...
 }gws_client_window_classes_t;
+
 
 //??bugbug: tá errado.
 //classes de janelas controladas exclusivamente pelo kernel.
@@ -414,20 +422,14 @@ typedef enum {
 // Not a pointer.
 struct frame_d
 {
-
 // Se estamos usando ou não frame nessa janela.
     int used;
     int magic;
 
-//
-// Limits in pixel
-//
-
-// width
+// width limits in pixel.
     unsigned long min_x;
     unsigned long max_x;
-
-// height
+// height limits in pixel.
     unsigned long min_y;
     unsigned long max_y;
 
@@ -476,8 +478,6 @@ struct frame_d
 // Se uma janela tiver o id da thread ao qual ela pertence
 // então podemos colocar ela em foreground quando a janela
 // receber o foco usando o teclado ou mouse.
-
-
 // #important:
 // This is a 'server side' window object.
 
@@ -504,16 +504,13 @@ struct gws_window_d
 
     unsigned long style;
 
-
 // Uma janela de aplicativo
 // poderá ter janelas de aplicativo dentro de sua área de cliente.
     int multiple;
 
-
 // Used to invalidate the rectangle.
 // If the window is dirty, so the whole window rectangle
 // needs to be flushed into the framebuffer.
-
     int dirty;
 
 // FAST FLAG. Essa será a flag de ativa ou não. (decidindo isso)
@@ -524,23 +521,20 @@ struct gws_window_d
 
     char *name;
 
-    // tipo? ... (editbox, normal, ...) 
-    // Isso pode ser 'int'
-
+// tipo? ... (editbox, normal, ...) 
+// Isso pode ser 'int'
     unsigned long type;
 
-    // Hierarquia. 
-    // parent->level + 1;
-    // Não é z-order.
-
+// Hierarquia. 
+// parent->level + 1;
+// Não é z-order.
     int level;
 
-    // The window belongs to this client.
-    // Talvez a tid da control thread do cliente 
-    // pode ficar nessa estrutura.
+// The window belongs to this client.
+// Talvez a tid da control thread do cliente 
+// pode ficar nessa estrutura.
 
     struct gws_client_d  *client;
-
 
 // #importante
 // Para sabermos quem receberá o reply no caso de eventos.
@@ -604,15 +598,12 @@ struct gws_window_d
     unsigned long right;       //margem direita  
     unsigned long bottom;      //margem inferior  
 
-
 // Dimension
     unsigned long width;
     unsigned long height;
 
-//
 // Margins and dimensions when this window is in fullscreen mode.
 // #todo: Maybe we can use a sctructure for that.
-//
 
     unsigned long full_left;
     unsigned long full_top;
@@ -688,14 +679,12 @@ struct gws_window_d
     // In the window stack we have two major components:
     // + The frame (top frame and bottom frame).
     // + The Client area.
-    
 
     // Top frame has: title bar, tool bar, menu bar ...
     
     unsigned long top_frame_Height;
     unsigned long client_area_Height;
     unsigned long bottom_frame_Height;
-
 
 
 //
@@ -783,7 +772,6 @@ struct gws_window_d
     int menubar_style;
     int menubarUsed; 
 
-
 // =========================================================
 // 7
 // Toolbar
@@ -804,11 +792,9 @@ struct gws_window_d
     int clientarea_style;
     int clientAreaUsed;
 
-
 // =========================================================
 // 9
 // Scrollbar
-
 // vertical scrollbar
 // The wm will call the window server to create this kind of control.
 
@@ -837,11 +823,9 @@ struct gws_window_d
 
     // ...
 
-
 // =========================================================
 // 11 
 // Navigation windows:
-
 
 // The owner
     struct gws_window_d  *parent;
@@ -854,10 +838,8 @@ struct gws_window_d
     struct gws_window_d  *prev;
 
 // =========================================================
-
-
 // 12
-// 
+
 
 // Menu da janela.
 // Aquela janelinha quando clicamos no icone.
@@ -870,7 +852,6 @@ struct gws_window_d
 
 //==================================
 
-
 // Seleção  de item de menu.
 // No caso dessa janela ser um ítem de menu.
     int selected;
@@ -879,16 +860,14 @@ struct gws_window_d
 // Texto no caso dessa janela ser um ítem de menu.
     const char *menuitem_text;
 
-
-
 // ======================================================
 // Flag par indicar se a janela é um item de menu ou um botão.
 
     int isMenu;   
     int isMenuItem;
     int isControl;  // Window control ...
-    int isButton;  //#importante: Indica que a janela é um botão.
-    int isEditBox; //#importante: Indica que a janela é um editbox.
+    int isButton;   //#importante: Indica que a janela é um botão.
+    int isEditBox;  //#importante: Indica que a janela é um editbox.
     int isCheckBox;
     int isIcon;
     // ...
@@ -907,35 +886,31 @@ struct gws_window_d
 
     unsigned long procedure;
 
-
-// 
 //==================================================	
 
    // #test
    // This is a test. Not implemented yet.
 
-	// Buffer.
-	// DedicatedBuffer
-	// DedicatedBuffer --> LFB.
-	// Endereço de memória onde a janela foi pintada.
-	// Obs: Toda janela deve ter seu próprio buffer de pintura para poder 
-	// passar a janela direto de seu próprio buffer para o LFB, sem passar 
-	// pelo Backbuffer.
+// Buffer.
+// DedicatedBuffer
+// DedicatedBuffer --> LFB.
+// Endereço de memória onde a janela foi pintada.
+// Obs: Toda janela deve ter seu próprio buffer de pintura para poder 
+// passar a janela direto de seu próprio buffer para o LFB, sem passar 
+// pelo Backbuffer.
 
     void *DedicatedBuffer;  //Qual buffer dedicado a janela usa.
     void *BackBuffer;       //Qual backbuffer a janela usa.
     void *FrontBuffer;      //Qual frontbuffer a janela usa. (LFB).	
 
-
-// 
 //==================================================
 
-	// Desktop support.
-	// A que desktop a janela pertence??
+// Desktop support.
+// A que desktop a janela pertence??
+// Temos um estrutura de desktop dentro do kernel,
+// faz parte do subsistema de segurança e gerenciamento de memoria.
 
     int desktop_id;
-	//struct desktop_d *desktop;   //suspenso.
-
 
 // Locked
 // We can't resize or move the window.
@@ -945,54 +920,43 @@ struct gws_window_d
 
     int locked; 
 
+//
+// TERMINAL SUPPORT
+//
 
-	// Buffer para mensagens pequenas.
-    // Será usado pelo produtor e pelo consumidor.
-    // char read_buf[WINDOW_MSG_BUFFER_SIZE];
+// Obs: 
+// Essas variáveis só serão inicializadas se o 
+// aplicativo decidir que conterá um terminal em sua janela.
+// Um aplicativo só poderá ter um terminal dentro de cada janela.
+// Ou seja, se um aplicativo quiser ter mais de um terminal virtual, 
+// vai precisar de uma janela para cada terminal dentro do aplicativo.
+// isso permite facilmente que um mesmo aplicativo rode vários
+// programas, um em cada aba.
+// Ao invés de criar um frame para cada aplicativo que rode em terminal,
+// é só criar uma nova aba no gerenciador de terminais virtuais ...
+// esse gerenciador de terminais virtuais poderia ser o shell.bin.
 
+//flags
 
-    // ?? wtf
-    // unsigned long scancodeList[32];	
-
-
-
-	//
-	// TERMINAL SUPPORT
-	//
-
-
-    // Obs: 
-    // Essas variáveis só serão inicializadas se o 
-    // aplicativo decidir que conterá um terminal em sua janela.
-    // Um aplicativo só poderá ter um terminal dentro de cada janela.
-    // Ou seja, se um aplicativo quiser ter mais de um terminal virtual, 
-    // vai precisar de uma janela para cada terminal dentro do aplicativo.
-    // isso permite facilmente que um mesmo aplicativo rode vários
-    // programas, um em cada aba.
-    // Ao invés de criar um frame para cada aplicativo que rode em terminal,
-    // é só criar uma nova aba no gerenciador de terminais virtuais ...
-    // esse gerenciador de terminais virtuais poderia ser o shell.bin	
-
-
-	//flags
-
-	//configura o status do terminal dentro da janela
+// Configura o status do terminal dentro da janela.
     int terminal_used;     //Se é um terminal ou não.
 
-
-	//validade e reusabilidade das variáveis de terminal 
-	//dentro da estrutura de janela.	
+// Validade e reusabilidade das variáveis de terminal 
+// dentro da estrutura de janela.
     int terminal_magic;
 
-	//tab
-	//número da tab.
-	//indica qual tab o terminal está usando.
-	//@todo:
-	// Criar uma forma de contar as tabs de terminal 
-	// dentro do gerenciador de terminais.
-    int terminal_tab; // em qual tab do gerenciador de terminais está o terminal.
+// tab
+// número da tab.
+// indica qual tab o terminal está usando.
+// @todo:
+// Criar uma forma de contar as tabs de terminal 
+// dentro do gerenciador de terminais.
+// em qual tab do gerenciador de terminais está o terminal.
+    
+    //#suspenso
+    //int terminal_tab; 
 
-	// Terminal's rectangle.
+// Terminal's rectangle.
     unsigned long teminal_left;
     unsigned long teminal_top;
     unsigned long teminal_width;
@@ -1001,92 +965,54 @@ struct gws_window_d
     unsigned long teminal_right;
     unsigned long teminal_bottom;
 
-	//...
-
-
-
-	//@todo: isso deve pertencer a uma janela.
-	//se uma janela tiver o foco de entrada e for um terminal 
-	//a disciplica de linhas poderá usar essas carcterística do terminal.
-	
-	//suspenso.
-	//struct terminal_d *wTerminal; //dd\uitm\terminal.h
-	//struct console_d *console;   //dd\uitm\console.h	
-
-
-
-    // Tabs:
-    // Número da aba do navegador que a janela está.
-    // Se for 0, então a janela está no desktop.
-    
-    int tab;
-
-    // Again ??
-    // This is a nice structure.
-    // We can use this one!
+// Is this a message list?
     //struct msg_d *msg;
 
+// Características dessa janela..
+// full screen mode = modo tela cheia. 
+// ( utiliza a resolução atual do dispositivo )
+// deve ser a janela em primeiro plano. acima de todas as outras.
+// mas podemos configurar para que uma jenela esteja em full screen 
+// enquanto outra janela é a janela ativa e ainda outra tenha o foco de entrada.
+// uma janela em modo full screen pode conter barras de rolagem.
+// embedded mode = dentro de uma janela ou de um navegador. 
 
-    // ?? again ??
-    // unsigned long Background;
-
-
-    //
-	// Características dessa janela..
-	//
-
-	//*full screen mode = modo tela cheia. 
-	//( utiliza a resolução atual do dispositivo )
-	// deve ser a janela em primeiro plano. acima de todas as outras.
-	//mas podemos configurar para que uma jenela esteja em full screen 
-	//enquanto outra janela é a janela ativa e ainda outra tenha o foco de entrada.
-	//uma janela em modo full screen pode conter barras de rolagem.
-	//*embedded mode = dentro de uma janela ou de um navegador. 
-
-
-    // ATIVA OU NÃO.
+// ??
     // unsigned long status;                
-    
-    
-    // Seu status de relacionamento com outras janelas.
+
+// Seu status de relacionamento com outras janelas.
     unsigned long relationship_status;   
+
+//
+// z-order.
+//
+
+// Ordem na pilha de janelas do eixo z.
+// A janela mais ao topo é a janela foreground.
+
+    int zIndex;
+
+//z-order global.
+//Sua ordem em relação a janela gui->main.    
+// suspenso .... isso é muito importante.
     
-     
-    //
-    // z-order.
-    //
-    
-    // Ordem na pilha de janelas do eixo z.
-    // A janela mais ao topo é a janela foreground.
-
-    int zIndex;    
-
-	//z-order global.
-	//Sua ordem em relação a janela gui->main.    
-
-	// suspenso .... isso é muito importante.
     // struct zorder_d *zorder;
-    
-    
-    // ?? again ??
-    // Qual buffer dedicado a janela usa.
+
+// again ??
+// Qual buffer dedicado a janela usa.
     // void *buffer;
 
+//
+// Buffers support.
+//
 
-	//
-	// Buffers support.
-	//
+// Um ponteiro para um array de ponteiros de estruturas de linhas
+// Explicando: Nesse endereço teremos um array. 
+// Cada ponteiro armazenado nesse array é um ponteiro para uma 
+// estrutura de linha.
+// Obs: @todo: Todos esses elementos podem formar uma estrutura e 
+// ficaria aqui apenas um ponteiro para ela.
 
-    //   ??
-    //   wtf
-    
-	// Um ponteiro para um array de ponteiros de estruturas de linhas
-	// Explicando: Nesse endereço teremos um array. 
-	// Cada ponteiro armazenado nesse array é um ponteiro para uma 
-	// estrutura de linha.
-	// Obs: @todo: Todos esses elementos podem formar uma estrutura e 
-	// ficaria aqui apenas um ponteiro para ela.
-	
     void *LineArray;
     int LineArrayIndexTotal;    //Total de índices presentes nesse array.
     int LineArrayIndexMax;      //Número máximo de índices permitidos no array de linhas.
@@ -1094,32 +1020,19 @@ struct gws_window_d
     int LineArrayPointerX;      //Em qual linha o ponteiro está. 	
     int LineArrayPointerY;      //em qual coluna o ponteiro está.
 
+// #importante
+// Estrutura de process e estrutura de thread
+// pertencem a api. Isso justifica a inclusão da api.
 
-
-    // #importante
-    // Estrutura de process e estrutura de thread
-    // pertencem a api. Isso justifica a inclusão da api.
-
-
-    //suspenso
-    // #importante: thread de input
+// suspenso
+// #importante: thread de input
     //struct thread_d *InputThread;
 
-    //suspenso
-    //  Process support. A que processo a janela pertence??
+// suspenso
+// Process support. A que processo a janela pertence??
     //struct process_d *process;
 
     // ...
-
-//
-// button
-//
-
-	// suspenso
-	// Se a flag indicar que a janela é um botão, então 
-	// essa será a estrutura para o botão.
-
-	//struct button_d *button;
 
 //
 // Actions
@@ -1130,47 +1043,36 @@ struct gws_window_d
     int show;    //se precisa ou não mostrar a janela.
     // Continua ...
 
-	//
-	// Text Cursor support.
-	//
+//
+// Text Cursor support.
+//
 
-	//fica para uma versão estendida da estrutura.
-	//Estrutura de cursor para a janela.
+// fica para uma versão estendida da estrutura.
+// Estrutura de cursor para a janela.
+    
     //struct cursor_d	*cursor;
-	
-	//unsigned long bgcolor;		// Background color.
-	//unsigned long fgcolor;		// Foreground color. 
-	
-	//struct button_d *current_button;  //Botão atual.      
+
+    //unsigned long bgcolor;		// Background color.
+    //unsigned long fgcolor;		// Foreground color. 
+
+    //struct button_d *current_button;  //Botão atual.      
     //struct button_d *buttonList;      //Lista encadeada de botões em uma janela.
 
 
-	//
-	// Mouse cursor support ???
-	//
-	
-	//
-	// Abaixo ficam os elementos referenciados com menor frequência.
-	//
-	
-    //
-	// ?? rever isso 
-	// Status do puxador da janela.
-	// Se está aberta ou não.
-	// HANDLE_STATUS_OPEN ou HANDLE_STATUS_CLOSE
-	//
+// Mouse cursor support ???
+// Abaixo ficam os elementos referenciados com menor frequência.
 
-// ??
-// What ?
-
+// ?? rever isso 
+// Status do puxador da janela.
+// Se está aberta ou não.
+// HANDLE_STATUS_OPEN ou HANDLE_STATUS_CLOSE
     int handle_status;
 
-//
 // Window Class support.
-//
     struct gws_window_class_d *window_class;
-};
 
+    //struct gws_window_d *next;
+};
 
 // Windows.
 
@@ -1329,7 +1231,11 @@ void flush_frame(void);
 void wm_update_window_by_id(int wid);
 void wm_update_active_window(void);
 
-// #danger: We are testing this funcion.
+struct gws_client_d *wintoclient(int window); //#todo: not teste yet
+void show_client_list(int tag); //#todo: notworking
+void show_client( struct gws_client_d *c, int tag );
+int wmManageWindow( struct gws_window_d *w );
+
 void wm_update_desktop(void);
 void set_first_window( struct gws_window_d *window);
 struct gws_window_d *get_first_window(void);

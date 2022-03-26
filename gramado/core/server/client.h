@@ -25,10 +25,33 @@ int current_client;
 
 struct gws_client_d
 {
-
-    int id;
     int used;
     int magic;
+
+    int id;
+    
+    char name[128];
+
+// The overlapped window for this client.
+    int window;
+
+    // a area ocupada pela janela
+    // pode ser do tamanho da janela ou ainda maior.
+    
+    int l;
+    int t;
+    int w;
+    int h;
+
+// quando uma tag foi acionada
+// e esse cliente foi exibido na tela.
+    int is_visible;
+
+    // as 4 tags possivies
+    // TRUE = estamos nessa tad
+    // FALSE = nao estamos nessa tag.
+    int tags[4];
+
 
 // #todo
     unsigned long flags;
@@ -56,10 +79,10 @@ struct gws_client_d
     // Socket for this client.
     int fd;
 
-
     // The PID of the client.
     pid_t pid; 
     gid_t gid;
+    int tid;
 
 
 // Spin
@@ -70,11 +93,18 @@ struct gws_client_d
     unsigned long spin;
 
     // ...
+
+// um loop vai circular os clientes.
+// se ele fizer parte de uma tag, entao ele sera exibido.
+    struct gws_client_d *next;
 };
 
 struct gws_client_d  *serverClient;
 struct gws_client_d  *currentClient;
 // ...
+
+// list
+struct gws_client_d  *first_client;
 
 #define SERVER_CLIENT_INDEX 0
 #define CLIENT_COUNT_MAX 32

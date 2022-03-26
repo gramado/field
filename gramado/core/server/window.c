@@ -1038,7 +1038,9 @@ void *xxxCreateWindow (
 
     window->terminal_used  = (int) 0;
     window->terminal_magic = (int) 0;
-    window->terminal_tab   = (int) 0;
+
+    //#suspenso
+    //window->terminal_tab   = (int) 0;
 
     //window->terminal_left = (unsigned long) 0;
     //window->terminal_top = (unsigned long) 0;

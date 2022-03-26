@@ -1978,31 +1978,58 @@ static void initClientSupport(void)
 // We need the information about the current client
 // And we need a list of the connected clientes.
 
-    currentClient = (struct gws_client_d *) 0;
-
+    //currentClient = (struct gws_client_d *) 0;
+    currentClient = NULL;
 
 //
 // The server client
 //
 
-    serverClient = (struct gws_client_d *) malloc ( sizeof( struct gws_client_d ) );
-    if ( (void *) serverClient == NULL ){
+    serverClient = 
+        (struct gws_client_d *) malloc ( sizeof( struct gws_client_d ) );
+    
+    if ( (void *) serverClient == NULL )
+    {
         gwssrv_debug_print ("initClientSupport: [FATAL] Couldn't create serverClient\n");
         printf             ("initClientSupport: [FATAL] Couldn't create serverClient\n");
         exit(1);
     }
 
+//
+// ID = 0.
+//
     serverClient->id = 0;
-    serverClient->is_connected = FALSE;
-    serverClient->fd = -1;
-    serverClient->pid = (pid_t) getpid();
-    serverClient->gid = getgid();
-    // ...
-    connections[SERVER_CLIENT_INDEX] = (unsigned long) serverClient;
 
-//done:
+    serverClient->is_connected = FALSE;
+
+// The fd of the server.
+// Nothing for now.
+    serverClient->fd = -1;
+
+// The pid of the server.
+    serverClient->pid = (pid_t) getpid();
+// group.
+    serverClient->gid = getgid();
+
+// The server is not visible ... 
+
+    serverClient->is_visible = FALSE;
+    
+    //serverClient->window = ?;
+    
+    // ...
+
     serverClient->used = TRUE;
     serverClient->magic = 1234;
+
+// The first client.
+    first_client = (struct gws_client_d *) serverClient;
+    
+    first_client->next = NULL;
+
+// Save us in the list of connections.
+
+    connections[SERVER_CLIENT_INDEX] = (unsigned long) serverClient;
 }
 
 
@@ -2019,10 +2046,22 @@ static void initClientStruct( struct gws_client_d *c )
 // #todo
     c->id = -1;  //fail
 
+//geometry
+    c->l = 0;
+    c->t = 0;
+    c->w = 50;
+    c->h = 50;
+
     c->is_connected = FALSE;
     c->fd  = -1;
     c->pid = -1;
     c->gid = -1;
+    
+    c->is_visible = FALSE;
+
+// No tags yet.
+    for(i=0; i<4; i++)
+       c->tags[i] = FALSE;
 
 //done:
     c->used = TRUE;
@@ -2655,10 +2694,12 @@ int serviceCreateWindow (int client_fd)
 //===============================================
 
 //
-// The client!
+// The client fd.
 //
 
     Window->client_fd = (int) client_fd;
+
+
 
 //
 // Input queue
@@ -2701,9 +2742,22 @@ int serviceCreateWindow (int client_fd)
 // Coloca na fila
 // #test: notifica na barra de tarefas
 
+    int manage_status = -1;
+
     if(Window->type == WT_OVERLAPPED)
     {
+        // adiciona na lista de janelas
         wm_add_window_into_the_list(Window);
+        
+        // associa a janela com uma estrutura de cliente.
+        manage_status = wmManageWindow(Window);
+        if(manage_status<0){
+            printf("serviceCreateWindow: wmManageWindow fail\n");
+            while(1){}
+        }
+        
+        // atualiza a barra de tarefas,
+        // notificando a criaçao dessa janela.
         wm_Update_TaskBar((char *) w_name);
     }
 
