@@ -69,17 +69,16 @@ void mmShow_PML4Entry (int index, unsigned long pml4_va)
 	printf (" PT_Entry_0 = %x \n", (unsigned long) pt[0] );	
 }
 
+
 /*
- ************************************
  * memoryShowMemoryInfo:
  *     Show memory info. 
  */
 
-void memoryShowMemoryInfo (void){
-
+void memoryShowMemoryInfo (void)
+{
     unsigned long HeapTotal  = ((kernel_heap_end - kernel_heap_start)/1024);
     unsigned long StackTotal = ((kernel_stack_start - kernel_stack_end)/1024);
-
 
     printf ("RAM Memory info:\n");
     printf ("\n");
@@ -110,60 +109,22 @@ void memoryShowMemoryInfo (void){
     printf ("====================================\n");
     printf ("This is a ");
 
-    switch (g_mm_system_type){
 
-        case stSmallSystem:
-            printf ("Small System with %d KB \n\n", memorysizeTotal );
-            printf("Origin:            %xH \n", SMALL_origin_pa );
-            printf("Base kernel start: %xH \n", SMALL_kernel_base_pa );
-            printf("User area start:   %xH \n", SMALL_user_pa );
-            printf("cga memory:        %xH \n", SMALL_cga_pa );
-            printf("frontbuffer:       %xH \n", SMALL_frontbuffer_pa );
-            printf("backbuffer:        %xH \n", SMALL_backbuffer_pa );
-            printf("paged memory pool: %xH \n", SMALL_pagedpool_pa );
-            printf("heap pool:         %xH \n", SMALL_heappool_pa );
-            printf("extraheap1:        %xH \n", SMALL_extraheap1_pa );
-            printf("extraheap2:        %xH \n", SMALL_extraheap2_pa );
-            printf("extraheap3:        %xH \n", SMALL_extraheap3_pa );
-            break;
-
-        case stMediumSystem:
-            printf("Medium System with %d KB \n\n", memorysizeTotal );
-            printf("Origin:            %xH \n", MEDIUM_origin_pa );
-            printf("Base kernel start: %xH \n", MEDIUM_kernel_base_pa );
-            printf("User area start:   %xH \n", MEDIUM_user_pa );
-            printf("cga memory:        %xH \n", MEDIUM_cga_pa );
-            printf("frontbuffer:       %xH \n", MEDIUM_frontbuffer_pa );
-            printf("backbuffer:        %xH \n", MEDIUM_backbuffer_pa );
-            printf("paged memory pool: %xH \n", MEDIUM_pagedpool_pa );
-            printf("heap pool:         %xH \n", MEDIUM_heappool_pa );
-            printf("extraheap1:        %xH \n", MEDIUM_extraheap1_pa );
-            printf("extraheap2:        %xH \n", MEDIUM_extraheap2_pa );
-            printf("extraheap3:        %xH \n", MEDIUM_extraheap3_pa );
-            break;
-
-        case stLargeSystem:
-            printf("Large System with %d KB \n\n", memorysizeTotal );
-            printf("Origin:            %xH \n", LARGE_origin_pa );
-            printf("Base kernel start: %xH \n", LARGE_kernel_base_pa );
-            printf("User area start:   %xH \n", LARGE_user_pa );
-            printf("cga memory:        %xH \n", LARGE_cga_pa );
-            printf("frontbuffer:       %xH \n", LARGE_frontbuffer_pa );
-            printf("backbuffer:        %xH \n", LARGE_backbuffer_pa );
-            printf("paged memory pool: %xH \n", LARGE_pagedpool_pa );
-            printf("heap pool:         %xH \n", LARGE_heappool_pa );
-            printf("extraheap1:        %xH \n", LARGE_extraheap1_pa );
-            printf("extraheap2:        %xH \n", LARGE_extraheap2_pa );
-            printf("extraheap3:        %xH \n", LARGE_extraheap3_pa );
-            break;
-
-        //case stNull:
-        default:
-            //printf("(Null) %d KB\n", memorysizeTotal );
-            printf("memoryShowMemoryInfo: [FIXME] Not defined system size!\n");
-            break;
+    if( g_mm_system_type == stSmallSystem ){
+        printf ("SMALL system ");
+    }else if( g_mm_system_type == stMediumSystem ){
+        printf ("MEDIUM system ");
+    }else if( g_mm_system_type == stLargeSystem ){
+        printf ("LARGE system ");
+    }else{
+         printf ("(Undefined) system ");
     };
 
+    printf ("with %d MB \n", (memorysizeTotal/1024) );
+
+    printf("\n");
+    pages_print_info(g_mm_system_type);
+            
 //==================================
 // #todo:
 // Frame table
@@ -265,28 +226,24 @@ void memoryShowMemoryInfo (void){
         kernel_heap_start, kernel_heap_end, HeapTotal );
     printf("AvailableHeap={%d KB}\n", (g_available_heap/1024) );
 
-		// @todo:
-		// Mostrar o tamanho da pilha..
-		// #bugbug: A informações sobre a stack estão incorretas, 
-		// pois essas variáveis mostram o endereço da stack na hora 
-		// da inicialização. Quando o processador retorna de ring3 
-		// para ring0 ele usa o endereço de pilha indicado na TSS.
-		// Pois bem, é mais digno mostrar aqui o endereço da pilha, 
-		// indicado no TSS.
+// @todo:
+// Mostrar o tamanho da pilha..
+// #bugbug: A informações sobre a stack estão incorretas, 
+// pois essas variáveis mostram o endereço da stack na hora 
+// da inicialização. Quando o processador retorna de ring3 
+// para ring0 ele usa o endereço de pilha indicado na TSS.
+// Pois bem, é mais digno mostrar aqui o endereço da pilha, 
+// indicado no TSS.
 
     printf("\n\n");
     printf("STACK: [%x...%x] Total={%d KB} \n", 
         kernel_stack_start, kernel_stack_end, StackTotal );
     printf("STACK: StartPhysicalAddress={%x} \n", kernel_stack_start_pa );
 
+// Video info.
+    pages_print_video_info();
 
-	// Video info
-    printf("\n\n");
-    printf ("FrontbufferPA={%x} FrontbufferVA={%x} \n", 
-        g_frontbuffer_pa, g_frontbuffer_va );  
-    printf ("BackbufferVA={%x} \n", g_backbuffer_va );
-
-	//...
+    //...
 }
 
 void mmShowPML4EntryForAllProcesses (int entry_number){

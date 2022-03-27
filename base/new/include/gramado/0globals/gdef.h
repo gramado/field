@@ -1,15 +1,14 @@
 /*
  * File: gdef.h
-*
-* Descrição:
-*     Definições globais. 
-*     Será utilizado por todos os módulos. Deve ficar no início.
-*     Quando uma definição deve ser acessada por todos os módulos
-*     do kernel base ela deve ficar aqui.
-*
-* @todo: FAZER O MÁXIMO DE COISAS SISTEMICAMENTE NÃO-IMPORTANTES PRIMEIRO.
-         que não comprometam o sistema. como gui.
-*/
+ * Descrição:
+ *     Definições globais. 
+ *     Será utilizado por todos os módulos. Deve ficar no início.
+ *     Quando uma definição deve ser acessada por todos os módulos
+ *     do kernel base ela deve ficar aqui.
+ * #todo: 
+ * FAZER O MÁXIMO DE COISAS SISTEMICAMENTE NÃO-IMPORTANTES PRIMEIRO.
+ * que não comprometam o sistema. como gui.
+ */
 
 /*
  * Sobre a GUI:
@@ -19,8 +18,6 @@
  *     Uma janela de terminal virtual igual à um celular. 
  * Desse modo, enquanto essas 6 janelas não são flutuantes, dá pra
  * ir usando elas desenha das no backbuffer mesmo.
- *
- *
  * divisão da tela:   
  * quatro quadrantes de 10.
  * divide por vinte e multiplica pela quantidade desejada.
@@ -30,44 +27,35 @@
 /*
  Sobre o banco de dados:
  =======================
- 
 Tipos de contas:
     aspace e dspace, pessoais e conjuntas.
-	
 aspace:
     Um Address Space é uma conta de banco de dados em memória. Uma conta 
 pode ser do tipo conjunta(Shared) ou  pessoal(Personal). 
-
 dspace:
     Um Disk Space é uma conta de banco de dados em disco. Uma conta pode 
 ser do tipo conjunta(Shared) ou  pessoal(Personal). 
-
 Donos das contas:
     Os processos são os clientes dos bancos de dados e são os donos das 
 contas de bancos de dados.
-
 Tipos de bancos:
     Kernel Data Base, Global Data Base e Local Data Base.
-
-KDB:	
+KDB:
     Banco de dados do tipo kernel. É o banco de maior privilégio, poucos
 processos poderão usar esse banco e as contas presentes nele.
-
 GDB:
     Bancos de dados do tipo global. É o banco das contas conjuntas, para
 que os processos possam compartilhar as contas e os dados que elas acessam.
-
 LDB:
     Bancos de dados do tipo pessoal. É o banco das contas pessoais. Um 
 processo pode ser dono de uma conta dessas para proteger seus dados
 e revogar qualquer tipo de acesso e somente ele terá acesso aos dados
 dessa conta.
-	
 */
 
-#ifndef ____GDEF_H
-#define ____GDEF_H 1
 
+#ifndef ____GDEF_H
+#define ____GDEF_H    1
 
 
 //#define BIOS_FONT8X8 0x000FFA6E
@@ -121,16 +109,6 @@ dessa conta.
 */
 
 
-//
-// socket support
-//
-
-// used by listen()
-// See: process.h
-
-#define SOCKET_MAX_PENDING_CONNECTIONS 32
-
-
 
 
 int g_is_qemu;
@@ -169,7 +147,7 @@ unsigned long blSavedCylinders;
  */
 
 typedef enum {
-	
+
 	OsTypeClient,
 	OsTypeServer,
 	OsTypeHeadlessServer,
@@ -182,7 +160,6 @@ typedef enum {
 //
 // The boot block structure.
 //
-
 
 struct boot_block_d
 {
@@ -208,8 +185,22 @@ struct boot_block_d
 
 struct boot_block_d BootBlock;
 
+#define SOCKET_MAX_PENDING_CONNECTIONS   32
 
+// 
+// Regions
+//
 
+unsigned long g_ring0area_va;
+unsigned long g_ring3area_va;
+unsigned long g_kernelimage_va;
+unsigned long g_frontbuffer_va;   
+unsigned long g_backbuffer_va;
+unsigned long g_pagedpool_va;  //pagedpool virtual address
+unsigned long g_heappool_va;
+unsigned long g_extraheap1_va;
+unsigned long g_extraheap2_va;
+unsigned long g_extraheap3_va;
 
 
 //
@@ -222,13 +213,10 @@ struct boot_block_d BootBlock;
 
 // frontbuffer lfb
 // The framebuffer
-unsigned long g_frontbuffer_va;   
 unsigned long g_frontbuffer_pa; 
 
 // backbuffer
-unsigned long g_backbuffer_va;
 unsigned long g_backbuffer_pa;
-
 
 
 //
@@ -248,12 +236,11 @@ struct display_info_d
 
 
 
-//pagedpool virtual address
-unsigned long g_pagedpool_va;
+
+
 
 // endereço virtual do pool de heaps.
 // os heaps nessa área serão dados para os processos.
-unsigned long g_heappool_va;
 int g_heap_count;
 int g_heap_count_max;
 unsigned long g_heap_size;
@@ -265,17 +252,16 @@ unsigned long g_heap_size;
 #define  G_DEFAULT_EXTRAHEAP_SIZE  0x400000;  //4MB
 
 // extra heap 1
-unsigned long g_extraheap1_va;
+
 unsigned long g_extraheap1_size;
 int g_extraheap1_initialized;
 
 // extra heap 2
-unsigned long g_extraheap2_va;
+
 unsigned long g_extraheap2_size;
 int g_extraheap2_initialized;
 
 // extra heap 3
-unsigned long g_extraheap3_va;
 unsigned long g_extraheap3_size;
 int g_extraheap3_initialized;
 

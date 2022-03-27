@@ -842,50 +842,6 @@ typedef enum {
 int g_mm_system_type;
 
 
-//
-// ## Physical memory ##
-//
-
-// Small systems.
-unsigned long SMALL_origin_pa;
-unsigned long SMALL_kernel_base_pa;
-unsigned long SMALL_user_pa;
-unsigned long SMALL_cga_pa;
-unsigned long SMALL_frontbuffer_pa;
-unsigned long SMALL_backbuffer_pa; 
-unsigned long SMALL_pagedpool_pa; 
-unsigned long SMALL_heappool_pa; 
-unsigned long SMALL_extraheap1_pa;
-unsigned long SMALL_extraheap2_pa; 
-unsigned long SMALL_extraheap3_pa; 
-//...
-
-// Medium systems.
-unsigned long MEDIUM_origin_pa;
-unsigned long MEDIUM_kernel_base_pa; 
-unsigned long MEDIUM_user_pa; 
-unsigned long MEDIUM_cga_pa; 
-unsigned long MEDIUM_frontbuffer_pa; 
-unsigned long MEDIUM_backbuffer_pa; 
-unsigned long MEDIUM_pagedpool_pa;  
-unsigned long MEDIUM_heappool_pa; 
-unsigned long MEDIUM_extraheap1_pa;
-unsigned long MEDIUM_extraheap2_pa; 
-unsigned long MEDIUM_extraheap3_pa; 
-
-// Large systems.
-unsigned long LARGE_origin_pa;
-unsigned long LARGE_kernel_base_pa;
-unsigned long LARGE_user_pa;
-unsigned long LARGE_cga_pa;
-unsigned long LARGE_frontbuffer_pa;
-unsigned long LARGE_backbuffer_pa;
-unsigned long LARGE_pagedpool_pa; 
-unsigned long LARGE_heappool_pa;
-unsigned long LARGE_extraheap1_pa;
-unsigned long LARGE_extraheap2_pa; 
-unsigned long LARGE_extraheap3_pa; 
-
 
 //base     = base memory retornada pelo cmos
 //other    = (1MB - base). (Shadow memory = 384 KB)
@@ -1097,6 +1053,9 @@ unsigned long memorysizeAvailableVirtualMemory;
 //
 // == prototypes =================================================
 //
+
+void pages_print_info(int system_type);
+void pages_print_video_info(void);
 
 unsigned long slab_2mb_extraheap2(void);
 unsigned long slab_2mb_extraheap3(void);

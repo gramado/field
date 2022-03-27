@@ -12,6 +12,53 @@ extern unsigned long SavedLFB;          // #todo: precisamos que o bl passe  end
 //extern unsigned long SavedBPP;
 // ...
 
+// ==================================================
+// This is not global variable.
+// We will use this only on this initialization here.
+// This is architecture dependent.
+// This variables are only for x86_64.
+
+// small system
+static unsigned long SMALL_origin_pa=0;
+static unsigned long SMALL_kernel_base_pa=0;
+static unsigned long SMALL_user_pa=0;
+static unsigned long SMALL_cga_pa=0;
+static unsigned long SMALL_frontbuffer_pa=0; 
+static unsigned long SMALL_backbuffer_pa=0;
+static unsigned long SMALL_pagedpool_pa=0;
+static unsigned long SMALL_heappool_pa=0;
+static unsigned long SMALL_extraheap1_pa=0;
+static unsigned long SMALL_extraheap2_pa=0;
+static unsigned long SMALL_extraheap3_pa=0;
+// medium system
+static unsigned long MEDIUM_origin_pa=0;
+static unsigned long MEDIUM_kernel_base_pa=0;
+static unsigned long MEDIUM_user_pa=0;
+static unsigned long MEDIUM_cga_pa=0;
+static unsigned long MEDIUM_frontbuffer_pa=0;
+static unsigned long MEDIUM_backbuffer_pa=0;
+static unsigned long MEDIUM_pagedpool_pa=0;
+static unsigned long MEDIUM_heappool_pa=0;
+static unsigned long MEDIUM_extraheap1_pa=0;
+static unsigned long MEDIUM_extraheap2_pa=0;
+static unsigned long MEDIUM_extraheap3_pa=0;
+// large system
+static unsigned long LARGE_origin_pa=0;
+static unsigned long LARGE_kernel_base_pa=0;
+static unsigned long LARGE_user_pa=0;
+static unsigned long LARGE_cga_pa=0;
+static unsigned long LARGE_frontbuffer_pa=0;
+static unsigned long LARGE_backbuffer_pa=0;
+static unsigned long LARGE_pagedpool_pa=0;
+static unsigned long LARGE_heappool_pa=0;
+static unsigned long LARGE_extraheap1_pa=0;
+static unsigned long LARGE_extraheap2_pa=0;
+static unsigned long LARGE_extraheap3_pa=0;
+
+// ==================================================
+
+
+// ==================================================
 
 // Vamos criar uma pagetable com 512 entradas
 // para mapearmos uma região da memória física.
@@ -476,6 +523,57 @@ void *clone_pml4 ( unsigned long pml4_va )
 }
 
 
+static void __setup_memory_usage(void);
+static void __setup_memory_usage(void)
+{
+    debug_print ("SetUpPaging: Setup memory usage\n");
+
+// #Importante
+// Agora vamos calcular a quantidade de memória física usada 
+// até agora.
+// Levando em conta a inicialização que fizemos nessa rotina.
+// Estamos deixando de fora a memória dos dispositivos, pois a 
+// memória usada pelos dispositivos possuem endereço físico, 
+// mas está na parte alta do endereçamento físico, 
+// muito além da memória RAM instalada.
+// Com a exceção da vga, que fica antes de 1MB.
+// Os dispositivos por enquanto são memória de vídeo e 
+// placa de rede.
+// Tem a questão do dma a se considerar também.
+// Tem dma abaixo da marca de 16mb.
+// Tem dma que usa memória virtual.
+
+
+// Used.
+    // #todo: mm_used_lfb ??
+    memorysizeUsed = 
+        (unsigned long) ( 
+        mm_used_ring0_area +  
+        mm_used_ring3_area +  
+        mm_used_kernelimage +
+        mm_used_backbuffer + 
+        mm_used_pagedpool + 
+        mm_used_heappool + 
+        mm_used_extraheap1 + 
+        mm_used_extraheap2 + 
+        mm_used_extraheap3 +
+        mm_used_frame_table 
+        );
+
+// Free.
+    memorysizeFree = (unsigned long) (memorysizeTotal - memorysizeUsed);
+
+
+// memorysizeFree  is the size in KB.
+// memorysizeTotal is the size in KB.
+// memorysizeUsed  is the size in KB.
+// #todo:
+// We need to change these names including KB at the end of them.
+// ex: memorysizeTotal_KB
+
+}
+
+
 /*
  * I_initialize_frame_table:
  *     Frame table to handle a pool of page frames.
@@ -495,7 +593,149 @@ int I_initialize_frame_table (void)
     FT.magic = 0;
     FT.initialized = FALSE;
 
-// mmSetupPaging created our limts.
+
+//
+// ==============================================================================
+//
+
+
+// #important
+// Vamos configurar a frame table de acordo com o total de memória RAM.
+// 'memorysizeTotal' is the ram size in KB.
+// Configura apenas o início e o fim.
+// O resto da tabela será configurado pela função
+// I_initialize_frame_table() 
+// Start:
+// FRAME_TABLE_START_PA
+// This is the start of the table.
+// This is the 256MB mark.
+// End:
+// FRAME_TABLE_END_PA
+// This is the end of the table.
+// See:
+// x64gpa.h
+
+    debug_print ("I_initialize_frame_table: Setup FT\n");
+
+// Setup the start of the table.
+// It's always the same.
+// We need at least 256 MB.
+// The system with 256MB has no FT.
+// We need more them this to have a FT.
+
+// ===================
+// Start
+    FT.start_pa = __128MB_MARK_PA;
+    //FT.start_pa = __256MB_MARK_PA;
+    //FT.start_pa = __512MB_MARK_PA;
+    //FT.start_pa = __1GB_MARK_PA;
+
+// ===================
+// End
+// (Uninitialized)
+// It will depend on the size of the RAM.
+// This routine will find this value.
+    FT.end_pa = 0;
+
+
+// =================================================
+// Size in KB.
+// Se a RAM for maior ou igual à 1GB.
+// Então temos mais memória do que precisamos
+// e a frame table será limitada à marca de 1GB.
+
+    if ( memorysizeTotal >= (1024*1024)  )
+    {
+        FT.end_pa = __1GB_MARK_PA;
+        debug_print ("I_initialize_frame_table: We have 1GB or more\n");
+        goto initialize_frame_table;
+    }
+
+
+// =================================================
+// Size in KB.
+// Se a RAM for maior ou igual à 512MB.
+
+    if ( memorysizeTotal >= (512*1024) )
+    {
+        FT.end_pa = __512MB_MARK_PA;
+        debug_print ("I_initialize_frame_table: We have 512MB or more\n");
+        goto initialize_frame_table;
+    } 
+
+
+// =================================================
+// Size in KB.
+// Se a RAM for maior ou igual à 256MB.
+
+    if ( memorysizeTotal >= (256*1024) )
+    {
+        FT.end_pa = __256MB_MARK_PA;
+        debug_print ("I_initialize_frame_table: We have 256MB or more\n");
+        goto initialize_frame_table;
+    } 
+
+
+// =================================================
+// Error:
+// Size in KB.
+// Se a RAM for menor que 256MB.
+
+// #bugbug
+// Nossa rotina que calcula o tamanho da memória RAM
+// nos entrga um valor que é um pouco menos que o
+// total disponível.
+// Porque ele não testa o último mega.
+
+// The available ram is less than 256.
+    if ( memorysizeTotal < (256*1024) ){
+        debug_print ("I_initialize_frame_table: [ALERT] memorysizeTotal is less than 256MB\n");
+    }
+
+//
+// Danger !
+//
+
+// The available RAM is almost 256MB
+// Its because we a 256MB card,
+// But the boot loader did not check the last mb.
+
+//#bugbug: x_panic is not available yet.
+
+    if ( memorysizeTotal < (250*1024) )
+    {
+        debug_print ("I_initialize_frame_table: [PANIC] The system has less than 250MB of available RAM\n");
+        x_panic     ("I_initialize_frame_table: less than 250MB \n");
+    }
+
+// Não é menor que 250MB
+// __256MB_MARK_PA?
+    FT.end_pa = (unsigned long)(250*1024*1024);
+
+//============================================================
+
+//
+// Initializing all the other elements of the frame table.
+//
+
+initialize_frame_table:
+
+// #bugbug
+// Slow. Use a define for this value.
+
+    if ( FT.end_pa < (250*1024*1024) )
+    {
+        debug_print ("I_initialize_frame_table: [PANIC] less than 250MB.\n");
+        //#todo: panic
+    }
+
+
+// Total size in KB.
+    mm_used_frame_table = (unsigned long)((FT.end_pa - FT.start_pa)/1024);
+
+//
+// ==============================================================================
+//
 
     if( FT.start_pa == 0 ){
          debug_print("I_initialize_frame_table: FT.start_pa\n");
@@ -506,6 +746,7 @@ int I_initialize_frame_table (void)
          debug_print("I_initialize_frame_table: FT.end_pa\n");
          x_panic    ("I_initialize_frame_table: FT.end_pa\n");
     }
+
 
 // Size in bytes.
 // Size in KB.
@@ -875,27 +1116,11 @@ void __initialize_ram_usage_varables(void)
 }
 
 
-// local worker
+
 void __initialize_default_physical_regions(void)
 {
 
-// =============================================================
-// Regions
-// =============================================================
-// See:
-// gpa.h
-
-// #importante
-// Inicializando as vari�veis que vamos usr aqui.
-// S�o endere�os de mem�ria f�sica.
-// As vari�veis s�o globais para podermos gerenciar o uso de
-// mem�ria f�sica.
-// See:  mm/mm.h
-// See:  gpa.h
-
-//==============================================================
-//  SMALL SYSTEMS
-//==============================================================
+// small systems
     SMALL_origin_pa      = (unsigned long) SMALLSYSTEM_ORIGIN_ADDRESS;
     SMALL_kernel_base_pa = (unsigned long) SMALLSYSTEM_KERNELBASE;
     SMALL_user_pa        = (unsigned long) SMALLSYSTEM_USERBASE;
@@ -908,9 +1133,7 @@ void __initialize_default_physical_regions(void)
     SMALL_extraheap2_pa  = (unsigned long) SMALLSYSTEM_EXTRAHEAP2_START;
     SMALL_extraheap3_pa  = (unsigned long) SMALLSYSTEM_EXTRAHEAP3_START;
 
-//==============================================================
-//  MEDIUM SYSTEMS
-//==============================================================
+// medium systems
     MEDIUM_origin_pa      = (unsigned long) MEDIUMSYSTEM_ORIGIN_ADDRESS;
     MEDIUM_kernel_base_pa = (unsigned long) MEDIUMSYSTEM_KERNELBASE;
     MEDIUM_user_pa        = (unsigned long) MEDIUMSYSTEM_USERBASE;
@@ -923,9 +1146,7 @@ void __initialize_default_physical_regions(void)
     MEDIUM_extraheap2_pa  = (unsigned long) MEDIUMSYSTEM_EXTRAHEAP2_START;
     MEDIUM_extraheap3_pa  = (unsigned long) MEDIUMSYSTEM_EXTRAHEAP3_START;
 
-//==============================================================
-//  LARGE SYSTEMS
-//==============================================================
+// large systems
     LARGE_origin_pa      = (unsigned long) LARGESYSTEM_ORIGIN_ADDRESS;
     LARGE_kernel_base_pa = (unsigned long) LARGESYSTEM_KERNELBASE;
     LARGE_user_pa        = (unsigned long) LARGESYSTEM_USERBASE;
@@ -938,6 +1159,7 @@ void __initialize_default_physical_regions(void)
     LARGE_extraheap2_pa  = (unsigned long) LARGESYSTEM_EXTRAHEAP2_START;
     LARGE_extraheap3_pa  = (unsigned long) LARGESYSTEM_EXTRAHEAP3_START;
 }
+
 
 // ----------------------
 
@@ -968,8 +1190,12 @@ void __initialize_ring0area(void)
 {
     unsigned long *pt_ring0area = (unsigned long *) PAGETABLE_RING0AREA; 
 
-// kernel_address_pa: Início da memória RAM.
-    unsigned long kernel_address_pa = (unsigned long) SYSTEM_ORIGIN;
+// kernel_address_pa: 
+// Início da memória RAM.
+    unsigned long kerneladdress_pa = (unsigned long) SYSTEM_ORIGIN;
+      
+    g_ring0area_va = (unsigned long) RING0AREA_VA;
+      
         
     mm_used_ring0_area = (1024 * 1);  //1mb, pois seremos sobrepostos pela imagem do kernel.  
     // mm_used_ring0_area = (1024 * 2);  
@@ -1002,7 +1228,7 @@ void __initialize_ring0area(void)
         (unsigned long) KERNEL_PD_PA,       // pd 
         (int) PD_ENTRY_RING0AREA,           // entry
         (unsigned long) &pt_ring0area[0],   // pt
-        (unsigned long) kernel_address_pa,  // region base
+        (unsigned long) kerneladdress_pa,  // region base
         (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 }
 
@@ -1027,9 +1253,12 @@ void __initialize_ring3area(void)
 {
     unsigned long *pt_ring3area = (unsigned long *) PAGETABLE_RING3AREA;
 
-// user_address_pa:   User area, (32MB mark) 0x02000000.
-    unsigned long user_address_pa = (unsigned long) USER_BASE;
-    
+// user_address_pa:   
+// User area, (32MB mark) 0x02000000.
+    unsigned long useraddress_pa = (unsigned long) USER_BASE;
+
+    g_ring3area_va = (unsigned long) RING3AREA_VA;
+
     mm_used_ring3_area = (1024 * 2);  //2mb
 
     // user_address_pa = 0x02000000
@@ -1055,7 +1284,7 @@ void __initialize_ring3area(void)
         (unsigned long) KERNEL_PD_PA,      // pd 
         (int) PD_ENTRY_RING3AREA,          // entry
         (unsigned long) &pt_ring3area[0],  // pt
-        (unsigned long) user_address_pa,   // region base
+        (unsigned long) useraddress_pa,    // region base
         (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
@@ -1081,8 +1310,11 @@ void __initialize_kernelimage_region(void)
 {
     unsigned long *pt_kernelimage = (unsigned long *) PAGETABLE_KERNELIMAGE; 
 
-// kernel_base_pa:    Início da imagem do kernel. (1MB mark).
-    unsigned long kernel_base_pa  = (unsigned long) KERNEL_BASE;
+// kernel_base_pa:    
+// Início da imagem do kernel. (1MB mark).
+    unsigned long kernelimage_pa = (unsigned long) KERNEL_BASE;
+    
+    g_kernelimage_va = (unsigned long) KERNELIMAGE_VA;
     
     mm_used_kernelimage = (1024 * 2);  //2mb
 
@@ -1110,7 +1342,7 @@ void __initialize_kernelimage_region(void)
         (unsigned long) KERNEL_PD_PA,        // pd 
         (int) PD_ENTRY_KERNELIMAGE,          // entry
         (unsigned long) &pt_kernelimage[0],  // pt
-        (unsigned long) kernel_base_pa,      // region base
+        (unsigned long) kernelimage_pa,      // region base
         (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 }
 
@@ -1142,7 +1374,10 @@ void __initialize_frontbuffer(void)
     unsigned long *pt_frontbuffer = (unsigned long *) PAGETABLE_FRONTBUFFER;
 
 // framebuffer_pa:    frontbuffer, VESA LFB from boot manager.
-    unsigned long framebuffer_pa = (unsigned long) SavedLFB;
+    unsigned long framebuffer_pa = (unsigned long) SMALL_frontbuffer_pa;
+    
+    g_frontbuffer_va = (unsigned long) FRONTBUFFER_VA;
+    
     
     mm_used_lfb = (1024 * 2);  
 
@@ -1198,8 +1433,18 @@ void __initialize_backbuffer(void)
 {
     unsigned long *pt_backbuffer = (unsigned long *) PAGETABLE_BACKBUFFER;
 
-// backbuffer_pa:     backbuffer, (16MB mark) 0x01000000.
-    unsigned long backbuffer_pa = (unsigned long) 0x01000000; 
+// backbuffer_pa:     
+// backbuffer, (16MB mark) 0x01000000.
+// #bugbug: Essa eh a mesma posiçao do heappool.
+//16mb mark
+    //unsigned long backbuffer_pa = (unsigned long) 0x01000000; 
+
+// 8mb mark
+// This is the right place: see: x64gpa.h
+    unsigned long backbuffer_pa = (unsigned long) SMALL_backbuffer_pa; 
+
+
+    g_backbuffer_va = (unsigned long) BACKBUFFER_VA;
 
     mm_used_backbuffer = (1024 * 2);  
 
@@ -1239,10 +1484,15 @@ void __initialize_backbuffer(void)
 void __initialize_pagedpool(void)
 {
     unsigned long *pt_pagedpool = (unsigned long *) PAGETABLE_PAGEDPOOL;
-    
-    mm_used_pagedpool = (1024 * 2);  //2mb 
+
+    unsigned long pagedpool_pa = (unsigned long) SMALL_pagedpool_pa;
+
+
 // 0x30600000;  // 2mb a mais que o backbuffer
     g_pagedpool_va = (unsigned long) PAGEDPOOL_VA;
+
+
+    mm_used_pagedpool = (1024 * 2);  //2mb 
 
 // mapeando 2mb de memória em ring3 para o pagedpool.
 
@@ -1258,7 +1508,7 @@ void __initialize_pagedpool(void)
         (unsigned long) KERNEL_PD_PA,         // pd 
         (int) PD_ENTRY_PAGEDPOOL,            // entry
         (unsigned long) &pt_pagedpool[0],    // pt
-        (unsigned long) SMALL_pagedpool_pa,  // region base 
+        (unsigned long) pagedpool_pa,  // region base 
         (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
@@ -1284,8 +1534,13 @@ void __initialize_heappool(void)
 {
     unsigned long *pt_heappool = (unsigned long *) PAGETABLE_HEAPPOOL; 
 
+
+    unsigned long heappool_pa = (unsigned long) SMALL_heappool_pa;
+
+    g_heappool_va = (unsigned long) HEAPPOOL_VA; //0x30800000;
+
+
     mm_used_heappool = (1024 * 2);
-    g_heappool_va    = (unsigned long) HEAPPOOL_VA; //0x30800000;
     g_heap_count     = 0;
     g_heap_count_max = G_DEFAULT_PROCESSHEAP_COUNTMAX;
     g_heap_size      = G_DEFAULT_PROCESSHEAP_SIZE;  //#bugbug
@@ -1302,7 +1557,7 @@ void __initialize_heappool(void)
         (unsigned long) KERNEL_PD_PA,       // pd 
         (int) PD_ENTRY_HEAPPOOL,            // entry
         (unsigned long) &pt_heappool[0],    // pt
-        (unsigned long) SMALL_heappool_pa,  // region base
+        (unsigned long) heappool_pa,  // region base
         (unsigned long) ( PAGE_USER | PAGE_WRITE | PAGE_PRESENT ) );  // flags=7
 }
 
@@ -1319,9 +1574,14 @@ void __initialize_heappool(void)
 void __initialize_extraheap1(void)
 {
     unsigned long *pt_extraheap1 = (unsigned long *) PAGETABLE_EXTRAHEAP1;
-    
-    mm_used_extraheap1 = (1024 * 2); 
+
+    unsigned long extraheap1_pa = (unsigned long) SMALL_extraheap1_pa;
+
     g_extraheap1_va = (unsigned long) EXTRAHEAP1_VA; //0x30A00000;
+
+
+    mm_used_extraheap1 = (1024 * 2); 
+
     g_extraheap1_size = (1024 * 2); 
 
 // IN:
@@ -1343,7 +1603,7 @@ void __initialize_extraheap1(void)
         (unsigned long) KERNEL_PD_PA,          // pd 
         (int) PD_ENTRY_EXTRAHEAP1,             // entry
         (unsigned long) &pt_extraheap1[0],     // pt
-        (unsigned long) SMALL_extraheap1_pa,   // region base
+        (unsigned long) extraheap1_pa,         // region base
         (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 
     g_extraheap1_initialized = TRUE;
@@ -1354,8 +1614,11 @@ void __initialize_extraheap2(void)
 {
     unsigned long *pt_extraheap2 = (unsigned long *) PAGETABLE_EXTRAHEAP2;
 
-    mm_used_extraheap2 = (1024 * 2); 
+    unsigned long extraheap2_pa = (unsigned long) SMALL_extraheap2_pa;
+
     g_extraheap2_va = (unsigned long) EXTRAHEAP2_VA; //0x30C00000;
+
+    mm_used_extraheap2 = (1024 * 2); 
     g_extraheap2_size = (1024 * 2);  
 
 // IN:
@@ -1377,7 +1640,7 @@ void __initialize_extraheap2(void)
       (unsigned long) KERNEL_PD_PA,          // pd 
       (int) PD_ENTRY_EXTRAHEAP2,            // entry
       (unsigned long) &pt_extraheap2[0],    // pt
-      (unsigned long) SMALL_extraheap2_pa,  // region base
+      (unsigned long) extraheap2_pa,  // region base
       (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 
     g_extraheap2_initialized = TRUE;
@@ -1389,8 +1652,12 @@ void __initialize_extraheap3(void)
 {
     unsigned long *pt_extraheap3 = (unsigned long *) PAGETABLE_EXTRAHEAP3;
 
-    mm_used_extraheap3 = (1024 * 2); 
+    unsigned long extraheap3_pa = (unsigned long) SMALL_extraheap3_pa;
+
     g_extraheap3_va = (unsigned long) EXTRAHEAP3_VA; //0x30E00000;
+
+
+    mm_used_extraheap3 = (1024 * 2); 
     g_extraheap3_size = (1024 * 2);  
 
     //mm_fill_page_table( 
@@ -1404,7 +1671,7 @@ void __initialize_extraheap3(void)
         (unsigned long) KERNEL_PD_PA,          // pd 
         (int) PD_ENTRY_EXTRAHEAP3,             // entry
         (unsigned long) &pt_extraheap3[0],     // pt
-        (unsigned long) SMALL_extraheap3_pa,   // region base
+        (unsigned long) extraheap3_pa,   // region base
         (unsigned long) ( PAGE_WRITE | PAGE_PRESENT ) );  // flags=3
 
     g_extraheap3_initialized = TRUE;
@@ -1655,215 +1922,22 @@ int mmSetUpPaging (void)
     kernel_pml4[0] = (unsigned long) &kernel_pdpt0[0];
     kernel_pml4[0] = (unsigned long) ( kernel_pml4[0] | PAGE_USER | PAGE_WRITE | PAGE_PRESENT );
 
-//
-// ============================
-//
-
-// local worker
-// Initialize kernel page tables.
-
+// local worker: Initialize kernel page tables.
     __initialize_kernel_page_tables();
 
 
-//
-// ===============================================================
-//
-
-    if ( memorysizeTotal == 0 )
-    {
+    if ( memorysizeTotal == 0 ){
         debug_print ("mmSetUpPaging: [FIXME] We need the memorysizeTotal\n");
         //while(1){}
     }
     debug_print ("mmSetUpPaging: [DEBUG] memorysizeTotal is not zero\n");
     //while(1){}
 
-
-//
-// == Frame table =============================================
-//
-
-// #important
-// Vamos configurar a frame table de acordo com o total de memória RAM.
-// 'memorysizeTotal' is the ram size in KB.
-// Configura apenas o início e o fim.
-// O resto da tabela será configurado pela função
-// I_initialize_frame_table() 
-// Start:
-// FRAME_TABLE_START_PA
-// This is the start of the table.
-// This is the 256MB mark.
-// End:
-// FRAME_TABLE_END_PA
-// This is the end of the table.
-// See:
-// x64gpa.h
-
-    debug_print ("mmSetUpPaging: Setup FT\n");
-
-// Setup the start of the table.
-// It's always the same.
-// We need at least 256 MB.
-// The system with 256MB has no FT.
-// We need more them this to have a FT.
-
-// ===================
-// Start
-    FT.start_pa = __128MB_MARK_PA;
-    //FT.start_pa = __256MB_MARK_PA;
-    //FT.start_pa = __512MB_MARK_PA;
-    //FT.start_pa = __1GB_MARK_PA;
-
-// ===================
-// End
-// (Uninitialized)
-// It will depend on the size of the RAM.
-// This routine will find this value.
-    FT.end_pa = 0;
-
-
-// =================================================
-// Size in KB.
-// Se a RAM for maior ou igual à 1GB.
-// Então temos mais memória do que precisamos
-// e a frame table será limitada à marca de 1GB.
-
-    if ( memorysizeTotal >= (1024*1024)  )
-    {
-        FT.end_pa = __1GB_MARK_PA;
-        debug_print ("mmSetUpPaging: We have 1GB or more\n");
-        goto initialize_frame_table;
-    }
-
-
-// =================================================
-// Size in KB.
-// Se a RAM for maior ou igual à 512MB.
-
-    if ( memorysizeTotal >= (512*1024) )
-    {
-        FT.end_pa = __512MB_MARK_PA;
-        debug_print ("mmSetUpPaging: We have 512MB or more\n");
-        goto initialize_frame_table;
-    } 
-
-
-// =================================================
-// Size in KB.
-// Se a RAM for maior ou igual à 256MB.
-
-    if ( memorysizeTotal >= (256*1024) )
-    {
-        FT.end_pa = __256MB_MARK_PA;
-        debug_print ("mmSetUpPaging: We have 256MB or more\n");
-        goto initialize_frame_table;
-    } 
-
-
-// =================================================
-// Error:
-// Size in KB.
-// Se a RAM for menor que 256MB.
-
-// #bugbug
-// Nossa rotina que calcula o tamanho da memória RAM
-// nos entrga um valor que é um pouco menos que o
-// total disponível.
-// Porque ele não testa o último mega.
-
-// The available ram is less than 256.
-    if ( memorysizeTotal < (256*1024) ){
-        debug_print ("mmSetUpPaging: [ALERT] memorysizeTotal is less than 256MB\n");
-    }
-
-//
-// Danger !
-//
-
-// The available RAM is almost 256MB
-// Its because we a 256MB card,
-// But the boot loader did not check the last mb.
-
-//#bugbug: x_panic is not available yet.
-
-    if ( memorysizeTotal < (250*1024) )
-    {
-        debug_print ("mmSetUpPaging: [PANIC] The system has less than 250MB of available RAM\n");
-        x_panic     ("mmSetUpPaging: less than 250MB \n");
-    }
-
-// Não é menor que 250MB
-// __256MB_MARK_PA?
-    FT.end_pa = (unsigned long)(250*1024*1024);
-
-//============================================================
-
-//
-// Initializing all the other elements of the frame table.
-//
-
-initialize_frame_table:
-
-// #bugbug
-// Slow. Use a define for this value.
-
-    if ( FT.end_pa < (250*1024*1024) )
-    {
-        debug_print ("mmSetUpPaging: [PANIC] less than 250MB.\n");
-        //#todo: panic
-    }
-
+// local worker: Initialize frame table.
     I_initialize_frame_table();
 
-// ================================================================
-
-//
-// Memory size
-//
-
-    debug_print ("SetUpPaging: Setup memory usage\n");
-
-// #Importante
-// Agora vamos calcular a quantidade de memória física usada 
-// até agora.
-// Levando em conta a inicialização que fizemos nessa rotina.
-// Estamos deixando de fora a memória dos dispositivos, pois a 
-// memória usada pelos dispositivos possuem endereço físico, 
-// mas está na parte alta do endereçamento físico, 
-// muito além da memória RAM instalada.
-// Com a exceção da vga, que fica antes de 1MB.
-// Os dispositivos por enquanto são memória de vídeo e 
-// placa de rede.
-// Tem a questão do dma a se considerar também.
-// Tem dma abaixo da marca de 16mb.
-// Tem dma que usa memória virtual.
-
-
-// Used.
-    // #todo: mm_used_lfb ??
-    memorysizeUsed = 
-        (unsigned long) ( 
-        mm_used_ring0_area +  
-        mm_used_ring3_area +  
-        mm_used_kernelimage +
-        mm_used_backbuffer + 
-        mm_used_pagedpool + 
-        mm_used_heappool + 
-        mm_used_extraheap1 + 
-        mm_used_extraheap2 + 
-        mm_used_extraheap3 +
-        mm_used_frame_table 
-        );
-
-// Free.
-    memorysizeFree = (unsigned long) (memorysizeTotal - memorysizeUsed);
-
-
-// memorysizeFree  is the size in KB.
-// memorysizeTotal is the size in KB.
-// memorysizeUsed  is the size in KB.
-// #todo:
-// We need to change these names including KB at the end of them.
-// ex: memorysizeTotal_KB
+// local worker: Setup memory usage.
+    __setup_memory_usage();
 
 // ==============================================
 
@@ -1918,6 +1992,71 @@ initialize_frame_table:
     debug_print("mmSetUpPaging: done\n");
     return 0;
 }
+
+
+void pages_print_info(int system_type)
+{
+    switch(system_type)
+    {
+    case stSmallSystem:
+            printf("Origin:            %xH \n", SMALL_origin_pa );
+            printf("Base kernel start: %xH \n", SMALL_kernel_base_pa );
+            printf("User area start:   %xH \n", SMALL_user_pa );
+            printf("cga memory:        %xH \n", SMALL_cga_pa );
+            printf("frontbuffer:       %xH \n", SMALL_frontbuffer_pa );
+            printf("backbuffer:        %xH \n", SMALL_backbuffer_pa );
+            printf("paged memory pool: %xH \n", SMALL_pagedpool_pa );
+            printf("heap pool:         %xH \n", SMALL_heappool_pa );
+            printf("extraheap1:        %xH \n", SMALL_extraheap1_pa );
+            printf("extraheap2:        %xH \n", SMALL_extraheap2_pa );
+            printf("extraheap3:        %xH \n", SMALL_extraheap3_pa );
+        break;
+    case stMediumSystem:
+            printf("Origin:            %xH \n", MEDIUM_origin_pa );
+            printf("Base kernel start: %xH \n", MEDIUM_kernel_base_pa );
+            printf("User area start:   %xH \n", MEDIUM_user_pa );
+            printf("cga memory:        %xH \n", MEDIUM_cga_pa );
+            printf("frontbuffer:       %xH \n", MEDIUM_frontbuffer_pa );
+            printf("backbuffer:        %xH \n", MEDIUM_backbuffer_pa );
+            printf("paged memory pool: %xH \n", MEDIUM_pagedpool_pa );
+            printf("heap pool:         %xH \n", MEDIUM_heappool_pa );
+            printf("extraheap1:        %xH \n", MEDIUM_extraheap1_pa );
+            printf("extraheap2:        %xH \n", MEDIUM_extraheap2_pa );
+            printf("extraheap3:        %xH \n", MEDIUM_extraheap3_pa );
+        break;
+    case stLargeSystem:
+            printf("Origin:            %xH \n", LARGE_origin_pa );
+            printf("Base kernel start: %xH \n", LARGE_kernel_base_pa );
+            printf("User area start:   %xH \n", LARGE_user_pa );
+            printf("cga memory:        %xH \n", LARGE_cga_pa );
+            printf("frontbuffer:       %xH \n", LARGE_frontbuffer_pa );
+            printf("backbuffer:        %xH \n", LARGE_backbuffer_pa );
+            printf("paged memory pool: %xH \n", LARGE_pagedpool_pa );
+            printf("heap pool:         %xH \n", LARGE_heappool_pa );
+            printf("extraheap1:        %xH \n", LARGE_extraheap1_pa );
+            printf("extraheap2:        %xH \n", LARGE_extraheap2_pa );
+            printf("extraheap3:        %xH \n", LARGE_extraheap3_pa );
+        break;
+    default:
+        break;
+    };
+}
+
+
+void pages_print_video_info(void)
+{
+// Video info
+    printf("\n\n");
+    
+    printf ("FrontbufferPA={%x} FrontbufferVA={%x} \n", 
+        SMALL_frontbuffer_pa, 
+        g_frontbuffer_va );  
+
+   printf ("BackbufferPA={%x}  BackbufferVA={%x} \n", 
+        SMALL_backbuffer_pa, 
+        g_backbuffer_va );
+}
+
 
 //
 // End.

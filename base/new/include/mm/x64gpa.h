@@ -286,7 +286,7 @@
 // == 1 MB ==================================================
 //
 
-// eXTENDED MEMORY
+// EXTENDED MEMORY
 
 // 1MB físico.
 // #importante: 
@@ -304,13 +304,19 @@
 // == 2 MB ==================================================
 //
 
-// ...
+      // ??
+      // O que tem aqui?
+      // podemos reservar para extender a imagem do kernel?
 
 //
 // == 4 MB ==================================================
 //
 
-// ...
+      // ??
+      // O que tem aqui?
+      // podemos reservar para extender a imagem do kernel?
+
+
 
 //
 // == 8 MB ==================================================
