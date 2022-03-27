@@ -20,6 +20,7 @@ int current_mode;
 #include <sys/types.h>
 #include <sys/cdefs.h>
 #include <stddef.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

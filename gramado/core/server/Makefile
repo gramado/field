@@ -31,24 +31,48 @@ RUBY	= ruby
 
 
 # usermode cross compiler flags.
-user_ccflags = -m64 \
+user_ccflags = \
+	-Wall \
+	-Wundef \
+	-Wmissing-prototypes \
+	-Wno-uninitialized \
+	-Wno-format-security \
+	-Wno-trigraphs \
+	-Werror=strict-prototypes \
+	-Werror=implicit-function-declaration \
+	-Werror=return-type \
 	-std=gnu89 \
+	-m64 \
+	-s \
+	-static \
+	-fcommon \
+	-fgnu89-inline \
+	-finline-functions \
+	-fshort-wchar \
+	-ffreestanding \
+	-fleading-underscore \
+	-fstrict-overflow \
+	-nostdlib \
 	-nodefaultlibs \
 	-nostdinc \
-	-nostdlib \
-	-static \
-	-fgnu89-inline \
-	-ffreestanding \
 	-fno-builtin \
-	-fno-pie \
-	-fleading-underscore \
 	-fno-stack-protector \
-	-s \
-	-Werror=strict-prototypes    
+	-fno-strict-aliasing \
+	-fno-PIE \
+	-fno-pie \
+	-fno-omit-frame-pointer \
+	-fno-optimize-sibling-calls    
+	
+	
+	
+	
+	
+
+	
 
 
 # usermode linker flags.
-user_ldflags = -m elf_x86_64 -T link_r0.ld
+user_ldflags = -m elf_x86_64 -T x86_64/link_r0.ld
 
 
 #todo

@@ -4066,6 +4066,8 @@ int set_window_with_focus(int id)
     w = (struct gws_window_d *) windowList[id];
     sc82 (10011,w->client_tid,w->client_tid,w->client_tid);
 */
+
+    return 0;
 }
 
 

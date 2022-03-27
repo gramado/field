@@ -1,12 +1,11 @@
 /* 
- * File: link.ld
- * ld script to make the x86_64 kernel image.
+ * File: link_r0.ld
+ * ld script to make the x86_64 window server image.
  * Base:
- *     0x30000000
+ *     0x30A00000
  * Entry point: 
- *     0x30001000
- *     Kernel entry point in: 
- *     entrance/warden/unit0/x86_64/head_64.asm. 
+ *     0x30A01000
+ *     See: See the entrypoint at crt0.c in rtl/.
  * History:
  *     2021 - Created by Fred Nora.
  */
@@ -15,15 +14,17 @@
 /* 64-bit ELF format for the x86-64 architecture. */
 
 OUTPUT_FORMAT("elf64-x86-64")
-ENTRY(_kernel_begin)
+ENTRY(main)
 
-SECTIONS 
+/* Essa aplicação está usando o diretório do processo kernel. */
+
+SECTIONS
 {
-    . = 0x30001000;
-    .text 0x30001000:
+    . = 0x30A01000;
+    .text 0x30A01000: 
     {
-        _kernel_begin = .;   
-        _start_of_kernel_image = .;
+        _server_begin = .;
+        _start_of_server_image = .;
         
         _code_begin = .;
         *(.head_x86_64)  *(.text) 
@@ -41,11 +42,12 @@ SECTIONS
     . = ALIGN(4096);
     .data :  
     { 
-        _data_begin = .;
+        _data_begin = .; 
         *(.data) 
         _data_end = .; 
     }
-    
+
+
     . = ALIGN(4096);
     .bss : 
     { 
@@ -54,13 +56,8 @@ SECTIONS
         _bss_end = .; 
     }
 
-    _kernel_end = .;
-    _end_of_kernel_image = .; 
+    _server_end = .; 
+    _end_of_server_image = .; 
 }
-
-
-
-
-
 
 
