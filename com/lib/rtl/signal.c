@@ -8,13 +8,10 @@
 #include <stddef.h>
 #include <errno.h>
 #include <signal.h>
-
-
 #include <stdio.h>
 #include <unistd.h>
-
-
 #include <rtl/gramado.h> 
+
 
 const char *sys_siglist[NSIG] = {
 

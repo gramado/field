@@ -109,25 +109,22 @@ libc-header:
 
 libc-content:
 
-	gcc  -c  ctype/ctype.c      $(CFLAGS) -I. -I include/ -o ctype.o
-	gcc  -c  fcntl/fcntl.c      $(CFLAGS) -I. -I include/ -o fcntl.o
-	gcc  -c  mmap/mmap.c        $(CFLAGS) -I. -I include/ -o mmap.o
-	gcc  -c  fscanf/fscanf.c    $(CFLAGS) -I. -I include/ -o fscanf.o
-	gcc  -c  ioctl/ioctl.c      $(CFLAGS) -I. -I include/ -o ioctl.o
-	gcc  -c  signal/signal.c    $(CFLAGS) -I. -I include/ -o signal.o
-	gcc  -c  socket/socket.c    $(CFLAGS) -I. -I include/ -o socket.o
-	gcc  -c  stdio/stdio.c      $(CFLAGS) -I. -I include/ -o stdio.o
-	gcc  -c  stdlib/stdlib.c    $(CFLAGS) -I. -I include/ -o stdlib.o
-
-	gcc  -c  unistd/unistd.c    $(CFLAGS) -I. -I include/ -o unistd.o
-	gcc  -c  termios/termios.c  $(CFLAGS) -I. -I include/ -o termios.o
-	gcc  -c  conio.c     $(CFLAGS) -I. -I include/ -o conio.o
-	gcc  -c  string.c    $(CFLAGS) -I. -I include/ -o string.o
-	gcc  -c  time.c      $(CFLAGS) -I. -I include/ -o time.o
-	gcc  -c  wait.c      $(CFLAGS) -I. -I include/ -o wait.o
-
+	gcc  -c  ctype.c    $(CFLAGS) -I. -I include/ -o ctype.o
+	gcc  -c  fcntl.c    $(CFLAGS) -I. -I include/ -o fcntl.o
+	gcc  -c  mmap.c     $(CFLAGS) -I. -I include/ -o mmap.o
+	gcc  -c  fscanf.c   $(CFLAGS) -I. -I include/ -o fscanf.o
+	gcc  -c  ioctl.c    $(CFLAGS) -I. -I include/ -o ioctl.o
+	gcc  -c  signal.c   $(CFLAGS) -I. -I include/ -o signal.o
+	gcc  -c  socket.c   $(CFLAGS) -I. -I include/ -o socket.o
+	gcc  -c  stdio.c    $(CFLAGS) -I. -I include/ -o stdio.o
+	gcc  -c  stdlib.c   $(CFLAGS) -I. -I include/ -o stdlib.o
+	gcc  -c  termios.c  $(CFLAGS) -I. -I include/ -o termios.o
+	gcc  -c  unistd.c   $(CFLAGS) -I. -I include/ -o unistd.o
+	gcc  -c  conio.c    $(CFLAGS) -I. -I include/ -o conio.o
+	gcc  -c  string.c   $(CFLAGS) -I. -I include/ -o string.o
+	gcc  -c  time.c     $(CFLAGS) -I. -I include/ -o time.o
+	gcc  -c  wait.c     $(CFLAGS) -I. -I include/ -o wait.o
 	#gcc  -c  math.c      $(CFLAGS) -I. -I include/ -o math.o
-
 	gcc  -c  strtoul.c   $(CFLAGS) -I. -I include/ -o strtoul.o
 	gcc  -c  strtol.c    $(CFLAGS) -I. -I include/ -o strtol.o
 	gcc  -c  err.c       $(CFLAGS) -I. -I include/ -o err.o

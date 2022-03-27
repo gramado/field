@@ -10,7 +10,6 @@
 #include <sys/ioctl.h>
 #include <sys/ioctls.h>
 #include <termios.h>
-
 #include <stdio.h>
 
 

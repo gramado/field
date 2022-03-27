@@ -1,12 +1,9 @@
 /*
  * File: unistd.c
- *
  *     Unix standard.
  *     ... and maybe posix stuff.
- * 
  * History:
  *     2019 - Created by Fred Nora.
- *     2020 - New functions.
  */
 
 
@@ -26,13 +23,9 @@
 #include <sys/ioctls.h>
 #include <termios.h>
 #include <sys/utsname.h>
-
 #include <stdio.h>
 #include <string.h>
-
-
 #include <rtl/gramado.h> 
-
 
 
 #define  UNISTD_SYSTEMCALL_FORK     71  
@@ -1183,12 +1176,6 @@ int pipe2 ( int pipefd[2], int flags )
                      (unsigned long) 0 );
 }
 
-
-/*
- ****************************************
- * pipe:
- *
- */
 
 int pipe (int pipefd[2])
 {

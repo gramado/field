@@ -851,6 +851,21 @@ void stdlib_die (char *str)
 }
 
 
+
+void *rtl_malloc ( size_t size )
+{
+    if(size<0){
+        return NULL;
+    }
+
+    if(size==0){
+        size++;
+    }
+
+    return (void *) malloc(size);
+}
+
+
 /*
  * malloc:
  *     Aloca memória para um programa em user mode. 
@@ -1118,8 +1133,21 @@ void *calloc(size_t num, size_t size)
 */
 
 
+void *rtl_calloc (size_t count, size_t size)
+{
+    size_t t = (count*size);
+
+    if(t == 0)
+    {
+        count=1;
+        size=1;
+    }
+
+    return (void *) calloc(count,size);
+}
+
+
 /*
- ***********************************
  * calloc: 
  *     Aloca e preenche com zero. 
  */
@@ -1161,9 +1189,10 @@ void *xcalloc (size_t count, size_t size)
     return (void *) Address;
 }
 
+
 void *xzalloc (size_t n)
 {
-  return (void *) xcalloc (n, 1);
+    return (void *) xcalloc (n, 1);
 }
 
 

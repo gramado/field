@@ -214,6 +214,8 @@ unsigned long rtl_post_system_message( int tid, unsigned long message_buffer );
 
 unsigned long rtl_get_system_metrics (int index);
 
+unsigned long rtl_jiffies(void);
+unsigned long rtl_memory_size_in_kb(void);
 
 pid_t rtl_current_process(void);
 int rtl_current_thread(void);

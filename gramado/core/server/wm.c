@@ -479,8 +479,7 @@ __draw_window_border(
 
 
 /*
- ********************************
- * wmDrawFrame:
+ * wmCreateWindowFrame:
  * 
  */
 
@@ -1138,6 +1137,9 @@ void wmRefreshDirtyRectangles(void)
 }
 
 
+// #bugbug
+// This name is wrong.
+// A frame can be only a window inside a client application.
 void flush_frame(void)
 {
     wm_flush_screen();

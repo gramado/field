@@ -191,18 +191,14 @@ void *malloc (size_t size);
 void *xmalloc ( size_t size );
 void *xmemdup (void const *p, size_t s);
 char *xstrdup(char const *string);
-
-
-
 void *calloc (size_t count, size_t size);
 void *xcalloc (size_t count, size_t size);
 void *xzalloc (size_t n);
-
 void *zmalloc ( size_t size );
-
-
 void *realloc ( void *start, size_t newsize );
 
+void *rtl_malloc ( size_t size );
+void *rtl_calloc (size_t count, size_t size);
 
 //
 // failure routines

@@ -1,16 +1,15 @@
-
 /*
  * File: mmap.c 
  *     mmap, munmap - map or unmap files or devices into memory.
  *     Created by Fred Nora.
  */
 
-#include  <types.h>
-#include  <stdio.h>
-#include  <stdlib.h>
-#include  <ctype.h>
-#include  <stdarg.h>
-#include  <sys/mman.h>
+#include <types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <sys/mman.h>
 
 
 /*

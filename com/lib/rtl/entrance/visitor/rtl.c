@@ -212,7 +212,10 @@ unsigned long rtl_get_system_message(unsigned long message_buffer)
 // Explain it better.
 // We need a better return value.
 // Maybe a boolian 'int' for TRUE or FALSE.
-unsigned long rtl_post_system_message( int tid, unsigned long message_buffer)
+unsigned long 
+rtl_post_system_message( 
+    int tid, 
+    unsigned long message_buffer )
 {
 
     if( tid < 0 ){
@@ -471,7 +474,8 @@ void *rtl_create_thread (
 {
     //#define	SYSTEMCALL_CREATETHREAD     72
     debug_print ("rtl_create_thread:\n");
-    return (void *) gramado_system_call ( 72, //SYSTEMCALL_CREATETHREAD, 
+    return (void *) gramado_system_call ( 
+                        72,    //SYSTEMCALL_CREATETHREAD, 
                         init_rip, 
                         init_stack, 
                         (unsigned long) name );
@@ -523,7 +527,6 @@ rtl_draw_text (
     unsigned long color, 
     char *string )
 {
-
     unsigned long msg[8];
 
 
@@ -536,7 +539,6 @@ rtl_draw_text (
         debug_print("rtl_draw_text: *string\n");
         return -1;
     }
-
 
     msg[0] = (unsigned long) 0;  // window;
     msg[1] = (unsigned long) x;
@@ -605,24 +607,18 @@ int rtl_current_thread(void)
 }
 
 
+// #todo: __pthread_self ?
 pthread_t pthread_self(void)
 {
-    // #todo: __pthread_self ?
     return (pthread_t) rtl_current_thread();
 }
 
-// ms
-// tempo total em ms.
-// usado para calcular o tempo de execuçao de uma funcao.
+
+// #bugbug: 118 is the current jiffie.
 unsigned long rtl_get_progress_time(void)
 {
-
-// #bugbug
-// A variável do indice 120 ainda não esta em uso.
-// Use a variável do indice 118, que é o jiffies.
-
     return (unsigned long) rtl_get_system_metrics (118);
-    //return (unsigned long) rtl_get_system_metrics (120);
+    //return (unsigned long) rtl_get_system_metrics (?);
 }
 
 
@@ -672,7 +668,6 @@ rtl_copy_text (
     int width, 
     int height )
 {
-
     char *__src  = (char *) src;
     char *__dest = (char *) dest; 
 
@@ -1607,9 +1602,11 @@ void rtl_test_pipe (void)
     // clear buffer.
     memset (buf, 0, sizeof (buf));
 
-  
-    // read pipe 0
-    nread = read (pipefd[0], buf, sizeof(buf) - 1);
+// Read pipe 0.
+    nread = (int) read (
+                      pipefd[0], 
+                      buf, 
+                      sizeof(buf) - 1 );
 
     if (nread<0){
         printf("read() fail\n");
@@ -1668,7 +1665,6 @@ rtl_load_path (
 {
     int status = -1;
 
-
     if ( (void*) path == NULL ){
         printf ("rtl_load_path: [FAIL] path\n");
         return (int) -1;
@@ -1695,12 +1691,9 @@ rtl_load_path (
 }
 
 
-
-
 ssize_t rtl_console_beep(void)
 {
     char BeepChar = '\a';
-    
     return (ssize_t) write ( 
                          fileno(stdout), 
                          (const void *) &BeepChar, 
@@ -1723,6 +1716,7 @@ int rtl_clone_and_execute ( char *name )
 // #todo
 // Parameters vector.
 // Maybe we can provide a default parameters vector.
+// Maybe we can send a raw command line.
 
     return (int) sc82 ( 900, (unsigned long) name, 0, 0 );
 }
@@ -1748,21 +1742,25 @@ int rtl_spawn_process( const char *path )
 // set foreground thread.
 int rtl_focus_on_this_thread(void)
 {
-    int cThread = (int) pthread_self();
+    int tid = (int) pthread_self();
 
-    sc82 (10011,cThread,cThread,cThread);
+    sc82 (10011,tid,tid,tid);
 
-    return (int) cThread;
+    return (int) tid;
 }
+
 
 int rtl_focus_on_me(void)
 {
     return (int) rtl_focus_on_this_thread();
 }
 
+
+// Yield this thread.
+// Wait for the next round.
 void rtl_yield(void)
 {
-    gramado_system_call (265,0,0,0); //yield thread.
+    gramado_system_call (265,0,0,0);
 }
 
 
@@ -1780,6 +1778,7 @@ void rtl_invalidate_screen(void)
 extern unsigned long HEAP_START;
 extern unsigned long HEAP_END;
 
+// lib lobal heap.
 void rtl_show_heap_info(void)
 {
     printf ("heap: Start=%x End=%x\n",
@@ -1791,6 +1790,9 @@ void rtl_show_heap_info(void)
 // Use the kernel allocator for ring 3 shared memory.
 void *shAlloc( size_t size_in_bytes )
 {
+    if(size_in_bytes==0){
+        size_in_bytes++;
+    }
     return (void*) gramado_system_call (891,size_in_bytes,0,0); 
 }
 
@@ -1884,5 +1886,19 @@ uint32_t uipow (uint32_t base, uint32_t exp)
     return (uint32_t) Result;
 }
 */
+
+
+unsigned long rtl_jiffies(void)
+{
+    return (unsigned long) rtl_get_system_metrics (118);
+}
+
+
+unsigned long rtl_memory_size_in_kb(void)
+{
+    return (unsigned long) rtl_get_system_metrics (33);
+}
+
+
 
 
