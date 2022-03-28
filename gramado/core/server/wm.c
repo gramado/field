@@ -18,6 +18,15 @@
 #define TB_BUTTON_HEIGHT  (TB_HEIGHT - (TB_BUTTON_PADDING*2))
 #define TB_BUTTON_WIDTH  TB_BUTTON_HEIGHT
 #define TB_BUTTONS_MAX  8
+
+// Affects the active window
+#define OPTION_NOTHING  0
+#define OPTION_MINIMIZE  1
+#define OPTION_MAXIMIZE  2
+#define OPTION_CLOSE     3
+static int current_option=OPTION_NOTHING;
+
+//static int tb_fisrt_reponder = 0;
 int tb_buttons[TB_BUTTONS_MAX];
 unsigned long tb_windows[TB_BUTTONS_MAX];  // ponteiros de estrutura de janelas.
 // Quantos botões ja temos.
@@ -48,6 +57,74 @@ static unsigned long ____old_time=0;
 static unsigned long ____new_time=0;
 
 
+
+
+// prototypes
+
+static void run_selected_option(void);
+
+
+// ===================
+
+
+static void run_selected_option(void)
+{
+    struct gws_window_d *w;
+
+    yellow_status("RUN");
+
+
+    w = (struct gws_window_d *) windowList[active_window];
+
+    if( (void*) w == NULL ){
+        current_option=OPTION_NOTHING;
+        return;
+    }
+
+    if(w->magic!=1234){
+        current_option=OPTION_NOTHING;
+        return;
+    }
+
+    if(w->type!=WT_OVERLAPPED){
+        current_option=OPTION_NOTHING;
+        return;
+    }
+
+
+// =============
+
+    // Clicked with option: 'nothing'.
+    if(current_option==OPTION_NOTHING)
+    {
+        gwssrv_change_window_position(w,20,20);
+        gws_resize_window(w,100,100);
+        redraw_window(w,TRUE);
+        current_option=OPTION_NOTHING;
+        return;
+    }
+
+
+    if(current_option==OPTION_MINIMIZE){
+        gws_resize_window(w,100,100);
+        redraw_window(w,TRUE);
+        current_option=OPTION_NOTHING;
+        return;
+    }
+    
+    //#bugbug: e se a janela ativa for a root?
+    if(current_option==OPTION_MAXIMIZE){
+        //redraw_window_by_id(active_window,TRUE);
+        //redraw_window(w,TRUE);
+        wm_update_window_by_id(w->id);
+    }
+
+    if(current_option==OPTION_CLOSE){
+    }
+
+
+    current_option=OPTION_NOTHING;
+}
 
 
 void show_client( struct gws_client_d *c, int tag )
@@ -1433,6 +1510,8 @@ void wm_update_desktop(void)
         w = (struct gws_window_d *) w->next; 
     }; 
 
+    current_option = OPTION_NOTHING;
+
 // Update the taskbar at the bottom of the screen.
     wm_Update_TaskBar("Desktop");
 }
@@ -2420,7 +2499,9 @@ wmProcedure(
             redraw_window_by_id(mousehover_window,TRUE);
             //create_main_menu(8,8);
             //wm_update_active_window();
-            yellow_status("0");
+            current_option = OPTION_MINIMIZE;
+            yellow_status("0: Min");
+            return 0;
         }
 
         //tb_button[1]
@@ -2428,7 +2509,9 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            yellow_status("1");
+            current_option = OPTION_MAXIMIZE;
+            yellow_status("1: Max");
+            return 0;
         }
 
         //tb_button[2]
@@ -2436,7 +2519,9 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            yellow_status("2");
+            current_option = OPTION_CLOSE;
+            yellow_status("2: Close");
+            return 0;
         }
 
         //tb_button[3]
@@ -2444,11 +2529,13 @@ wmProcedure(
         {
             set_status_by_id(mousehover_window,BS_RELEASED);
             redraw_window_by_id(mousehover_window,TRUE);
-            yellow_status("3");
+            yellow_status("3: OK");
+            run_selected_option();
             
             // mostra o cliente se ele faz parte da tag 3.
             //show_client(first_client->next,3);
             //show_client_list(3);  //#todo: notworking
+            return 0;
         }
 
         return 0;
@@ -2482,6 +2569,27 @@ wmProcedure(
         break;
 
     case GWS_SysKeyDown:
+        if(long1 == VK_F1){
+            set_status_by_id(tb_buttons[0],BS_PRESSED);
+            redraw_window_by_id(tb_buttons[0],TRUE);
+            return 0;
+        }
+        if(long1 == VK_F2){
+            set_status_by_id(tb_buttons[1],BS_PRESSED);
+            redraw_window_by_id(tb_buttons[1],TRUE);
+            return 0;
+        }
+        if(long1 == VK_F3){
+            set_status_by_id(tb_buttons[2],BS_PRESSED);
+            redraw_window_by_id(tb_buttons[2],TRUE);
+            return 0;
+        }
+        if(long1 == VK_F4){
+            set_status_by_id(tb_buttons[3],BS_PRESSED);
+            redraw_window_by_id(tb_buttons[3],TRUE);
+            return 0;
+        }
+
         //printf("wmProcedure: [?] GWS_SysKeyDown\n");
         // Enfileirar a mensagem na fila de mensagens
         // da janela com foco de entrada.
@@ -2492,6 +2600,49 @@ wmProcedure(
             (unsigned long)long1,
             (unsigned long)long2);
         //wm_update_desktop(); // 
+        return 0;
+        break;
+        
+    case GWS_SysKeyUp:
+        if(long1 == VK_F1){
+            set_status_by_id( tb_buttons[0],BS_RELEASED);
+            redraw_window_by_id(tb_buttons[0],TRUE);
+            current_option = OPTION_MINIMIZE;
+            yellow_status("0: Min");
+            return 0;
+        }
+        if(long1 == VK_F2){
+            set_status_by_id( tb_buttons[1],BS_RELEASED);
+            redraw_window_by_id(tb_buttons[1],TRUE);
+            current_option = OPTION_MAXIMIZE;
+            yellow_status("1: Max");
+            return 0;
+        }
+        if(long1 == VK_F3){
+            set_status_by_id( tb_buttons[2],BS_RELEASED);
+            redraw_window_by_id(tb_buttons[2],TRUE);
+            current_option = OPTION_CLOSE;
+            yellow_status("2: Close");
+            return 0;
+        }
+        if(long1 == VK_F4){
+            set_status_by_id( tb_buttons[3],BS_RELEASED);
+            redraw_window_by_id(tb_buttons[3],TRUE);
+            yellow_status("3: OK");
+            run_selected_option();
+            return 0;
+        }
+        //=====
+        if(long1==VK_F5){
+            show_client_list(3);
+            return 0;
+        }
+
+        //=====
+        if(long1==VK_F12){
+            wm_update_desktop();
+            return 0;
+        }
         return 0;
         break;
 
@@ -2647,6 +2798,7 @@ wmHandler(
 
     case GWS_KeyDown:
     case GWS_SysKeyDown:
+    case GWS_SysKeyUp:
     case GWS_SwitchFocus:
         // get_focus() will give us a valid pointer or null.
         w = (struct gws_window_d *) get_focus();
@@ -2694,6 +2846,22 @@ void yellow_status( char *string )
     unsigned long offset_string2 = ( 8*5 );
     unsigned long bar_size = w;
 
+    struct gws_window_d *aw;
+    aw = (struct gws_window_d *) windowList[active_window];
+
+    if( (void*) aw == NULL ){
+        return;
+    }
+
+    if(aw->magic!=1234){
+        return;
+    }
+
+    //if(aw->type!=WT_OVERLAPPED){
+    //    return;
+    //}
+
+
     debug_print ("yellow_status:\n");
     
     //#todo
@@ -2707,25 +2875,44 @@ void yellow_status( char *string )
         //bar_size = w;
         bar_size = (w>>1);
         rectBackbufferDrawRectangle ( 
-            0, 0, bar_size, 24, COLOR_YELLOW, 1,0 );
+            aw->left +2, 
+            aw->top  +2, 
+            bar_size, 
+            24, 
+            COLOR_YELLOW, 
+            1,
+            0 );
     }else{
 
         //bar_size = (offset_string2 + (4*8) );
-        bar_size = (offset_string2 + (100) );
+        //bar_size = (offset_string2 + (100) );
+        bar_size = (w>>1);
         rectBackbufferDrawRectangle ( 
-            0, 0, bar_size, 24, COLOR_YELLOW, 1,0 );
+            aw->left +2, 
+            aw->top +2, 
+            bar_size, 
+            24, 
+            COLOR_YELLOW, 
+            1,
+            0 );
     };
 
 // Escreve as strings
-    grDrawString ( offset_string1, 8, COLOR_BLACK, string );
-    grDrawString ( offset_string2, 8, COLOR_BLACK, "FPS" );
+    
+    grDrawString ( 
+        aw->left +2 + offset_string1, 
+        aw->top  +2 + 8, COLOR_BLACK, 
+        string );
+    
+    //grDrawString ( offset_string2, 8, COLOR_BLACK, "FPS" );
     
     // Mostra o retângulo.
      
     if (bar_size == 0)
         bar_size = 32;
  
-    gws_refresh_rectangle(0,0,bar_size,24);
+    gws_refresh_rectangle(
+        aw->left +2, aw->top +2,bar_size,24);
 
     debug_print ("yellow_status: done\n");
 }

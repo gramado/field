@@ -420,12 +420,24 @@ wmProcedure (
         break;
 
 
+
+// ==============
+// msg:
+// Syskeyup.
+// liberadas: teclas de funçao
+    case MSG_SYSKEYUP:
+        // Send it to the window server.
+        wmSendInputToWindowManager(0,MSG_SYSKEYUP,long1,long2); 
+        return 0;
+        break;
+
+
 // ==============
 // msg:
 // Syskeydown.
 // Pressionadas: teclas de funçao
     case MSG_SYSKEYDOWN:
-             
+
         // Send it to the window server.
         wmSendInputToWindowManager(0,MSG_SYSKEYDOWN,long1,long2); 
 
@@ -1074,6 +1086,7 @@ xxxKeyEvent (
                 //printf ("VK_RSHIFT: Pressionada\n"); refresh_screen();
                 break;
 
+            // Funções pressionadas.
             case VK_F1: case VK_F2: case VK_F3: case VK_F4:
             case VK_F5: case VK_F6: case VK_F7: case VK_F8:
             case VK_F9: case VK_F10: case VK_F11: case VK_F12:
