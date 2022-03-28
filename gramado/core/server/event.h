@@ -34,6 +34,9 @@ struct gws_event_d
     //todo: the client
     // ...client
 
+    // TRUE or FALSE
+    int has_event;
+
     //standard msg block
     int wid;    // window id.
     int msg;    // msg. (event type).

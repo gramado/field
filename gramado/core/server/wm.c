@@ -62,7 +62,7 @@ static unsigned long ____new_time=0;
 // prototypes
 
 static void run_selected_option(void);
-
+static void on_mouse_event(int event_type, long x, long y);
 
 // ===================
 
@@ -124,6 +124,36 @@ static void run_selected_option(void)
 
 
     current_option=OPTION_NOTHING;
+}
+
+// Quante temos um evento de mouse,
+// vamos enviar esse evento para a
+// janela com o foco de entrada.
+// Os aplicativos estao recebendo
+// os eventos enviados para as janelas com o foco de entrada.
+
+static void on_mouse_event(int event_type, long x, long y)
+{
+// Window with focus.
+    struct gws_window_d *w;
+
+// Error. Nothing to do.
+    if(event_type<0)
+        return;
+
+    w = (struct gws_window_d *) get_focus();
+    if( (void*) w==NULL ){
+        return;
+    }
+
+// data
+    w->single_event.wid   = w->id;
+    w->single_event.msg   = event_type;
+    w->single_event.long1 = x;  //#debug: O app esta pegando o valor que colocamos
+    w->single_event.long2 = y;  // aqui corretamente.
+
+// flag
+    w->single_event.has_event = TRUE;
 }
 
 
@@ -2480,7 +2510,15 @@ wmProcedure(
         return 0;
         break;
 
+    // 36
     case GWS_MouseReleased:
+        
+        // Post it to the app.
+        on_mouse_event( 
+            GWS_MouseReleased,              // event type
+            comp_get_mouse_x_position() ,   // current cursor x
+            comp_get_mouse_y_position() );  // current cursor y
+        
         //if(long1==0){ yellow_status("R0"); }
         //if(long1==1){ yellow_status("R1"); wm_update_desktop(); return 0; }
         if(long1==1){ 
@@ -2632,15 +2670,16 @@ wmProcedure(
             run_selected_option();
             return 0;
         }
+
         //=====
         if(long1==VK_F5){
-            show_client_list(3);
+            wm_update_desktop();
             return 0;
         }
 
         //=====
-        if(long1==VK_F12){
-            wm_update_desktop();
+        if(long1==VK_F6){
+            show_client_list(3);
             return 0;
         }
         return 0;

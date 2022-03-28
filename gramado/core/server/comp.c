@@ -17,6 +17,18 @@ static long __new_mouse_x=0;
 static long __new_mouse_y=0;
 
 
+
+long comp_get_mouse_x_position(void)
+{
+    return (long) __new_mouse_x;
+}
+
+
+long comp_get_mouse_y_position(void)
+{
+    return (long) __new_mouse_y;
+}
+
 // + Apaga o cursor antigo, copiando o conteudo do backbuffer
 // + Pinta o novo cursor diretamente no lfb.
 void __display_mouse_cursor(void)

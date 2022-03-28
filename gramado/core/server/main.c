@@ -2106,17 +2106,17 @@ static int serviceNextEvent (void)
     //printf("serviceNextEvent\n");
 
 // Window with focus.
-
     struct gws_window_d *w;
     
     w = (struct gws_window_d *) get_focus();
-    if( (void*) w==NULL )
+    if( (void*) w==NULL ){
         return -1;
+    }
 
-    w->single_event.wid   = w->id;
-    w->single_event.msg   = 1000;  // >>>>>> EVENT TYPE <<<<<<<
-    w->single_event.long1 = 1;   // signature
-    w->single_event.long2 = 2;   // signature
+    //w->single_event.wid   = w->id;
+    //w->single_event.msg   = 1000;  // >>>>>> EVENT TYPE <<<<<<<
+    //w->single_event.long1 = 1;   // signature
+    //w->single_event.long2 = 2;   // signature
 
 // Building the next response.
 // It will be sent in the socket loop.
@@ -2127,13 +2127,27 @@ static int serviceNextEvent (void)
     next_response[2] = 1234;  //signature
     next_response[3] = 5678;  //signature
 
+// Do we have a new event?
+    if( w->single_event.has_event != TRUE )
+    {
+        next_response[5] = 0;  // Null event type.
+        goto done;
+    }
+
 // the message packet.
     next_response[4] = w->single_event.wid;  // window
     next_response[5] = w->single_event.msg;  // >>>>>> EVENT TYPE <<<<<<<
     next_response[6] = w->single_event.long1;
     next_response[7] = w->single_event.long2;
 
+done:
+    w->single_event.has_event = FALSE;
+    w->single_event.wid=0;
+    w->single_event.msg = 0;
+    w->single_event.long1 = 0;
+    w->single_event.long2 = 0;
     return 0;
+//fail:
     //return -1; // pra gerar resposta de erro
 }
 

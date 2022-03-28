@@ -237,15 +237,47 @@ editorProcedure(
 
     switch(event_type){
 
+    case 0:
+        //#debug
+        //printf("EDITOR: Null event!\n");
+        return 0;
+        break;
+
+    //36
+    case MSG_MOUSERELEASED:
+        if( event_window == addressbar_window ||
+            event_window == client_window )
+        {
+            gws_redraw_window(fd, event_window, TRUE);
+            
+            if(event_window == client_window)
+            {
+                gws_draw_char (
+                    (int) fd,              // fd
+                    (int) event_window,    // wid
+                    (unsigned long) long1, // left
+                    (unsigned long) long2, // top
+                    (unsigned long) COLOR_BLACK,
+                    (unsigned long) '.' );
+            }
+            return 0;
+        }
+
+        if(event_window == savebutton_window )
+            printf("EDITOR: Save!\n");
+        
+        return 0;
+        break;
+
     // Evento de teste.
     case 1000:
         // If the event window is the main window, so
         // redraw everyone.
         if( event_window == main_window )
         {
-            gws_redraw_window(fd, addressbar_window,TRUE);
-            gws_redraw_window(fd, savebutton_window,TRUE);
-            gws_redraw_window(fd, client_window,TRUE);
+            //gws_redraw_window(fd, addressbar_window, TRUE);
+            //gws_redraw_window(fd, savebutton_window, TRUE);
+            //gws_redraw_window(fd, client_window,     TRUE);
             return 0;
         }
 
